@@ -851,3 +851,102 @@ test_that("the be_assess object keeps the classes of its table", {
   expect_equal(attr(result, "alpha"), 0.1)
   expect_equal(attr(result, "regulator"), "ABE")
 })
+
+# Degrees of freedom ----------------------------------------------------------
+#
+# A confidence interval or a within-subject variance without residual degrees
+# of freedom would be NaN, and a decision on it a silent FAIL; each is an error
+# with the class pknca_error_be_no_df instead.
+
+test_that("a test-versus-reference contrast without degrees of freedom is an error", {
+  # A 2x2 crossover of two subjects: four observations for the intercept,
+  # subject, period, and treatment.
+  d2 <- be_replicate_long(generate_be_replicate(2, 20240501, "2x2"))
+  for (rg in c("ABE", "descriptive")) {
+    expect_error(
+      be_assess(d2, "treatment", "R", "auclast", regulator = rg, model_type = "anova"),
+      regexp = "the fixed-effects ANOVA gives 0 degrees of freedom",
+      class = "pknca_error_be_contrast_no_df"
+    )
+  }
+  # A parallel study of one subject per arm.
+  p2 <- generate_be_parallel(n_per_arm = 1, effect = c(R = 0, T1 = log(1.1)), sd = c(R = 0.2, T1 = 0.2))
+  expect_error(
+    be_assess(p2, "treatment", "R", "auclast"),
+    class = "pknca_error_be_no_df"
+  )
+})
+
+test_that("an emmeans contrast without degrees of freedom is an error", {
+  skip_if_not_installed("emmeans")
+  # The single-subject test arm leaves its gls variance without degrees of
+  # freedom.
+  p3 <- data.frame(
+    subject = 1:3, period = 1L, treatment = c("T", "R", "R"),
+    PPTESTCD = "auclast", PPORRES = c(20, 22, 25)
+  )
+  expect_error(
+    suppressWarnings(be_assess(p3, "treatment", "R", "auclast", model_type = "gls")),
+    regexp = "the 'gls' model gives",
+    class = "pknca_error_be_contrast_no_df"
+  )
+})
+
+test_that("a replicated formulation without within-subject degrees of freedom is not called unreplicated", {
+  # Two subjects of a full replicate: each formulation is replicated, but
+  # lm(log ~ subject + period) on its rows leaves no residual degrees of freedom.
+  d <- generate_be_replicate(2, 20240501, "full")
+  wv <- be_within_var(d, "PK", "subject", "period", "treatment", "R")
+  expect_identical(wv$df_wR, 0)
+  expect_true(is.na(wv$swR))
+  expect_output(print(wv), "df = 0", fixed = TRUE)
+  expect_error(
+    be_within_var(d, "PK", "subject", "period", "treatment", "R", model_type = "nlme"),
+    class = "pknca_error_be_within_var_no_df"
+  )
+  expect_error(
+    be_assess(be_replicate_long(d), "treatment", "R", "auclast", regulator = "EMA", model_type = "anova"),
+    regexp = "no residual degrees of freedom",
+    class = "pknca_error_be_within_var_no_df"
+  )
+  # A formulation given once to each subject is still reported as unreplicated.
+  wv_2x2 <- be_within_var(generate_be_replicate(8, 1, "2x2"), "PK", "subject", "period", "treatment", "R")
+  expect_true(is.na(wv_2x2$df_wR))
+})
+
+test_that("every scaling decision stops when a within-subject variance it needs is missing", {
+  d <- be_replicate_long(generate_be_replicate(24, 20240501, "full"))
+  ds <- be_dataset(d, "treatment", "R", "auclast")
+  ds_ep <- ds$data[ds$data$PPTESTCD == "auclast", ]
+  p <- be_extract_param(be_fit_model_single(ds_ep, "isc"), ds_ep, alpha = 0.10)
+  p$endpoint <- "auclast"
+  expect_true(be_table(p, "NTID")$pass %in% c(TRUE, FALSE))
+  for (prefix in c("", "isc_")) {
+    for (formulation in c("r", "t")) {
+      sw <- paste0(prefix, "sw", formulation)
+      df <- paste0(prefix, "df_w", formulation)
+      regulators <-
+        if (identical(prefix, "")) {
+          if (identical(formulation, "r")) "EMA" else character()
+        } else {
+          c(if (identical(formulation, "r")) "FDA", "NTID", "HVNTID")
+        }
+      for (rg in regulators) {
+        no_df <- p
+        no_df[[sw]] <- NA_real_
+        no_df[[df]] <- 0
+        expect_error(be_table(no_df, rg), class = "pknca_error_be_within_var_no_df", label = paste(rg, sw))
+        unreplicated <- p
+        unreplicated[[sw]] <- NA_real_
+        unreplicated[[df]] <- NA_real_
+        expect_error(
+          be_table(unreplicated, rg),
+          class = sprintf("pknca_error_be_%s_not_replicated", switch(
+            rg, EMA = "abel_reference", FDA = "rsabe_reference", NTID = "ntid", HVNTID = "hvntid"
+          )),
+          label = paste(rg, sw)
+        )
+      }
+    }
+  }
+})
