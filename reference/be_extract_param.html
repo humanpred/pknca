@@ -103,7 +103,8 @@ within-formulation standard deviations.</p>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A data.frame with one row per test formulation, carrying the model
-and ISC point estimates/intervals, geometric means, and within-formulation
+and ISC point estimates/intervals (with <code>isc_n</code>, the number of subjects in
+the intra-subject contrasts), geometric means, and within-formulation
 variances: <code>swr</code>, <code>swt</code>, <code>cvwr_percent</code>, <code>cvwt_percent</code>, <code>df_wr</code>, <code>df_wt</code>,
 <code>sw_ratio</code>, and <code>sw_ratio_ci_upper</code> from the model's estimator, and the same
 columns prefixed <code>isc_</code> from the FDA estimator (see <code><a href="be_within_var.html">be_within_var()</a></code>).</p>

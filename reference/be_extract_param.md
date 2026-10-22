@@ -34,7 +34,8 @@ be_extract_param(fit, ds_ep, alpha = 0.1)
 ## Value
 
 A data.frame with one row per test formulation, carrying the model and
-ISC point estimates/intervals, geometric means, and within-formulation
+ISC point estimates/intervals (with `isc_n`, the number of subjects in
+the intra-subject contrasts), geometric means, and within-formulation
 variances: `swr`, `swt`, `cvwr_percent`, `cvwt_percent`, `df_wr`,
 `df_wt`, `sw_ratio`, and `sw_ratio_ci_upper` from the model's estimator,
 and the same columns prefixed `isc_` from the FDA estimator (see

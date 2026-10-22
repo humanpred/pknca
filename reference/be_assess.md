@@ -137,7 +137,8 @@ be_assess(
 An object of class `be_assess` (a data.frame), ordered by endpoint (in
 the order requested) then by test formulation (reference-first), with
 one row per endpoint and test formulation and the columns `endpoint`,
-`test`, `n`, `design`, `units` (the endpoint's measurement units; the
+`test`, `n` (the number of subjects behind the ratio shown; see
+Details), `design`, `units` (the endpoint's measurement units; the
 column is omitted with a warning when units are not provided), the
 reference and test geometric means with their 90% confidence intervals
 on the measurement scale (`gm_reference`, `gm_reference_lower`,
@@ -182,13 +183,16 @@ fit (for example, a formulation whose replicates agree exactly), only a
 decision that needs the unscaled criterion stops with an error. Each row
 shows the ratio and interval its decision used: the intra-subject
 contrasts for the reference-scaled criterion and the model for the
-unscaled one. Pass `model_type` to override (`"lmer"`, `"anova"`,
-`"isc"`, `"nlme"`, or `"gls"`); with `"isc"` the FDA mixed model also
-gives the ratio for the other frameworks, and a design without a
-replicated formulation keeps the fixed-effects ANOVA ratio.
-Within-subject variability for the FDA frameworks uses the FDA estimator
-from within-sequence differences between replicate administrations
-(`model_type = "isc"` in
+unscaled one, and `n` counts the subjects behind that ratio: for the
+intra-subject contrasts, the subjects with every test and reference
+administration their sequence calls for; for the model, every subject
+with the test or the reference formulation. Pass `model_type` to
+override (`"lmer"`, `"anova"`, `"isc"`, `"nlme"`, or `"gls"`); with
+`"isc"` the FDA mixed model also gives the ratio for the other
+frameworks, and a design without a replicated formulation keeps the
+fixed-effects ANOVA ratio. Within-subject variability for the FDA
+frameworks uses the FDA estimator from within-sequence differences
+between replicate administrations (`model_type = "isc"` in
 [`be_within_var()`](https://humanpred.github.io/pknca/reference/be_within_var.md));
 for the other frameworks it uses the EMA ANOVA estimator for the
 `"lmer"`/`"anova"`/`"isc"` paths and the treatment-specific mixed-model
