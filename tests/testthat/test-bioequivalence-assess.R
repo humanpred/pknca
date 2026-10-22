@@ -904,8 +904,9 @@ test_that("a replicated formulation without within-subject degrees of freedom is
     be_within_var(d, "PK", "subject", "period", "treatment", "R", model_type = "nlme"),
     class = "pknca_error_be_within_var_no_df"
   )
+  # Cmax, which the EMA widens, so its decision needs the reference variance.
   expect_error(
-    be_assess(be_replicate_long(d), "treatment", "R", "auclast", regulator = "EMA", model_type = "anova"),
+    be_assess(be_replicate_long(d, "cmax"), "treatment", "R", "cmax", regulator = "EMA", model_type = "anova"),
     regexp = "no residual degrees of freedom",
     class = "pknca_error_be_within_var_no_df"
   )
@@ -915,11 +916,12 @@ test_that("a replicated formulation without within-subject degrees of freedom is
 })
 
 test_that("every scaling decision stops when a within-subject variance it needs is missing", {
-  d <- be_replicate_long(generate_be_replicate(24, 20240501, "full"))
-  ds <- be_dataset(d, "treatment", "R", "auclast")
-  ds_ep <- ds$data[ds$data$PPTESTCD == "auclast", ]
+  # Cmax, which every scaling framework scales.
+  d <- be_replicate_long(generate_be_replicate(24, 20240501, "full"), "cmax")
+  ds <- be_dataset(d, "treatment", "R", "cmax")
+  ds_ep <- ds$data[ds$data$PPTESTCD == "cmax", ]
   p <- be_extract_param(be_fit_model_single(ds_ep, "isc"), ds_ep, alpha = 0.10)
-  p$endpoint <- "auclast"
+  p$endpoint <- "cmax"
   expect_true(be_table(p, "NTID")$pass %in% c(TRUE, FALSE))
   for (prefix in c("", "isc_")) {
     for (formulation in c("r", "t")) {
