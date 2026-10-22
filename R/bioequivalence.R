@@ -23,32 +23,63 @@
 #' hard-coding it.
 #'
 #' @details
-#' The supported frameworks and their constants are:
+#' The supported frameworks, the acceptance limits each applies to each
+#' endpoint, and their sources are:
 #'
-#' * **ABE** -- average bioequivalence; the universal unscaled criterion that
-#'   the 90% confidence interval fall within 80.00-125.00%.  No reference
-#'   scaling.
-#' * **EMA** -- average bioequivalence with expanding limits (ABEL).  Scaling
-#'   begins when the within-reference coefficient of variation (`CVwR`) exceeds
-#'   30% (`cvswitch = 0.30`); the limits widen as `exp(+/- k * swR)` with the
-#'   regulatory constant `k = 0.76` and the expansion is capped at `CVwR = 50%`
-#'   (limits 69.84-143.19%).  The constant 0.76 is
-#'   `log(1.25) / sqrt(log(1 + 0.30^2))` rounded to two decimals, as fixed by
-#'   the EMA bioequivalence guideline.
-#' * **HC** -- Health Canada; ABEL with the same `k = 0.76` but the expansion is
-#'   capped at `CVwR = 57.382%` (upper limit 150%).
-#' * **GCC** -- Gulf Cooperation Council; fixed widened limits of
-#'   75.00-133.33% whenever `CVwR > 30%` (not CV-dependent).
-#' * **FDA** -- reference-scaled average bioequivalence (RSABE).  The linearized
-#'   (Howe/Hyslop) criterion uses `r_const = log(1.25) / 0.25 = 0.8926`
-#'   (`theta = r_const^2`) and switches from unscaled ABE when `swR >= 0.294`
-#'   (`CVwR` of about 30%).
-#' * **NTID** -- FDA narrow therapeutic index drugs; uses
-#'   `r_const = -log(0.9) / 0.1 = 1.0536` and always applies the scaled
-#'   criterion (a fully replicated design is required).
-#' * **HVNTID** -- FDA highly variable narrow therapeutic index drugs; the
-#'   RSABE-style scaled criterion with the NTID constant and the within-subject
-#'   standard deviation ratio constraint.
+#' * **ABE** -- average bioequivalence; the 90% confidence interval of the
+#'   geometric mean ratio within 80.00-125.00% for Cmax and AUC, with no
+#'   reference scaling
+#'   ([ICH M13A](https://database.ich.org/sites/default/files/ICH_M13A_Step4_Final_Guideline_2024_0723.pdf),
+#'   section 2.2.4).
+#' * **EMA** -- average bioequivalence with expanding limits (ABEL) for
+#'   **Cmax only**; AUC keeps the 90% confidence interval within
+#'   80.00-125.00% whatever its variability
+#'   ([EMA Guideline on the Investigation of Bioequivalence, Rev. 1](https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-investigation-bioequivalence-rev1_en.pdf),
+#'   sections 4.1.8 and 4.1.10).  Cmax limits widen when the within-reference
+#'   coefficient of variation (`CVwR`) exceeds 30% (`cvswitch = 0.30`), as
+#'   `exp(+/- k * swR)` with the regulatory constant `k = 0.760`, capped at
+#'   `CVwR = 50%` (limits 69.84-143.19%), and the geometric mean ratio must lie
+#'   within 80.00-125.00%.  The constant is `log(1.25) / sqrt(log(1 + 0.30^2))`
+#'   rounded to three decimals.  For modified-release products the EMA also
+#'   allows the same widening for Cmax,ss, Ctau,ss, and partial AUCs
+#'   ([EMA Guideline on the Pharmacokinetic and Clinical Evaluation of Modified Release Dosage Forms](https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-pharmacokinetic-and-clinical-evaluation-modified-release-dosage-forms_en.pdf),
+#'   section 6.8.2.2); PKNCA cannot tell those endpoints from their names, so
+#'   list them, with `"cmax"`, in the `widen_endpoints` argument of
+#'   [be_assess()].
+#' * **HC** -- Health Canada.  ABEL for **AUC only**: the 90% confidence
+#'   interval within limits widened as `exp(+/- 0.76 * swR)` when
+#'   `swR > 0.294` (`CVwR > 30%`), capped at 66.7-150.0% (`CVwR = 57.4%`), with
+#'   the ratio of geometric means within 80.0-125.0%
+#'   ([Policy on Bioequivalence Standards for Highly Variable Drug Products](https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/announcements/notice-policy-bioequivalence-standards-highly-variable-drug-products.html),
+#'   effective 2018).  **Cmax is judged by its point estimate alone**: the
+#'   ratio of geometric means within 80.0-125.0%, with no requirement on its
+#'   confidence interval
+#'   ([Comparative Bioavailability Standards: Formulations Used for Systemic Effects](https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/applications-submissions/guidance-documents/bioavailability-bioequivalence/comparative-bioavailability-standards-formulations-used-systemic-effects.html),
+#'   section 2.1).  These are the standards for drugs that are not critical
+#'   dose drugs.
+#' * **GCC** -- Gulf Cooperation Council; the EMA rules: ABEL for **Cmax
+#'   only**, with `k = 0.760`, the 30% switch, the 69.84-143.19% cap, and the
+#'   geometric mean ratio within 80.00-125.00%; AUC keeps 80.00-125.00%
+#'   ([GCC Guidelines for Bioequivalence, version 3.2](https://sfda.gov.sa/sites/default/files/2024-05/GCC_Guidelines_Bioequivalence32.pdf),
+#'   sections 3.1.8 and 3.1.10).
+#' * **FDA** -- reference-scaled average bioequivalence (RSABE) for both AUC
+#'   and Cmax
+#'   ([FDA Draft Guidance on Progesterone](https://www.accessdata.fda.gov/drugsatfda_docs/psg/Progesterone_caps_19781_RC02-11.pdf)).
+#'   The linearized (Howe/Hyslop) criterion uses
+#'   `r_const = log(1.25) / 0.25 = 0.8926` (`theta = r_const^2`) and switches
+#'   from unscaled ABE (90% confidence interval within 80.00-125.00%) when
+#'   `swR >= 0.294` (`CVwR` of about 30%).
+#' * **NTID** -- FDA narrow therapeutic index drugs, for both AUC and Cmax
+#'   ([FDA Draft Guidance on Warfarin Sodium](https://www.accessdata.fda.gov/drugsatfda_docs/psg/Warfarin_Sodium_tab_09218_RC12-12.pdf)):
+#'   the scaled criterion with `r_const = -log(0.9) / 0.1 = 1.0536` (always
+#'   applied), the 90% confidence interval within 80.00-125.00%, and the upper
+#'   90% confidence bound of swT/swR at most 2.5 (a fully replicated design is
+#'   required).
+#' * **HVNTID** -- FDA highly variable narrow therapeutic index drugs, for both
+#'   AUC and Cmax
+#'   ([FDA Draft Guidance on Dabigatran Etexilate Mesylate](https://www.accessdata.fda.gov/drugsatfda_docs/psg/Dabigatran%20etexilate%20mesylate_oral%20capsule_NDA%20022512_RV05-17.pdf)):
+#'   unscaled, with the 90% confidence interval within 80.00-125.00% and the
+#'   upper 90% confidence bound of swT/swR at most 2.5.
 #'
 #' * **descriptive** -- no regulatory decision.  The geometric means, their
 #'   ratio, and its confidence interval are estimated exactly as for ABE, but no
@@ -59,13 +90,59 @@
 #' All decision frameworks additionally impose the point-estimate constraint
 #' that the geometric mean ratio fall within 80.00-125.00%.
 #'
+#' An endpoint's kind comes from its PKNCA parameter concept (see
+#' [pknca_parameter_table()]): the peak concentrations (`cmax` and `cmax.dn`)
+#' and the AUCs (including `aucint.*`, dose-normalized, and sparse AUCs).
+#' Endpoints that a framework neither widens nor judges by the point estimate
+#' (such as `cmin` or `ctrough`) use the 90% confidence interval within
+#' 80.00-125.00%.
+#'
+#' @references
+#' International Council for Harmonisation.  ICH M13A: Bioequivalence for
+#' immediate-release solid oral dosage forms.  Step 4, 23 July 2024.
+#' <https://database.ich.org/sites/default/files/ICH_M13A_Step4_Final_Guideline_2024_0723.pdf>
+#'
+#' European Medicines Agency.  Guideline on the investigation of
+#' bioequivalence.  CPMP/EWP/QWP/1401/98 Rev. 1/Corr**, 2010.
+#' <https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-investigation-bioequivalence-rev1_en.pdf>
+#'
+#' European Medicines Agency.  Guideline on the pharmacokinetic and clinical
+#' evaluation of modified release dosage forms.  EMA/CHMP/EWP/280/96 Rev1,
+#' 2014.
+#' <https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-pharmacokinetic-and-clinical-evaluation-modified-release-dosage-forms_en.pdf>
+#'
+#' Health Canada.  Comparative bioavailability standards: Formulations used for
+#' systemic effects.  Revised 8 June 2018, effective 1 September 2018.
+#' <https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/applications-submissions/guidance-documents/bioavailability-bioequivalence/comparative-bioavailability-standards-formulations-used-systemic-effects.html>
+#'
+#' Health Canada.  Notice: Policy on bioequivalence standards for highly
+#' variable drug products.  Effective 1 September 2018.
+#' <https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/announcements/notice-policy-bioequivalence-standards-highly-variable-drug-products.html>
+#'
+#' Gulf Cooperation Council.  The GCC guidelines for bioequivalence.  Version
+#' 3.2, 2024.
+#' <https://sfda.gov.sa/sites/default/files/2024-05/GCC_Guidelines_Bioequivalence32.pdf>
+#'
+#' US Food and Drug Administration.  Draft guidance on progesterone.  2011.
+#' <https://www.accessdata.fda.gov/drugsatfda_docs/psg/Progesterone_caps_19781_RC02-11.pdf>
+#'
+#' US Food and Drug Administration.  Draft guidance on warfarin sodium.  2012.
+#' <https://www.accessdata.fda.gov/drugsatfda_docs/psg/Warfarin_Sodium_tab_09218_RC12-12.pdf>
+#'
+#' US Food and Drug Administration.  Draft guidance on dabigatran etexilate
+#' mesylate.  2012, revised 2017.
+#' <https://www.accessdata.fda.gov/drugsatfda_docs/psg/Dabigatran%20etexilate%20mesylate_oral%20capsule_NDA%20022512_RV05-17.pdf>
+#'
 #' @param name The regulatory framework, one of `"ABE"`, `"EMA"`, `"HC"`,
 #'   `"GCC"`, `"FDA"`, `"NTID"`, `"HVNTID"`, or `"descriptive"`.
 #' @returns An object of class `be_regulator`: a list with elements `name`,
 #'   `scaling` (one of `"none"`, `"abel"`, `"rsabe"`, `"ntid"`, `"hvntid"`),
-#'   `cvswitch`, `r_const`, `cvcap`, `switch_swr`, `pe_constr`, `est_method`
-#'   (`"anova"` or `"isc"`), `decision` (`FALSE` only for `"descriptive"`), and
-#'   `switch_basis`.
+#'   `cvswitch`, `r_const`, `cvcap`, `switch_swr`, `est_method` (`"anova"` or
+#'   `"isc"`), `widen_concepts` (the parameter concepts whose limits widen, for
+#'   the expanding-limits frameworks), `pe_only_concepts` (the concepts judged
+#'   by the point estimate alone), `reference` (the source guidance, or `NA`),
+#'   `pe_constr`, `decision` (`FALSE` only for `"descriptive"`),
+#'   `sw_ratio_cap`, and `switch_basis`.
 #' @family Bioequivalence
 #' @seealso [be_expand_limits()] for the ABEL acceptance limits and [be_assess()]
 #'   for the full assessment.
@@ -76,54 +153,80 @@
 #' @export
 be_regulator <- function(name = c("ABE", "EMA", "HC", "GCC", "FDA", "NTID", "HVNTID", "descriptive")) {
   name <- match.arg(name)
-  # Regulatory constants, each with its source.  These are intentionally
-  # internalized (not pulled from PowerTOST) so PKNCA stands alone.
+  # Regulatory constants, each with its source (full citations and links are in
+  # the documentation above).  These are intentionally internalized (not pulled
+  # from PowerTOST) so PKNCA stands alone.  `widen_concepts` and
+  # `pe_only_concepts` are parameter concepts from parameter_classification().
   reg <-
     switch(
       name,
+      # ICH M13A section 2.2.4: the 90% CI within 80.00-125.00% for Cmax and AUC.
       ABE = list(
         scaling = "none", cvswitch = NA_real_, r_const = NA_real_,
-        cvcap = NA_real_, switch_swr = NA_real_, est_method = "anova"
+        cvcap = NA_real_, switch_swr = NA_real_, est_method = "anova",
+        widen_concepts = character(), pe_only_concepts = character(),
+        reference = "ICH M13A (2024), section 2.2.4"
       ),
       # EMA Guideline on the Investigation of Bioequivalence (CPMP/EWP/QWP/1401/98
-      # Rev. 1, 2010) and the EMA Q&A: k = 0.76, scale above CVwR 30%, cap at 50%.
+      # Rev. 1, 2010), sections 4.1.8 and 4.1.10: Cmax only, k = 0.760, scale
+      # above CVwR 30%, cap at 50% (69.84-143.19%); AUC stays at 80.00-125.00%.
       EMA = list(
         scaling = "abel", cvswitch = 0.30, r_const = 0.76,
-        cvcap = 0.50, switch_swr = NA_real_, est_method = "anova"
+        cvcap = 0.50, switch_swr = NA_real_, est_method = "anova",
+        widen_concepts = "peak_conc", pe_only_concepts = character(),
+        reference = "EMA Guideline on the Investigation of Bioequivalence (CPMP/EWP/QWP/1401/98 Rev. 1), sections 4.1.8 and 4.1.10"
       ),
-      # Health Canada Guidance (Comparative Bioavailability Standards): k = 0.76,
-      # cap at CVwR 57.382% (upper limit 150.0%).
+      # Health Canada Policy on Bioequivalence Standards for Highly Variable
+      # Drug Products (effective 2018): AUC only, k = 0.76, cap at CVwR 57.382%
+      # (66.7-150.0%).  Comparative Bioavailability Standards section 2.1: Cmax
+      # by the ratio of geometric means within 80.0-125.0%, without a CI.
       HC = list(
         scaling = "abel", cvswitch = 0.30, r_const = 0.76,
-        cvcap = 0.57382, switch_swr = NA_real_, est_method = "anova"
+        cvcap = 0.57382, switch_swr = NA_real_, est_method = "anova",
+        widen_concepts = "auc", pe_only_concepts = "peak_conc",
+        reference = "Health Canada Comparative Bioavailability Standards: Formulations Used for Systemic Effects (2018), section 2.1, and Policy on Bioequivalence Standards for Highly Variable Drug Products (2018)"
       ),
-      # GCC Guidelines for Bioequivalence: fixed 75.00-133.33% above CVwR 30%.
+      # GCC Guidelines for Bioequivalence version 3.2 (2024), sections 3.1.8 and
+      # 3.1.10: the EMA rules (Cmax only, k = 0.760, cap at 69.84-143.19%).
       GCC = list(
-        scaling = "abel", cvswitch = 0.30, r_const = NA_real_,
-        cvcap = 0.30, switch_swr = NA_real_, est_method = "anova"
+        scaling = "abel", cvswitch = 0.30, r_const = 0.76,
+        cvcap = 0.50, switch_swr = NA_real_, est_method = "anova",
+        widen_concepts = "peak_conc", pe_only_concepts = character(),
+        reference = "GCC Guidelines for Bioequivalence, version 3.2 (2024), sections 3.1.8 and 3.1.10"
       ),
-      # FDA Draft Guidance on Progesterone (RSABE): r_const = log(1.25)/0.25,
-      # switch to scaling when swR >= 0.294 (regulatory sigma_w0 = 0.25).
+      # FDA Draft Guidance on Progesterone (RSABE, AUC and Cmax):
+      # r_const = log(1.25)/0.25, switch to scaling when swR >= 0.294
+      # (regulatory sigma_w0 = 0.25).
       FDA = list(
         scaling = "rsabe", cvswitch = 0.30, r_const = log(1.25) / 0.25,
-        cvcap = Inf, switch_swr = 0.294, est_method = "isc"
+        cvcap = Inf, switch_swr = 0.294, est_method = "isc",
+        widen_concepts = character(), pe_only_concepts = character(),
+        reference = "FDA Draft Guidance on Progesterone (2011)"
       ),
-      # FDA Draft Guidance on Warfarin (NTID): r_const = -log(0.9)/0.1, the
-      # scaled criterion always applies, plus a swT/swR ratio constraint.
+      # FDA Draft Guidance on Warfarin Sodium (NTID, AUC and Cmax):
+      # r_const = -log(0.9)/0.1, the scaled criterion always applies, plus a
+      # swT/swR ratio constraint.
       NTID = list(
         scaling = "ntid", cvswitch = NA_real_, r_const = -log(0.9) / 0.1,
-        cvcap = Inf, switch_swr = NA_real_, est_method = "isc"
+        cvcap = Inf, switch_swr = NA_real_, est_method = "isc",
+        widen_concepts = character(), pe_only_concepts = character(),
+        reference = "FDA Draft Guidance on Warfarin Sodium (2012)"
       ),
-      # FDA highly variable NTID: unscaled (conventional limits) plus the
-      # swT/swR ratio constraint; reference scaling does not apply.
+      # FDA Draft Guidance on Dabigatran Etexilate Mesylate (highly variable
+      # NTID, AUC and Cmax): unscaled (conventional limits) plus the swT/swR
+      # ratio constraint; reference scaling does not apply.
       HVNTID = list(
         scaling = "hvntid", cvswitch = NA_real_, r_const = NA_real_,
-        cvcap = Inf, switch_swr = NA_real_, est_method = "isc"
+        cvcap = Inf, switch_swr = NA_real_, est_method = "isc",
+        widen_concepts = character(), pe_only_concepts = character(),
+        reference = "FDA Draft Guidance on Dabigatran Etexilate Mesylate (2012, revised 2017)"
       ),
       # No regulatory decision: the ABE estimates without limits or pass/fail.
       descriptive = list(
         scaling = "none", cvswitch = NA_real_, r_const = NA_real_,
-        cvcap = NA_real_, switch_swr = NA_real_, est_method = "anova"
+        cvcap = NA_real_, switch_swr = NA_real_, est_method = "anova",
+        widen_concepts = character(), pe_only_concepts = character(),
+        reference = NA_character_
       )
     )
   decision <- name != "descriptive"
@@ -167,22 +270,39 @@ print.be_regulator <- function(x, ...) {
   if (!is.na(x$cvcap) && is.finite(x$cvcap)) {
     cat(sprintf("  CV cap:             %.5g%%\n", x$cvcap * 100))
   }
+  if (length(x$widen_concepts) > 0) {
+    cat(sprintf("  Widened endpoints:  %s\n", paste(.be_concept_label(x$widen_concepts), collapse = ", ")))
+  }
+  if (length(x$pe_only_concepts) > 0) {
+    cat(sprintf("  Point estimate only: %s\n", paste(.be_concept_label(x$pe_only_concepts), collapse = ", ")))
+  }
   cat(sprintf("  PE constraint:      %s\n", if (x$pe_constr) "80.00-125.00%" else "none"))
   cat(sprintf("  Point estimate:     %s\n", x$est_method))
   if (!x$decision) {
     cat("  Decision:           none (descriptive; no acceptance limits or pass/fail)\n")
   }
+  if (!is.na(x$reference)) {
+    cat(sprintf("  Reference:          %s\n", x$reference))
+  }
   invisible(x)
+}
+
+# Readable names for the parameter concepts that the regulators treat
+# specially (see be_regulator()).
+.be_concept_label <- function(concept) {
+  unname(c(peak_conc = "Cmax", auc = "AUC")[concept])
 }
 
 #' Reference-scaled acceptance limits for bioequivalence
 #'
 #' `be_expand_limits()` computes the (possibly widened) bioequivalence
 #' acceptance limits for a scaled-ABE framework given the within-reference
-#' standard deviation.  For EMA and Health Canada the limits widen
-#' geometrically with `swR` and are capped; for the GCC they jump to a fixed
-#' wider band; below the switching variability they remain the conventional
-#' 80.00-125.00%.
+#' standard deviation.  The limits widen geometrically with `swR` as
+#' `exp(+/- k * swR)` and are capped; below the switching variability they
+#' remain the conventional 80.00-125.00%.  They apply to the endpoints the
+#' framework widens (Cmax for the EMA and GCC, AUC for Health Canada; see
+#' [be_regulator()] for the sources); [be_assess()] keeps the other endpoints
+#' at 80.00-125.00%.
 #'
 #' @param swR The within-reference standard deviation of the log-transformed
 #'   endpoint (for example from [be_within_var()]).
@@ -195,9 +315,9 @@ print.be_regulator <- function(x, ...) {
 #' @family Bioequivalence
 #' @seealso [be_regulator()], [be_assess()]
 #' @examples
-#' be_expand_limits(0.485, "EMA") # capped expansion
+#' be_expand_limits(0.485, "EMA") # capped expansion (69.84-143.19%)
 #' be_expand_limits(0.20, "EMA")  # below the switch: 80-125%
-#' be_expand_limits(0.40, "GCC")  # fixed GCC band
+#' be_expand_limits(0.60, "HC")   # Health Canada cap (66.7-150.0%)
 #' @export
 be_expand_limits <- function(swR, regulator) {
   reg <- if (inherits(regulator, "be_regulator")) regulator else be_regulator(regulator)
@@ -217,15 +337,17 @@ be_expand_limits <- function(swR, regulator) {
   if (cvwr <= reg$cvswitch) {
     return(default)
   }
-  if (identical(reg$name, "GCC")) {
-    # Fixed widened band, independent of CVwR.
-    return(c(lower = 75, upper = 400 / 3))
-  }
-  # EMA/HC: widen as exp(+/- k * swR), capping swR at the value implied by the
-  # framework's CV cap.
+  # Widen as exp(+/- k * swR), capping swR at the value implied by the
+  # framework's CV cap.  k = 0.76 is rounded down from
+  # log(1.25) / sqrt(log(1 + 0.30^2)) = 0.76012, so just above the switch the
+  # formula is fractionally narrower than 80-125%; the limits never narrow
+  # below the conventional ones (PowerTOST's scABEL() does not clamp).
   swr_cap <- sqrt(log(1 + reg$cvcap^2))
   swr_eff <- min(swR, swr_cap)
-  c(lower = exp(-reg$r_const * swr_eff) * 100, upper = exp(reg$r_const * swr_eff) * 100)
+  c(
+    lower = min(exp(-reg$r_const * swr_eff) * 100, default[["lower"]]),
+    upper = max(exp(reg$r_const * swr_eff) * 100, default[["upper"]])
+  )
 }
 
 # Median, over subjects, of the number of times a subject received `level`.
@@ -667,9 +789,10 @@ print.be_within_var <- function(x, ...) {
 # `unscaled`, the model estimate (same fields) whose interval decides the
 # unscaled 80.00-125.00% criterion of the FDA frameworks; for the other
 # frameworks `est` is the model estimate.  It returns the decision fragment
-# `list(limit_lower, limit_upper, criterion, pass, report)` that becomes one
-# row of the [be_assess()] result, where `report` is the estimate whose ratio
-# and interval the row shows.
+# `list(limit_lower, limit_upper, criterion, pass, report, rule)` that becomes
+# one row of the [be_assess()] result, where `report` is the estimate whose
+# ratio and interval the row shows and `rule` names the criterion the decision
+# used ("ABE", "ABEL", "PE", "RSABE", "NTID", or "HVNTID").
 
 # Within-subject contrast for one subject: mean log test minus mean log
 # reference, or NA if the subject lacks either formulation.  `s` carries the
@@ -822,11 +945,13 @@ print.be_within_var <- function(x, ...) {
   list(
     limit_lower = 80, limit_upper = 125, criterion = NA_real_,
     pass = isTRUE(est$ci_lower >= 80 && est$ci_upper <= 125),
-    report = est
+    report = est, rule = "ABE"
   )
 }
 
-# Average bioequivalence with expanding limits (EMA / HC / GCC).
+# Average bioequivalence with expanding limits (EMA / HC / GCC), for the
+# endpoints the framework widens.  Below the switching variability the limits
+# are the conventional ones, so the rule is "ABE".
 .be_abel <- function(est, wv, reg, alpha, unscaled = est) {
   if (is.na(wv$swR)) {
     .be_within_unavailable(
@@ -841,7 +966,18 @@ print.be_within_var <- function(x, ...) {
     limit_lower = unname(lim[["lower"]]), limit_upper = unname(lim[["upper"]]),
     criterion = NA_real_,
     pass = isTRUE(ci_ok && .be_pe_ok(reg, est$gmr_percent)),
-    report = est
+    report = est,
+    rule = if (lim[["lower"]] < 80) "ABEL" else "ABE"
+  )
+}
+
+# The point estimate alone within 80.00-125.00%, with no requirement on its
+# confidence interval: Health Canada's standard for Cmax.
+.be_pe <- function(est, wv, reg, alpha, unscaled = est) {
+  list(
+    limit_lower = 80, limit_upper = 125, criterion = NA_real_,
+    pass = isTRUE(.be_pe_ok(reg, est$gmr_percent)),
+    report = est, rule = "PE"
   )
 }
 
@@ -864,14 +1000,14 @@ print.be_within_var <- function(x, ...) {
       pass = isTRUE(
         unscaled$ci_lower >= 80 && unscaled$ci_upper <= 125 && .be_pe_ok(reg, unscaled$gmr_percent)
       ),
-      report = unscaled
+      report = unscaled, rule = "ABE"
     )
   } else {
     bound <- .be_rsabe_bound(est$pe_log, est$se, est$df, wv$s2wR, wv$df_wR, reg$r_const)
     list(
       limit_lower = NA_real_, limit_upper = NA_real_, criterion = bound,
       pass = isTRUE(bound <= 0 && .be_pe_ok(reg, est$gmr_percent)),
-      report = est
+      report = est, rule = "RSABE"
     )
   }
 }
@@ -899,7 +1035,7 @@ print.be_within_var <- function(x, ...) {
         !is.na(wv$sw_ratio_ci_upper) && wv$sw_ratio_ci_upper <= reg$sw_ratio_cap &&
         .be_pe_ok(reg, est$gmr_percent)
     ),
-    report = unscaled
+    report = unscaled, rule = "NTID"
   )
 }
 
@@ -924,7 +1060,7 @@ print.be_within_var <- function(x, ...) {
         !is.na(wv$sw_ratio_ci_upper) && wv$sw_ratio_ci_upper <= reg$sw_ratio_cap &&
         .be_pe_ok(reg, unscaled$gmr_percent)
     ),
-    report = unscaled
+    report = unscaled, rule = "HVNTID"
   )
 }
 
@@ -958,20 +1094,86 @@ print.be_within_var <- function(x, ...) {
   invisible(unscaled)
 }
 
-# Dispatch to the decider for a regulator's scaling type.  The descriptive
-# framework makes no decision.
-.be_decide <- function(est, wv, reg, alpha, unscaled = est) {
+# Dispatch to the decider for a regulator's scaling type.  The expanding-limits
+# frameworks decide each endpoint by its `endpoint_rule` (see
+# .be_endpoint_rules()).  The descriptive framework makes no decision.
+.be_decide <- function(est, wv, reg, alpha, unscaled = est, endpoint_rule = NA_character_) {
   if (!reg$decision) {
-    return(list(limit_lower = NA_real_, limit_upper = NA_real_, criterion = NA_real_, pass = NA, report = est))
+    return(list(
+      limit_lower = NA_real_, limit_upper = NA_real_, criterion = NA_real_, pass = NA, report = est,
+      rule = NA_character_
+    ))
   }
   switch(
     reg$scaling,
     none = .be_abe(est, wv, reg, alpha, unscaled),
-    abel = .be_abel(est, wv, reg, alpha, unscaled),
+    abel =
+      switch(
+        endpoint_rule,
+        abel = .be_abel(est, wv, reg, alpha, unscaled),
+        pe = .be_pe(est, wv, reg, alpha, unscaled),
+        abe = .be_abe(est, wv, reg, alpha, unscaled)
+      ),
     rsabe = .be_rsabe(est, wv, reg, alpha, unscaled),
     ntid = .be_ntid(est, wv, reg, alpha, unscaled),
     hvntid = .be_hvntid(est, wv, reg, alpha, unscaled)
   )
+}
+
+# The acceptance rule of an expanding-limits framework for each endpoint, as a
+# character vector named by endpoint: "abel" (widened limits on the confidence
+# interval) for the endpoints whose concept the framework widens, "pe" (the
+# point estimate alone) for the concepts it judges by the point estimate, and
+# "abe" (80.00-125.00% on the confidence interval) otherwise.  The concept is
+# the endpoint's PKNCA parameter concept.  `widen_endpoints`, when given,
+# replaces the widened endpoints.  Endpoints that are not PKNCA parameters have
+# no concept; they are listed in the "unclassified" attribute when
+# `widen_endpoints` is not given.  Other frameworks get NA for every endpoint.
+.be_endpoint_rules <- function(endpoints, reg, widen_endpoints = NULL) {
+  endpoints <- unique(as.character(endpoints))
+  rules <- stats::setNames(rep(NA_character_, length(endpoints)), endpoints)
+  if (!identical(reg$scaling, "abel")) {
+    return(rules)
+  }
+  concept <- unname(parameter_classification()$concept[endpoints])
+  widen <-
+    if (is.null(widen_endpoints)) {
+      concept %in% reg$widen_concepts
+    } else {
+      endpoints %in% widen_endpoints
+    }
+  rules[] <- ifelse(widen, "abel", ifelse(concept %in% reg$pe_only_concepts, "pe", "abe"))
+  attr(rules, "unclassified") <-
+    if (is.null(widen_endpoints)) endpoints[is.na(concept)] else character()
+  rules
+}
+
+# Check `widen_endpoints` against the endpoints assessed and the framework.
+.be_check_widen_endpoints <- function(widen_endpoints, endpoints, reg = NULL) {
+  if (is.null(widen_endpoints)) {
+    return(invisible(NULL))
+  }
+  checkmate::assert_character(widen_endpoints, any.missing = FALSE, unique = TRUE)
+  unknown <- setdiff(widen_endpoints, endpoints)
+  if (length(unknown) > 0) {
+    rlang::abort(
+      sprintf(
+        "`widen_endpoints` names endpoints that are not assessed: %s.",
+        paste(unknown, collapse = ", ")
+      ),
+      class = "pknca_error_be_widen_endpoints_unknown"
+    )
+  }
+  if (!is.null(reg) && !identical(reg$scaling, "abel")) {
+    rlang::abort(
+      sprintf(
+        "`widen_endpoints` applies to the expanding-limits frameworks (EMA, HC, and GCC), not %s.",
+        reg$name
+      ),
+      class = "pknca_error_be_widen_endpoints_not_abel"
+    )
+  }
+  invisible(widen_endpoints)
 }
 
 # Find a column name: use `given` if supplied, otherwise the first of
@@ -1886,8 +2088,12 @@ be_extract_param_isc <- function(fit, ds_ep, alpha = 0.10) {
 #' reference-scaled criterion and the model contrast for the unscaled
 #' 80.00-125.00% criterion) and calls the per-framework decision functions; it
 #' is the only place regulator decisions are made.  Each row shows the ratio and
-#' confidence interval that its decision used.
+#' confidence interval that its decision used.  The expanding-limits frameworks
+#' decide each endpoint by its own rule (see [be_regulator()]); an endpoint that
+#' is not a PKNCA parameter cannot be classified, so it keeps 80.00-125.00%
+#' with a warning unless `widen_endpoints` is given.
 #'
+#' @inheritParams be_assess
 #' @param params A data.frame of parameters from [be_extract_param()] (with an
 #'   `endpoint` column added per endpoint).
 #' @param regulator A regulator name or a `be_regulator` object.
@@ -1895,12 +2101,29 @@ be_extract_param_isc <- function(fit, ds_ep, alpha = 0.10) {
 #' @param design The design label (character) for the `design` column.
 #' @param model_type The model type label for the `model_type` column.
 #' @returns A data.frame with one row per endpoint and test formulation and the
-#'   pass/fail decision columns.  For the `"descriptive"` framework the decision
-#'   columns (`limit_lower`, `limit_upper`, `criterion`, and `pass`) are omitted.
+#'   pass/fail decision columns, including `rule`, the criterion each row's
+#'   decision used.  For the `"descriptive"` framework the decision columns
+#'   (`rule`, `limit_lower`, `limit_upper`, `criterion`, and `pass`) are
+#'   omitted.
 #' @family Bioequivalence
 #' @export
-be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, model_type = NA_character_) {
+be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, model_type = NA_character_,
+                     widen_endpoints = NULL) {
   reg <- if (inherits(regulator, "be_regulator")) regulator else be_regulator(regulator)
+  .be_check_widen_endpoints(widen_endpoints, unique(as.character(params$endpoint)), reg)
+  rules <- .be_endpoint_rules(params$endpoint, reg, widen_endpoints)
+  for (ep in attr(rules, "unclassified")) {
+    rlang::warn(
+      sprintf(
+        paste(
+          "Endpoint '%s' is not a PKNCA parameter, so the %s framework cannot tell whether its limits widen;",
+          "it uses 80.00-125.00%%.  Name it in `widen_endpoints` to widen its limits."
+        ),
+        ep, reg$name
+      ),
+      class = "pknca_warning_be_endpoint_unclassified"
+    )
+  }
   rows <- list()
   for (i in seq_len(nrow(params))) {
     p <- params[i, , drop = FALSE]
@@ -1925,7 +2148,7 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
         class = "pknca_error_be_isc_insufficient"
       )
     }
-    dec <- .be_decide(est, wv, reg, alpha, unscaled = model_est)
+    dec <- .be_decide(est, wv, reg, alpha, unscaled = model_est, endpoint_rule = rules[[as.character(p$endpoint)]])
     rows[[length(rows) + 1]] <-
       data.frame(
         endpoint = p$endpoint, test = p$test, n = p$n, design = design, units = p$units,
@@ -1934,14 +2157,14 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
         gm_test = p$gm_test, gm_test_lower = p$gm_test_lower, gm_test_upper = p$gm_test_upper,
         gmr_percent = dec$report$gmr_percent, ci_lower = dec$report$ci_lower, ci_upper = dec$report$ci_upper,
         cvwr_percent = wv$cvwr_percent, cvwt_percent = wv$cvwt_percent, swr = wv$swR,
-        limit_lower = dec$limit_lower, limit_upper = dec$limit_upper, criterion = dec$criterion,
+        rule = dec$rule, limit_lower = dec$limit_lower, limit_upper = dec$limit_upper, criterion = dec$criterion,
         regulator = reg$name, model_type = model_type, pass = dec$pass
       )
   }
   out <- do.call(rbind, rows)
   rownames(out) <- NULL
   if (!reg$decision) {
-    out <- out[, setdiff(names(out), c("limit_lower", "limit_upper", "criterion", "pass")), drop = FALSE]
+    out <- out[, setdiff(names(out), c("rule", "limit_lower", "limit_upper", "criterion", "pass")), drop = FALSE]
   }
   out
 }
@@ -2012,7 +2235,7 @@ be_fit_models <- function(object, reference_col, reference_value,
                           endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
                           regulator = "ABE", model_type = NULL, alpha = 0.10,
                           subject = NULL, sequence = NULL, period = NULL, design = NULL,
-                          covariates = NULL, heteroscedastic = FALSE) {
+                          covariates = NULL, heteroscedastic = FALSE, widen_endpoints = NULL) {
   assert_numeric_between(alpha, lower = 0, upper = 1)
   checkmate::assert_flag(heteroscedastic)
   reg <- be_regulator(regulator)
@@ -2032,6 +2255,7 @@ be_fit_models <- function(object, reference_col, reference_value,
     )
   }
   .be_check_feasible(reg, design)
+  .be_check_widen_endpoints(widen_endpoints, ds$endpoints, reg)
   model_type <- .be_resolve_model_type(model_type, reg, design, heteroscedastic)
   if (length(ds$columns$covariates) > 0 && identical(reg$est_method, "isc")) {
     rlang::warn(
@@ -2055,8 +2279,15 @@ be_fit_models <- function(object, reference_col, reference_value,
     p$endpoint <- ep
     params[[length(params) + 1]] <- p
   }
-  tbl <- be_table(do.call(rbind, params), reg, alpha, design = design$design, model_type = model_type)
-  .be_table_finish(tbl, ds, caption = .be_caption(reg, model_type, alpha, ds$columns$covariates))
+  tbl <- be_table(
+    do.call(rbind, params), reg, alpha, design = design$design, model_type = model_type,
+    widen_endpoints = widen_endpoints
+  )
+  caption <- .be_caption(
+    reg, model_type, alpha, ds$columns$covariates,
+    endpoint_rules = .be_endpoint_rules(ds$endpoints, reg, widen_endpoints)
+  )
+  .be_table_finish(tbl, ds, caption = caption)
 }
 
 # Order the table from be_table() by endpoint (in the requested order) then by
@@ -2083,9 +2314,12 @@ be_fit_models <- function(object, reference_col, reference_value,
   )
 }
 
-# A methods caption documenting the model, any covariates, and the regulatory
-# decision rule (or that no decision was applied).
-.be_caption <- function(reg, model_type, alpha, covariates = character(), n_boot = NA_integer_) {
+# A methods caption documenting the model, any covariates, the regulatory
+# decision rule (or that no decision was applied), and its source guidance.
+# `endpoint_rules` (from .be_endpoint_rules()) names the endpoints under each
+# rule of an expanding-limits framework.
+.be_caption <- function(reg, model_type, alpha, covariates = character(), n_boot = NA_integer_,
+                        endpoint_rules = NULL) {
   ci <- sprintf("%g%% CI", 100 * (1 - alpha))
   model_desc <-
     switch(
@@ -2134,13 +2368,15 @@ be_fit_models <- function(object, reference_col, reference_value,
     switch(
       reg$scaling,
       none = "Bioequivalence requires the confidence interval within 80.00-125.00%.",
-      abel = "Acceptance limits are widened by the within-reference variability (ABEL) and capped per the regulator.",
+      abel = .be_abel_caption(endpoint_rules),
       rsabe = "Reference scaling uses the linearized (Howe/Hyslop) criterion with a one-sided 95% upper bound.",
       ntid = "Narrow therapeutic index scaling requires the scaled bound, the conventional 90% CI within 80.00-125.00%, and the swT/swR ratio bound.",
       hvntid = "Highly variable NTID assessment requires the conventional 90% CI within 80.00-125.00% and the swT/swR ratio bound; reference scaling does not apply."
     )
   if (!reg$decision) {
     decision <- "No regulatory decision was applied: there are no acceptance limits and no pass/fail."
+  } else {
+    decision <- sprintf("%s Source: %s.", decision, reg$reference)
   }
   within <-
     if (identical(reg$scaling, "none")) {
@@ -2180,6 +2416,38 @@ be_fit_models <- function(object, reference_col, reference_value,
       sprintf("Descriptive treatment comparison (%s).", ci)
     }
   sprintf("%s %s %s%s%s", title, point, decision, within, covariate_text)
+}
+
+# The decision sentences of an expanding-limits framework, naming the endpoints
+# under each rule of `endpoint_rules` (see .be_endpoint_rules()).
+.be_abel_caption <- function(endpoint_rules) {
+  by_rule <- split(names(endpoint_rules), factor(endpoint_rules, levels = c("abel", "pe", "abe")))
+  paste(
+    c(
+      if (length(by_rule$abel) > 0) {
+        sprintf(
+          paste(
+            "The confidence-interval limits of %s widen with the within-reference variability (ABEL)",
+            "when CVwR exceeds 30%%, capped per the regulator."
+          ),
+          paste(by_rule$abel, collapse = ", ")
+        )
+      },
+      if (length(by_rule$pe) > 0) {
+        sprintf(
+          "%s: the point estimate alone must lie within 80.00-125.00%%.",
+          paste(by_rule$pe, collapse = ", ")
+        )
+      },
+      if (length(by_rule$abe) > 0) {
+        sprintf(
+          "%s: the confidence interval must lie within 80.00-125.00%%.",
+          paste(by_rule$abe, collapse = ", ")
+        )
+      }
+    ),
+    collapse = " "
+  )
 }
 
 #' Assess bioequivalence against a regulatory framework
@@ -2245,6 +2513,16 @@ be_fit_models <- function(object, reference_col, reference_value,
 #' limits and reports no pass/fail, for comparisons such as food effect and
 #' drug-drug interaction studies.
 #'
+#' The expanding-limits frameworks widen only some endpoints, as their
+#' guidances specify (see [be_regulator()] for the sources): the EMA and the GCC
+#' widen Cmax, and Health Canada widens AUC and judges Cmax by its point
+#' estimate alone.  Every other endpoint needs its confidence interval within
+#' 80.00-125.00%.  The `rule` column names the criterion each row used.
+#' `widen_endpoints` replaces the endpoints that widen: for example
+#' `c("cmax", "ctrough")` widens Ctau,ss as well as Cmax under the EMA
+#' modified-release guideline, and `character()` widens nothing (the EMA
+#' allows widening only when the protocol specifies it).
+#'
 #' For the results of a sparse bootstrap (Shen and Machado 2017; see
 #' [sparse_bootstrap()]), there is one estimate per treatment, from the sparse
 #' data, rather than one per subject.  The ratio of the test and reference
@@ -2302,6 +2580,16 @@ be_fit_models <- function(object, reference_col, reference_value,
 #'   use covariates.
 #' @param heteroscedastic Logical.  When `TRUE`, estimate a separate residual
 #'   variance for each treatment (see Details).
+#' @param widen_endpoints For the expanding-limits frameworks (`"EMA"`, `"HC"`,
+#'   and `"GCC"`), the endpoints whose acceptance limits widen.  It replaces
+#'   the framework's own choice (Cmax for the EMA and GCC, AUC for Health
+#'   Canada; see [be_regulator()]), so list those endpoints too to keep them
+#'   widened.  Use it for an endpoint that the guidance widens but PKNCA cannot
+#'   recognize from its name, such as Ctau,ss or a partial AUC of a
+#'   modified-release product (EMA), or an endpoint that is not a PKNCA
+#'   parameter; `character()` widens none.  `NULL` (the default) uses the
+#'   framework's choice.  Giving it for another framework is an error;
+#'   [be_compare()] passes it to the expanding-limits frameworks only.
 #' @returns An object of class `be_assess` (a data.frame), ordered by endpoint
 #'   (in the order requested) then by test formulation (reference-first), with
 #'   one row per endpoint and test formulation and the columns `endpoint`,
@@ -2310,13 +2598,18 @@ be_fit_models <- function(object, reference_col, reference_value,
 #'   test geometric means with their 90% confidence intervals on the measurement
 #'   scale (`gm_reference`, `gm_reference_lower`, `gm_reference_upper`, `gm_test`,
 #'   `gm_test_lower`, `gm_test_upper`), `gmr_percent`, `ci_lower`, `ci_upper`,
-#'   `cvwr_percent`, `cvwt_percent`, `swr`, `limit_lower`, `limit_upper`,
-#'   `criterion`, `regulator`, `model_type`, and `pass`.  `limit_*` are `NA` for
-#'   the RSABE criterion and `criterion` is `NA` for the limit-based frameworks.
-#'   For `regulator = "descriptive"` the `limit_lower`, `limit_upper`,
-#'   `criterion`, and `pass` columns are omitted.  A `caption` attribute
-#'   documents the model and the decision rule, or states that no regulatory
-#'   decision was applied.
+#'   `cvwr_percent`, `cvwt_percent`, `swr`, `rule`, `limit_lower`,
+#'   `limit_upper`, `criterion`, `regulator`, `model_type`, and `pass`.  `rule`
+#'   names the criterion the row's decision used: `"ABE"` (the confidence
+#'   interval within 80.00-125.00%), `"ABEL"` (the confidence interval within
+#'   widened limits), `"PE"` (the point estimate alone within 80.00-125.00%),
+#'   `"RSABE"` (the reference-scaled bound), `"NTID"`, or `"HVNTID"`.
+#'   `limit_*` are `NA` for the RSABE criterion and `criterion` is `NA` for the
+#'   limit-based frameworks.  For `regulator = "descriptive"` the `rule`,
+#'   `limit_lower`, `limit_upper`, `criterion`, and `pass` columns are omitted.
+#'   A `caption` attribute documents the model, the decision rule for each
+#'   endpoint, and its source guidance, or states that no regulatory decision
+#'   was applied.
 #' @family Bioequivalence
 #' @seealso [be_compare()] to assess one dataset under several frameworks,
 #'   [be_within_var()], and [be_regulator()].
@@ -2330,13 +2623,14 @@ be_fit_models <- function(object, reference_col, reference_value,
 #'   trt <- strsplit(seqs[i], "")[[1]]
 #'   data.frame(
 #'     subject = i, sequence = seqs[i], period = seq_along(trt), treatment = trt,
-#'     PPTESTCD = "auclast",
+#'     PPTESTCD = "cmax",
 #'     PPORRES = exp(log(100) + ifelse(trt == "T", 0.04, 0) + b[i] +
 #'                     stats::rnorm(length(trt), sd = 0.45))
 #'   )
 #' }))
+#' # The EMA widens the limits of Cmax
 #' be_assess(d, reference_col = "treatment", reference_value = "R",
-#'           endpoints = "auclast", regulator = "EMA")
+#'           endpoints = "cmax", regulator = "EMA")
 #' @export
 be_assess <- function(object, ...) {
   UseMethod("be_assess")
@@ -2348,12 +2642,12 @@ be_assess.default <- function(object, reference_col, reference_value,
                               endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
                               regulator = "ABE", model_type = NULL, alpha = 0.10,
                               subject = NULL, sequence = NULL, period = NULL, design = NULL,
-                              covariates = NULL, heteroscedastic = FALSE, ...) {
+                              covariates = NULL, heteroscedastic = FALSE, widen_endpoints = NULL, ...) {
   out <- be_fit_models(
     object, reference_col = reference_col, reference_value = reference_value,
     endpoints = endpoints, regulator = regulator, model_type = model_type, alpha = alpha,
     subject = subject, sequence = sequence, period = period, design = design,
-    covariates = covariates, heteroscedastic = heteroscedastic
+    covariates = covariates, heteroscedastic = heteroscedastic, widen_endpoints = widen_endpoints
   )
   .be_assess_object(out, alpha)
 }
@@ -2405,7 +2699,7 @@ print.be_assess <- function(x, ...) {
 #' @export
 summary.be_assess <- function(object, ...) {
   d <- as.data.frame(object)
-  keep <- c("endpoint", "test", "gmr_percent", "ci_lower", "ci_upper", "pass")
+  keep <- c("endpoint", "test", "gmr_percent", "ci_lower", "ci_upper", "rule", "pass")
   out <- d[, intersect(keep, names(d)), drop = FALSE]
   out$gmr_percent <- round(out$gmr_percent, 2)
   out$ci_lower <- round(out$ci_lower, 2)
@@ -2462,7 +2756,7 @@ be_compare <- function(object, reference_col, reference_value,
                        regulators = c("ABE", "EMA", "HC", "GCC", "FDA"),
                        model_type = NULL, alpha = 0.10,
                        subject = NULL, sequence = NULL, period = NULL, design = NULL,
-                       covariates = NULL, heteroscedastic = FALSE) {
+                       covariates = NULL, heteroscedastic = FALSE, widen_endpoints = NULL) {
   # Input errors are raised here, once; inside the per-framework loop below they
   # would be reported as every framework being skipped.  The choices come from
   # be_regulator() and be_fit_model_single() so there is one list of each.
@@ -2473,10 +2767,11 @@ be_compare <- function(object, reference_col, reference_value,
   checkmate::assert_flag(heteroscedastic)
   # be_dataset() validates the data, columns, and covariates; be_assess()
   # repeats its warnings for each framework, so they are not shown twice.
-  suppressWarnings(
+  ds <- suppressWarnings(
     be_dataset(object, reference_col, reference_value, endpoints, subject, sequence, period,
                covariates = covariates)
   )
+  .be_check_widen_endpoints(widen_endpoints, ds$endpoints)
   results <- list()
   units_missing <- FALSE
   for (rg in regulators) {
@@ -2487,7 +2782,9 @@ be_compare <- function(object, reference_col, reference_value,
           object, reference_col = reference_col, reference_value = reference_value,
           endpoints = endpoints, regulator = rg, model_type = model_type, alpha = alpha,
           subject = subject, sequence = sequence, period = period, design = design,
-          covariates = covariates, heteroscedastic = heteroscedastic
+          covariates = covariates, heteroscedastic = heteroscedastic,
+          # Only the expanding-limits frameworks widen.
+          widen_endpoints = if (identical(be_regulator(rg)$scaling, "abel")) widen_endpoints
         ),
         silent = TRUE
       ),
@@ -2542,7 +2839,7 @@ print.be_compare <- function(x, ...) {
   d <- as.data.frame(x)
   show <- c(
     "regulator", "endpoint", "test", "gmr_percent", "ci_lower", "ci_upper",
-    "cvwr_percent", "limit_lower", "limit_upper", "criterion", "pass"
+    "cvwr_percent", "rule", "limit_lower", "limit_upper", "criterion", "pass"
   )
   d <- d[, intersect(show, names(d)), drop = FALSE]
   for (cc in intersect(c("gmr_percent", "ci_lower", "ci_upper", "cvwr_percent", "limit_lower", "limit_upper"), names(d))) {

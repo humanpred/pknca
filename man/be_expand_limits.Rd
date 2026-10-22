@@ -22,15 +22,17 @@ percentages.
 \description{
 \code{be_expand_limits()} computes the (possibly widened) bioequivalence
 acceptance limits for a scaled-ABE framework given the within-reference
-standard deviation.  For EMA and Health Canada the limits widen
-geometrically with \code{swR} and are capped; for the GCC they jump to a fixed
-wider band; below the switching variability they remain the conventional
-80.00-125.00\%.
+standard deviation.  The limits widen geometrically with \code{swR} as
+\verb{exp(+/- k * swR)} and are capped; below the switching variability they
+remain the conventional 80.00-125.00\%.  They apply to the endpoints the
+framework widens (Cmax for the EMA and GCC, AUC for Health Canada; see
+\code{\link[=be_regulator]{be_regulator()}} for the sources); \code{\link[=be_assess]{be_assess()}} keeps the other endpoints
+at 80.00-125.00\%.
 }
 \examples{
-be_expand_limits(0.485, "EMA") # capped expansion
+be_expand_limits(0.485, "EMA") # capped expansion (69.84-143.19\%)
 be_expand_limits(0.20, "EMA")  # below the switch: 80-125\%
-be_expand_limits(0.40, "GCC")  # fixed GCC band
+be_expand_limits(0.60, "HC")   # Health Canada cap (66.7-150.0\%)
 }
 \seealso{
 \code{\link[=be_regulator]{be_regulator()}}, \code{\link[=be_assess]{be_assess()}}
