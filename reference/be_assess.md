@@ -160,10 +160,39 @@ study (repeated measures per subject) uses the mixed model (`"lmer"`)
 for the geometric mean ratio and its confidence interval. The FDA
 reference-scaled frameworks (FDA RSABE, NTID, HVNTID) always use
 intra-subject contrasts (`"isc"`), as the guidances specify, regardless
-of design. Pass `model_type` to override (`"lmer"`, `"anova"`, `"isc"`,
-`"nlme"`, or `"gls"`). Within-subject variability uses the regulatory
-ANOVA estimator for the `"lmer"`/`"anova"`/`"isc"` paths and the
-treatment-specific mixed-model estimator for `"nlme"`.
+of design. Each subject's contrast is its mean log test minus its mean
+log reference, from the subjects with every test and reference
+administration their sequence calls for; the ratio is the unweighted
+mean of the sequence means of the contrasts, with `n - m` degrees of
+freedom for `n` subjects in `m` sequences (FDA draft guidances on
+progesterone and warfarin sodium). Without a sequence column, a
+subject's sequence is its treatment-by-period pattern. The unscaled
+80.00-125.00% criterion of these frameworks (FDA RSABE when
+`swR < 0.294`, NTID, and HVNTID) uses the model of `model_type`; the
+default `"isc"` is the guidance mixed-effects model for replicate
+designs: fixed sequence, period, and treatment effects, correlated
+treatment random effects for each subject, a residual variance per
+treatment, REML, and Satterthwaite degrees of freedom (SAS
+`RANDOM TRT/TYPE=FA0(2)`, `REPEATED/GRP=TRT`). A formulation that no
+subject receives twice has its residual variance folded into its
+between-subject variance, where the guidance model is over-specified,
+and a subject missing a period forms its own sequence when the sequence
+is derived from the treatment pattern. When the mixed model cannot be
+fit (for example, a formulation whose replicates agree exactly), only a
+decision that needs the unscaled criterion stops with an error. Each row
+shows the ratio and interval its decision used: the intra-subject
+contrasts for the reference-scaled criterion and the model for the
+unscaled one. Pass `model_type` to override (`"lmer"`, `"anova"`,
+`"isc"`, `"nlme"`, or `"gls"`); with `"isc"` the FDA mixed model also
+gives the ratio for the other frameworks, and a design without a
+replicated formulation keeps the fixed-effects ANOVA ratio.
+Within-subject variability for the FDA frameworks uses the FDA estimator
+from within-sequence differences between replicate administrations
+(`model_type = "isc"` in
+[`be_within_var()`](https://humanpred.github.io/pknca/reference/be_within_var.md));
+for the other frameworks it uses the EMA ANOVA estimator for the
+`"lmer"`/`"anova"`/`"isc"` paths and the treatment-specific mixed-model
+estimator for `"nlme"`.
 
 With `heteroscedastic = TRUE` the residual variance is estimated
 separately for each treatment: a crossover or replicate study uses

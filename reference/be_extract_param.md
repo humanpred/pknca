@@ -3,10 +3,11 @@
 `be_extract_param()` turns a
 [`be_fit_model_single()`](https://humanpred.github.io/pknca/reference/be_fit_model_single.md)
 fit into the parameters the regulatory decision needs. It always
-computes the intra-subject-contrast (ISC) point estimate, then
-dispatches on the model type to extract the model-based geometric means,
-the geometric mean ratio and its confidence interval, and the
-within-formulation standard deviations.
+computes the intra-subject-contrast (ISC) point estimate and the FDA
+within-formulation standard deviations, then dispatches on the model
+type to extract the model-based geometric means, the geometric mean
+ratio and its confidence interval, and the model's within-formulation
+standard deviations.
 
 ## Usage
 
@@ -34,7 +35,10 @@ be_extract_param(fit, ds_ep, alpha = 0.1)
 
 A data.frame with one row per test formulation, carrying the model and
 ISC point estimates/intervals, geometric means, and within-formulation
-variances.
+variances: `swr`, `swt`, `cvwr_percent`, `cvwt_percent`, `df_wr`,
+`df_wt`, `sw_ratio`, and `sw_ratio_ci_upper` from the model's estimator,
+and the same columns prefixed `isc_` from the FDA estimator (see
+[`be_within_var()`](https://humanpred.github.io/pknca/reference/be_within_var.md)).
 
 ## See also
 

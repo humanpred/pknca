@@ -148,10 +148,10 @@ be_compare(d, reference_col = "treatment", reference_value = "R",
 #>        EMA  auclast    T          98    85.72   112.04        34.11       77.71
 #>         HC  auclast    T          98    85.72   112.04        34.11       77.71
 #>        GCC  auclast    T          98    85.72   112.04        34.11       75.00
-#>        FDA  auclast    T          98    85.75   112.00        34.11          NA
+#>        FDA  auclast    T          98    85.48   112.35        34.11          NA
 #>  limit_upper criterion pass
 #>       128.68        NA TRUE
 #>       128.68        NA TRUE
 #>       133.33        NA TRUE
-#>           NA  -0.05081 TRUE
+#>           NA  -0.05022 TRUE
 ```

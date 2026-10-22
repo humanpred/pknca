@@ -4,13 +4,19 @@ dispatches on model_type to be_fit_model_lmer(), be_fit_model_nlme(),
 be_fit_model_gls(), or be_fit_model_anova().  This is the only place
 model fitting happens.  For the "lmer", "anova", and "isc" types the
 within-formulation ANOVA variances are also fit here; for "nlme" they come
-from the single mixed model.  Covariate columns carried by be_dataset()
+from the single mixed model.  The "isc" type, the FDA path, also fits the
+FDA mixed-effects model for the unscaled ratio (treatment-specific
+between- and within-subject variances, Satterthwaite degrees of freedom, as
+in the FDA progesterone and warfarin guidance SAS code).  Covariate columns carried by be_dataset()
 (.cov_&amp;lt;name&amp;gt;) enter every model as additive fixed effects.'><meta property="og:description" content='be_fit_model_single() fits the average-BE model for a single endpoint and
 dispatches on model_type to be_fit_model_lmer(), be_fit_model_nlme(),
 be_fit_model_gls(), or be_fit_model_anova().  This is the only place
 model fitting happens.  For the "lmer", "anova", and "isc" types the
 within-formulation ANOVA variances are also fit here; for "nlme" they come
-from the single mixed model.  Covariate columns carried by be_dataset()
+from the single mixed model.  The "isc" type, the FDA path, also fits the
+FDA mixed-effects model for the unscaled ratio (treatment-specific
+between- and within-subject variances, Satterthwaite degrees of freedom, as
+in the FDA progesterone and warfarin guidance SAS code).  Covariate columns carried by be_dataset()
 (.cov_&amp;lt;name&amp;gt;) enter every model as additive fixed effects.'></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
@@ -77,7 +83,10 @@ dispatches on <code>model_type</code> to <code>be_fit_model_lmer()</code>, <code
 <code>be_fit_model_gls()</code>, or <code>be_fit_model_anova()</code>.  This is the only place
 model fitting happens.  For the <code>"lmer"</code>, <code>"anova"</code>, and <code>"isc"</code> types the
 within-formulation ANOVA variances are also fit here; for <code>"nlme"</code> they come
-from the single mixed model.  Covariate columns carried by <code><a href="be_dataset.html">be_dataset()</a></code>
+from the single mixed model.  The <code>"isc"</code> type, the FDA path, also fits the
+FDA mixed-effects model for the unscaled ratio (treatment-specific
+between- and within-subject variances, Satterthwaite degrees of freedom, as
+in the FDA progesterone and warfarin guidance SAS code).  Covariate columns carried by <code><a href="be_dataset.html">be_dataset()</a></code>
 (<code>.cov_&lt;name&gt;</code>) enter every model as additive fixed effects.</p>
     </div>
 
@@ -100,9 +109,10 @@ from the single mixed model.  Covariate columns carried by <code><a href="be_dat
 
 
 <dt id="arg-model-type">model_type<a class="anchor" aria-label="anchor" href="#arg-model-type"></a></dt>
-<dd><p>One of <code>"lmer"</code>, <code>"nlme"</code>, <code>"anova"</code>, <code>"isc"</code> (the
-intra-subject-contrast path, fit like <code>"anova"</code>), or <code>"gls"</code> (generalized
-least squares with treatment-specific residual variances, for parallel
+<dd><p>One of <code>"lmer"</code>, <code>"nlme"</code>, <code>"anova"</code>, <code>"isc"</code> (the FDA
+path: <code>"anova"</code> for the geometric means plus, for a replicate design, the
+FDA mixed-effects model for the ratio), or <code>"gls"</code> (generalized least
+squares with treatment-specific residual variances, for parallel
 designs).</p></dd>
 
 
@@ -114,8 +124,9 @@ the within-formulation variances are estimated).</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>An object of class <code>be_fit</code>: a list with <code>model_type</code>, the fitted
-<code>model</code>, and (for lmer/anova/isc) <code>ref_var</code>/<code>test_var</code> within-formulation
-ANOVA variances.  The endpoint's measurement units are attached as a <code>units</code>
+<code>model</code>, (for lmer/anova/isc) <code>ref_var</code>/<code>test_var</code> within-formulation
+ANOVA variances, and (for isc with repeated measures) <code>fda</code>, the FDA
+mixed-model estimates.  The endpoint's measurement units are attached as a <code>units</code>
 attribute (<code>NULL</code> when not provided).</p>
     </div>
     <div class="section level2">

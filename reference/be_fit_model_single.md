@@ -5,8 +5,11 @@ and dispatches on `model_type` to `be_fit_model_lmer()`,
 `be_fit_model_nlme()`, `be_fit_model_gls()`, or `be_fit_model_anova()`.
 This is the only place model fitting happens. For the `"lmer"`,
 `"anova"`, and `"isc"` types the within-formulation ANOVA variances are
-also fit here; for `"nlme"` they come from the single mixed model.
-Covariate columns carried by
+also fit here; for `"nlme"` they come from the single mixed model. The
+`"isc"` type, the FDA path, also fits the FDA mixed-effects model for
+the unscaled ratio (treatment-specific between- and within-subject
+variances, Satterthwaite degrees of freedom, as in the FDA progesterone
+and warfarin guidance SAS code). Covariate columns carried by
 [`be_dataset()`](https://humanpred.github.io/pknca/reference/be_dataset.md)
 (`.cov_<name>`) enter every model as additive fixed effects.
 
@@ -30,10 +33,11 @@ be_fit_model_single(
 
 - model_type:
 
-  One of `"lmer"`, `"nlme"`, `"anova"`, `"isc"` (the
-  intra-subject-contrast path, fit like `"anova"`), or `"gls"`
-  (generalized least squares with treatment-specific residual variances,
-  for parallel designs).
+  One of `"lmer"`, `"nlme"`, `"anova"`, `"isc"` (the FDA path: `"anova"`
+  for the geometric means plus, for a replicate design, the FDA
+  mixed-effects model for the ratio), or `"gls"` (generalized least
+  squares with treatment-specific residual variances, for parallel
+  designs).
 
 - scaling:
 
@@ -43,9 +47,10 @@ be_fit_model_single(
 ## Value
 
 An object of class `be_fit`: a list with `model_type`, the fitted
-`model`, and (for lmer/anova/isc) `ref_var`/`test_var`
-within-formulation ANOVA variances. The endpoint's measurement units are
-attached as a `units` attribute (`NULL` when not provided).
+`model`, (for lmer/anova/isc) `ref_var`/`test_var` within-formulation
+ANOVA variances, and (for isc with repeated measures) `fda`, the FDA
+mixed-model estimates. The endpoint's measurement units are attached as
+a `units` attribute (`NULL` when not provided).
 
 ## See also
 

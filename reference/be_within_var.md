@@ -4,14 +4,23 @@
 the log-transformed endpoint separately for the reference (`swR`) and
 test (`swT`) formulations, the quantities that reference-scaling
 frameworks need. The default `model_type = "anova"` is an analysis of
-variance (ANOVA) of the replicate observations within each formulation;
-this is the estimator used by both Method A and Method B of the EMA
-`replicateBE` reference implementation and by the FDA moment-based
-approach, and it works for full and partial replicate designs.
+variance (ANOVA) of the replicate observations within each formulation
+with subject and period effects; this is the estimator used by both
+Method A and Method B of the EMA `replicateBE` reference implementation,
+and it works for full and partial replicate designs.
+`model_type = "isc"` is the estimator of the FDA progesterone and
+warfarin guidances, used by the FDA frameworks in
+[`be_assess()`](https://humanpred.github.io/pknca/reference/be_assess.md):
+each subject's difference between its two administrations of a
+formulation, centered within sequence, so that
+`s2wR = sum((D - mean D within sequence)^2) / (2 * (n - m))` on `n - m`
+degrees of freedom for `n` subjects in `m` sequences. It equals the
+`"anova"` estimate for a two-sequence full replicate (`TRTR`/`RTRT`) and
+differs for a partial replicate (`TRR`/`RTR`/`RRT`), where the period
+effects of the reference administrations differ by sequence.
 `model_type = "nlme"` instead fits a single mixed model with
 treatment-specific residual variances and requires a fully replicated
-design; it is provided as the alternative described in the FDA
-progesterone guidance and can differ slightly from `"anova"`.
+design; it can differ slightly from `"anova"`.
 
 ## Usage
 
@@ -23,8 +32,9 @@ be_within_var(
   period,
   treatment,
   reference_value,
-  model_type = c("anova", "nlme"),
-  alpha = 0.1
+  model_type = c("anova", "nlme", "isc"),
+  alpha = 0.1,
+  sequence = NULL
 )
 ```
 
@@ -50,15 +60,21 @@ be_within_var(
 
 - model_type:
 
-  `"anova"` (the default and the regulatory standard) or `"nlme"` (mixed
-  model with treatment-specific residual variances; full replicate
-  only).
+  `"anova"` (the default; the EMA estimator), `"isc"` (the FDA
+  estimator), or `"nlme"` (mixed model with treatment-specific residual
+  variances; full replicate only).
 
 - alpha:
 
   The significance level for the `swT`/`swR` ratio confidence bound
   (default `0.10` gives the 90% upper bound used for narrow therapeutic
   index drugs).
+
+- sequence:
+
+  The column name of the randomization sequence, used by
+  `model_type = "isc"`. When `NULL`, a subject's sequence is its
+  treatment-by-period pattern.
 
 ## Value
 

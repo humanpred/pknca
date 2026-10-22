@@ -82,7 +82,7 @@
                         <h4 data-toc-skip class="author">Bill
 Denney</h4>
             
-            <h4 data-toc-skip class="date">2026-10-21</h4>
+            <h4 data-toc-skip class="date">2026-10-22</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/humanpred/pknca/blob/main/vignettes/v50-bioequivalence.Rmd" class="external-link"><code>vignettes/v50-bioequivalence.Rmd</code></a></small>
       <div class="d-none name"><code>v50-bioequivalence.Rmd</code></div>
@@ -149,7 +149,23 @@ the regulator</strong>; pass <code>model_type</code> to
 measurement per subject) is analyzed by a fixed-effects ANOVA, while a
 crossover or replicate study (repeated measures per subject) uses the
 mixed model. The FDA reference-scaled family always uses intra-subject
-contrasts (<code>"isc"</code>) regardless of design.</p>
+contrasts (<code>"isc"</code>) regardless of design: each subject’s mean
+log test minus mean log reference, from the subjects with every
+administration their sequence calls for, averaged with equal weight per
+sequence and with <code>n - m</code> degrees of freedom (<code>n</code>
+subjects, <code>m</code> sequences), as the FDA progesterone and
+warfarin guidances specify. Their within-subject variability comes from
+each subject’s difference between its two administrations of a
+formulation, centered within sequence
+(<code>be_within_var(model_type = "isc")</code>); the expanding-limits
+frameworks use the EMA ANOVA estimator. The two agree for a
+<code>TRTR</code>/<code>RTRT</code> full replicate. The unscaled
+80.00-125.00% criterion of the FDA frameworks (RSABE below the switching
+variability, NTID, and HVNTID) uses the guidance’s mixed-effects model,
+with correlated treatment random effects per subject, a residual
+variance per treatment, and Satterthwaite degrees of freedom; with
+complete data it gives the same ratio and interval as the intra-subject
+contrasts.</p>
 <table class="table">
 <colgroup>
 <col width="25%">
@@ -780,11 +796,11 @@ reference-scaled criterion instead reports the linearized bound
 </tr></thead>
 <tbody><tr class="odd">
 <td align="right">93.5978</td>
-<td align="right">82.4596</td>
-<td align="right">106.2405</td>
+<td align="right">82.294</td>
+<td align="right">106.4543</td>
 <td align="right">52.2889</td>
 <td align="right">0.4916</td>
-<td align="right">-0.1159</td>
+<td align="right">-0.1156</td>
 <td align="left">TRUE</td>
 </tr></tbody>
 </table>
@@ -853,9 +869,9 @@ replicated design.</li>
 <li>
 <strong><code>covariates</code></strong> names columns added to
 every model as additive fixed effects. The least-squares means are then
-at the mean of numeric covariates. The intra-subject contrasts used by
-the FDA frameworks and the within-subject variances used for reference
-scaling do not use covariates.</li>
+at the mean of numeric covariates. The intra-subject contrasts and the
+FDA mixed model used by the FDA frameworks and the within-subject
+variances used for reference scaling do not use covariates.</li>
 <li>
 <strong><code>regulator = "descriptive"</code></strong> estimates
 the geometric means, their ratio, and its confidence interval exactly as

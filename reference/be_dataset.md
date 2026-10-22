@@ -106,6 +106,13 @@ supplies units the same way by including the corresponding
 `PPSTRESU`/`PPORRESU` column. When no units column is present, units are
 unavailable and the `units` column is omitted from the assessment table.
 
+The subject, period, treatment, and (when present) sequence may not be
+missing in any row of the requested endpoints that is analyzed, and each
+subject must have a single sequence; otherwise `be_dataset()` stops with
+an error rather than letting a model drop those rows. In a parallel
+design (one row per subject and endpoint) only the subject and treatment
+are checked, because the sequence and period enter no model.
+
 Each covariate is copied to a standardized column named `.cov_<name>`
 (character columns become factors). A covariate may not be one of the
 subject, sequence, period, treatment, or value columns, and it may not
