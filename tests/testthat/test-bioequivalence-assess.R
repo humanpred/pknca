@@ -328,8 +328,15 @@ test_that(".be_isc with a single sequence is the mean of the contrasts", {
   expect_equal(isc$se, stats::sd(ilat) / sqrt(12), tolerance = 1e-12)
   expect_equal(isc$df, 11)
   expect_equal(isc$n, 12)
-  # The ISC is computed for every regulator, so average bioequivalence on the
-  # same design must still run.
+  # be_extract_param() computes the ISC through .be_isc_or_na() for every model
+  # and regulator, so it must return the estimate rather than fail.
+  expect_identical(.be_isc_or_na(be_isc_work(d), "R", "T", alpha = 0.10), isc)
+  # End to end, average bioequivalence on this design uses the mixed model
+  # (treatment is aliased with period in the fixed-effects ANOVA), which needs
+  # the suggested packages.
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("lmerTest")
+  skip_if_not_installed("emmeans")
   abe <- suppressMessages(be_assess(be_replicate_long(d), "treatment", "R", "auclast", regulator = "ABE"))
   expect_equal(abe$gmr_percent, 100 * exp(mean(ilat)), tolerance = 1e-8)
 })
