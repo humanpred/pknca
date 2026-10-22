@@ -272,8 +272,8 @@ once.  PKNCA implements the major frameworks through `be_assess()`:
 All regulatory constants are built into PKNCA (see `be_regulator()`, which
 lists the sources); no external package is required.  The `rule` column of the
 results names the criterion each row used.  For a modified-release product,
-the EMA also allows widening C~tau,ss~ and partial AUCs; name those endpoints in
-`widen_endpoints`.
+the EMA also allows widening C~tau,ss~ and partial AUCs; list those endpoints,
+with `"cmax"`, in `widen_endpoints`, which replaces the framework's own choice.
 
 ### A replicate-design study
 

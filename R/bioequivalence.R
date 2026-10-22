@@ -44,7 +44,8 @@
 #'   allows the same widening for Cmax,ss, Ctau,ss, and partial AUCs
 #'   ([EMA Guideline on the Pharmacokinetic and Clinical Evaluation of Modified Release Dosage Forms](https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-pharmacokinetic-and-clinical-evaluation-modified-release-dosage-forms_en.pdf),
 #'   section 6.8.2.2); PKNCA cannot tell those endpoints from their names, so
-#'   name them in the `widen_endpoints` argument of [be_assess()].
+#'   list them, with `"cmax"`, in the `widen_endpoints` argument of
+#'   [be_assess()].
 #' * **HC** -- Health Canada.  ABEL for **AUC only**: the 90% confidence
 #'   interval within limits widened as `exp(+/- 0.76 * swR)` when
 #'   `swR > 0.294` (`CVwR > 30%`), capped at 66.7-150.0% (`CVwR = 57.4%`), with
@@ -337,10 +338,16 @@ be_expand_limits <- function(swR, regulator) {
     return(default)
   }
   # Widen as exp(+/- k * swR), capping swR at the value implied by the
-  # framework's CV cap.
+  # framework's CV cap.  k = 0.76 is rounded down from
+  # log(1.25) / sqrt(log(1 + 0.30^2)) = 0.76012, so just above the switch the
+  # formula is fractionally narrower than 80-125%; the limits never narrow
+  # below the conventional ones (PowerTOST's scABEL() does not clamp).
   swr_cap <- sqrt(log(1 + reg$cvcap^2))
   swr_eff <- min(swR, swr_cap)
-  c(lower = exp(-reg$r_const * swr_eff) * 100, upper = exp(reg$r_const * swr_eff) * 100)
+  c(
+    lower = min(exp(-reg$r_const * swr_eff) * 100, default[["lower"]]),
+    upper = max(exp(reg$r_const * swr_eff) * 100, default[["upper"]])
+  )
 }
 
 # Median, over subjects, of the number of times a subject received `level`.
@@ -1094,7 +1101,7 @@ print.be_within_var <- function(x, ...) {
 # no concept; they are listed in the "unclassified" attribute when
 # `widen_endpoints` is not given.  Other frameworks get NA for every endpoint.
 .be_endpoint_rules <- function(endpoints, reg, widen_endpoints = NULL) {
-  endpoints <- unique(endpoints)
+  endpoints <- unique(as.character(endpoints))
   rules <- stats::setNames(rep(NA_character_, length(endpoints)), endpoints)
   if (!identical(reg$scaling, "abel")) {
     return(rules)
@@ -1117,7 +1124,7 @@ print.be_within_var <- function(x, ...) {
   if (is.null(widen_endpoints)) {
     return(invisible(NULL))
   }
-  checkmate::assert_character(widen_endpoints, any.missing = FALSE, min.len = 1, unique = TRUE)
+  checkmate::assert_character(widen_endpoints, any.missing = FALSE, unique = TRUE)
   unknown <- setdiff(widen_endpoints, endpoints)
   if (length(unknown) > 0) {
     rlang::abort(
@@ -2048,7 +2055,7 @@ be_extract_param_isc <- function(fit, ds_ep, alpha = 0.10) {
 be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, model_type = NA_character_,
                      widen_endpoints = NULL) {
   reg <- if (inherits(regulator, "be_regulator")) regulator else be_regulator(regulator)
-  .be_check_widen_endpoints(widen_endpoints, unique(params$endpoint), reg)
+  .be_check_widen_endpoints(widen_endpoints, unique(as.character(params$endpoint)), reg)
   rules <- .be_endpoint_rules(params$endpoint, reg, widen_endpoints)
   for (ep in attr(rules, "unclassified")) {
     rlang::warn(
@@ -2086,7 +2093,7 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
         class = "pknca_error_be_isc_insufficient"
       )
     }
-    dec <- .be_decide(est, wv, reg, alpha, unscaled = model_est, endpoint_rule = rules[[p$endpoint]])
+    dec <- .be_decide(est, wv, reg, alpha, unscaled = model_est, endpoint_rule = rules[[as.character(p$endpoint)]])
     rows[[length(rows) + 1]] <-
       data.frame(
         endpoint = p$endpoint, test = p$test, n = p$n, design = design, units = p$units,
@@ -2456,9 +2463,10 @@ be_fit_models <- function(object, reference_col, reference_value,
 #' widen Cmax, and Health Canada widens AUC and judges Cmax by its point
 #' estimate alone.  Every other endpoint needs its confidence interval within
 #' 80.00-125.00%.  The `rule` column names the criterion each row used.
-#' `widen_endpoints` replaces the endpoints that widen, for example to widen
-#' Ctau,ss or a partial AUC of a modified-release product under the EMA
-#' modified-release guideline.
+#' `widen_endpoints` replaces the endpoints that widen: for example
+#' `c("cmax", "ctrough")` widens Ctau,ss as well as Cmax under the EMA
+#' modified-release guideline, and `character()` widens nothing (the EMA
+#' allows widening only when the protocol specifies it).
 #'
 #' For the results of a sparse bootstrap (Shen and Machado 2017; see
 #' [sparse_bootstrap()]), there is one estimate per treatment, from the sparse
@@ -2518,14 +2526,15 @@ be_fit_models <- function(object, reference_col, reference_value,
 #' @param heteroscedastic Logical.  When `TRUE`, estimate a separate residual
 #'   variance for each treatment (see Details).
 #' @param widen_endpoints For the expanding-limits frameworks (`"EMA"`, `"HC"`,
-#'   and `"GCC"`), the endpoints whose acceptance limits widen, replacing the
-#'   framework's own choice (Cmax for the EMA and GCC, AUC for Health Canada;
-#'   see [be_regulator()]).  Use it for an endpoint that the guidance widens but
-#'   PKNCA cannot recognize from its name, such as Ctau,ss or a partial AUC of a
+#'   and `"GCC"`), the endpoints whose acceptance limits widen.  It replaces
+#'   the framework's own choice (Cmax for the EMA and GCC, AUC for Health
+#'   Canada; see [be_regulator()]), so list those endpoints too to keep them
+#'   widened.  Use it for an endpoint that the guidance widens but PKNCA cannot
+#'   recognize from its name, such as Ctau,ss or a partial AUC of a
 #'   modified-release product (EMA), or an endpoint that is not a PKNCA
-#'   parameter.  `NULL` (the default) uses the framework's choice.  Giving it
-#'   for another framework is an error; [be_compare()] passes it to the
-#'   expanding-limits frameworks only.
+#'   parameter; `character()` widens none.  `NULL` (the default) uses the
+#'   framework's choice.  Giving it for another framework is an error;
+#'   [be_compare()] passes it to the expanding-limits frameworks only.
 #' @returns An object of class `be_assess` (a data.frame), ordered by endpoint
 #'   (in the order requested) then by test formulation (reference-first), with
 #'   one row per endpoint and test formulation and the columns `endpoint`,
@@ -2635,7 +2644,7 @@ print.be_assess <- function(x, ...) {
 #' @export
 summary.be_assess <- function(object, ...) {
   d <- as.data.frame(object)
-  keep <- c("endpoint", "test", "gmr_percent", "ci_lower", "ci_upper", "pass")
+  keep <- c("endpoint", "test", "gmr_percent", "ci_lower", "ci_upper", "rule", "pass")
   out <- d[, intersect(keep, names(d)), drop = FALSE]
   out$gmr_percent <- round(out$gmr_percent, 2)
   out$ci_lower <- round(out$ci_lower, 2)

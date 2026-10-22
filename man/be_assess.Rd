@@ -40,6 +40,7 @@ be_assess(object, ...)
   design = NULL,
   covariates = NULL,
   heteroscedastic = FALSE,
+  widen_endpoints = NULL,
   ...
 )
 }
@@ -96,14 +97,15 @@ use covariates.}
 variance for each treatment (see Details).}
 
 \item{widen_endpoints}{For the expanding-limits frameworks (\code{"EMA"}, \code{"HC"},
-and \code{"GCC"}), the endpoints whose acceptance limits widen, replacing the
-framework's own choice (Cmax for the EMA and GCC, AUC for Health Canada;
-see \code{\link[=be_regulator]{be_regulator()}}).  Use it for an endpoint that the guidance widens but
-PKNCA cannot recognize from its name, such as Ctau,ss or a partial AUC of a
+and \code{"GCC"}), the endpoints whose acceptance limits widen.  It replaces
+the framework's own choice (Cmax for the EMA and GCC, AUC for Health
+Canada; see \code{\link[=be_regulator]{be_regulator()}}), so list those endpoints too to keep them
+widened.  Use it for an endpoint that the guidance widens but PKNCA cannot
+recognize from its name, such as Ctau,ss or a partial AUC of a
 modified-release product (EMA), or an endpoint that is not a PKNCA
-parameter.  \code{NULL} (the default) uses the framework's choice.  Giving it
-for another framework is an error; \code{\link[=be_compare]{be_compare()}} passes it to the
-expanding-limits frameworks only.}
+parameter; \code{character()} widens none.  \code{NULL} (the default) uses the
+framework's choice.  Giving it for another framework is an error;
+\code{\link[=be_compare]{be_compare()}} passes it to the expanding-limits frameworks only.}
 }
 \value{
 An object of class \code{be_assess} (a data.frame), ordered by endpoint
@@ -195,9 +197,10 @@ guidances specify (see \code{\link[=be_regulator]{be_regulator()}} for the sourc
 widen Cmax, and Health Canada widens AUC and judges Cmax by its point
 estimate alone.  Every other endpoint needs its confidence interval within
 80.00-125.00\%.  The \code{rule} column names the criterion each row used.
-\code{widen_endpoints} replaces the endpoints that widen, for example to widen
-Ctau,ss or a partial AUC of a modified-release product under the EMA
-modified-release guideline.
+\code{widen_endpoints} replaces the endpoints that widen: for example
+\code{c("cmax", "ctrough")} widens Ctau,ss as well as Cmax under the EMA
+modified-release guideline, and \code{character()} widens nothing (the EMA
+allows widening only when the protocol specifies it).
 
 For the results of a sparse bootstrap (Shen and Machado 2017; see
 \code{\link[=sparse_bootstrap]{sparse_bootstrap()}}), there is one estimate per treatment, from the sparse

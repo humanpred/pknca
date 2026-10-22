@@ -51,7 +51,8 @@ rounded to three decimals.  For modified-release products the EMA also
 allows the same widening for Cmax,ss, Ctau,ss, and partial AUCs
 (\href{https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-pharmacokinetic-and-clinical-evaluation-modified-release-dosage-forms_en.pdf}{EMA Guideline on the Pharmacokinetic and Clinical Evaluation of Modified Release Dosage Forms},
 section 6.8.2.2); PKNCA cannot tell those endpoints from their names, so
-name them in the \code{widen_endpoints} argument of \code{\link[=be_assess]{be_assess()}}.
+list them, with \code{"cmax"}, in the \code{widen_endpoints} argument of
+\code{\link[=be_assess]{be_assess()}}.
 \item \strong{HC} -- Health Canada.  ABEL for \strong{AUC only}: the 90\% confidence
 interval within limits widened as \verb{exp(+/- 0.76 * swR)} when
 \code{swR > 0.294} (\verb{CVwR > 30\%}), capped at 66.7-150.0\% (\verb{CVwR = 57.4\%}), with

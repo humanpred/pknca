@@ -482,12 +482,19 @@ test_that("Health Canada judges Cmax by its point estimate alone", {
   expect_equal(c(hc$limit_lower, hc$limit_upper), c(80, 125))
   expect_identical(hc$rule, "PE")
   expect_true(hc$pass)
+  # The summary keeps the rule that explains the pass.
+  expect_identical(summary(hc)$rule, "PE")
   # The test effect enters only the test rows, so the ratio scales exactly.
   g_low <- generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40, gmr = 0.85)
   hc_low <- be_assess(be_replicate_long(g_low, "cmax"), "treatment", "R", "cmax", regulator = "HC", model_type = "anova")
   expect_equal(hc_low$gmr_percent, 88.359573 * 0.85 / 1.05, tolerance = 1e-5)
   expect_identical(hc_low$rule, "PE")
   expect_false(hc_low$pass)
+  g_high <- generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40, gmr = 1.50)
+  hc_high <- be_assess(be_replicate_long(g_high, "cmax"), "treatment", "R", "cmax", regulator = "HC", model_type = "anova")
+  expect_equal(hc_high$gmr_percent, 88.359573 * 1.50 / 1.05, tolerance = 1e-5)
+  expect_identical(hc_high$rule, "PE")
+  expect_false(hc_high$pass)
 })
 
 test_that("a widened endpoint below the switching variability uses ABE", {
@@ -521,6 +528,46 @@ test_that("widen_endpoints replaces the endpoints that widen", {
     widen_endpoints = "cmax"
   )
   expect_identical(stats::setNames(hc_cmax$rule, hc_cmax$endpoint), c(cmax = "ABEL", auclast = "ABE"))
+  # An empty set widens nothing.
+  ema_none <- be_assess(
+    d, "treatment", "R", c("cmax", "auclast"), regulator = "EMA", model_type = "anova",
+    widen_endpoints = character()
+  )
+  expect_identical(ema_none$rule, c("ABE", "ABE"))
+  expect_equal(ema_none$limit_lower, c(80, 80))
+})
+
+test_that("a factor endpoint column is classified by its label", {
+  d <- be_replicate_long(generate_be_replicate(24, 20240501, "full"), "cmax")
+  ds <- be_dataset(d, "treatment", "R", "cmax")
+  ds_ep <- ds$data[ds$data$PPTESTCD == "cmax", ]
+  p <- be_extract_param(be_fit_model_single(ds_ep, "anova"), ds_ep, alpha = 0.10)
+  p$endpoint <- "cmax"
+  p_factor <- p
+  p_factor$endpoint <- factor("cmax")
+  expect_identical(be_table(p_factor, "EMA")$rule, "ABEL")
+  expect_equal(be_table(p_factor, "EMA")$limit_lower, be_table(p, "EMA")$limit_lower)
+})
+
+test_that("the widened limits never narrow below 80.00-125.00%", {
+  # Just above the 30% switch (CVwR 30.001%), exp(-0.76 * swR) is 80.0024%,
+  # fractionally inside 80-125%.
+  swr <- sqrt(log(1 + 0.30001^2))
+  expect_equal(exp(-0.76 * swr) * 100, 80.0024, tolerance = 1e-6)
+  for (rg in c("EMA", "HC", "GCC")) {
+    expect_identical(unname(be_expand_limits(swr, rg)), c(80, 125), label = rg)
+  }
+})
+
+test_that("the endpoint concepts that the frameworks widen are the documented ones", {
+  concept <- parameter_classification()$concept
+  expect_setequal(names(concept)[concept %in% "peak_conc"], c("cmax", "cmax.dn"))
+  auc <- names(concept)[concept %in% "auc"]
+  expect_true(all(c(
+    "auclast", "aucall", "aucinf.obs", "aucinf.pred", "aucint.last", "aucint.inf.obs",
+    "auclast.dn", "aucinf.obs.dn", "sparse_auclast"
+  ) %in% auc))
+  expect_false(any(c("aumclast", "aucabove.trough.all", "cmin", "ctrough", "tmax") %in% auc))
 })
 
 test_that("widen_endpoints is checked against the endpoints and the framework", {
@@ -534,7 +581,8 @@ test_that("widen_endpoints is checked against the endpoints and the framework", 
     class = "pknca_error_be_widen_endpoints_not_abel"
   )
   expect_error(
-    be_assess(d, "treatment", "R", "cmax", regulator = "EMA", widen_endpoints = NA_character_)
+    be_assess(d, "treatment", "R", "cmax", regulator = "EMA", widen_endpoints = NA_character_),
+    regexp = "widen_endpoints"
   )
   # be_compare checks the endpoints once and passes widen_endpoints only to the
   # expanding-limits frameworks, so FDA is assessed rather than skipped.
@@ -679,12 +727,16 @@ test_that("be_assess warns about and skips missing endpoints", {
   )
 })
 
-test_that("be_assess accepts the reported PE-constraint failure", {
-  # GMR pushed above 125% so the point-estimate constraint fails even though the
-  # widened limits are very wide.
-  d <- be_replicate_long(generate_be_replicate(24, 11, "full", cv_wr = 0.5, cv_wt = 0.5, gmr = 1.35))
-  res <- be_assess(d, "treatment", "R", "auclast", regulator = "EMA", model_type = "anova")
-  expect_gt(res$gmr_percent, 125)
+test_that("be_assess (EMA) fails a widened endpoint on the point-estimate constraint", {
+  # The geometric mean ratio is above 125% while its confidence interval lies
+  # within the (capped) widened limits, so only the point-estimate constraint
+  # fails the decision.
+  d <- be_replicate_long(generate_be_replicate(64, 2, "full", cv_wr = 0.55, cv_wt = 0.05, gmr = 1.29), "cmax")
+  res <- be_assess(d, "treatment", "R", "cmax", regulator = "EMA", model_type = "anova")
+  expect_equal(res$gmr_percent, 129.6211, tolerance = 1e-6)
+  expect_equal(c(res$ci_lower, res$ci_upper), c(120.1078, 139.8879), tolerance = 1e-6)
+  expect_equal(c(res$limit_lower, res$limit_upper), c(69.83678, 143.19102), tolerance = 1e-6)
+  expect_identical(res$rule, "ABEL")
   expect_false(res$pass)
 })
 
