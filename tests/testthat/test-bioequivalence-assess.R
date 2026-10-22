@@ -17,13 +17,23 @@ test_that("be_regulator returns the documented constants for every framework", {
   expect_equal(ema$cvcap, 0.50)
   expect_true(ema$pe_constr)
 
+  expect_identical(ema$widen_concepts, "peak_conc")
+  expect_identical(ema$pe_only_concepts, character())
+
   hc <- be_regulator("HC")
   expect_equal(hc$r_const, 0.76)
   expect_equal(hc$cvcap, 0.57382)
+  expect_identical(hc$widen_concepts, "auc")
+  expect_identical(hc$pe_only_concepts, "peak_conc")
 
+  # GCC version 3.2 adopts the EMA rules.
   gcc <- be_regulator("GCC")
   expect_equal(gcc$scaling, "abel")
-  expect_equal(gcc$cvcap, 0.30)
+  expect_equal(gcc$cvswitch, 0.30)
+  expect_equal(gcc$r_const, 0.76)
+  expect_equal(gcc$cvcap, 0.50)
+  expect_identical(gcc$widen_concepts, "peak_conc")
+  expect_identical(gcc$pe_only_concepts, character())
 
   fda <- be_regulator("FDA")
   expect_equal(fda$scaling, "rsabe")
@@ -52,12 +62,15 @@ test_that("be_regulator rejects unknown frameworks", {
 # be_expand_limits ----------------------------------------------------------
 
 test_that("be_expand_limits reproduces the regulatory acceptance limits", {
-  # swR = 0.485616493 (CVwR 51.57%): EMA capped at 50%, HC uncapped, GCC fixed.
+  # swR = 0.485616493 (CVwR 51.57%): EMA and GCC capped at 50%, HC uncapped.
   expect_equal(unname(be_expand_limits(0.485616493, "EMA")), c(69.83678, 143.19102), tolerance = 1e-5)
   expect_equal(unname(be_expand_limits(0.485616493, "HC")), c(69.13780, 144.63867), tolerance = 1e-5)
-  expect_equal(unname(be_expand_limits(0.485616493, "GCC")), c(75, 400 / 3), tolerance = 1e-9)
-  # swR = 0.395143191 (CVwR 41.11%): EMA uncapped expansion.
+  expect_equal(unname(be_expand_limits(0.485616493, "GCC")), c(69.83678, 143.19102), tolerance = 1e-5)
+  # swR = 0.395143191 (CVwR 41.11%): uncapped expansion; the GCC version 3.2
+  # table gives 74.62-134.02% at CVwR 40%.
   expect_equal(unname(be_expand_limits(0.395143191, "EMA")), c(74.05895, 135.02757), tolerance = 1e-5)
+  expect_equal(unname(be_expand_limits(0.395143191, "GCC")), c(74.05895, 135.02757), tolerance = 1e-5)
+  expect_equal(unname(be_expand_limits(sqrt(log(1 + 0.40^2)), "GCC")), c(74.62, 134.02), tolerance = 1e-4)
 })
 
 test_that("be_expand_limits stays at 80-125% below the switching variability", {
@@ -71,8 +84,9 @@ test_that("be_expand_limits stays at 80-125% below the switching variability", {
 test_that("be_expand_limits caps at the framework maximum", {
   # Above the EMA cap (CVwR > 50%) the limits are fixed at 69.84-143.19%.
   expect_equal(unname(be_expand_limits(0.9, "EMA")), c(69.83678, 143.19102), tolerance = 1e-5)
-  # GCC is a fixed band for any CVwR above the switch.
-  expect_equal(unname(be_expand_limits(0.9, "GCC")), c(75, 400 / 3), tolerance = 1e-9)
+  expect_equal(unname(be_expand_limits(0.9, "GCC")), c(69.83678, 143.19102), tolerance = 1e-5)
+  # Health Canada caps at 66.7-150.0% (CVwR 57.4%).
+  expect_equal(unname(be_expand_limits(0.9, "HC")), c(66.67, 150.0), tolerance = 1e-4)
 })
 
 # be_design -----------------------------------------------------------------
@@ -409,26 +423,30 @@ test_that(".be_rsabe_bound matches the PowerTOST RSABE/NTID criterion formula", 
 # be_assess: expanding-limits frameworks (no oracle dependency) --------------
 
 test_that("be_assess (EMA) reproduces the reference scaling decision", {
-  d <- be_replicate_long(generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40))
+  d <- be_replicate_long(generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40), "cmax")
   # model_type = "anova" uses base-R fixed effects (no modeling-package dependency) and
   # matches the reference implementation's Method A exactly.
-  res <- be_assess(d, "treatment", "R", "auclast", regulator = "EMA", model_type = "anova")
+  res <- be_assess(d, "treatment", "R", "cmax", regulator = "EMA", model_type = "anova")
   expect_s3_class(res, "be_assess")
   expect_equal(res$gmr_percent, 88.359573, tolerance = 1e-5)
   expect_equal(c(res$ci_lower, res$ci_upper), c(75.617477, 103.248804), tolerance = 1e-4)
   expect_equal(res$cvwr_percent, 51.5704078, tolerance = 1e-5)
   expect_equal(c(res$limit_lower, res$limit_upper), c(69.83678, 143.19102), tolerance = 1e-4)
+  expect_identical(res$rule, "ABEL")
   expect_true(res$pass)
 })
 
 test_that("be_assess applies HC, GCC, and ABE limits correctly", {
-  d <- be_replicate_long(generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40))
+  g <- generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40)
+  d <- be_replicate_long(g)
   hc <- be_assess(d, "treatment", "R", "auclast", regulator = "HC", model_type = "anova")
   expect_equal(c(hc$limit_lower, hc$limit_upper), c(69.13780, 144.63867), tolerance = 1e-4)
+  expect_identical(hc$rule, "ABEL")
   expect_true(hc$pass)
 
-  gcc <- be_assess(d, "treatment", "R", "auclast", regulator = "GCC", model_type = "anova")
-  expect_equal(c(gcc$limit_lower, gcc$limit_upper), c(75, 400 / 3), tolerance = 1e-6)
+  gcc <- be_assess(be_replicate_long(g, "cmax"), "treatment", "R", "cmax", regulator = "GCC", model_type = "anova")
+  expect_equal(c(gcc$limit_lower, gcc$limit_upper), c(69.83678, 143.19102), tolerance = 1e-4)
+  expect_identical(gcc$rule, "ABEL")
   expect_true(gcc$pass)
 
   # Unscaled ABE fails here because the conventional CI dips below 80%.
@@ -436,6 +454,137 @@ test_that("be_assess applies HC, GCC, and ABE limits correctly", {
   expect_equal(c(abe$limit_lower, abe$limit_upper), c(80, 125))
   expect_false(abe$pass)
   expect_true(is.na(abe$swr))
+})
+
+# be_assess: endpoint-specific expanding limits ------------------------------
+
+test_that("every regulator documents its endpoint rules and source", {
+  for (nm in eval(formals(be_regulator)$name)) {
+    reg <- be_regulator(nm)
+    expect_type(reg$widen_concepts, "character")
+    expect_type(reg$pe_only_concepts, "character")
+    expect_true(all(c(reg$widen_concepts, reg$pe_only_concepts) %in% pknca_concepts()), label = nm)
+    # Only the expanding-limits frameworks treat endpoints differently.
+    expect_identical(
+      length(reg$widen_concepts) > 0, identical(reg$scaling, "abel"), label = nm
+    )
+    expect_identical(is.na(reg$reference), !reg$decision, label = nm)
+  }
+})
+
+test_that("Health Canada judges Cmax by its point estimate alone", {
+  # The 90% CI is 75.6-103.2%, so Cmax passes on its point estimate (88.4%)
+  # although its interval is outside 80.00-125.00%.
+  g <- generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40)
+  hc <- be_assess(be_replicate_long(g, "cmax"), "treatment", "R", "cmax", regulator = "HC", model_type = "anova")
+  expect_equal(hc$gmr_percent, 88.359573, tolerance = 1e-5)
+  expect_equal(c(hc$ci_lower, hc$ci_upper), c(75.617477, 103.248804), tolerance = 1e-4)
+  expect_equal(c(hc$limit_lower, hc$limit_upper), c(80, 125))
+  expect_identical(hc$rule, "PE")
+  expect_true(hc$pass)
+  # The test effect enters only the test rows, so the ratio scales exactly.
+  g_low <- generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40, gmr = 0.85)
+  hc_low <- be_assess(be_replicate_long(g_low, "cmax"), "treatment", "R", "cmax", regulator = "HC", model_type = "anova")
+  expect_equal(hc_low$gmr_percent, 88.359573 * 0.85 / 1.05, tolerance = 1e-5)
+  expect_identical(hc_low$rule, "PE")
+  expect_false(hc_low$pass)
+})
+
+test_that("a widened endpoint below the switching variability uses ABE", {
+  d <- be_replicate_long(generate_be_replicate(24, 2024, "full", cv_wr = 0.12, cv_wt = 0.12, gmr = 1.02), "cmax")
+  res <- be_assess(d, "treatment", "R", "cmax", regulator = "EMA", model_type = "anova")
+  expect_lt(res$cvwr_percent, 30)
+  expect_equal(c(res$limit_lower, res$limit_upper), c(80, 125))
+  expect_identical(res$rule, "ABE")
+  expect_true(res$pass)
+})
+
+test_that("widen_endpoints replaces the endpoints that widen", {
+  g <- generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40)
+  d <- rbind(be_replicate_long(g, "cmax"), be_replicate_long(g, "auclast"))
+  ema <- be_assess(
+    d, "treatment", "R", c("cmax", "auclast"), regulator = "EMA", model_type = "anova",
+    widen_endpoints = "auclast"
+  )
+  expect_identical(stats::setNames(ema$rule, ema$endpoint), c(cmax = "ABE", auclast = "ABEL"))
+  expect_identical(stats::setNames(ema$pass, ema$endpoint), c(cmax = FALSE, auclast = TRUE))
+  expect_match(attr(ema, "caption"), "limits of auclast widen", fixed = TRUE)
+  expect_match(attr(ema, "caption"), "cmax: the confidence interval must lie within", fixed = TRUE)
+  # Health Canada keeps judging an unwidened Cmax by its point estimate.
+  hc <- be_assess(
+    d, "treatment", "R", c("cmax", "auclast"), regulator = "HC", model_type = "anova",
+    widen_endpoints = "auclast"
+  )
+  expect_identical(stats::setNames(hc$rule, hc$endpoint), c(cmax = "PE", auclast = "ABEL"))
+  hc_cmax <- be_assess(
+    d, "treatment", "R", c("cmax", "auclast"), regulator = "HC", model_type = "anova",
+    widen_endpoints = "cmax"
+  )
+  expect_identical(stats::setNames(hc_cmax$rule, hc_cmax$endpoint), c(cmax = "ABEL", auclast = "ABE"))
+})
+
+test_that("widen_endpoints is checked against the endpoints and the framework", {
+  d <- be_replicate_long(generate_be_replicate(24, 20240501, "full"), "cmax")
+  expect_error(
+    be_assess(d, "treatment", "R", "cmax", regulator = "EMA", widen_endpoints = "ctrough"),
+    class = "pknca_error_be_widen_endpoints_unknown"
+  )
+  expect_error(
+    be_assess(d, "treatment", "R", "cmax", regulator = "FDA", widen_endpoints = "cmax"),
+    class = "pknca_error_be_widen_endpoints_not_abel"
+  )
+  expect_error(
+    be_assess(d, "treatment", "R", "cmax", regulator = "EMA", widen_endpoints = NA_character_)
+  )
+  # be_compare checks the endpoints once and passes widen_endpoints only to the
+  # expanding-limits frameworks, so FDA is assessed rather than skipped.
+  expect_error(
+    be_compare(d, "treatment", "R", "cmax", regulators = c("EMA", "FDA"), widen_endpoints = "ctrough"),
+    class = "pknca_error_be_widen_endpoints_unknown"
+  )
+  cmp <- be_compare(d, "treatment", "R", "cmax", regulators = c("EMA", "FDA"), widen_endpoints = "cmax")
+  expect_identical(cmp$regulator, c("EMA", "FDA"))
+  expect_identical(cmp$rule, c("ABEL", "RSABE"))
+})
+
+test_that("an endpoint that is not a PKNCA parameter keeps 80.00-125.00% with a warning", {
+  d <- be_replicate_long(generate_be_replicate(24, 20240501, "full"), "peak")
+  expect_warning(
+    res <- be_assess(d, "treatment", "R", "peak", regulator = "EMA", model_type = "anova"),
+    class = "pknca_warning_be_endpoint_unclassified"
+  )
+  expect_identical(res$rule, "ABE")
+  expect_equal(c(res$limit_lower, res$limit_upper), c(80, 125))
+  # Naming it widens it without a warning.
+  expect_no_warning(
+    res_w <- be_assess(d, "treatment", "R", "peak", regulator = "EMA", model_type = "anova", widen_endpoints = "peak")
+  )
+  expect_identical(res_w$rule, "ABEL")
+  # Frameworks that do not widen need no classification.
+  expect_no_warning(be_assess(d, "treatment", "R", "peak", regulator = "ABE", model_type = "anova"))
+})
+
+test_that("the caption names each endpoint's rule and the source guidance", {
+  g <- generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40)
+  d <- rbind(be_replicate_long(g, "cmax"), be_replicate_long(g, "auclast"))
+  for (rg in c("ABE", "EMA", "HC", "GCC", "FDA", "NTID", "HVNTID")) {
+    res <- be_assess(d, "treatment", "R", c("cmax", "auclast"), regulator = rg)
+    expect_match(attr(res, "caption"), paste0("Source: ", be_regulator(rg)$reference, "."), fixed = TRUE)
+  }
+  hc <- be_assess(d, "treatment", "R", c("cmax", "auclast"), regulator = "HC", model_type = "anova")
+  expect_match(attr(hc, "caption"), "limits of auclast widen", fixed = TRUE)
+  expect_match(attr(hc, "caption"), "cmax: the point estimate alone must lie within 80.00-125.00%.", fixed = TRUE)
+  desc <- be_assess(d, "treatment", "R", c("cmax", "auclast"), regulator = "descriptive", model_type = "anova")
+  expect_no_match(attr(desc, "caption"), "Source:", fixed = TRUE)
+  expect_false("rule" %in% names(desc))
+})
+
+test_that("print.be_regulator shows the endpoint rules and the source", {
+  out <- capture.output(print(be_regulator("HC")))
+  expect_true(any(grepl("Widened endpoints:  AUC", out, fixed = TRUE)))
+  expect_true(any(grepl("Point estimate only: Cmax", out, fixed = TRUE)))
+  expect_true(any(grepl(paste0("Reference:          ", be_regulator("HC")$reference), out, fixed = TRUE)))
+  expect_false(any(grepl("Reference:", capture.output(print(be_regulator("descriptive"))), fixed = TRUE)))
 })
 
 # be_assess: FDA reference-scaled family (no oracle dependency) ---------------
@@ -450,6 +599,7 @@ test_that("be_assess (FDA RSABE) computes the linearized criterion", {
   expect_equal(c(res$ci_lower, res$ci_upper), c(73.7959174, 105.797372), tolerance = 1e-8)
   expect_equal(res$swr, 0.485616493, tolerance = 1e-8)
   expect_equal(res$criterion, -0.0735236679, tolerance = 1e-8)
+  expect_identical(res$rule, "RSABE")
   expect_true(is.na(res$limit_lower))
   expect_true(res$pass)
 })
@@ -473,6 +623,7 @@ test_that("be_assess (FDA RSABE) falls back to unscaled ABE when swR < 0.294", {
   # Below the switch the criterion is not used and the conventional limits apply.
   expect_true(is.na(res$criterion))
   expect_equal(c(res$limit_lower, res$limit_upper), c(80, 125))
+  expect_identical(res$rule, "ABE")
   expect_true(res$pass)
 })
 
@@ -481,6 +632,7 @@ test_that("be_assess (NTID) enforces all three gates", {
   # below 80% so NTID fails.
   d_hi <- be_replicate_long(generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40))
   ntid_hi <- be_assess(d_hi, "treatment", "R", "auclast", regulator = "NTID")
+  expect_identical(ntid_hi$rule, "NTID")
   # From the warfarin guidance SAS code with Delta = 1/0.9 (the guidance prints
   # it rounded as 1.11111), computed separately from PKNCA.
   expect_equal(ntid_hi$criterion, -0.130132422, tolerance = 1e-8)
@@ -497,6 +649,7 @@ test_that("be_assess (HVNTID) is unscaled: conventional CI plus the ratio bound"
   # conventional 90% CI within 80-125% and swT/swR upper bound <= 2.5.
   d_hi <- be_replicate_long(generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40))
   hv_hi <- be_assess(d_hi, "treatment", "R", "auclast", regulator = "HVNTID")
+  expect_identical(hv_hi$rule, "HVNTID")
   expect_true(is.na(hv_hi$criterion))
   expect_false(hv_hi$pass) # conventional CI dips below 80%
   d_lo <- be_replicate_long(generate_be_replicate(24, 2024, "full", cv_wr = 0.12, cv_wt = 0.12, gmr = 1.02))
@@ -552,19 +705,28 @@ test_that("be_assess method B (mixed model) matches method A on a balanced desig
 # be_compare ----------------------------------------------------------------
 
 test_that("be_compare assesses one dataset under several frameworks", {
-  d <- be_replicate_long(generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40))
+  g <- generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40)
+  d <- rbind(be_replicate_long(g, "cmax"), be_replicate_long(g, "auclast"))
   cmp <- be_compare(
-    d, "treatment", "R", "auclast",
+    d, "treatment", "R", c("cmax", "auclast"),
     regulators = c("EMA", "HC", "GCC", "FDA", "NTID", "HVNTID"), model_type = "anova"
   )
   expect_s3_class(cmp, "be_compare")
   expect_setequal(unique(cmp$regulator), c("EMA", "HC", "GCC", "FDA", "NTID", "HVNTID"))
-  # The same data: EMA/HC/GCC (widened limits) and FDA (reference scaling) pass;
-  # NTID and HVNTID fail because the conventional 90% CI dips below 80%.
-  passes <- stats::setNames(cmp$pass, cmp$regulator)
-  expect_true(all(passes[c("EMA", "HC", "GCC", "FDA")]))
-  expect_false(passes[["NTID"]])
-  expect_false(passes[["HVNTID"]])
+  # The same values for both endpoints, so only the rules differ.  The 90% CI
+  # (75.6-103.2%) dips below 80%: widened Cmax passes for EMA and GCC and
+  # widened AUC for HC, HC's Cmax passes on its point estimate (88.4%), and FDA
+  # passes by reference scaling.  The unwidened AUC of EMA and GCC fails, as do
+  # NTID and HVNTID.
+  passes <- stats::setNames(cmp$pass, paste(cmp$regulator, cmp$endpoint))
+  rules <- stats::setNames(cmp$rule, paste(cmp$regulator, cmp$endpoint))
+  expect_identical(
+    rules[c("EMA cmax", "EMA auclast", "HC cmax", "HC auclast", "GCC cmax", "GCC auclast")],
+    c("EMA cmax" = "ABEL", "EMA auclast" = "ABE", "HC cmax" = "PE", "HC auclast" = "ABEL",
+      "GCC cmax" = "ABEL", "GCC auclast" = "ABE")
+  )
+  expect_true(all(passes[c("EMA cmax", "HC cmax", "HC auclast", "GCC cmax", "FDA cmax", "FDA auclast")]))
+  expect_false(any(passes[c("EMA auclast", "GCC auclast", "NTID cmax", "NTID auclast", "HVNTID cmax", "HVNTID auclast")]))
 
   grid <- summary(cmp)
   expect_s3_class(grid, "summary_be_compare")
@@ -664,15 +826,21 @@ test_that("be_table applies the regulator decision to extracted parameters", {
   skip_if_not_installed("lme4")
   skip_if_not_installed("lmerTest")
   skip_if_not_installed("emmeans")
-  ds <- be_dataset(be_replicate_long(generate_be_replicate(24, 20240501, "full")),
-                   "treatment", "R", "auclast")
-  ds_ep <- ds$data[ds$data$PPTESTCD == "auclast", ]
+  ds <- be_dataset(be_replicate_long(generate_be_replicate(24, 20240501, "full"), "cmax"),
+                   "treatment", "R", "cmax")
+  ds_ep <- ds$data[ds$data$PPTESTCD == "cmax", ]
   p <- be_extract_param(be_fit_model_single(ds_ep, "lmer"), ds_ep, alpha = 0.10)
-  p$endpoint <- "auclast"
+  p$endpoint <- "cmax"
   tab <- be_table(p, "EMA", alpha = 0.10, design = "full_replicate", model_type = "lmer")
   expect_equal(c(tab$limit_lower, tab$limit_upper), c(69.83678, 143.19102), tolerance = 1e-4)
   expect_true(tab$pass)
   expect_identical(tab$regulator, "EMA")
+  # The same values as an AUC keep 80.00-125.00% under the EMA.
+  p$endpoint <- "auclast"
+  tab_auc <- be_table(p, "EMA", alpha = 0.10, design = "full_replicate", model_type = "lmer")
+  expect_equal(c(tab_auc$limit_lower, tab_auc$limit_upper), c(80, 125))
+  expect_identical(tab_auc$rule, "ABE")
+  expect_false(tab_auc$pass)
 })
 
 test_that("model_type lmer and anova give the same GMR on a balanced design", {

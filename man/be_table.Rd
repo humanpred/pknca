@@ -9,7 +9,8 @@ be_table(
   regulator,
   alpha = 0.1,
   design = NA_character_,
-  model_type = NA_character_
+  model_type = NA_character_,
+  widen_endpoints = NULL
 )
 }
 \arguments{
@@ -23,11 +24,23 @@ be_table(
 \item{design}{The design label (character) for the \code{design} column.}
 
 \item{model_type}{The model type label for the \code{model_type} column.}
+
+\item{widen_endpoints}{For the expanding-limits frameworks (\code{"EMA"}, \code{"HC"},
+and \code{"GCC"}), the endpoints whose acceptance limits widen, replacing the
+framework's own choice (Cmax for the EMA and GCC, AUC for Health Canada;
+see \code{\link[=be_regulator]{be_regulator()}}).  Use it for an endpoint that the guidance widens but
+PKNCA cannot recognize from its name, such as Ctau,ss or a partial AUC of a
+modified-release product (EMA), or an endpoint that is not a PKNCA
+parameter.  \code{NULL} (the default) uses the framework's choice.  Giving it
+for another framework is an error; \code{\link[=be_compare]{be_compare()}} passes it to the
+expanding-limits frameworks only.}
 }
 \value{
 A data.frame with one row per endpoint and test formulation and the
-pass/fail decision columns.  For the \code{"descriptive"} framework the decision
-columns (\code{limit_lower}, \code{limit_upper}, \code{criterion}, and \code{pass}) are omitted.
+pass/fail decision columns, including \code{rule}, the criterion each row's
+decision used.  For the \code{"descriptive"} framework the decision columns
+(\code{rule}, \code{limit_lower}, \code{limit_upper}, \code{criterion}, and \code{pass}) are
+omitted.
 }
 \description{
 \code{be_table()} takes the parameters from \code{\link[=be_extract_param]{be_extract_param()}} and a regulatory
@@ -37,7 +50,10 @@ frameworks; for the FDA family, intra-subject contrasts for the
 reference-scaled criterion and the model contrast for the unscaled
 80.00-125.00\% criterion) and calls the per-framework decision functions; it
 is the only place regulator decisions are made.  Each row shows the ratio and
-confidence interval that its decision used.
+confidence interval that its decision used.  The expanding-limits frameworks
+decide each endpoint by its own rule (see \code{\link[=be_regulator]{be_regulator()}}); an endpoint that
+is not a PKNCA parameter cannot be classified, so it keeps 80.00-125.00\%
+with a warning unless \code{widen_endpoints} is given.
 }
 \seealso{
 Other Bioequivalence:

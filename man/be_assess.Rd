@@ -22,6 +22,7 @@ be_assess(object, ...)
   design = NULL,
   covariates = NULL,
   heteroscedastic = FALSE,
+  widen_endpoints = NULL,
   ...
 )
 
@@ -93,6 +94,16 @@ use covariates.}
 
 \item{heteroscedastic}{Logical.  When \code{TRUE}, estimate a separate residual
 variance for each treatment (see Details).}
+
+\item{widen_endpoints}{For the expanding-limits frameworks (\code{"EMA"}, \code{"HC"},
+and \code{"GCC"}), the endpoints whose acceptance limits widen, replacing the
+framework's own choice (Cmax for the EMA and GCC, AUC for Health Canada;
+see \code{\link[=be_regulator]{be_regulator()}}).  Use it for an endpoint that the guidance widens but
+PKNCA cannot recognize from its name, such as Ctau,ss or a partial AUC of a
+modified-release product (EMA), or an endpoint that is not a PKNCA
+parameter.  \code{NULL} (the default) uses the framework's choice.  Giving it
+for another framework is an error; \code{\link[=be_compare]{be_compare()}} passes it to the
+expanding-limits frameworks only.}
 }
 \value{
 An object of class \code{be_assess} (a data.frame), ordered by endpoint
@@ -103,13 +114,18 @@ is omitted with a warning when units are not provided), the reference and
 test geometric means with their 90\% confidence intervals on the measurement
 scale (\code{gm_reference}, \code{gm_reference_lower}, \code{gm_reference_upper}, \code{gm_test},
 \code{gm_test_lower}, \code{gm_test_upper}), \code{gmr_percent}, \code{ci_lower}, \code{ci_upper},
-\code{cvwr_percent}, \code{cvwt_percent}, \code{swr}, \code{limit_lower}, \code{limit_upper},
-\code{criterion}, \code{regulator}, \code{model_type}, and \code{pass}.  \verb{limit_*} are \code{NA} for
-the RSABE criterion and \code{criterion} is \code{NA} for the limit-based frameworks.
-For \code{regulator = "descriptive"} the \code{limit_lower}, \code{limit_upper},
-\code{criterion}, and \code{pass} columns are omitted.  A \code{caption} attribute
-documents the model and the decision rule, or states that no regulatory
-decision was applied.
+\code{cvwr_percent}, \code{cvwt_percent}, \code{swr}, \code{rule}, \code{limit_lower},
+\code{limit_upper}, \code{criterion}, \code{regulator}, \code{model_type}, and \code{pass}.  \code{rule}
+names the criterion the row's decision used: \code{"ABE"} (the confidence
+interval within 80.00-125.00\%), \code{"ABEL"} (the confidence interval within
+widened limits), \code{"PE"} (the point estimate alone within 80.00-125.00\%),
+\code{"RSABE"} (the reference-scaled bound), \code{"NTID"}, or \code{"HVNTID"}.
+\verb{limit_*} are \code{NA} for the RSABE criterion and \code{criterion} is \code{NA} for the
+limit-based frameworks.  For \code{regulator = "descriptive"} the \code{rule},
+\code{limit_lower}, \code{limit_upper}, \code{criterion}, and \code{pass} columns are omitted.
+A \code{caption} attribute documents the model, the decision rule for each
+endpoint, and its source guidance, or states that no regulatory decision
+was applied.
 }
 \description{
 \code{be_assess()} performs a complete bioequivalence (BE) assessment of one or
@@ -174,6 +190,15 @@ its confidence interval exactly as for \code{"ABE"} but applies no acceptance
 limits and reports no pass/fail, for comparisons such as food effect and
 drug-drug interaction studies.
 
+The expanding-limits frameworks widen only some endpoints, as their
+guidances specify (see \code{\link[=be_regulator]{be_regulator()}} for the sources): the EMA and the GCC
+widen Cmax, and Health Canada widens AUC and judges Cmax by its point
+estimate alone.  Every other endpoint needs its confidence interval within
+80.00-125.00\%.  The \code{rule} column names the criterion each row used.
+\code{widen_endpoints} replaces the endpoints that widen, for example to widen
+Ctau,ss or a partial AUC of a modified-release product under the EMA
+modified-release guideline.
+
 For the results of a sparse bootstrap (Shen and Machado 2017; see
 \code{\link[=sparse_bootstrap]{sparse_bootstrap()}}), there is one estimate per treatment, from the sparse
 data, rather than one per subject.  The ratio of the test and reference
@@ -202,13 +227,14 @@ d <- do.call(rbind, lapply(seq_len(nsub), function(i) {
   trt <- strsplit(seqs[i], "")[[1]]
   data.frame(
     subject = i, sequence = seqs[i], period = seq_along(trt), treatment = trt,
-    PPTESTCD = "auclast",
+    PPTESTCD = "cmax",
     PPORRES = exp(log(100) + ifelse(trt == "T", 0.04, 0) + b[i] +
                     stats::rnorm(length(trt), sd = 0.45))
   )
 }))
+# The EMA widens the limits of Cmax
 be_assess(d, reference_col = "treatment", reference_value = "R",
-          endpoints = "auclast", regulator = "EMA")
+          endpoints = "cmax", regulator = "EMA")
 \dontshow{\}) # examplesIf}
 }
 \references{

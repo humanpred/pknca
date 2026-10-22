@@ -15,9 +15,12 @@ be_regulator(
 \value{
 An object of class \code{be_regulator}: a list with elements \code{name},
 \code{scaling} (one of \code{"none"}, \code{"abel"}, \code{"rsabe"}, \code{"ntid"}, \code{"hvntid"}),
-\code{cvswitch}, \code{r_const}, \code{cvcap}, \code{switch_swr}, \code{pe_constr}, \code{est_method}
-(\code{"anova"} or \code{"isc"}), \code{decision} (\code{FALSE} only for \code{"descriptive"}), and
-\code{switch_basis}.
+\code{cvswitch}, \code{r_const}, \code{cvcap}, \code{switch_swr}, \code{est_method} (\code{"anova"} or
+\code{"isc"}), \code{widen_concepts} (the parameter concepts whose limits widen, for
+the expanding-limits frameworks), \code{pe_only_concepts} (the concepts judged
+by the point estimate alone), \code{reference} (the source guidance, or \code{NA}),
+\code{pe_constr}, \code{decision} (\code{FALSE} only for \code{"descriptive"}),
+\code{sw_ratio_cap}, and \code{switch_basis}.
 }
 \description{
 \code{be_regulator()} returns the scaling type, switching and capping rules, and
@@ -27,32 +30,62 @@ internal decision functions pull every constant from here rather than
 hard-coding it.
 }
 \details{
-The supported frameworks and their constants are:
+The supported frameworks, the acceptance limits each applies to each
+endpoint, and their sources are:
 \itemize{
-\item \strong{ABE} -- average bioequivalence; the universal unscaled criterion that
-the 90\% confidence interval fall within 80.00-125.00\%.  No reference
-scaling.
-\item \strong{EMA} -- average bioequivalence with expanding limits (ABEL).  Scaling
-begins when the within-reference coefficient of variation (\code{CVwR}) exceeds
-30\% (\code{cvswitch = 0.30}); the limits widen as \verb{exp(+/- k * swR)} with the
-regulatory constant \code{k = 0.76} and the expansion is capped at \verb{CVwR = 50\%}
-(limits 69.84-143.19\%).  The constant 0.76 is
-\code{log(1.25) / sqrt(log(1 + 0.30^2))} rounded to two decimals, as fixed by
-the EMA bioequivalence guideline.
-\item \strong{HC} -- Health Canada; ABEL with the same \code{k = 0.76} but the expansion is
-capped at \verb{CVwR = 57.382\%} (upper limit 150\%).
-\item \strong{GCC} -- Gulf Cooperation Council; fixed widened limits of
-75.00-133.33\% whenever \verb{CVwR > 30\%} (not CV-dependent).
-\item \strong{FDA} -- reference-scaled average bioequivalence (RSABE).  The linearized
-(Howe/Hyslop) criterion uses \code{r_const = log(1.25) / 0.25 = 0.8926}
-(\code{theta = r_const^2}) and switches from unscaled ABE when \code{swR >= 0.294}
-(\code{CVwR} of about 30\%).
-\item \strong{NTID} -- FDA narrow therapeutic index drugs; uses
-\code{r_const = -log(0.9) / 0.1 = 1.0536} and always applies the scaled
-criterion (a fully replicated design is required).
-\item \strong{HVNTID} -- FDA highly variable narrow therapeutic index drugs; the
-RSABE-style scaled criterion with the NTID constant and the within-subject
-standard deviation ratio constraint.
+\item \strong{ABE} -- average bioequivalence; the 90\% confidence interval of the
+geometric mean ratio within 80.00-125.00\% for Cmax and AUC, with no
+reference scaling
+(\href{https://database.ich.org/sites/default/files/ICH_M13A_Step4_Final_Guideline_2024_0723.pdf}{ICH M13A},
+section 2.2.4).
+\item \strong{EMA} -- average bioequivalence with expanding limits (ABEL) for
+\strong{Cmax only}; AUC keeps the 90\% confidence interval within
+80.00-125.00\% whatever its variability
+(\href{https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-investigation-bioequivalence-rev1_en.pdf}{EMA Guideline on the Investigation of Bioequivalence, Rev. 1},
+sections 4.1.8 and 4.1.10).  Cmax limits widen when the within-reference
+coefficient of variation (\code{CVwR}) exceeds 30\% (\code{cvswitch = 0.30}), as
+\verb{exp(+/- k * swR)} with the regulatory constant \code{k = 0.760}, capped at
+\verb{CVwR = 50\%} (limits 69.84-143.19\%), and the geometric mean ratio must lie
+within 80.00-125.00\%.  The constant is \code{log(1.25) / sqrt(log(1 + 0.30^2))}
+rounded to three decimals.  For modified-release products the EMA also
+allows the same widening for Cmax,ss, Ctau,ss, and partial AUCs
+(\href{https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-pharmacokinetic-and-clinical-evaluation-modified-release-dosage-forms_en.pdf}{EMA Guideline on the Pharmacokinetic and Clinical Evaluation of Modified Release Dosage Forms},
+section 6.8.2.2); PKNCA cannot tell those endpoints from their names, so
+name them in the \code{widen_endpoints} argument of \code{\link[=be_assess]{be_assess()}}.
+\item \strong{HC} -- Health Canada.  ABEL for \strong{AUC only}: the 90\% confidence
+interval within limits widened as \verb{exp(+/- 0.76 * swR)} when
+\code{swR > 0.294} (\verb{CVwR > 30\%}), capped at 66.7-150.0\% (\verb{CVwR = 57.4\%}), with
+the ratio of geometric means within 80.0-125.0\%
+(\href{https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/announcements/notice-policy-bioequivalence-standards-highly-variable-drug-products.html}{Policy on Bioequivalence Standards for Highly Variable Drug Products},
+effective 2018).  \strong{Cmax is judged by its point estimate alone}: the
+ratio of geometric means within 80.0-125.0\%, with no requirement on its
+confidence interval
+(\href{https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/applications-submissions/guidance-documents/bioavailability-bioequivalence/comparative-bioavailability-standards-formulations-used-systemic-effects.html}{Comparative Bioavailability Standards: Formulations Used for Systemic Effects},
+section 2.1).  These are the standards for drugs that are not critical
+dose drugs.
+\item \strong{GCC} -- Gulf Cooperation Council; the EMA rules: ABEL for \strong{Cmax
+only}, with \code{k = 0.760}, the 30\% switch, the 69.84-143.19\% cap, and the
+geometric mean ratio within 80.00-125.00\%; AUC keeps 80.00-125.00\%
+(\href{https://sfda.gov.sa/sites/default/files/2024-05/GCC_Guidelines_Bioequivalence32.pdf}{GCC Guidelines for Bioequivalence, version 3.2},
+sections 3.1.8 and 3.1.10).
+\item \strong{FDA} -- reference-scaled average bioequivalence (RSABE) for both AUC
+and Cmax
+(\href{https://www.accessdata.fda.gov/drugsatfda_docs/psg/Progesterone_caps_19781_RC02-11.pdf}{FDA Draft Guidance on Progesterone}).
+The linearized (Howe/Hyslop) criterion uses
+\code{r_const = log(1.25) / 0.25 = 0.8926} (\code{theta = r_const^2}) and switches
+from unscaled ABE (90\% confidence interval within 80.00-125.00\%) when
+\code{swR >= 0.294} (\code{CVwR} of about 30\%).
+\item \strong{NTID} -- FDA narrow therapeutic index drugs, for both AUC and Cmax
+(\href{https://www.accessdata.fda.gov/drugsatfda_docs/psg/Warfarin_Sodium_tab_09218_RC12-12.pdf}{FDA Draft Guidance on Warfarin Sodium}):
+the scaled criterion with \code{r_const = -log(0.9) / 0.1 = 1.0536} (always
+applied), the 90\% confidence interval within 80.00-125.00\%, and the upper
+90\% confidence bound of swT/swR at most 2.5 (a fully replicated design is
+required).
+\item \strong{HVNTID} -- FDA highly variable narrow therapeutic index drugs, for both
+AUC and Cmax
+(\href{https://www.accessdata.fda.gov/drugsatfda_docs/psg/Dabigatran\%20etexilate\%20mesylate_oral\%20capsule_NDA\%20022512_RV05-17.pdf}{FDA Draft Guidance on Dabigatran Etexilate Mesylate}):
+unscaled, with the 90\% confidence interval within 80.00-125.00\% and the
+upper 90\% confidence bound of swT/swR at most 2.5.
 \item \strong{descriptive} -- no regulatory decision.  The geometric means, their
 ratio, and its confidence interval are estimated exactly as for ABE, but no
 acceptance limits are applied and no pass/fail is reported.  Use it for
@@ -62,11 +95,54 @@ drug-drug interaction studies.
 
 All decision frameworks additionally impose the point-estimate constraint
 that the geometric mean ratio fall within 80.00-125.00\%.
+
+An endpoint's kind comes from its PKNCA parameter concept (see
+\code{\link[=pknca_parameter_table]{pknca_parameter_table()}}): the peak concentrations (\code{cmax} and \code{cmax.dn})
+and the AUCs (including \verb{aucint.*}, dose-normalized, and sparse AUCs).
+Endpoints that a framework neither widens nor judges by the point estimate
+(such as \code{cmin} or \code{ctrough}) use the 90\% confidence interval within
+80.00-125.00\%.
 }
 \examples{
 be_regulator("EMA")
 be_regulator("FDA")
 be_regulator("descriptive")
+}
+\references{
+International Council for Harmonisation.  ICH M13A: Bioequivalence for
+immediate-release solid oral dosage forms.  Step 4, 23 July 2024.
+\url{https://database.ich.org/sites/default/files/ICH_M13A_Step4_Final_Guideline_2024_0723.pdf}
+
+European Medicines Agency.  Guideline on the investigation of
+bioequivalence.  CPMP/EWP/QWP/1401/98 Rev. 1/Corr**, 2010.
+\url{https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-investigation-bioequivalence-rev1_en.pdf}
+
+European Medicines Agency.  Guideline on the pharmacokinetic and clinical
+evaluation of modified release dosage forms.  EMA/CHMP/EWP/280/96 Rev1,
+2014.
+\url{https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-pharmacokinetic-and-clinical-evaluation-modified-release-dosage-forms_en.pdf}
+
+Health Canada.  Comparative bioavailability standards: Formulations used for
+systemic effects.  Revised 8 June 2018, effective 1 September 2018.
+\url{https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/applications-submissions/guidance-documents/bioavailability-bioequivalence/comparative-bioavailability-standards-formulations-used-systemic-effects.html}
+
+Health Canada.  Notice: Policy on bioequivalence standards for highly
+variable drug products.  Effective 1 September 2018.
+\url{https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/announcements/notice-policy-bioequivalence-standards-highly-variable-drug-products.html}
+
+Gulf Cooperation Council.  The GCC guidelines for bioequivalence.  Version
+3.2, 2024.
+\url{https://sfda.gov.sa/sites/default/files/2024-05/GCC_Guidelines_Bioequivalence32.pdf}
+
+US Food and Drug Administration.  Draft guidance on progesterone.  2011.
+\url{https://www.accessdata.fda.gov/drugsatfda_docs/psg/Progesterone_caps_19781_RC02-11.pdf}
+
+US Food and Drug Administration.  Draft guidance on warfarin sodium.  2012.
+\url{https://www.accessdata.fda.gov/drugsatfda_docs/psg/Warfarin_Sodium_tab_09218_RC12-12.pdf}
+
+US Food and Drug Administration.  Draft guidance on dabigatran etexilate
+mesylate.  2012, revised 2017.
+\url{https://www.accessdata.fda.gov/drugsatfda_docs/psg/Dabigatran\%20etexilate\%20mesylate_oral\%20capsule_NDA\%20022512_RV05-17.pdf}
 }
 \seealso{
 \code{\link[=be_expand_limits]{be_expand_limits()}} for the ABEL acceptance limits and \code{\link[=be_assess]{be_assess()}}
