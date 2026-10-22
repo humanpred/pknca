@@ -24,7 +24,7 @@ the dosing including dose amount and route.
   that is not a PKNCA parameter keeps 80.00-125.00% under these frameworks,
   with a warning, unless it is named in `widen_endpoints`.  Widened limits
   never narrow below 80.00-125.00%; the rounded constant 0.76 made them
-  fractionally narrower for CVwR just above 30%.
+  fractionally narrower for a within-reference CV just above 30%.
 
 * Parameter names and descriptions follow one style, so some column headers of
   `summary()` and some descriptions change (@billdenney):
