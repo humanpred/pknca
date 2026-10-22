@@ -16,7 +16,8 @@ be_extract_param(fit, ds_ep, alpha = 0.1)
 }
 \value{
 A data.frame with one row per test formulation, carrying the model
-and ISC point estimates/intervals, geometric means, and within-formulation
+and ISC point estimates/intervals (with \code{isc_n}, the number of subjects in
+the intra-subject contrasts), geometric means, and within-formulation
 variances: \code{swr}, \code{swt}, \code{cvwr_percent}, \code{cvwt_percent}, \code{df_wr}, \code{df_wt},
 \code{sw_ratio}, and \code{sw_ratio_ci_upper} from the model's estimator, and the same
 columns prefixed \code{isc_} from the FDA estimator (see \code{\link[=be_within_var]{be_within_var()}}).

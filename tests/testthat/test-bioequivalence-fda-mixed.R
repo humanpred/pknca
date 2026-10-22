@@ -128,6 +128,11 @@ fda_theta_g <- function(x, d, m = NULL) {
   if (is.null(m)) out else out[m]
 }
 
+# Data without subject 5's second reference administration.
+fda_drop_second_reference <- function(d) {
+  d[-which(d$subject == "5" & d$treatment == "R")[2], ]
+}
+
 # Mocks for the failure paths.
 fda_flat_objective <- function(u, d) {
   .Machine$double.xmax
@@ -391,4 +396,27 @@ test_that("the FDA unscaled criteria use the FDA mixed model and report its inte
     "the unscaled 80.00-125.00% criterion uses the FDA mixed-effects model",
     fixed = TRUE
   )
+})
+
+test_that("n counts the subjects behind the ratio each FDA row shows", {
+  # Subject 5 loses a reference administration: it leaves the intra-subject
+  # contrasts (23 subjects) but stays in the mixed model and the expanding-limits
+  # frameworks (24 subjects).
+  hi <- be_replicate_long(fda_drop_second_reference(generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40)))
+  fda <- be_assess(hi, "treatment", "R", "auclast", regulator = "FDA")
+  expect_false(is.na(fda$criterion))
+  expect_equal(fda$n, 23)
+  expect_match(
+    attr(fda, "caption"),
+    "n counts the subjects behind the ratio shown: for the intra-subject contrasts, those with every test and reference administration their sequence calls for; for the model, every subject with the test or the reference formulation.",
+    fixed = TRUE
+  )
+  ntid <- be_assess(hi, "treatment", "R", "auclast", regulator = "NTID")
+  expect_equal(ntid$n, 24)
+  expect_equal(be_assess(hi, "treatment", "R", "auclast", regulator = "EMA", model_type = "anova")$n, 24)
+  # Below the switching variability the mixed model decides and is shown.
+  lo <- be_replicate_long(fda_drop_second_reference(generate_be_replicate(24, 2024, "full", cv_wr = 0.12, cv_wt = 0.12, gmr = 1.02)))
+  fallback <- be_assess(lo, "treatment", "R", "auclast", regulator = "FDA")
+  expect_true(is.na(fallback$criterion))
+  expect_equal(fallback$n, 24)
 })

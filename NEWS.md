@@ -602,6 +602,13 @@ the generated intervals:
   `be_assess()` caption for HVNTID states its criteria (the conventional
   interval and the `swT`/`swR` bound).  (@billdenney)
 
+* For the FDA frameworks, the `n` column of `be_assess()` counts the subjects
+  behind the ratio each row shows: the subjects with every test and reference
+  administration their sequence calls for when the intra-subject contrasts
+  decide, and every subject with the test or the reference formulation when the
+  model decides.  The caption says so, and `be_extract_param()` reports the
+  intra-subject contrast count as `isc_n`.  (@billdenney)
+
 * `be_dataset()`, and so `be_assess()` and `be_compare()`, stops with
   `pknca_error_be_design_missing` when the subject, sequence, period, or
   treatment is missing in a row that would be analyzed, and with
