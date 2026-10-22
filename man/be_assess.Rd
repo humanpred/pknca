@@ -98,7 +98,8 @@ variance for each treatment (see Details).}
 An object of class \code{be_assess} (a data.frame), ordered by endpoint
 (in the order requested) then by test formulation (reference-first), with
 one row per endpoint and test formulation and the columns \code{endpoint},
-\code{test}, \code{n}, \code{design}, \code{units} (the endpoint's measurement units; the column
+\code{test}, \code{n} (the number of subjects behind the ratio shown; see Details),
+\code{design}, \code{units} (the endpoint's measurement units; the column
 is omitted with a warning when units are not provided), the reference and
 test geometric means with their 90\% confidence intervals on the measurement
 scale (\code{gm_reference}, \code{gm_reference_lower}, \code{gm_reference_upper}, \code{gm_test},
@@ -147,7 +148,10 @@ from the treatment pattern.  When the mixed model cannot be fit (for
 example, a formulation whose replicates agree exactly), only a decision that
 needs the unscaled criterion stops with an error.  Each row shows the ratio
 and interval its decision used: the intra-subject contrasts for the
-reference-scaled criterion and the model for the unscaled one.  Pass
+reference-scaled criterion and the model for the unscaled one, and \code{n} counts
+the subjects behind that ratio: for the intra-subject contrasts, the subjects
+with every test and reference administration their sequence calls for; for
+the model, every subject with the test or the reference formulation.  Pass
 \code{model_type} to override (\code{"lmer"}, \code{"anova"}, \code{"isc"}, \code{"nlme"}, or
 \code{"gls"}); with \code{"isc"} the FDA mixed model also gives the ratio for the
 other frameworks, and a design without a replicated formulation keeps the
