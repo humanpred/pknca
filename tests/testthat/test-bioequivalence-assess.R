@@ -146,6 +146,47 @@ test_that("be_within_var returns NA test variability for a partial replicate", {
   )
 })
 
+test_that("be_within_var (isc) is the FDA within-sequence estimator (known answer)", {
+  # Reference differences D = R1 - R2 of 0.1, 0.3 (TRR), -0.2, 0 (RTR), and 0.4,
+  # 0.2 (RRT): the sequence means are 0.2, -0.1, and 0.3, each D deviates by
+  # 0.1, so s2wR = 6 * 0.01 / (2 * (6 - 3)) = 0.01 on 3 degrees of freedom.
+  seqs <- rep(c("TRR", "RTR", "RRT"), each = 2)
+  d <- data.frame(
+    subject = rep(1:6, each = 3), sequence = rep(seqs, each = 3),
+    period = rep(1:3, 6), treatment = unlist(strsplit(seqs, ""))
+  )
+  d$logpk <- 0
+  first_r <- !duplicated(paste(d$subject, d$treatment)) & d$treatment == "R"
+  d$logpk[first_r] <- c(0.1, 0.3, -0.2, 0, 0.4, 0.2)
+  d$PK <- exp(d$logpk)
+  wv <- be_within_var(d, "PK", "subject", "period", "treatment", "R", model_type = "isc", sequence = "sequence")
+  expect_equal(wv$s2wR, 0.01, tolerance = 1e-12)
+  expect_equal(wv$df_wR, 3)
+  # Without the sequence column, the sequence is the treatment pattern.
+  expect_equal(be_within_var(d, "PK", "subject", "period", "treatment", "R", model_type = "isc"), wv)
+})
+
+test_that("be_within_var (isc) matches the FDA guidance, and equals the ANOVA for a full replicate", {
+  # Partial replicate: the expected value comes from a literal transcription of
+  # the FDA progesterone guidance SAS code (`model dlat = seq`, s2wr = MSE / 2).
+  dp <- generate_be_replicate(24, 20240501, "partial", cv_wr = 0.45, cv_wt = 0.40)
+  wp <- be_within_var(dp, "PK", "subject", "period", "treatment", "R", model_type = "isc", sequence = "sequence")
+  expect_equal(wp$swR, 0.565267363, tolerance = 1e-8)
+  expect_equal(wp$df_wR, 21)
+  expect_true(is.na(wp$swT))
+  # The EMA ANOVA has period effects common to the sequences, so it differs.
+  wa <- be_within_var(dp, "PK", "subject", "period", "treatment", "R", model_type = "anova")
+  expect_equal(wa$swR, 0.576194165, tolerance = 1e-8)
+  expect_equal(wa$df_wR, 22)
+  # Full replicate (TRTR/RTRT): the two estimators are identical.
+  d <- generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40)
+  wf <- be_within_var(d, "PK", "subject", "period", "treatment", "R", model_type = "isc", sequence = "sequence")
+  wf_anova <- be_within_var(d, "PK", "subject", "period", "treatment", "R")
+  for (nm in c("swR", "swT", "df_wR", "df_wT", "sw_ratio", "sw_ratio_ci_upper")) {
+    expect_equal(wf[[nm]], wf_anova[[nm]], tolerance = 1e-10)
+  }
+})
+
 test_that("be_within_var nlme agrees with anova to within a few percent", {
   d <- generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40)
   a <- be_within_var(d, "PK", "subject", "period", "treatment", "R", model_type = "anova")
@@ -157,13 +198,175 @@ test_that("be_within_var nlme agrees with anova to within a few percent", {
 # Internal criterion building blocks ----------------------------------------
 
 test_that(".be_isc reproduces the intra-subject contrast point estimate", {
+  # Expected values come from a literal transcription of the SAS code in the FDA
+  # progesterone and warfarin guidances (ilat per subject, `model ilat = seq`,
+  # `estimate intercept 1 seq 1/m ... 1/m`, 90% CI), computed separately from
+  # .be_isc().
   d <- generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40)
-  work <- data.frame(.subject = factor(d$subject), .trt = as.character(d$treatment), .logval = log(d$PK))
+  isc <- .be_isc(be_isc_work(d), "R", "T", alpha = 0.10)
+  expect_equal(isc$gmr_percent, 88.3595729, tolerance = 1e-8)
+  expect_equal(isc$se, 0.104889919, tolerance = 1e-8)
+  expect_equal(isc$df, 22)
+  expect_equal(isc$n, 24)
+  expect_equal(c(isc$ci_lower, isc$ci_upper), c(73.7959174, 105.797372), tolerance = 1e-8)
+
+  dp <- generate_be_replicate(24, 20240501, "partial", cv_wr = 0.45, cv_wt = 0.40)
+  iscp <- .be_isc(be_isc_work(dp), "R", "T", alpha = 0.10)
+  expect_equal(iscp$gmr_percent, 96.2343254, tolerance = 1e-8)
+  expect_equal(iscp$se, 0.101554674, tolerance = 1e-8)
+  expect_equal(iscp$df, 21)
+  expect_equal(c(iscp$ci_lower, iscp$ci_upper), c(80.8048204, 114.610061), tolerance = 1e-8)
+})
+
+test_that(".be_isc averages the sequence means with equal weight (known answer)", {
+  # Contrasts 0.1, 0.2, 0.3 in sequence TR and -0.1, 0.1 in sequence RT: the
+  # sequence means are 0.2 and 0, so the estimate is 0.1 (the pooled mean would
+  # be 0.12).  The residual mean square is 0.04 / 3 on 5 - 2 = 3 degrees of
+  # freedom, so se = sqrt(0.04 / 3 * (1/3 + 1/2)) / 2.
+  seqs <- c("TR", "TR", "TR", "RT", "RT")
+  work <- data.frame(
+    .subject = factor(rep(1:5, each = 2)),
+    .sequence = factor(rep(seqs, each = 2)),
+    .period = factor(rep(1:2, 5)),
+    .trt = unlist(strsplit(seqs, "")),
+    .logval = 0
+  )
+  work$.logval[work$.trt == "T"] <- c(0.1, 0.2, 0.3, -0.1, 0.1)
+  se <- sqrt(0.04 / 3 * (1 / 3 + 1 / 2)) / 2
   isc <- .be_isc(work, "R", "T", alpha = 0.10)
-  expect_equal(isc$gmr_percent, 88.3595729, tolerance = 1e-5)
-  expect_equal(isc$se, 0.104543750, tolerance = 1e-7)
-  expect_equal(isc$df, 23)
-  expect_equal(c(isc$ci_lower, isc$ci_upper), c(73.865065, 105.698331), tolerance = 1e-4)
+  expect_equal(isc$pe_log, 0.1, tolerance = 1e-12)
+  expect_equal(isc$se, se, tolerance = 1e-12)
+  expect_equal(isc$df, 3)
+  expect_equal(isc$n, 5)
+  expect_equal(
+    c(isc$ci_lower, isc$ci_upper),
+    100 * exp(0.1 + c(-1, 1) * stats::qt(0.95, 3) * se),
+    tolerance = 1e-12
+  )
+})
+
+test_that(".be_isc is unaffected by period effects, even with unequal sequence sizes", {
+  for (design in c("full", "partial")) {
+    d <- generate_be_replicate(24, 20240501, design, cv_wr = 0.45, cv_wt = 0.40)
+    # Subjects 1 and 3 are in different sequences of the partial design and the
+    # same sequence of the full design, so both designs become unbalanced.
+    d <- d[!(d$subject %in% c("1", "3")), ]
+    shifted <- d
+    shifted$PK <- d$PK * exp(c(0, 0.3, -0.2, 0.15)[as.integer(as.character(d$period))])
+    expect_equal(
+      .be_isc(be_isc_work(shifted), "R", "T", alpha = 0.10),
+      .be_isc(be_isc_work(d), "R", "T", alpha = 0.10),
+      tolerance = 1e-10
+    )
+  }
+})
+
+test_that(".be_isc uses only subjects with every administration their sequence calls for", {
+  d <- generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40)
+  work <- be_isc_work(d)
+  # Subject 5 loses its second reference administration.
+  drop_row <- which(work$.subject == "5" & work$.trt == "R")[2]
+  incomplete <- .be_isc(work[-drop_row, ], "R", "T", alpha = 0.10)
+  expect_equal(incomplete, .be_isc(work[work$.subject != "5", ], "R", "T", alpha = 0.10))
+  expect_equal(incomplete$n, 23)
+  expect_equal(incomplete$df, 21)
+})
+
+test_that(".be_isc derives the sequence from the treatment pattern when it is absent", {
+  d <- generate_be_replicate(24, 20240501, "partial", cv_wr = 0.45, cv_wt = 0.40)
+  work <- be_isc_work(d)
+  no_seq <- work
+  no_seq$.sequence <- factor(NA_character_)
+  expect_equal(.be_isc(no_seq, "R", "T"), .be_isc(work, "R", "T"))
+  # A subject missing a period would form a pattern of its own; it is excluded
+  # as it is when the sequence is known.
+  drop_row <- which(work$.subject == "2")[3]
+  expect_equal(.be_isc(no_seq[-drop_row, ], "R", "T"), .be_isc(work[-drop_row, ], "R", "T"))
+  expect_equal(.be_isc(no_seq[-drop_row, ], "R", "T")$n, 23)
+})
+
+test_that(".be_isc errors when it cannot be estimated", {
+  d <- generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40)
+  work <- be_isc_work(d)
+  part_seq <- work
+  part_seq$.sequence[part_seq$.subject == "3"] <- NA
+  expect_error(.be_isc(part_seq, "R", "T"), class = "pknca_error_be_isc_sequence_missing")
+  expect_identical(.be_isc_or_na(part_seq, "R", "T"), .be_isc_na())
+  # One subject per sequence leaves no degrees of freedom.
+  expect_error(
+    .be_isc(work[work$.subject %in% c("1", "2"), ], "R", "T"),
+    class = "pknca_error_be_isc_insufficient"
+  )
+  # Subject 3 is in sequence TRTR; one of its rows says RTRT.
+  mixed <- work
+  mixed$.sequence <- as.character(mixed$.sequence)
+  mixed$.sequence[which(mixed$.subject == "3")[1]] <- "RTRT"
+  expect_error(.be_isc(mixed, "R", "T"), class = "pknca_error_be_isc_sequence_inconsistent")
+  expect_identical(.be_isc_or_na(mixed, "R", "T"), .be_isc_na())
+  # be_assess() rejects a missing sequence in be_dataset(), before any model
+  # could drop the row, for every regulator.
+  long <- be_replicate_long(d)
+  long$sequence <- as.character(long$sequence)
+  long$sequence[long$subject == "3"] <- NA
+  for (regulator in c("ABE", "EMA", "FDA")) {
+    expect_error(
+      be_assess(long, "treatment", "R", "auclast", regulator = regulator),
+      class = "pknca_error_be_design_missing"
+    )
+  }
+})
+
+test_that(".be_isc with a single sequence is the mean of the contrasts", {
+  # A fixed-order crossover (every subject gets T then R) has one sequence, so
+  # the estimate is the mean contrast with sd / sqrt(n) and n - 1 degrees of
+  # freedom.
+  d <- generate_be_replicate(24, 20240501, "2x2", cv_wr = 0.3, cv_wt = 0.3)
+  d <- d[d$sequence == "TR", ]
+  ilat <- log(d$PK[d$treatment == "T"]) - log(d$PK[d$treatment == "R"])
+  isc <- .be_isc(be_isc_work(d), "R", "T", alpha = 0.10)
+  expect_equal(isc$pe_log, mean(ilat), tolerance = 1e-12)
+  expect_equal(isc$se, stats::sd(ilat) / sqrt(12), tolerance = 1e-12)
+  expect_equal(isc$df, 11)
+  expect_equal(isc$n, 12)
+  # be_extract_param() computes the ISC through .be_isc_or_na() for every model
+  # and regulator, so it must return the estimate rather than fail.
+  expect_identical(.be_isc_or_na(be_isc_work(d), "R", "T", alpha = 0.10), isc)
+  # End to end, average bioequivalence on this design uses the mixed model
+  # (treatment is aliased with period in the fixed-effects ANOVA), which needs
+  # the suggested packages.
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("lmerTest")
+  skip_if_not_installed("emmeans")
+  abe <- suppressMessages(be_assess(be_replicate_long(d), "treatment", "R", "auclast", regulator = "ABE"))
+  expect_equal(abe$gmr_percent, 100 * exp(mean(ilat)), tolerance = 1e-8)
+})
+
+test_that(".be_isc excludes a subject with an administration of unknown treatment", {
+  for (design in c("full", "partial")) {
+    d <- generate_be_replicate(24, 20240501, design, cv_wr = 0.45, cv_wt = 0.40)
+    work <- be_isc_work(d)
+    unknown <- work
+    unknown$.trt[which(unknown$.subject == "5")[1]] <- NA
+    expected <- .be_isc(work[work$.subject != "5", ], "R", "T")
+    expect_equal(.be_isc(unknown, "R", "T"), expected)
+    unknown$.sequence <- factor(NA_character_)
+    expect_equal(.be_isc(unknown, "R", "T"), expected)
+  }
+})
+
+test_that(".be_isc compares each test formulation with the reference", {
+  d <- generate_be_williams()
+  work <- data.frame(
+    .subject = factor(d$subject), .sequence = factor(d$sequence),
+    .period = factor(d$period), .trt = d$treatment, .logval = log(d$PPORRES)
+  )
+  for (tl in c("T1", "T2")) {
+    expect_equal(.be_isc(work, "R", tl), .be_isc(work[work$.trt %in% c("R", tl), ], "R", tl))
+  }
+  # A subject missing only T2 still contributes to T1 versus R.
+  drop_row <- which(work$.subject == "1" & work$.trt == "T2")
+  expect_equal(.be_isc(work[-drop_row, ], "R", "T1")$n, 18)
+  expect_equal(.be_isc(work[-drop_row, ], "R", "T2")$n, 17)
 })
 
 test_that(".be_rsabe_bound is monotone in the point estimate and flips once", {
@@ -240,11 +443,28 @@ test_that("be_assess applies HC, GCC, and ABE limits correctly", {
 test_that("be_assess (FDA RSABE) computes the linearized criterion", {
   d <- be_replicate_long(generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40))
   res <- be_assess(d, "treatment", "R", "auclast", regulator = "FDA")
-  expect_equal(res$gmr_percent, 88.3595729, tolerance = 1e-5)
-  # Linearized Howe/Hyslop bound; equals the PowerTOST power.RSABE criterion.
-  expect_equal(res$criterion, -0.073963079, tolerance = 1e-6)
+  # Linearized Howe/Hyslop bound on the intra-subject contrasts; the expected
+  # values come from a literal transcription of the FDA progesterone guidance
+  # SAS code, computed separately from PKNCA.
+  expect_equal(res$gmr_percent, 88.3595729, tolerance = 1e-8)
+  expect_equal(c(res$ci_lower, res$ci_upper), c(73.7959174, 105.797372), tolerance = 1e-8)
+  expect_equal(res$swr, 0.485616493, tolerance = 1e-8)
+  expect_equal(res$criterion, -0.0735236679, tolerance = 1e-8)
   expect_true(is.na(res$limit_lower))
   expect_true(res$pass)
+})
+
+test_that("be_assess (FDA RSABE) uses the FDA within-subject variance for a partial replicate", {
+  dp <- be_replicate_long(generate_be_replicate(24, 20240501, "partial", cv_wr = 0.45, cv_wt = 0.40))
+  res <- be_assess(dp, "treatment", "R", "auclast", regulator = "FDA")
+  # From the SAS transcription of the FDA progesterone guidance.
+  expect_equal(res$swr, 0.565267363, tolerance = 1e-8)
+  expect_equal(res$cvwr_percent, 100 * sqrt(exp(0.565267363^2) - 1), tolerance = 1e-8)
+  expect_equal(c(res$ci_lower, res$ci_upper), c(80.8048204, 114.610061), tolerance = 1e-8)
+  expect_equal(res$criterion, -0.157507556, tolerance = 1e-8)
+  # The expanding-limits frameworks keep the EMA ANOVA estimator.
+  ema <- be_assess(dp, "treatment", "R", "auclast", regulator = "EMA", model_type = "anova")
+  expect_equal(ema$swr, 0.576194165, tolerance = 1e-8)
 })
 
 test_that("be_assess (FDA RSABE) falls back to unscaled ABE when swR < 0.294", {
@@ -261,7 +481,9 @@ test_that("be_assess (NTID) enforces all three gates", {
   # below 80% so NTID fails.
   d_hi <- be_replicate_long(generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40))
   ntid_hi <- be_assess(d_hi, "treatment", "R", "auclast", regulator = "NTID")
-  expect_equal(ntid_hi$criterion, -0.130502036, tolerance = 1e-6)
+  # From the warfarin guidance SAS code with Delta = 1/0.9 (the guidance prints
+  # it rounded as 1.11111), computed separately from PKNCA.
+  expect_equal(ntid_hi$criterion, -0.130132422, tolerance = 1e-8)
   expect_false(ntid_hi$pass)
 
   # Low variability with a tight CI: all three gates pass.
@@ -430,8 +652,11 @@ test_that("be_extract_param returns both the model and ISC point estimates", {
   # lmer model contrast == replicateBE method.A on the balanced design
   expect_equal(p$model_gmr_percent, 88.359573, tolerance = 1e-5)
   expect_equal(c(p$model_ci_lower, p$model_ci_upper), c(75.617477, 103.248804), tolerance = 1e-4)
-  # ISC point estimate (wider, used by the FDA family)
-  expect_equal(p$isc_gmr_percent, 88.3595729, tolerance = 1e-5)
+  # The ISC estimate used by the FDA family: the same ratio as the model on this
+  # balanced, complete design, with a wider interval on n - m degrees of freedom.
+  expect_equal(p$isc_gmr_percent, 88.3595729, tolerance = 1e-8)
+  expect_equal(c(p$isc_ci_lower, p$isc_ci_upper), c(73.7959174, 105.797372), tolerance = 1e-8)
+  expect_equal(p$isc_df, 22)
   expect_equal(p$swr, 0.485616493, tolerance = 1e-7)
 })
 

@@ -564,6 +564,51 @@ the generated intervals:
   test-replicated, and the NTID and HVNTID frameworks are not feasible for
   it).  `reps_test` is the smallest of the per-formulation medians.
 
+* The intra-subject contrasts used by the FDA RSABE, NTID, and HVNTID
+  frameworks follow the FDA progesterone and warfarin guidances:  only subjects
+  with every test and reference administration their sequence calls for
+  contribute, the ratio is the unweighted mean of the sequence means of the
+  contrasts, and its standard error and `n - m` degrees of freedom (`n`
+  subjects, `m` sequences) come from the one-way model on sequence, so period
+  effects do not enter the ratio or its interval.  A subject without a single
+  known sequence is an error for these frameworks, and without a sequence
+  column the sequence is the subject's treatment-by-period pattern.
+  (@billdenney)
+
+* `be_within_var()` gains `model_type = "isc"`, the FDA progesterone and
+  warfarin guidance estimator (each subject's difference between its two
+  administrations of a formulation, centered within sequence, on `n - m`
+  degrees of freedom), and a `sequence` argument for it.  The FDA RSABE, NTID,
+  and HVNTID frameworks in `be_assess()` use it for `swR`, `swT`, and the
+  `swT`/`swR` bound; it equals the EMA ANOVA estimate for `TRTR`/`RTRT` and
+  differs for `TRR`/`RTR`/`RRT`.  `be_extract_param()` reports it in
+  `isc_`-prefixed columns.  (@billdenney)
+
+* The unscaled 80.00-125.00% criterion of the FDA frameworks (RSABE when
+  `swR < 0.294`, NTID, and HVNTID) uses the model of `model_type`.  The
+  default, `model_type = "isc"`, is for a replicate design the mixed-effects
+  model of the FDA progesterone and warfarin guidances (SAS
+  `RANDOM TRT/TYPE=FA0(2)`, `REPEATED/GRP=TRT`, `DDFM=SATTERTH`): correlated
+  treatment random effects for each subject, a residual variance per
+  treatment, REML, and Satterthwaite degrees of freedom, fit by subject so
+  that large studies stay fast; the fixed-effects ANOVA gives the geometric
+  means, and a design without a replicated formulation keeps the ANOVA ratio.
+  The reference-scaled criterion keeps the intra-subject contrasts, and each
+  row of `be_assess()` shows the ratio and interval that its decision used.
+  When the mixed model cannot be fit (too few subjects, a formulation whose
+  replicates agree exactly, or no convergence), `be_extract_param()` reports
+  the message in `model_error`, and only a decision that needs the unscaled
+  criterion stops, with an error of class `pknca_error_be_fda_model`.  The
+  `be_assess()` caption for HVNTID states its criteria (the conventional
+  interval and the `swT`/`swR` bound).  (@billdenney)
+
+* `be_dataset()`, and so `be_assess()` and `be_compare()`, stops with
+  `pknca_error_be_design_missing` when the subject, sequence, period, or
+  treatment is missing in a row that would be analyzed, and with
+  `pknca_error_be_sequence_inconsistent` when a subject has more than one
+  sequence, so no model drops such rows while the subject count includes them.
+  (@billdenney)
+
 * Secondary parameters can now be calculated by linking intervals with
   `interval_id` and `<parameter>_ref` columns in the interval specification.
   The reference interval supplies the cross-profile input (the plasma AUC for

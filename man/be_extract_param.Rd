@@ -17,14 +17,17 @@ be_extract_param(fit, ds_ep, alpha = 0.1)
 \value{
 A data.frame with one row per test formulation, carrying the model
 and ISC point estimates/intervals, geometric means, and within-formulation
-variances.
+variances: \code{swr}, \code{swt}, \code{cvwr_percent}, \code{cvwt_percent}, \code{df_wr}, \code{df_wt},
+\code{sw_ratio}, and \code{sw_ratio_ci_upper} from the model's estimator, and the same
+columns prefixed \code{isc_} from the FDA estimator (see \code{\link[=be_within_var]{be_within_var()}}).
 }
 \description{
 \code{be_extract_param()} turns a \code{\link[=be_fit_model_single]{be_fit_model_single()}} fit into the parameters
 the regulatory decision needs.  It always computes the intra-subject-contrast
-(ISC) point estimate, then dispatches on the model type to extract the
-model-based geometric means, the geometric mean ratio and its confidence
-interval, and the within-formulation standard deviations.
+(ISC) point estimate and the FDA within-formulation standard deviations, then
+dispatches on the model type to extract the model-based geometric means, the
+geometric mean ratio and its confidence interval, and the model's
+within-formulation standard deviations.
 }
 \seealso{
 Other Bioequivalence:

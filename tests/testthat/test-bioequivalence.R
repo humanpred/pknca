@@ -110,6 +110,63 @@ test_that("be_dataset prefers PPSTRES over PPORRES", {
   expect_identical(ds$columns$value, "PPSTRES")
 })
 
+test_that("be_dataset stops when a design column is missing in an analyzed row", {
+  for (col in c("subject", "sequence", "period", "form")) {
+    d <- make_be_df()
+    d[[col]][3] <- NA
+    expect_error(
+      be_dataset(d, reference_col = "form", reference_value = "R", endpoints = "auclast"),
+      regexp = paste0("Design column\\(s\\) ", col, " have missing values"),
+      class = "pknca_error_be_design_missing"
+    )
+  }
+  # A row without a value is not analyzed, so its design columns may be missing.
+  d <- make_be_df()
+  d$PPORRES[3] <- NA
+  d$sequence[3] <- NA
+  ds <- be_dataset(d, reference_col = "form", reference_value = "R", endpoints = "auclast")
+  expect_equal(nrow(ds$data), nrow(d) - 1)
+  # Without a sequence column there is no sequence to check.
+  d <- make_be_df()
+  d$sequence <- NULL
+  ds <- be_dataset(d, reference_col = "form", reference_value = "R", endpoints = "auclast")
+  expect_true(all(is.na(ds$data$.sequence)))
+  # Rows of an endpoint that was not requested are not analyzed.
+  d <- rbind(make_be_df(), make_be_df(endpoint = "cmax"))
+  d$period[d$PPTESTCD == "cmax"][1] <- NA
+  ds <- be_dataset(d, reference_col = "form", reference_value = "R", endpoints = "auclast")
+  expect_identical(ds$endpoints, "auclast")
+  expect_error(
+    be_dataset(d, reference_col = "form", reference_value = "R", endpoints = c("auclast", "cmax")),
+    class = "pknca_error_be_design_missing"
+  )
+})
+
+test_that("be_dataset checks only the subject and treatment for a parallel design", {
+  d <- generate_be_parallel()
+  d$period <- NA
+  d$sequence <- NA
+  ds <- be_dataset(d, reference_col = "treatment", reference_value = "R", endpoints = "auclast", sequence = "sequence")
+  expect_equal(nrow(ds$data), nrow(d))
+  d$treatment[2] <- NA
+  expect_error(
+    be_dataset(d, reference_col = "treatment", reference_value = "R", endpoints = "auclast"),
+    regexp = "Design column\\(s\\) treatment have missing values",
+    class = "pknca_error_be_design_missing"
+  )
+})
+
+test_that("be_dataset stops when a subject has more than one sequence", {
+  d <- make_be_df()
+  # Subject 2 is in sequence TR.
+  d$sequence[d$subject == 2][1] <- "RT"
+  expect_error(
+    be_dataset(d, reference_col = "form", reference_value = "R", endpoints = "auclast"),
+    regexp = "Subject\\(s\\) 2 have more than one sequence",
+    class = "pknca_error_be_sequence_inconsistent"
+  )
+})
+
 test_that("be_dataset warns about and skips a missing endpoint", {
   expect_warning(
     ds <- be_dataset(make_be_df(), reference_col = "form", reference_value = "R",
@@ -369,7 +426,17 @@ test_that("covariates with an intra-subject-contrast framework warn that they do
   plain <- be_assess(d, "treatment", "R", "auclast", regulator = "FDA")
   expect_equal(res$gmr_percent, plain$gmr_percent)
   expect_equal(res$criterion, plain$criterion)
-  expect_match(attr(res, "caption"), "Covariates do not enter the intra-subject contrasts.", fixed = TRUE)
+  expect_match(
+    attr(res, "caption"),
+    "Covariates enter neither the intra-subject contrasts nor the FDA mixed model.",
+    fixed = TRUE
+  )
+  # The unscaled criterion, from the FDA mixed model, does not use them either.
+  d_lo <- be_replicate_long(generate_be_replicate(24, 2024, "full", cv_wr = 0.12, cv_wt = 0.12))
+  d_lo$WT <- as.numeric(d_lo$subject) + 60
+  lo <- suppressWarnings(be_assess(d_lo, "treatment", "R", "auclast", regulator = "HVNTID", covariates = "WT"))
+  lo_plain <- be_assess(d_lo, "treatment", "R", "auclast", regulator = "HVNTID")
+  expect_equal(c(lo$ci_lower, lo$ci_upper), c(lo_plain$ci_lower, lo_plain$ci_upper))
 })
 
 # Heteroscedastic models ------------------------------------------------------

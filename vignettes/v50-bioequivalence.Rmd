@@ -65,7 +65,19 @@ pass `model_type` to `be_assess()` to override it.  A parallel study (one
 measurement per subject) is analyzed by a fixed-effects ANOVA, while a crossover
 or replicate study (repeated measures per subject) uses the mixed model.  The
 FDA reference-scaled family always uses intra-subject contrasts (`"isc"`)
-regardless of design.
+regardless of design: each subject's mean log test minus mean log reference,
+from the subjects with every administration their sequence calls for, averaged
+with equal weight per sequence and with `n - m` degrees of freedom (`n` subjects,
+`m` sequences), as the FDA progesterone and warfarin guidances specify.  Their
+within-subject variability comes from each subject's difference between its two
+administrations of a formulation, centered within sequence
+(`be_within_var(model_type = "isc")`); the expanding-limits frameworks use the
+EMA ANOVA estimator.  The two agree for a `TRTR`/`RTRT` full replicate.  The unscaled
+80.00-125.00% criterion of the FDA frameworks (RSABE below the switching
+variability, NTID, and HVNTID) uses the guidance's mixed-effects model, with
+correlated treatment random effects per subject, a residual variance per
+treatment, and Satterthwaite degrees of freedom; with complete data it gives the
+same ratio and interval as the intra-subject contrasts.
 
 | Regulator | Design required | Auto `model_type` | Notes |
 |---|---|---|---|
@@ -345,8 +357,9 @@ bioequivalence decision.
   replicated design.
 * **`covariates`** names columns added to every model as additive fixed
   effects.  The least-squares means are then at the mean of numeric covariates.
-  The intra-subject contrasts used by the FDA frameworks and the within-subject
-  variances used for reference scaling do not use covariates.
+  The intra-subject contrasts and the FDA mixed model used by the FDA frameworks
+  and the within-subject variances used for reference scaling do not use
+  covariates.
 * **`regulator = "descriptive"`** estimates the geometric means, their ratio,
   and its confidence interval exactly as `"ABE"` does, but applies no
   acceptance limits and reports no pass/fail.  It is meant for comparisons that
