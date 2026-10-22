@@ -775,6 +775,8 @@ print.be_within_var <- function(x, ...) {
                 x$swT, x$cvwt_percent, x$df_wT))
     cat(sprintf("  swT/swR = %.5f (upper %g%% confidence bound = %.5f)\n",
                 x$sw_ratio, (1 - x$alpha) * 100, x$sw_ratio_ci_upper))
+  } else if (x$df_wT %in% 0) {
+    cat("  Test:      no residual degrees of freedom (df = 0; swT unavailable)\n")
   } else {
     cat("  Test:      not replicated (swT unavailable)\n")
   }
@@ -942,6 +944,7 @@ print.be_within_var <- function(x, ...) {
 
 # Average bioequivalence: conventional 80-125% on the 90% confidence interval.
 .be_abe <- function(est, wv, reg, alpha, unscaled = est) {
+  .be_check_finite(est, c("gmr_percent", "ci_lower", "ci_upper"))
   list(
     limit_lower = 80, limit_upper = 125, criterion = NA_real_,
     pass = isTRUE(est$ci_lower >= 80 && est$ci_upper <= 125),
@@ -960,6 +963,7 @@ print.be_within_var <- function(x, ...) {
       "pknca_error_be_abel_reference_not_replicated"
     )
   }
+  .be_check_finite(est, c("gmr_percent", "ci_lower", "ci_upper"))
   lim <- be_expand_limits(wv$swR, reg)
   ci_ok <- est$ci_lower >= lim[["lower"]] && est$ci_upper <= lim[["upper"]]
   list(
@@ -974,6 +978,7 @@ print.be_within_var <- function(x, ...) {
 # The point estimate alone within 80.00-125.00%, with no requirement on its
 # confidence interval: Health Canada's standard for Cmax.
 .be_pe <- function(est, wv, reg, alpha, unscaled = est) {
+  .be_check_finite(est, "gmr_percent")
   list(
     limit_lower = 80, limit_upper = 125, criterion = NA_real_,
     pass = isTRUE(.be_pe_ok(reg, est$gmr_percent)),
@@ -995,6 +1000,7 @@ print.be_within_var <- function(x, ...) {
   if (!is.na(reg$switch_swr) && wv$swR < reg$switch_swr) {
     # Unscaled average bioequivalence fallback.
     .be_check_unscaled(unscaled)
+    .be_check_finite(unscaled, c("gmr_percent", "ci_lower", "ci_upper"))
     list(
       limit_lower = 80, limit_upper = 125, criterion = NA_real_,
       pass = isTRUE(
@@ -1003,6 +1009,7 @@ print.be_within_var <- function(x, ...) {
       report = unscaled, rule = "ABE"
     )
   } else {
+    .be_check_finite(est, c("pe_log", "se", "gmr_percent"))
     bound <- .be_rsabe_bound(est$pe_log, est$se, est$df, wv$s2wR, wv$df_wR, reg$r_const)
     list(
       limit_lower = NA_real_, limit_upper = NA_real_, criterion = bound,
@@ -1026,6 +1033,8 @@ print.be_within_var <- function(x, ...) {
     )
   }
   .be_check_unscaled(unscaled)
+  .be_check_finite(est, c("pe_log", "se", "gmr_percent"))
+  .be_check_finite(unscaled, c("ci_lower", "ci_upper"))
   bound <- .be_rsabe_bound(est$pe_log, est$se, est$df, wv$s2wR, wv$df_wR, reg$r_const)
   list(
     limit_lower = 80, limit_upper = 125, criterion = bound,
@@ -1053,6 +1062,7 @@ print.be_within_var <- function(x, ...) {
     )
   }
   .be_check_unscaled(unscaled)
+  .be_check_finite(unscaled, c("gmr_percent", "ci_lower", "ci_upper"))
   list(
     limit_lower = 80, limit_upper = 125, criterion = NA_real_,
     pass = isTRUE(
@@ -1076,10 +1086,33 @@ print.be_within_var <- function(x, ...) {
         "A within-subject variance has no residual degrees of freedom:",
         "too few subjects have replicate administrations of the formulation."
       ),
-      class = c("pknca_error_be_within_var_no_df", "pknca_error_be_no_df")
+      class = c("pknca_error_be_within_var_no_df", "pknca_error_be_no_df", "pknca_error_be_not_estimable")
     )
   }
   rlang::abort(msg, class = class)
+}
+
+# Stop when an estimate that a decision uses is missing or not finite, so
+# that the decision is never a FAIL by default.  `fields` names the elements of
+# `est` the decision reads.
+.be_check_finite <- function(est, fields) {
+  bad <- fields[!vapply(fields, .be_finite_field, logical(1), est = est)]
+  if (length(bad) > 0) {
+    rlang::abort(
+      sprintf(
+        "The bioequivalence decision needs a finite %s, which the estimate does not have.",
+        paste(bad, collapse = ", ")
+      ),
+      class = c("pknca_error_be_estimate_not_finite", "pknca_error_be_not_estimable")
+    )
+  }
+  invisible(est)
+}
+
+# Whether element `field` of `est` is one finite number.
+.be_finite_field <- function(field, est) {
+  value <- est[[field]]
+  length(value) == 1 && is.numeric(value) && is.finite(value)
 }
 
 # Stop when the unscaled criterion needs the model estimate but the model
@@ -1211,9 +1244,9 @@ print.be_within_var <- function(x, ...) {
           "The confidence interval of treatment '%s' versus '%s' cannot be estimated:",
           "the %s gives %s degrees of freedom (too few observations)."
         ),
-        test_level, reference_value, model_desc, format(df)
+        test_level, reference_value, model_desc, if (length(df) == 0) "no" else paste(format(df), collapse = ", ")
       ),
-      class = c("pknca_error_be_contrast_no_df", "pknca_error_be_no_df")
+      class = c("pknca_error_be_contrast_no_df", "pknca_error_be_no_df", "pknca_error_be_not_estimable")
     )
   }
   invisible(df)
@@ -1806,6 +1839,20 @@ be_fit_model_nlme <- function(ds_ep, scaling = TRUE) {
 # (one observation per subject, so there is no within-subject variance).  The
 # formula is inlined into the call (bquote) so emmeans can re-evaluate it.
 be_fit_model_gls <- function(ds_ep) {
+  # A treatment-specific variance needs at least two observations per arm; with
+  # one, the variance and the Satterthwaite degrees of freedom of the contrast
+  # are not identified (the degrees of freedom then depend on the row order).
+  arm_n <- table(droplevels(factor(ds_ep$.trt)))
+  if (any(arm_n < 2)) {
+    rlang::abort(
+      sprintf(
+        "The gls model with treatment-specific variances needs at least two observations per treatment; %s has %s.",
+        paste0("'", names(arm_n)[arm_n < 2], "'", collapse = ", "),
+        paste(arm_n[arm_n < 2], collapse = ", ")
+      ),
+      class = c("pknca_error_be_contrast_no_df", "pknca_error_be_no_df", "pknca_error_be_not_estimable")
+    )
+  }
   fixed <- .be_model_formula(ds_ep, random = FALSE)
   model <- eval(bquote(
     nlme::gls(
@@ -2725,7 +2772,10 @@ print.summary_be_assess <- function(x, ...) {
 #' stacks the results, so the same study can be judged side by side under the
 #' different reference-scaling rules.  Frameworks that the design does not
 #' support (for example NTID on a partial replicate) are skipped with a warning.
-#' Rows for the `"descriptive"` framework have `NA` in the decision columns.
+#' When every framework fails because the data give no usable estimate (for
+#' example no degrees of freedom; an error of class
+#' `pknca_error_be_not_estimable`), that error is raised.  Rows for the
+#' `"descriptive"` framework have `NA` in the decision columns.
 #'
 #' @inheritParams be_assess
 #' @param regulators A character vector of regulatory frameworks to compare (see
@@ -2773,6 +2823,7 @@ be_compare <- function(object, reference_col, reference_value,
   )
   .be_check_widen_endpoints(widen_endpoints, ds$endpoints)
   results <- list()
+  failures <- list()
   units_missing <- FALSE
   for (rg in regulators) {
     # Collapse the per-regulator "units missing" warning into one (below).
@@ -2794,8 +2845,9 @@ be_compare <- function(object, reference_col, reference_value,
       }
     )
     if (inherits(res, "try-error")) {
+      failures[[rg]] <- attr(res, "condition")
       rlang::warn(
-        sprintf("Skipping %s: %s", rg, conditionMessage(attr(res, "condition"))),
+        sprintf("Skipping %s: %s", rg, conditionMessage(failures[[rg]])),
         class = "pknca_warning_be_skipped_framework"
       )
     } else {
@@ -2806,6 +2858,10 @@ be_compare <- function(object, reference_col, reference_value,
     .be_warn_units_missing()
   }
   if (length(results) == 0) {
+    if (all(vapply(failures, inherits, logical(1), what = "pknca_error_be_not_estimable"))) {
+      # The data, not the frameworks, prevent every assessment.
+      rlang::cnd_signal(failures[[1]])
+    }
     rlang::abort(
       "No regulatory framework could be assessed for this design.",
       class = "pknca_error_be_no_frameworks"

@@ -1102,19 +1102,25 @@ the generated intervals:
 
 ## Bug fixes
 
-* `be_assess()` and `be_compare()` stop with an error of class
-  `pknca_error_be_no_df` when a confidence interval or a within-subject
-  variance has no degrees of freedom, instead of reporting a `NaN` confidence
-  interval that fails silently (@billdenney).  This covers the fixed-effects
-  ANOVA contrast (for example a 2x2 crossover of two subjects or a parallel
-  study of one subject per arm), the `lmer`, `nlme`, and `gls` contrasts from
-  `emmeans` (for example a parallel arm of one subject), and a replicated
+* `be_assess()` stops with an error of class `pknca_error_be_no_df` when a
+  confidence interval or a within-subject variance has no degrees of freedom,
+  instead of reporting a `NaN` confidence interval that fails silently
+  (@billdenney).  This covers the fixed-effects ANOVA contrast (for example a
+  2x2 crossover of two subjects, a parallel study of one subject per arm, or a
+  3x3 Williams design of three subjects), the `lmer`, `nlme`, and `gls`
+  contrasts from `emmeans`, a `gls` model with a treatment of one observation
+  (whose degrees of freedom depended on the row order), and a replicated
   formulation whose replicates leave no residual degrees of freedom, which was
   reported as not replicated.  `be_within_var()` reports that case with
   `df_wR` or `df_wT` of 0.  NTID and HVNTID check both within-subject
   variances; a missing reference variance used to fail the decision silently.
-  The within-subject variance no longer leaks `anova()`'s warning about an
-  essentially perfect fit.
+  Every decision now stops with `pknca_error_be_estimate_not_finite` when an
+  estimate it uses is missing or not finite (for example from `be_table()` or
+  a sparse bootstrap without finite replicates), instead of reporting a FAIL.
+  Both classes inherit from `pknca_error_be_not_estimable`.  `be_compare()`
+  skips a framework that fails this way with a warning, and raises the error
+  when it stops every framework.  The within-subject variance no longer leaks
+  `anova()`'s warning about an essentially perfect fit.
 
 * A warning signaled by an exclusion function given to `exclude(FUN = )` now
   reaches the caller with its class and fields.  Before, the function ran inside
