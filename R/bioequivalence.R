@@ -1876,7 +1876,8 @@ be_fit_model_gls <- function(ds_ep) {
 #' @param alpha The significance level; the confidence interval has level
 #'   `1 - alpha`.
 #' @returns A data.frame with one row per test formulation, carrying the model
-#'   and ISC point estimates/intervals, geometric means, and within-formulation
+#'   and ISC point estimates/intervals (with `isc_n`, the number of subjects in
+#'   the intra-subject contrasts), geometric means, and within-formulation
 #'   variances: `swr`, `swt`, `cvwr_percent`, `cvwt_percent`, `df_wr`, `df_wt`,
 #'   `sw_ratio`, and `sw_ratio_ci_upper` from the model's estimator, and the same
 #'   columns prefixed `isc_` from the FDA estimator (see [be_within_var()]).
@@ -1918,6 +1919,7 @@ be_extract_param <- function(fit, ds_ep, alpha = 0.10) {
         model_error = if (is.null(m$error)) NA_character_ else m$error,
         isc_pe_log = isc$pe_log, isc_se = isc$se, isc_df = isc$df,
         isc_gmr_percent = isc$gmr_percent, isc_ci_lower = isc$ci_lower, isc_ci_upper = isc$ci_upper,
+        isc_n = isc$n,
         swr = wv$ref_var$sw, swt = wv$test_var$sw,
         cvwr_percent = wv$ref_var$cv, cvwt_percent = wv$test_var$cv,
         df_wr = wv$ref_var$df, df_wt = wv$test_var$df,
@@ -2181,7 +2183,7 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
     est <-
       if (identical(reg$est_method, "isc")) {
         list(
-          pe_log = p$isc_pe_log, se = p$isc_se, df = p$isc_df, n = p$n,
+          pe_log = p$isc_pe_log, se = p$isc_se, df = p$isc_df, n = p$isc_n,
           gmr_percent = p$isc_gmr_percent, ci_lower = p$isc_ci_lower, ci_upper = p$isc_ci_upper
         )
       } else {
@@ -2196,7 +2198,7 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
     dec <- .be_decide(est, wv, reg, alpha, unscaled = model_est, endpoint_rule = rules[[as.character(p$endpoint)]])
     rows[[length(rows) + 1]] <-
       data.frame(
-        endpoint = p$endpoint, test = p$test, n = p$n, design = design, units = p$units,
+        endpoint = p$endpoint, test = p$test, n = dec$report$n, design = design, units = p$units,
         gm_reference = p$gm_reference, gm_reference_lower = p$gm_reference_lower,
         gm_reference_upper = p$gm_reference_upper,
         gm_test = p$gm_test, gm_test_lower = p$gm_test_lower, gm_test_upper = p$gm_test_upper,
@@ -2397,7 +2399,10 @@ be_fit_models <- function(object, reference_col, reference_value,
         paste(
           "Geometric means (with %s) are least-squares means from %s.",
           "The reference-scaled criterion uses intra-subject contrasts, and the unscaled",
-          "80.00-125.00%% criterion uses %s; the ratio and %s shown are the ones the decision used."
+          "80.00-125.00%% criterion uses %s; the ratio and %s shown are the ones the decision used.",
+          "n counts the subjects behind the ratio shown: for the intra-subject contrasts, those with every",
+          "test and reference administration their sequence calls for; for the model, every subject with",
+          "the test or the reference formulation."
         ),
         ci, model_desc, unscaled_desc, ci
       )
@@ -2532,7 +2537,10 @@ be_fit_models <- function(object, reference_col, reference_value,
 #' example, a formulation whose replicates agree exactly), only a decision that
 #' needs the unscaled criterion stops with an error.  Each row shows the ratio
 #' and interval its decision used: the intra-subject contrasts for the
-#' reference-scaled criterion and the model for the unscaled one.  Pass
+#' reference-scaled criterion and the model for the unscaled one, and `n` counts
+#' the subjects behind that ratio: for the intra-subject contrasts, the subjects
+#' with every test and reference administration their sequence calls for; for
+#' the model, every subject with the test or the reference formulation.  Pass
 #' `model_type` to override (`"lmer"`, `"anova"`, `"isc"`, `"nlme"`, or
 #' `"gls"`); with `"isc"` the FDA mixed model also gives the ratio for the
 #' other frameworks, and a design without a replicated formulation keeps the
@@ -2647,7 +2655,8 @@ be_fit_models <- function(object, reference_col, reference_value,
 #' @returns An object of class `be_assess` (a data.frame), ordered by endpoint
 #'   (in the order requested) then by test formulation (reference-first), with
 #'   one row per endpoint and test formulation and the columns `endpoint`,
-#'   `test`, `n`, `design`, `units` (the endpoint's measurement units; the column
+#'   `test`, `n` (the number of subjects behind the ratio shown; see Details),
+#'   `design`, `units` (the endpoint's measurement units; the column
 #'   is omitted with a warning when units are not provided), the reference and
 #'   test geometric means with their 90% confidence intervals on the measurement
 #'   scale (`gm_reference`, `gm_reference_lower`, `gm_reference_upper`, `gm_test`,
