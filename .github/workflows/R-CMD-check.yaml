@@ -24,14 +24,16 @@ jobs:
           - {os: ubuntu-latest,   r: 'devel', http-user-agent: 'release'}
           - {os: ubuntu-latest,   r: 'release'}
           - {os: ubuntu-latest,   r: 'oldrel-1'}
-          # The minimum R version declared in DESCRIPTION. Only the hard
-          # dependencies (plus testthat and rcmdcheck) are installed, because
-          # several suggested packages need a newer R; tests that use a
-          # suggested package skip when it is absent, and R CMD check runs with
+          # The minimum R version declared in DESCRIPTION.  The hard
+          # dependencies are installed with the suggested packages that the
+          # tests use.  The current Matrix and MASS need R 4.4, and pak installs
+          # only the newest release of a dependency, so their last releases
+          # that support R 4.1 are pinned for lme4 and lmerTest.  ggtibble
+          # (R >= 4.3) is used only by a vignette, so R CMD check runs with
           # _R_CHECK_FORCE_SUGGESTS_ off and without the vignettes.
           - {os: ubuntu-latest,   r: '4.1',
              deps: '"hard"',
-             extra: 'any::rcmdcheck, any::testthat',
+             extra: 'any::rcmdcheck, any::testthat, any::units, any::emmeans, any::lme4, any::lmerTest, cran::Matrix@1.6-5, cran::MASS@7.3-60.0.1, humanpred/cdiscdata',
              force-suggests: 'false',
              check-args: 'c("--no-manual", "--as-cran", "--ignore-vignettes")',
              build-args: 'c("--no-manual", "--no-build-vignettes")'}

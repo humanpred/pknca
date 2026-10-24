@@ -750,9 +750,12 @@ test_that("tss Monoexponential no models converged with verbose = TRUE", {
 })
 
 test_that("pk.tss.stepwise.linear's Wald interval equals the profile interval of confint()", {
-  # Before R 4.4, confint() on a glm needs MASS; the Wald interval does not,
-  # and for this Gaussian identity-link model the two are the same
-  skip_if(getRversion() < "4.4", "confint() on a glm needs MASS before R 4.4")
+  # Before R 4.4, confint() on a glm needs MASS (a recommended package, so
+  # usually installed); the Wald interval does not, and for this Gaussian
+  # identity-link model the two are the same
+  if (getRversion() < "4.4") {
+    skip_if_not_installed("MASS")
+  }
   tmpdata <- generate.data()
   for (start_time in 0:10) {
     current_data <- tmpdata[tmpdata$time >= start_time, ]
