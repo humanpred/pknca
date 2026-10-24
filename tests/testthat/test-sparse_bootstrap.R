@@ -259,6 +259,10 @@ test_that("be_assess() of a sparse bootstrap gives the percentile interval of th
     be_assess(o_nca_boot, "treatment", "R", endpoints = "auclast", widen_endpoints = "auclast"),
     class = "pknca_error_be_widen_endpoints_not_abel"
   )
+  expect_error(
+    be_assess(o_nca_boot, "treatment", "R", endpoints = "auclast", widen_default = FALSE),
+    class = "pknca_error_be_widen_endpoints_not_abel"
+  )
   expect_error(be_assess(o_nca_boot, "treatment", "X", endpoints = "auclast"), class = "pknca_error_be_dataset_ref_not_found")
   expect_error(be_assess(o_nca_boot, "bootstrap", "original", endpoints = "auclast"), regexp = "reference_col")
   # be_compare() keeps the frameworks that apply
