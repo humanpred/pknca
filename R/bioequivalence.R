@@ -44,8 +44,8 @@
 #'   allows the same widening for Cmax,ss, Ctau,ss, and partial AUCs
 #'   ([EMA Guideline on the Pharmacokinetic and Clinical Evaluation of Modified Release Dosage Forms](https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-pharmacokinetic-and-clinical-evaluation-modified-release-dosage-forms_en.pdf),
 #'   section 6.8.2.2); PKNCA cannot tell those endpoints from their names, so
-#'   list them, with `"cmax"`, in the `widen_endpoints` argument of
-#'   [be_assess()].
+#'   name them in the `widen_endpoints` argument of [be_assess()], which adds
+#'   them to Cmax.
 #' * **HC** -- Health Canada.  ABEL for **AUC only**: the 90% confidence
 #'   interval within limits widened as `exp(+/- 0.76 * swR)` when
 #'   `swR > 0.294` (`CVwR > 30%`), capped at 66.7-150.0% (`CVwR = 57.4%`), with
@@ -1155,38 +1155,36 @@ print.be_within_var <- function(x, ...) {
 
 # The acceptance rule of an expanding-limits framework for each endpoint, as a
 # character vector named by endpoint: "abel" (widened limits on the confidence
-# interval) for the endpoints whose concept the framework widens, "pe" (the
-# point estimate alone) for the concepts it judges by the point estimate, and
-# "abe" (80.00-125.00% on the confidence interval) otherwise.  The concept is
-# the endpoint's PKNCA parameter concept.  `widen_endpoints`, when given,
-# replaces the widened endpoints.  Endpoints that are not PKNCA parameters have
-# no concept; they are listed in the "unclassified" attribute when
-# `widen_endpoints` is not given.  Other frameworks get NA for every endpoint.
-.be_endpoint_rules <- function(endpoints, reg, widen_endpoints = NULL) {
+# interval) for the endpoints that widen, "pe" (the point estimate alone) for
+# the concepts the framework judges by the point estimate, and "abe"
+# (80.00-125.00% on the confidence interval) otherwise.  The endpoints that
+# widen are those whose PKNCA parameter concept the framework widens (when
+# `widen_default` is TRUE) and those in `widen_endpoints`.  Endpoints that are
+# not PKNCA parameters have no concept; those not in `widen_endpoints` are
+# listed in the "unclassified" attribute when the framework's own rules could
+# apply to them.  Other frameworks get NA for every endpoint.
+.be_endpoint_rules <- function(endpoints, reg, widen_endpoints = NULL, widen_default = TRUE) {
   endpoints <- unique(as.character(endpoints))
   rules <- stats::setNames(rep(NA_character_, length(endpoints)), endpoints)
   if (!identical(reg$scaling, "abel")) {
     return(rules)
   }
   concept <- unname(parameter_classification()$concept[endpoints])
-  widen <-
-    if (is.null(widen_endpoints)) {
-      concept %in% reg$widen_concepts
-    } else {
-      endpoints %in% widen_endpoints
-    }
+  named <- endpoints %in% widen_endpoints
+  widen <- (widen_default & concept %in% reg$widen_concepts) | named
   rules[] <- ifelse(widen, "abel", ifelse(concept %in% reg$pe_only_concepts, "pe", "abe"))
+  own_rules_apply <- widen_default || length(reg$pe_only_concepts) > 0
   attr(rules, "unclassified") <-
-    if (is.null(widen_endpoints)) endpoints[is.na(concept)] else character()
+    if (own_rules_apply) endpoints[is.na(concept) & !named] else character()
   rules
 }
 
-# Check `widen_endpoints` against the endpoints assessed and the framework.
-.be_check_widen_endpoints <- function(widen_endpoints, endpoints, reg = NULL) {
-  if (is.null(widen_endpoints)) {
-    return(invisible(NULL))
-  }
-  checkmate::assert_character(widen_endpoints, any.missing = FALSE, unique = TRUE)
+# Check `widen_endpoints` and `widen_default` against the endpoints assessed
+# and the framework.  Both change only the expanding-limits frameworks, so
+# changing them for another framework is an error.
+.be_check_widening <- function(widen_endpoints, widen_default, endpoints, reg = NULL) {
+  checkmate::assert_flag(widen_default)
+  checkmate::assert_character(widen_endpoints, any.missing = FALSE, unique = TRUE, null.ok = TRUE)
   unknown <- setdiff(widen_endpoints, endpoints)
   if (length(unknown) > 0) {
     rlang::abort(
@@ -1197,10 +1195,10 @@ print.be_within_var <- function(x, ...) {
       class = "pknca_error_be_widen_endpoints_unknown"
     )
   }
-  if (!is.null(reg) && !identical(reg$scaling, "abel")) {
+  if (!is.null(reg) && !identical(reg$scaling, "abel") && (length(widen_endpoints) > 0 || !widen_default)) {
     rlang::abort(
       sprintf(
-        "`widen_endpoints` applies to the expanding-limits frameworks (EMA, HC, and GCC), not %s.",
+        "`widen_endpoints` and `widen_default` apply to the expanding-limits frameworks (EMA, HC, and GCC), not %s.",
         reg$name
       ),
       class = "pknca_error_be_widen_endpoints_not_abel"
@@ -2138,7 +2136,7 @@ be_extract_param_isc <- function(fit, ds_ep, alpha = 0.10) {
 #' confidence interval that its decision used.  The expanding-limits frameworks
 #' decide each endpoint by its own rule (see [be_regulator()]); an endpoint that
 #' is not a PKNCA parameter cannot be classified, so it keeps 80.00-125.00%
-#' with a warning unless `widen_endpoints` is given.
+#' with a warning unless it is named in `widen_endpoints`.
 #'
 #' @inheritParams be_assess
 #' @param params A data.frame of parameters from [be_extract_param()] (with an
@@ -2155,16 +2153,16 @@ be_extract_param_isc <- function(fit, ds_ep, alpha = 0.10) {
 #' @family Bioequivalence
 #' @export
 be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, model_type = NA_character_,
-                     widen_endpoints = NULL) {
+                     widen_endpoints = NULL, widen_default = TRUE) {
   reg <- if (inherits(regulator, "be_regulator")) regulator else be_regulator(regulator)
-  .be_check_widen_endpoints(widen_endpoints, unique(as.character(params$endpoint)), reg)
-  rules <- .be_endpoint_rules(params$endpoint, reg, widen_endpoints)
+  .be_check_widening(widen_endpoints, widen_default, unique(as.character(params$endpoint)), reg)
+  rules <- .be_endpoint_rules(params$endpoint, reg, widen_endpoints, widen_default)
   for (ep in attr(rules, "unclassified")) {
     rlang::warn(
       sprintf(
         paste(
-          "Endpoint '%s' is not a PKNCA parameter, so the %s framework cannot tell whether its limits widen;",
-          "it uses 80.00-125.00%%.  Name it in `widen_endpoints` to widen its limits."
+          "Endpoint '%s' is not a PKNCA parameter, so the %s framework cannot tell which of its rules applies;",
+          "its confidence interval must lie within 80.00-125.00%%.  Name it in `widen_endpoints` to widen its limits."
         ),
         ep, reg$name
       ),
@@ -2282,7 +2280,8 @@ be_fit_models <- function(object, reference_col, reference_value,
                           endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
                           regulator = "ABE", model_type = NULL, alpha = 0.10,
                           subject = NULL, sequence = NULL, period = NULL, design = NULL,
-                          covariates = NULL, heteroscedastic = FALSE, widen_endpoints = NULL) {
+                          covariates = NULL, heteroscedastic = FALSE, widen_endpoints = NULL,
+                          widen_default = TRUE) {
   assert_numeric_between(alpha, lower = 0, upper = 1)
   checkmate::assert_flag(heteroscedastic)
   reg <- be_regulator(regulator)
@@ -2302,7 +2301,7 @@ be_fit_models <- function(object, reference_col, reference_value,
     )
   }
   .be_check_feasible(reg, design)
-  .be_check_widen_endpoints(widen_endpoints, ds$endpoints, reg)
+  .be_check_widening(widen_endpoints, widen_default, ds$endpoints, reg)
   model_type <- .be_resolve_model_type(model_type, reg, design, heteroscedastic)
   if (length(ds$columns$covariates) > 0 && identical(reg$est_method, "isc")) {
     rlang::warn(
@@ -2328,11 +2327,11 @@ be_fit_models <- function(object, reference_col, reference_value,
   }
   tbl <- be_table(
     do.call(rbind, params), reg, alpha, design = design$design, model_type = model_type,
-    widen_endpoints = widen_endpoints
+    widen_endpoints = widen_endpoints, widen_default = widen_default
   )
   caption <- .be_caption(
     reg, model_type, alpha, ds$columns$covariates,
-    endpoint_rules = .be_endpoint_rules(ds$endpoints, reg, widen_endpoints)
+    endpoint_rules = .be_endpoint_rules(ds$endpoints, reg, widen_endpoints, widen_default)
   )
   .be_table_finish(tbl, ds, caption = caption)
 }
@@ -2565,10 +2564,13 @@ be_fit_models <- function(object, reference_col, reference_value,
 #' widen Cmax, and Health Canada widens AUC and judges Cmax by its point
 #' estimate alone.  Every other endpoint needs its confidence interval within
 #' 80.00-125.00%.  The `rule` column names the criterion each row used.
-#' `widen_endpoints` replaces the endpoints that widen: for example
-#' `c("cmax", "ctrough")` widens Ctau,ss as well as Cmax under the EMA
-#' modified-release guideline, and `character()` widens nothing (the EMA
-#' allows widening only when the protocol specifies it).
+#' `widen_endpoints` adds endpoints to those that widen, for example
+#' `"ctrough"` for Ctau,ss of a modified-release product under the EMA
+#' modified-release guideline.  `widen_default = FALSE` drops the framework's
+#' own choice, for example when the protocol did not specify widening in
+#' advance, which the EMA and the GCC require; the endpoints in
+#' `widen_endpoints` still widen.  Health Canada judges Cmax by its point
+#' estimate unless Cmax is named in `widen_endpoints`.
 #'
 #' For the results of a sparse bootstrap (Shen and Machado 2017; see
 #' [sparse_bootstrap()]), there is one estimate per treatment, from the sparse
@@ -2628,15 +2630,20 @@ be_fit_models <- function(object, reference_col, reference_value,
 #' @param heteroscedastic Logical.  When `TRUE`, estimate a separate residual
 #'   variance for each treatment (see Details).
 #' @param widen_endpoints For the expanding-limits frameworks (`"EMA"`, `"HC"`,
-#'   and `"GCC"`), the endpoints whose acceptance limits widen.  It replaces
-#'   the framework's own choice (Cmax for the EMA and GCC, AUC for Health
-#'   Canada; see [be_regulator()]), so list those endpoints too to keep them
-#'   widened.  Use it for an endpoint that the guidance widens but PKNCA cannot
-#'   recognize from its name, such as Ctau,ss or a partial AUC of a
+#'   and `"GCC"`), endpoints whose acceptance limits widen in addition to the
+#'   framework's own choice (Cmax for the EMA and GCC, AUC for Health Canada;
+#'   see [be_regulator()]).  Use it for an endpoint that the guidance widens but
+#'   PKNCA cannot recognize from its name, such as Ctau,ss or a partial AUC of a
 #'   modified-release product (EMA), or an endpoint that is not a PKNCA
-#'   parameter; `character()` widens none.  `NULL` (the default) uses the
-#'   framework's choice.  Giving it for another framework is an error;
-#'   [be_compare()] passes it to the expanding-limits frameworks only.
+#'   parameter.  Naming an endpoint for another framework is an error;
+#'   [be_compare()] passes it to the expanding-limits frameworks only, and each
+#'   adds it to its own choice.
+#' @param widen_default For the expanding-limits frameworks, whether the
+#'   framework's own choice of endpoints widens (the default, `TRUE`).  With
+#'   `FALSE` only the endpoints in `widen_endpoints` widen, for example none when
+#'   the protocol did not specify widening in advance; Health Canada still judges
+#'   Cmax by its point estimate.  `FALSE` for another framework is an error;
+#'   [be_compare()] applies it to the expanding-limits frameworks only.
 #' @returns An object of class `be_assess` (a data.frame), ordered by endpoint
 #'   (in the order requested) then by test formulation (reference-first), with
 #'   one row per endpoint and test formulation and the columns `endpoint`,
@@ -2689,12 +2696,14 @@ be_assess.default <- function(object, reference_col, reference_value,
                               endpoints = c("cmax", "aucinf.obs", "aucinf.pred", "auclast"),
                               regulator = "ABE", model_type = NULL, alpha = 0.10,
                               subject = NULL, sequence = NULL, period = NULL, design = NULL,
-                              covariates = NULL, heteroscedastic = FALSE, widen_endpoints = NULL, ...) {
+                              covariates = NULL, heteroscedastic = FALSE, widen_endpoints = NULL,
+                              widen_default = TRUE, ...) {
   out <- be_fit_models(
     object, reference_col = reference_col, reference_value = reference_value,
     endpoints = endpoints, regulator = regulator, model_type = model_type, alpha = alpha,
     subject = subject, sequence = sequence, period = period, design = design,
-    covariates = covariates, heteroscedastic = heteroscedastic, widen_endpoints = widen_endpoints
+    covariates = covariates, heteroscedastic = heteroscedastic, widen_endpoints = widen_endpoints,
+    widen_default = widen_default
   )
   .be_assess_object(out, alpha)
 }
@@ -2806,7 +2815,8 @@ be_compare <- function(object, reference_col, reference_value,
                        regulators = c("ABE", "EMA", "HC", "GCC", "FDA"),
                        model_type = NULL, alpha = 0.10,
                        subject = NULL, sequence = NULL, period = NULL, design = NULL,
-                       covariates = NULL, heteroscedastic = FALSE, widen_endpoints = NULL) {
+                       covariates = NULL, heteroscedastic = FALSE, widen_endpoints = NULL,
+                       widen_default = TRUE) {
   # Input errors are raised here, once; inside the per-framework loop below they
   # would be reported as every framework being skipped.  The choices come from
   # be_regulator() and be_fit_model_single() so there is one list of each.
@@ -2821,11 +2831,14 @@ be_compare <- function(object, reference_col, reference_value,
     be_dataset(object, reference_col, reference_value, endpoints, subject, sequence, period,
                covariates = covariates)
   )
-  .be_check_widen_endpoints(widen_endpoints, ds$endpoints)
+  .be_check_widening(widen_endpoints, widen_default, ds$endpoints)
   results <- list()
   failures <- list()
   units_missing <- FALSE
   for (rg in regulators) {
+    # Only the expanding-limits frameworks widen; each adds `widen_endpoints`
+    # to its own choice of endpoints.
+    abel <- identical(be_regulator(rg)$scaling, "abel")
     # Collapse the per-regulator "units missing" warning into one (below).
     res <- withCallingHandlers(
       try(
@@ -2834,8 +2847,8 @@ be_compare <- function(object, reference_col, reference_value,
           endpoints = endpoints, regulator = rg, model_type = model_type, alpha = alpha,
           subject = subject, sequence = sequence, period = period, design = design,
           covariates = covariates, heteroscedastic = heteroscedastic,
-          # Only the expanding-limits frameworks widen.
-          widen_endpoints = if (identical(be_regulator(rg)$scaling, "abel")) widen_endpoints
+          widen_endpoints = if (abel) widen_endpoints,
+          widen_default = if (abel) widen_default else TRUE
         ),
         silent = TRUE
       ),

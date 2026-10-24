@@ -506,35 +506,66 @@ test_that("a widened endpoint below the switching variability uses ABE", {
   expect_true(res$pass)
 })
 
-test_that("widen_endpoints replaces the endpoints that widen", {
+test_that("widen_endpoints adds endpoints and widen_default drops the framework's own", {
   g <- generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40)
   d <- rbind(be_replicate_long(g, "cmax"), be_replicate_long(g, "auclast"))
-  ema <- be_assess(
-    d, "treatment", "R", c("cmax", "auclast"), regulator = "EMA", model_type = "anova",
-    widen_endpoints = "auclast"
-  )
-  expect_identical(stats::setNames(ema$rule, ema$endpoint), c(cmax = "ABE", auclast = "ABEL"))
-  expect_identical(stats::setNames(ema$pass, ema$endpoint), c(cmax = FALSE, auclast = TRUE))
-  expect_match(attr(ema, "caption"), "limits of auclast widen", fixed = TRUE)
-  expect_match(attr(ema, "caption"), "cmax: the confidence interval must lie within", fixed = TRUE)
-  # Health Canada keeps judging an unwidened Cmax by its point estimate.
-  hc <- be_assess(
-    d, "treatment", "R", c("cmax", "auclast"), regulator = "HC", model_type = "anova",
-    widen_endpoints = "auclast"
-  )
-  expect_identical(stats::setNames(hc$rule, hc$endpoint), c(cmax = "PE", auclast = "ABEL"))
-  hc_cmax <- be_assess(
-    d, "treatment", "R", c("cmax", "auclast"), regulator = "HC", model_type = "anova",
-    widen_endpoints = "cmax"
-  )
-  expect_identical(stats::setNames(hc_cmax$rule, hc_cmax$endpoint), c(cmax = "ABEL", auclast = "ABE"))
-  # An empty set widens nothing.
-  ema_none <- be_assess(
-    d, "treatment", "R", c("cmax", "auclast"), regulator = "EMA", model_type = "anova",
-    widen_endpoints = character()
-  )
-  expect_identical(ema_none$rule, c("ABE", "ABE"))
+  endpoints <- c("cmax", "auclast")
+  # Both endpoints have the same values, with an interval of 75.6-103.2%, so a
+  # widened endpoint passes and an unwidened one fails.
+  ema_add <- be_assess(d, "treatment", "R", endpoints, regulator = "EMA", model_type = "anova", widen_endpoints = "auclast")
+  expect_identical(stats::setNames(ema_add$rule, ema_add$endpoint), c(cmax = "ABEL", auclast = "ABEL"))
+  expect_identical(ema_add$pass, c(TRUE, TRUE))
+  expect_match(attr(ema_add, "caption"), "limits of cmax, auclast widen", fixed = TRUE)
+  ema_none <- be_assess(d, "treatment", "R", endpoints, regulator = "EMA", model_type = "anova", widen_default = FALSE)
+  expect_identical(stats::setNames(ema_none$rule, ema_none$endpoint), c(cmax = "ABE", auclast = "ABE"))
   expect_equal(ema_none$limit_lower, c(80, 80))
+  expect_identical(ema_none$pass, c(FALSE, FALSE))
+  expect_match(attr(ema_none, "caption"), "cmax, auclast: the confidence interval must lie within", fixed = TRUE)
+  ema_only <- be_assess(
+    d, "treatment", "R", endpoints, regulator = "EMA", model_type = "anova",
+    widen_endpoints = "auclast", widen_default = FALSE
+  )
+  expect_identical(stats::setNames(ema_only$rule, ema_only$endpoint), c(cmax = "ABE", auclast = "ABEL"))
+  expect_identical(ema_only$pass, c(FALSE, TRUE))
+  # An empty widen_endpoints adds nothing.
+  ema_empty <- be_assess(d, "treatment", "R", endpoints, regulator = "EMA", model_type = "anova", widen_endpoints = character())
+  expect_identical(ema_empty$rule, c("ABEL", "ABE"))
+  # Health Canada judges Cmax by its point estimate unless Cmax is named, also
+  # without its own choice.
+  hc_add <- be_assess(d, "treatment", "R", endpoints, regulator = "HC", model_type = "anova", widen_endpoints = "cmax")
+  expect_identical(stats::setNames(hc_add$rule, hc_add$endpoint), c(cmax = "ABEL", auclast = "ABEL"))
+  hc_none <- be_assess(d, "treatment", "R", endpoints, regulator = "HC", model_type = "anova", widen_default = FALSE)
+  expect_identical(stats::setNames(hc_none$rule, hc_none$endpoint), c(cmax = "PE", auclast = "ABE"))
+  expect_identical(hc_none$pass, c(TRUE, FALSE))
+})
+
+test_that("be_compare adds widen_endpoints to each framework's own choice", {
+  g <- generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40)
+  d <- rbind(be_replicate_long(g, "cmax"), be_replicate_long(g, "auclast"), be_replicate_long(g, "ctrough"))
+  endpoints <- c("cmax", "auclast", "ctrough")
+  regulators <- c("EMA", "HC", "GCC", "FDA")
+  cmp <- be_compare(d, "treatment", "R", endpoints, regulators = regulators, model_type = "anova", widen_endpoints = "ctrough")
+  expect_identical(
+    stats::setNames(cmp$rule, paste(cmp$regulator, cmp$endpoint)),
+    c(
+      "EMA cmax" = "ABEL", "EMA auclast" = "ABE", "EMA ctrough" = "ABEL",
+      "HC cmax" = "PE", "HC auclast" = "ABEL", "HC ctrough" = "ABEL",
+      "GCC cmax" = "ABEL", "GCC auclast" = "ABE", "GCC ctrough" = "ABEL",
+      "FDA cmax" = "RSABE", "FDA auclast" = "RSABE", "FDA ctrough" = "RSABE"
+    )
+  )
+  # widen_default = FALSE drops each expanding-limits framework's own choice and
+  # leaves FDA unchanged.
+  cmp_none <- be_compare(d, "treatment", "R", endpoints, regulators = regulators, model_type = "anova", widen_default = FALSE)
+  expect_identical(
+    stats::setNames(cmp_none$rule, paste(cmp_none$regulator, cmp_none$endpoint)),
+    c(
+      "EMA cmax" = "ABE", "EMA auclast" = "ABE", "EMA ctrough" = "ABE",
+      "HC cmax" = "PE", "HC auclast" = "ABE", "HC ctrough" = "ABE",
+      "GCC cmax" = "ABE", "GCC auclast" = "ABE", "GCC ctrough" = "ABE",
+      "FDA cmax" = "RSABE", "FDA auclast" = "RSABE", "FDA ctrough" = "RSABE"
+    )
+  )
 })
 
 test_that("a factor endpoint column is classified by its label", {
@@ -570,7 +601,7 @@ test_that("the endpoint concepts that the frameworks widen are the documented on
   expect_false(any(c("aumclast", "aucabove.trough.all", "cmin", "ctrough", "tmax") %in% auc))
 })
 
-test_that("widen_endpoints is checked against the endpoints and the framework", {
+test_that("widen_endpoints and widen_default are checked against the endpoints and the framework", {
   d <- be_replicate_long(generate_be_replicate(24, 20240501, "full"), "cmax")
   expect_error(
     be_assess(d, "treatment", "R", "cmax", regulator = "EMA", widen_endpoints = "ctrough"),
@@ -581,8 +612,21 @@ test_that("widen_endpoints is checked against the endpoints and the framework", 
     class = "pknca_error_be_widen_endpoints_not_abel"
   )
   expect_error(
+    be_assess(d, "treatment", "R", "cmax", regulator = "FDA", widen_default = FALSE),
+    class = "pknca_error_be_widen_endpoints_not_abel"
+  )
+  # Arguments that change nothing are accepted for any framework.
+  expect_identical(
+    be_assess(d, "treatment", "R", "cmax", regulator = "FDA", widen_endpoints = character())$rule,
+    "RSABE"
+  )
+  expect_error(
     be_assess(d, "treatment", "R", "cmax", regulator = "EMA", widen_endpoints = NA_character_),
     regexp = "widen_endpoints"
+  )
+  expect_error(
+    be_assess(d, "treatment", "R", "cmax", regulator = "EMA", widen_default = NA),
+    regexp = "widen_default"
   )
   # be_compare checks the endpoints once and passes widen_endpoints only to the
   # expanding-limits frameworks, so FDA is assessed rather than skipped.
@@ -608,8 +652,15 @@ test_that("an endpoint that is not a PKNCA parameter keeps 80.00-125.00% with a 
     res_w <- be_assess(d, "treatment", "R", "peak", regulator = "EMA", model_type = "anova", widen_endpoints = "peak")
   )
   expect_identical(res_w$rule, "ABEL")
-  # Frameworks that do not widen need no classification.
+  # Frameworks that do not widen, and the EMA without its own choice, need no
+  # classification; Health Canada's point-estimate rule still could apply.
   expect_no_warning(be_assess(d, "treatment", "R", "peak", regulator = "ABE", model_type = "anova"))
+  expect_no_warning(be_assess(d, "treatment", "R", "peak", regulator = "EMA", model_type = "anova", widen_default = FALSE))
+  expect_warning(
+    be_assess(be_replicate_long(generate_be_replicate(24, 20240501, "full"), "peak"), "treatment", "R", "peak",
+              regulator = "HC", model_type = "anova", widen_default = FALSE),
+    class = "pknca_warning_be_endpoint_unclassified"
+  )
 })
 
 test_that("the caption names each endpoint's rule and the source guidance", {

@@ -10,7 +10,8 @@ be_table(
   alpha = 0.1,
   design = NA_character_,
   model_type = NA_character_,
-  widen_endpoints = NULL
+  widen_endpoints = NULL,
+  widen_default = TRUE
 )
 }
 \arguments{
@@ -26,15 +27,21 @@ be_table(
 \item{model_type}{The model type label for the \code{model_type} column.}
 
 \item{widen_endpoints}{For the expanding-limits frameworks (\code{"EMA"}, \code{"HC"},
-and \code{"GCC"}), the endpoints whose acceptance limits widen.  It replaces
-the framework's own choice (Cmax for the EMA and GCC, AUC for Health
-Canada; see \code{\link[=be_regulator]{be_regulator()}}), so list those endpoints too to keep them
-widened.  Use it for an endpoint that the guidance widens but PKNCA cannot
-recognize from its name, such as Ctau,ss or a partial AUC of a
+and \code{"GCC"}), endpoints whose acceptance limits widen in addition to the
+framework's own choice (Cmax for the EMA and GCC, AUC for Health Canada;
+see \code{\link[=be_regulator]{be_regulator()}}).  Use it for an endpoint that the guidance widens but
+PKNCA cannot recognize from its name, such as Ctau,ss or a partial AUC of a
 modified-release product (EMA), or an endpoint that is not a PKNCA
-parameter; \code{character()} widens none.  \code{NULL} (the default) uses the
-framework's choice.  Giving it for another framework is an error;
-\code{\link[=be_compare]{be_compare()}} passes it to the expanding-limits frameworks only.}
+parameter.  Naming an endpoint for another framework is an error;
+\code{\link[=be_compare]{be_compare()}} passes it to the expanding-limits frameworks only, and each
+adds it to its own choice.}
+
+\item{widen_default}{For the expanding-limits frameworks, whether the
+framework's own choice of endpoints widens (the default, \code{TRUE}).  With
+\code{FALSE} only the endpoints in \code{widen_endpoints} widen, for example none when
+the protocol did not specify widening in advance; Health Canada still judges
+Cmax by its point estimate.  \code{FALSE} for another framework is an error;
+\code{\link[=be_compare]{be_compare()}} applies it to the expanding-limits frameworks only.}
 }
 \value{
 A data.frame with one row per endpoint and test formulation and the
@@ -54,7 +61,7 @@ is the only place regulator decisions are made.  Each row shows the ratio and
 confidence interval that its decision used.  The expanding-limits frameworks
 decide each endpoint by its own rule (see \code{\link[=be_regulator]{be_regulator()}}); an endpoint that
 is not a PKNCA parameter cannot be classified, so it keeps 80.00-125.00\%
-with a warning unless \code{widen_endpoints} is given.
+with a warning unless it is named in \code{widen_endpoints}.
 }
 \seealso{
 Other Bioequivalence:

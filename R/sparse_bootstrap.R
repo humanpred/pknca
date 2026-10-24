@@ -401,7 +401,7 @@ be_assess.PKNCAresults_sparse_bootstrap <- function(object, reference_col, refer
                                                     regulator = "ABE", model_type = NULL, alpha = 0.10,
                                                     subject = NULL, sequence = NULL, period = NULL, design = NULL,
                                                     covariates = NULL, heteroscedastic = FALSE,
-                                                    widen_endpoints = NULL, ...) {
+                                                    widen_endpoints = NULL, widen_default = TRUE, ...) {
   assert_numeric_between(alpha, lower = 0, upper = 1)
   reg <- be_regulator(regulator)
   if (!identical(reg$scaling, "none")) {
@@ -428,7 +428,7 @@ be_assess.PKNCAresults_sparse_bootstrap <- function(object, reference_col, refer
   ds <- be_dataset(object, reference_col, reference_value, endpoints, subject, sequence, period, covariates)
   # Only the expanding-limits frameworks, which a sparse bootstrap cannot use,
   # widen limits.
-  .be_check_widen_endpoints(widen_endpoints, ds$endpoints, reg)
+  .be_check_widening(widen_endpoints, widen_default, ds$endpoints, reg)
   probs <- c(alpha/2, 1 - alpha/2)
   params <- list()
   for (current_endpoint in ds$endpoints) {

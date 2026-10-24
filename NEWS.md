@@ -18,11 +18,13 @@ the dosing including dose amount and route.
   `"PE"`, `"RSABE"`, `"NTID"`, or `"HVNTID"`), the caption names each
   endpoint's rule and cites the source guidance, and `be_regulator()` documents
   the limits of every framework with links to its sources.  The new
-  `widen_endpoints` argument replaces the endpoints to widen, for example
-  `c("cmax", "ctrough")` for Ctau,ss of a modified-release product under the
-  EMA modified-release guideline, or `character()` to widen none.  An endpoint
-  that is not a PKNCA parameter keeps 80.00-125.00% under these frameworks,
-  with a warning, unless it is named in `widen_endpoints`.  Widened limits
+  `widen_endpoints` argument adds endpoints to those that widen, for example
+  `"ctrough"` for Ctau,ss of a modified-release product under the EMA
+  modified-release guideline, and `widen_default = FALSE` drops the
+  framework's own choice, as when the protocol did not specify widening in
+  advance.  `be_compare()` adds `widen_endpoints` to each framework's own
+  choice.  An endpoint that is not a PKNCA parameter keeps 80.00-125.00% under
+  these frameworks, with a warning, unless it is named in `widen_endpoints`.  Widened limits
   never narrow below 80.00-125.00%; the rounded constant 0.76 made them
   fractionally narrower for a within-reference CV just above 30%.
 
