@@ -681,11 +681,6 @@ add.interval.col <- function(name,
   validate_cdisc_arg(pptest_cdisc, "pptest_cdisc")
 
   current <- get("interval.cols", envir=.PKNCAEnv)
-  # A parameter may be registered before the parameters it depends on, so what
-  # it requires is worked out on first use by set_requires_inputs() and cached
-  # in `requires_*` values here.  Re-registering an existing parameter can
-  # change what anything downstream of it needs, so drop every cached value.
-  redefining <- name %in% names(current)
   current[[name]] <-
     list(
       FUN=FUN,
@@ -705,17 +700,11 @@ add.interval.col <- function(name,
       tier=tier,
       selection=selection
     )
-  if (redefining) {
-    for (current_name in names(current)) {
-      current[[current_name]][
-        startsWith(names(current[[current_name]]), "requires_")
-      ] <- NULL
-    }
-  }
   assign("interval.cols", current, envir=.PKNCAEnv)
-  # The classification is derived from the whole registry, so any registration
-  # can change it.
-  for (cache_name in c("parameter_classification", "auc_basis_families")) {
+  # The classification and the values cached per parameter are derived from
+  # the whole registry (what a parameter requires depends on everything
+  # upstream of it), so any registration can change them.
+  for (cache_name in c("parameter_classification", "auc_basis_families", "interval.cols_derived")) {
     if (exists(cache_name, envir=.PKNCAEnv)) {
       rm(list=cache_name, envir=.PKNCAEnv)
     }
@@ -783,6 +772,41 @@ sort_interval_cols <- function() {
 get.interval.cols <- function() {
   sort_interval_cols()
   get("interval.cols", envir=.PKNCAEnv)
+}
+
+# Values derived from the parameter registry and cached outside it, so that
+# get.interval.cols() returns only what add.interval.col() registered.  Each
+# element is a list named by parameter: `arg_spec` and `arg_spec_sparse` (see
+# parameter_arg_spec()) and `requires` (see set_requires_inputs()).
+#
+# The store records the registry it was derived from and is replaced by an
+# empty one when the registry is a different object.  add.interval.col() drops
+# it outright; a registry restored by assigning a saved copy into the package
+# environment (tests and other packages do this) bypasses add.interval.col()
+# and is caught by the comparison instead.  identical() returns at once for the
+# same object, so checking an unchanged registry costs nothing.
+interval_cols_derived <- function(all_intervals = get.interval.cols()) {
+  store <- get0("interval.cols_derived", envir=.PKNCAEnv)
+  if (is.null(store) || !identical(store$registry, all_intervals)) {
+    store <-
+      list(
+        registry=all_intervals,
+        arg_spec=list(),
+        arg_spec_sparse=list(),
+        requires=list()
+      )
+    assign("interval.cols_derived", store, envir=.PKNCAEnv)
+  }
+  store
+}
+
+# Add `values`, a list named by parameter, to the `type` element of the store
+# that interval_cols_derived() returns for the current registry.
+set_interval_cols_derived <- function(type, values) {
+  store <- interval_cols_derived()
+  store[[type]][names(values)] <- values
+  assign("interval.cols_derived", store, envir=.PKNCAEnv)
+  invisible(store)
 }
 
 # Does a registry entry have a dense calculation function?  `start` and `end`

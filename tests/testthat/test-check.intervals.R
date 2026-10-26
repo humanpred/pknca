@@ -436,13 +436,14 @@ test_that("re-registering a parameter drops every cached requirement (#194)", {
   # cached value left behind would be wrong with nothing else failing.
   original_state <- get("interval.cols", envir = .PKNCAEnv)
   on.exit(assign("interval.cols", original_state, envir = .PKNCAEnv))
-  cached <- function(param) any(startsWith(names(get.interval.cols()[[param]]), "requires_"))
   expect_true(set_requires_inputs("ae")[["ae"]]$requires_volume)
-  # A name that is not already registered is not a redefinition
+  expect_false(is.null(.PKNCAEnv$interval.cols_derived$requires[["ae"]]))
+  # Registering a new name and redefining an existing one both drop the cache
   add.interval.col(name = "zz", FUN = "mean", unit_type = "conc", pretty_name = "zz")
-  expect_true(cached("ae"))
+  expect_null(.PKNCAEnv$interval.cols_derived$requires[["ae"]])
+  expect_true(set_requires_inputs("ae")[["ae"]]$requires_volume)
   add.interval.col(name = "zz", FUN = "mean", unit_type = "conc", pretty_name = "zz")
-  expect_false(cached("ae"))
+  expect_null(.PKNCAEnv$interval.cols_derived$requires[["ae"]])
   expect_true(set_requires_inputs("ae")[["ae"]]$requires_volume)
 })
 
@@ -474,4 +475,35 @@ test_that("check.interval.specification accepts date-time start and end", {
     )),
     1
   )
+})
+
+test_that("set_requires_inputs() caches outside the registry until the registry changes", {
+  local_interval_cols()
+  add.interval.col(
+    name = "pknca_test_requires", FUN = "pk.calc.cmax", unit_type = "conc",
+    pretty_name = "test", desc = "test"
+  )
+  before <- get.interval.cols()
+  spec <- set_requires_inputs("pknca_test_requires")
+  expect_identical(get.interval.cols(), before)
+  expect_identical(
+    spec,
+    list(pknca_test_requires = c(
+      before[["pknca_test_requires"]],
+      list(
+        requires_dose_amt = FALSE, requires_dose_time = FALSE,
+        requires_dose_dur = FALSE, requires_volume = FALSE,
+        requires_conc_dur = FALSE
+      )
+    ))
+  )
+  # Every parameter at once still leaves the registry alone
+  set_requires_inputs(names(before))
+  expect_identical(get.interval.cols(), before)
+  # A redefinition that needs the dose time is seen
+  add.interval.col(
+    name = "pknca_test_requires", FUN = "pk.calc.c0", unit_type = "conc",
+    pretty_name = "test", desc = "test"
+  )
+  expect_true(set_requires_inputs("pknca_test_requires")[[1]]$requires_dose_time)
 })

@@ -667,3 +667,23 @@ test_that("the prose check finds the spellings it is meant to find", {
   expect_equal(prose_text("  attr(ret, \"method\") <- \"Lambda z: Manual selection\""), "\"method\" \"Manual selection\"")
   expect_equal(rmd_prose_lines(c("text lambda z", "```{r}", "lambda_z <- 1", "```", "after")), c("text lambda z", "", "", "", "after"))
 })
+
+test_that("add.interval.col drops the values cached from the registry", {
+  local_interval_cols()
+  PKNCA:::parameter_arg_spec("cmax")
+  expect_true(exists("interval.cols_derived", envir = PKNCA:::.PKNCAEnv, inherits = FALSE))
+  # Adding a new parameter
+  add.interval.col(
+    name = "pknca_test_cache", FUN = "mean", unit_type = "conc",
+    pretty_name = "test", desc = "test"
+  )
+  expect_false(exists("interval.cols_derived", envir = PKNCA:::.PKNCAEnv, inherits = FALSE))
+  PKNCA:::parameter_arg_spec("pknca_test_cache")
+  expect_true(exists("interval.cols_derived", envir = PKNCA:::.PKNCAEnv, inherits = FALSE))
+  # Overwriting an existing one
+  add.interval.col(
+    name = "pknca_test_cache", FUN = "median", unit_type = "conc",
+    pretty_name = "test", desc = "test"
+  )
+  expect_false(exists("interval.cols_derived", envir = PKNCA:::.PKNCAEnv, inherits = FALSE))
+})

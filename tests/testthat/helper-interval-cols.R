@@ -14,7 +14,7 @@ local_interval_cols <- function(env = parent.frame()) {
       } else if (exists("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv, inherits = FALSE)) {
         rm("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv)
       }
-      for (cache_name in c("parameter_classification", "auc_basis_families")) {
+      for (cache_name in c("parameter_classification", "auc_basis_families", "interval.cols_derived")) {
         if (exists(cache_name, envir = PKNCA:::.PKNCAEnv, inherits = FALSE)) {
           rm(list = cache_name, envir = PKNCA:::.PKNCAEnv)
         }
