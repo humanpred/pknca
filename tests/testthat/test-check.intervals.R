@@ -434,8 +434,7 @@ test_that("uncalculable_without selects on the inputs it is given (#194)", {
 test_that("re-registering a parameter drops every cached requirement (#194)", {
   # A parameter registered later can change what an earlier one needs, so a
   # cached value left behind would be wrong with nothing else failing.
-  original_state <- get("interval.cols", envir = .PKNCAEnv)
-  on.exit(assign("interval.cols", original_state, envir = .PKNCAEnv))
+  local_interval_cols()
   expect_true(set_requires_inputs("ae")[["ae"]]$requires_volume)
   expect_false(is.null(.PKNCAEnv$interval.cols_derived$requires[["ae"]]))
   # Registering a new name and redefining an existing one both drop the cache

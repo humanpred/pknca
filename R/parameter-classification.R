@@ -7,7 +7,8 @@
 # Most of that is already implied by the registry and is derived here rather
 # than declared:
 #
-#   sample type  requires_volume, cached by set_requires_inputs()
+#   sample type  requires_volume, cached outside the registry by
+#                set_requires_inputs()
 #   route        the parameters downstream of `c0` plus those needing a dose
 #                duration are the intravenous family
 #   dosing       the parameters downstream of an extrapolation to infinity are

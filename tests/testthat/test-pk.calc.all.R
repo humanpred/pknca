@@ -2215,7 +2215,7 @@ test_that("running an NCA does not change the parameter registry", {
       PKNCAconc(tmpconc, formula = conc~time|treatment+ID),
       PKNCAdose(tmpdose, formula = dose~time|treatment+ID)
     )
-  o_nca_dense <- pk.nca(o_data_dense)
+  pk.nca(o_data_dense)
   expect_identical(get.interval.cols(), before)
   # The run filled the cache that lives outside the registry
   expect_identical(
@@ -2229,11 +2229,10 @@ test_that("running an NCA does not change the parameter registry", {
       conc = c(0, 0, 0, 1.75, 2.2, 1.58, 4.63, 2.99, 1.52, 3.03, 1.98, 2.22, 3.34, 1.3, 1.22, 3.54, 2.84, 2.55, 0.3, 0.0421, 0.231),
       time = c(0, 0, 0, 1, 1, 1, 6, 6, 6, 2, 2, 2, 10, 10, 10, 4, 4, 4, 24, 24, 24)
     )
-  o_nca_sparse <-
-    suppressMessages(pk.nca(PKNCAdata(
-      PKNCAconc(d_sparse, conc~time|id, sparse = TRUE),
-      intervals = data.frame(start = 0, end = 24, auclast = TRUE)
-    )))
+  suppressMessages(pk.nca(PKNCAdata(
+    PKNCAconc(d_sparse, conc~time|id, sparse = TRUE),
+    intervals = data.frame(start = 0, end = 24, auclast = TRUE)
+  )))
   expect_identical(get.interval.cols(), before)
   expect_false(is.null(PKNCA:::.PKNCAEnv$interval.cols_derived$arg_spec_sparse[["auclast"]]))
   # No registered definition carries a field that only a cache would add
