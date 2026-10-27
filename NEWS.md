@@ -1091,6 +1091,9 @@ the generated intervals:
 
 ## Bug fixes
 
+* Running an NCA no longer changes what `get.interval.cols()` returns
+  (@billdenney).
+
 * A warning signaled by an exclusion function given to `exclude(FUN = )` now
   reaches the caller with its class and fields.  Before, the function ran inside
   a grouped `dplyr::mutate()`, which collected the warnings and signaled one

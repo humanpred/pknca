@@ -439,9 +439,9 @@ get.parameter.deps_helper_searchdeps <- function(current, funmap, all_intervals)
 }
 
 # The inputs a calculation can require, each mapped to the source-input names
-# that show the requirement.  Every entry becomes a cached `requires_<name>`
-# value on the registry entry, so a new input type is added here and nowhere
-# else.
+# that show the requirement.  Every entry becomes a `requires_<name>` value
+# reported by set_requires_inputs(), so a new input type is added here and
+# nowhere else.
 pknca_requires_inputs <-
   list(
     dose_amt = c("dose", "dose.group"),
@@ -451,33 +451,37 @@ pknca_requires_inputs <-
     conc_dur = c("duration.conc", "duration.conc.group")
   )
 
-# Fill in the requires_* values for `params` and cache them in the registry,
-# computing only the ones that are not already known.  Deferred to first use
-# because a parameter may be registered before what it depends on.
+# The registry entries for `params`, each with its `requires_*` values added.
+# Those are worked out on first use, because a parameter may be registered
+# before what it depends on, and cached outside the registry (see
+# interval_cols_derived()).
 set_requires_inputs <- function(params) {
   all_intervals <- get.interval.cols()
   params <- intersect(params, names(all_intervals))
-  requires_names <- paste0("requires_", names(pknca_requires_inputs))
-  unknown <-
-    params[vapply(
-      X = params,
-      FUN = function(x) !all(requires_names %in% names(all_intervals[[x]])),
-      FUN.VALUE = TRUE
-    )]
+  known <- interval_cols_derived(all_intervals)$requires
+  unknown <- setdiff(params, names(known))
   if (length(unknown) > 0) {
+    new_requires <- list()
     for (current_param in unknown) {
       current_src <-
         parameter_source_inputs(
           current_param, all_intervals = all_intervals, optional_dose = FALSE
         )
+      current_requires <- list()
       for (current_input in names(pknca_requires_inputs)) {
-        all_intervals[[current_param]][[paste0("requires_", current_input)]] <-
+        current_requires[[paste0("requires_", current_input)]] <-
           any(pknca_requires_inputs[[current_input]] %in% current_src)
       }
+      new_requires[[current_param]] <- current_requires
     }
-    assign("interval.cols", all_intervals, envir = .PKNCAEnv)
+    set_interval_cols_derived("requires", new_requires)
+    known[names(new_requires)] <- new_requires
   }
-  all_intervals[params]
+  ret <- all_intervals[params]
+  for (current_param in params) {
+    ret[[current_param]] <- c(ret[[current_param]], known[[current_param]])
+  }
+  ret
 }
 
 # The parameters requested by at least one interval

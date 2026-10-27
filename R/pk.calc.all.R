@@ -848,14 +848,13 @@ combine_exclude_reasons <- function(from_inputs, from_result) {
 # cannot be found can be told from an optional one.
 #
 # Both depend only on the registry entry, so they are worked out on first use
-# and cached there, the same way `requires_*` is (see set_requires_inputs()).
-# Re-registering a parameter replaces its whole entry, cache included.  A
-# parameter with a sparse estimator has two specs, one per calling convention,
-# selected and cached by `sparse`.
+# and cached outside the registry (see interval_cols_derived()) until the
+# registry changes.  A parameter with a sparse estimator has two specs, one per
+# calling convention, selected and cached by `sparse`.
 parameter_arg_spec <- function(param, sparse = FALSE) {
   all_intervals <- get.interval.cols()
   cache_name <- if (sparse) "arg_spec_sparse" else "arg_spec"
-  cached <- all_intervals[[param]][[cache_name]]
+  cached <- interval_cols_derived(all_intervals)[[cache_name]][[param]]
   if (!is.null(cached)) {
     return(cached)
   }
@@ -878,8 +877,7 @@ parameter_arg_spec <- function(param, sparse = FALSE) {
       FUN.VALUE = TRUE
     )
   ret <- list(arglist = arglist, required = names(arglist)[has_no_default])
-  all_intervals[[param]][[cache_name]] <- ret
-  assign("interval.cols", all_intervals, envir = .PKNCAEnv)
+  set_interval_cols_derived(cache_name, stats::setNames(list(ret), param))
   ret
 }
 

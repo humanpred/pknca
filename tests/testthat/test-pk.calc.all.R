@@ -2204,3 +2204,84 @@ test_that("frac_unbound CDISC output keeps total and unbound rows apart", {
   expect_equal(total$PPGRPID, cd_plain$PPGRPID)
   expect_equal(total$PPTESTCD, cd_plain$PPTESTCD)
 })
+
+test_that("running an NCA does not change the parameter registry", {
+  before <- get.interval.cols()
+
+  tmpconc <- generate.conc(2, 1, 0:24)
+  tmpdose <- generate.dose(tmpconc)
+  o_data_dense <-
+    PKNCAdata(
+      PKNCAconc(tmpconc, formula = conc~time|treatment+ID),
+      PKNCAdose(tmpdose, formula = dose~time|treatment+ID)
+    )
+  pk.nca(o_data_dense)
+  expect_identical(get.interval.cols(), before)
+  # The run filled the cache that lives outside the registry
+  expect_identical(
+    PKNCA:::.PKNCAEnv$interval.cols_derived$arg_spec[["cmax"]],
+    list(arglist = list(conc = "conc", check = "check"), required = "conc")
+  )
+
+  d_sparse <-
+    data.frame(
+      id = c(1L, 2L, 3L, 1L, 2L, 3L, 1L, 2L, 3L, 4L, 5L, 6L, 4L, 5L, 6L, 7L, 8L, 9L, 7L, 8L, 9L),
+      conc = c(0, 0, 0, 1.75, 2.2, 1.58, 4.63, 2.99, 1.52, 3.03, 1.98, 2.22, 3.34, 1.3, 1.22, 3.54, 2.84, 2.55, 0.3, 0.0421, 0.231),
+      time = c(0, 0, 0, 1, 1, 1, 6, 6, 6, 2, 2, 2, 10, 10, 10, 4, 4, 4, 24, 24, 24)
+    )
+  suppressMessages(pk.nca(PKNCAdata(
+    PKNCAconc(d_sparse, conc~time|id, sparse = TRUE),
+    intervals = data.frame(start = 0, end = 24, auclast = TRUE)
+  )))
+  expect_identical(get.interval.cols(), before)
+  expect_false(is.null(PKNCA:::.PKNCAEnv$interval.cols_derived$arg_spec_sparse[["auclast"]]))
+  # No registered definition carries a field that only a cache would add
+  field_names <- unlist(lapply(get.interval.cols(), names))
+  expect_false(any(field_names %in% c("arg_spec", "arg_spec_sparse") | startsWith(field_names, "requires_")))
+})
+
+test_that("parameter_arg_spec() caches per parameter and sparse flag until the registry changes", {
+  local_interval_cols()
+  add.interval.col(
+    name = "pknca_test_arg_spec", FUN = "mean", unit_type = "conc",
+    pretty_name = "test", desc = "test"
+  )
+  spec_mean <- list(arglist = list(x = "x"), required = "x")
+  expect_identical(parameter_arg_spec("pknca_test_arg_spec"), spec_mean)
+  expect_identical(
+    PKNCA:::.PKNCAEnv$interval.cols_derived$arg_spec[["pknca_test_arg_spec"]],
+    spec_mean
+  )
+  # A second call returns what the cache holds rather than recomputing
+  marker <- list(arglist = list(x = "cached"), required = character(0))
+  PKNCA:::set_interval_cols_derived("arg_spec", list(pknca_test_arg_spec = marker))
+  expect_identical(parameter_arg_spec("pknca_test_arg_spec"), marker)
+
+  # The dense and sparse specs of one parameter are cached separately (the
+  # sparse spec maps conc and time to the pooled samples later, in
+  # remap_sparse_sources())
+  expect_identical(
+    parameter_arg_spec("auclast", sparse = TRUE),
+    list(
+      arglist = list(conc = "conc", time = "time", subject = "subject", options = "options"),
+      required = c("conc", "time", "subject")
+    )
+  )
+  expect_identical(
+    parameter_arg_spec("auclast", sparse = FALSE)$required,
+    c("conc", "time")
+  )
+
+  # Redefining the parameter gives a fresh spec
+  registry_mean <- get("interval.cols", envir = PKNCA:::.PKNCAEnv)
+  add.interval.col(
+    name = "pknca_test_arg_spec", FUN = "median", unit_type = "conc",
+    pretty_name = "test", desc = "test"
+  )
+  spec_median <- list(arglist = list(x = "x", na.rm = "na.rm"), required = "x")
+  expect_identical(parameter_arg_spec("pknca_test_arg_spec"), spec_median)
+  # Restoring a saved registry by assignment, which bypasses add.interval.col(),
+  # also gives a fresh spec
+  assign("interval.cols", registry_mean, envir = PKNCA:::.PKNCAEnv)
+  expect_identical(parameter_arg_spec("pknca_test_arg_spec"), spec_mean)
+})
