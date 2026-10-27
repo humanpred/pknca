@@ -32,8 +32,9 @@
 #'   ([ICH M13A](https://database.ich.org/sites/default/files/ICH_M13A_Step4_Final_Guideline_2024_0723.pdf),
 #'   section 2.2.4).
 #' * **EMA** -- average bioequivalence with expanding limits (ABEL) for
-#'   **Cmax only**; AUC keeps the 90% confidence interval within
-#'   80.00-125.00% whatever its variability
+#'   **Cmax** and the parameters judged like it (see below); AUC and the
+#'   parameters judged like it keep the 90% confidence interval within
+#'   80.00-125.00% whatever their variability
 #'   ([EMA Guideline on the Investigation of Bioequivalence, Rev. 1](https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-investigation-bioequivalence-rev1_en.pdf),
 #'   sections 4.1.8 and 4.1.10).  Cmax limits widen when the within-reference
 #'   coefficient of variation (`CVwR`) exceeds 30% (`cvswitch = 0.30`), as
@@ -43,23 +44,28 @@
 #'   rounded to three decimals.  For modified-release products the EMA also
 #'   allows the same widening for Cmax,ss, Ctau,ss, and partial AUCs
 #'   ([EMA Guideline on the Pharmacokinetic and Clinical Evaluation of Modified Release Dosage Forms](https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-pharmacokinetic-and-clinical-evaluation-modified-release-dosage-forms_en.pdf),
-#'   section 6.8.2.2); PKNCA cannot tell those endpoints from their names, so
-#'   name them in the `widen_endpoints` argument of [be_assess()], which adds
-#'   them to Cmax.
-#' * **HC** -- Health Canada.  ABEL for **AUC only**: the 90% confidence
+#'   section 6.8.2.2).  Cmax,ss and Ctau,ss are judged like Cmax; PKNCA cannot
+#'   tell a partial AUC from AUC(0-tau) by its name, so name it in the
+#'   `widen_endpoints` argument of [be_assess()].
+#' * **HC** -- Health Canada.  ABEL for **AUC** and the parameters judged like
+#'   it: the 90% confidence
 #'   interval within limits widened as `exp(+/- 0.76 * swR)` when
 #'   `swR > 0.294` (`CVwR > 30%`), capped at 66.7-150.0% (`CVwR = 57.4%`), with
 #'   the ratio of geometric means within 80.0-125.0%
 #'   ([Policy on Bioequivalence Standards for Highly Variable Drug Products](https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/announcements/notice-policy-bioequivalence-standards-highly-variable-drug-products.html),
-#'   effective 2018).  **Cmax is judged by its point estimate alone**: the
-#'   ratio of geometric means within 80.0-125.0%, with no requirement on its
-#'   confidence interval
+#'   effective 2018).  **Cmax**, and the parameters judged like it, **is judged
+#'   by its point estimate alone**: the ratio of geometric means within
+#'   80.0-125.0%, with no requirement on its confidence interval
 #'   ([Comparative Bioavailability Standards: Formulations Used for Systemic Effects](https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/applications-submissions/guidance-documents/bioavailability-bioequivalence/comparative-bioavailability-standards-formulations-used-systemic-effects.html),
-#'   section 2.1).  These are the standards for drugs that are not critical
+#'   sections 2.1 and 2.1.1.1).  Health Canada requires the relative mean Cmin
+#'   at steady state to be at least 80.0%, with no upper limit; judged like
+#'   Cmax, it must also be at most 125.0%.  Health Canada no longer uses
+#'   urinary data.  These are the standards for drugs that are not critical
 #'   dose drugs.
-#' * **GCC** -- Gulf Cooperation Council; the EMA rules: ABEL for **Cmax
-#'   only**, with `k = 0.760`, the 30% switch, the 69.84-143.19% cap, and the
-#'   geometric mean ratio within 80.00-125.00%; AUC keeps 80.00-125.00%
+#' * **GCC** -- Gulf Cooperation Council; the EMA rules: ABEL for **Cmax** and
+#'   the parameters judged like it, with `k = 0.760`, the 30% switch, the
+#'   69.84-143.19% cap, and the geometric mean ratio within 80.00-125.00%; AUC
+#'   and the parameters judged like it keep 80.00-125.00%
 #'   ([GCC Guidelines for Bioequivalence, version 3.2](https://sfda.gov.sa/sites/default/files/2024-05/GCC_Guidelines_Bioequivalence32.pdf),
 #'   sections 3.1.8 and 3.1.10).
 #' * **FDA** -- reference-scaled average bioequivalence (RSABE) for both AUC
@@ -90,12 +96,34 @@
 #' All decision frameworks additionally impose the point-estimate constraint
 #' that the geometric mean ratio fall within 80.00-125.00%.
 #'
-#' An endpoint's kind comes from its PKNCA parameter concept (see
-#' [pknca_parameter_table()]): the peak concentrations (`cmax` and `cmax.dn`)
-#' and the AUCs (including `aucint.*`, dose-normalized, and sparse AUCs).
-#' Endpoints that a framework neither widens nor judges by the point estimate
-#' (such as `cmin` or `ctrough`) use the 90% confidence interval within
-#' 80.00-125.00%.
+#' The guidances name more parameters than Cmax and AUC and judge each like
+#' one of them.  An endpoint is matched by its PKNCA parameter name or its
+#' CDISC `PPTESTCD` code (see [pknca_cdisc_codes()]).  Judged like Cmax:
+#'
+#' * `cmax`: Cmax, and Cmax,ss at steady state (EMA section 4.1.8);
+#' * `cmin` and `ctrough`: Cmin,ss and Ctau,ss (EMA modified-release guideline
+#'   section 6.8.2.2; Health Canada section 2.1.1.1);
+#' * `ermax`: Rmax, the maximal rate of urinary excretion, "analysed using the
+#'   same acceptance interval as for Cmax" (EMA section 4.1.8; GCC section
+#'   3.1.8);
+#' * and their dose-normalized forms.
+#'
+#' Judged like AUC:
+#'
+#' * the AUCs: `auclast` (AUC(0-t)), `aucall`, `aucinf.obs` and `aucinf.pred`
+#'   (AUC(0-inf)), `aucint.*` (for example AUC(0-tau) at steady state and
+#'   AUC(0-72h); EMA section 4.1.8, Health Canada section 2.1.1.4), the
+#'   IV-extrapolated `auciv*`, and `sparse_auclast`;
+#' * `cav*`: the average concentration at steady state, AUC(0-tau)/tau;
+#' * `ae`: Ae(0-t), the amount excreted in urine, "analysed using the same
+#'   acceptance interval as stated above for AUC(0-t)" (EMA section 4.1.8; GCC
+#'   section 3.1.8), and `fe`, Ae as a fraction of the dose;
+#' * and their dose-normalized forms.
+#'
+#' Other endpoints, such as `tmax`, use the 90% confidence interval within
+#' 80.00-125.00%.  An endpoint that is neither a PKNCA parameter nor a CDISC
+#' code keeps 80.00-125.00% under the expanding-limits frameworks, with a
+#' warning, unless it is named in `widen_endpoints`.
 #'
 #' @references
 #' International Council for Harmonisation.  ICH M13A: Bioequivalence for
@@ -138,9 +166,10 @@
 #' @returns An object of class `be_regulator`: a list with elements `name`,
 #'   `scaling` (one of `"none"`, `"abel"`, `"rsabe"`, `"ntid"`, `"hvntid"`),
 #'   `cvswitch`, `r_const`, `cvcap`, `switch_swr`, `est_method` (`"anova"` or
-#'   `"isc"`), `widen_concepts` (the parameter concepts whose limits widen, for
-#'   the expanding-limits frameworks), `pe_only_concepts` (the concepts judged
-#'   by the point estimate alone), `reference` (the source guidance, or `NA`),
+#'   `"isc"`), `widen_like` (for the expanding-limits frameworks, whether the
+#'   endpoints judged like `"cmax"` or like `"auc"` widen), `pe_only_like`
+#'   (those judged by the point estimate alone), `reference` (the source
+#'   guidance, or `NA`),
 #'   `pe_constr`, `decision` (`FALSE` only for `"descriptive"`),
 #'   `sw_ratio_cap`, and `switch_basis`.
 #' @family Bioequivalence
@@ -155,8 +184,9 @@ be_regulator <- function(name = c("ABE", "EMA", "HC", "GCC", "FDA", "NTID", "HVN
   name <- match.arg(name)
   # Regulatory constants, each with its source (full citations and links are in
   # the documentation above).  These are intentionally internalized (not pulled
-  # from PowerTOST) so PKNCA stands alone.  `widen_concepts` and
-  # `pe_only_concepts` are parameter concepts from parameter_classification().
+  # from PowerTOST) so PKNCA stands alone.  `widen_like` and `pe_only_like`
+  # name the endpoints judged like Cmax ("cmax") or like AUC ("auc"); see
+  # .be_cmax_like_params and .be_auc_like_params.
   reg <-
     switch(
       name,
@@ -164,7 +194,7 @@ be_regulator <- function(name = c("ABE", "EMA", "HC", "GCC", "FDA", "NTID", "HVN
       ABE = list(
         scaling = "none", cvswitch = NA_real_, r_const = NA_real_,
         cvcap = NA_real_, switch_swr = NA_real_, est_method = "anova",
-        widen_concepts = character(), pe_only_concepts = character(),
+        widen_like = character(), pe_only_like = character(),
         reference = "ICH M13A (2024), section 2.2.4"
       ),
       # EMA Guideline on the Investigation of Bioequivalence (CPMP/EWP/QWP/1401/98
@@ -173,7 +203,7 @@ be_regulator <- function(name = c("ABE", "EMA", "HC", "GCC", "FDA", "NTID", "HVN
       EMA = list(
         scaling = "abel", cvswitch = 0.30, r_const = 0.76,
         cvcap = 0.50, switch_swr = NA_real_, est_method = "anova",
-        widen_concepts = "peak_conc", pe_only_concepts = character(),
+        widen_like = "cmax", pe_only_like = character(),
         reference = "EMA Guideline on the Investigation of Bioequivalence (CPMP/EWP/QWP/1401/98 Rev. 1), sections 4.1.8 and 4.1.10"
       ),
       # Health Canada Policy on Bioequivalence Standards for Highly Variable
@@ -183,7 +213,7 @@ be_regulator <- function(name = c("ABE", "EMA", "HC", "GCC", "FDA", "NTID", "HVN
       HC = list(
         scaling = "abel", cvswitch = 0.30, r_const = 0.76,
         cvcap = 0.57382, switch_swr = NA_real_, est_method = "anova",
-        widen_concepts = "auc", pe_only_concepts = "peak_conc",
+        widen_like = "auc", pe_only_like = "cmax",
         reference = "Health Canada Comparative Bioavailability Standards: Formulations Used for Systemic Effects (2018), section 2.1, and Policy on Bioequivalence Standards for Highly Variable Drug Products (2018)"
       ),
       # GCC Guidelines for Bioequivalence version 3.2 (2024), sections 3.1.8 and
@@ -191,7 +221,7 @@ be_regulator <- function(name = c("ABE", "EMA", "HC", "GCC", "FDA", "NTID", "HVN
       GCC = list(
         scaling = "abel", cvswitch = 0.30, r_const = 0.76,
         cvcap = 0.50, switch_swr = NA_real_, est_method = "anova",
-        widen_concepts = "peak_conc", pe_only_concepts = character(),
+        widen_like = "cmax", pe_only_like = character(),
         reference = "GCC Guidelines for Bioequivalence, version 3.2 (2024), sections 3.1.8 and 3.1.10"
       ),
       # FDA Draft Guidance on Progesterone (RSABE, AUC and Cmax):
@@ -200,7 +230,7 @@ be_regulator <- function(name = c("ABE", "EMA", "HC", "GCC", "FDA", "NTID", "HVN
       FDA = list(
         scaling = "rsabe", cvswitch = 0.30, r_const = log(1.25) / 0.25,
         cvcap = Inf, switch_swr = 0.294, est_method = "isc",
-        widen_concepts = character(), pe_only_concepts = character(),
+        widen_like = character(), pe_only_like = character(),
         reference = "FDA Draft Guidance on Progesterone (2011)"
       ),
       # FDA Draft Guidance on Warfarin Sodium (NTID, AUC and Cmax):
@@ -209,7 +239,7 @@ be_regulator <- function(name = c("ABE", "EMA", "HC", "GCC", "FDA", "NTID", "HVN
       NTID = list(
         scaling = "ntid", cvswitch = NA_real_, r_const = -log(0.9) / 0.1,
         cvcap = Inf, switch_swr = NA_real_, est_method = "isc",
-        widen_concepts = character(), pe_only_concepts = character(),
+        widen_like = character(), pe_only_like = character(),
         reference = "FDA Draft Guidance on Warfarin Sodium (2012)"
       ),
       # FDA Draft Guidance on Dabigatran Etexilate Mesylate (highly variable
@@ -218,14 +248,14 @@ be_regulator <- function(name = c("ABE", "EMA", "HC", "GCC", "FDA", "NTID", "HVN
       HVNTID = list(
         scaling = "hvntid", cvswitch = NA_real_, r_const = NA_real_,
         cvcap = Inf, switch_swr = NA_real_, est_method = "isc",
-        widen_concepts = character(), pe_only_concepts = character(),
+        widen_like = character(), pe_only_like = character(),
         reference = "FDA Draft Guidance on Dabigatran Etexilate Mesylate (2012, revised 2017)"
       ),
       # No regulatory decision: the ABE estimates without limits or pass/fail.
       descriptive = list(
         scaling = "none", cvswitch = NA_real_, r_const = NA_real_,
         cvcap = NA_real_, switch_swr = NA_real_, est_method = "anova",
-        widen_concepts = character(), pe_only_concepts = character(),
+        widen_like = character(), pe_only_like = character(),
         reference = NA_character_
       )
     )
@@ -270,11 +300,11 @@ print.be_regulator <- function(x, ...) {
   if (!is.na(x$cvcap) && is.finite(x$cvcap)) {
     cat(sprintf("  CV cap:             %.5g%%\n", x$cvcap * 100))
   }
-  if (length(x$widen_concepts) > 0) {
-    cat(sprintf("  Widened endpoints:  %s\n", paste(.be_concept_label(x$widen_concepts), collapse = ", ")))
+  if (length(x$widen_like) > 0) {
+    cat(sprintf("  Widened endpoints:  %s\n", paste(.be_like_label(x$widen_like), collapse = ", ")))
   }
-  if (length(x$pe_only_concepts) > 0) {
-    cat(sprintf("  Point estimate only: %s\n", paste(.be_concept_label(x$pe_only_concepts), collapse = ", ")))
+  if (length(x$pe_only_like) > 0) {
+    cat(sprintf("  Point estimate only: %s\n", paste(.be_like_label(x$pe_only_like), collapse = ", ")))
   }
   cat(sprintf("  PE constraint:      %s\n", if (x$pe_constr) "80.00-125.00%" else "none"))
   cat(sprintf("  Point estimate:     %s\n", x$est_method))
@@ -287,10 +317,10 @@ print.be_regulator <- function(x, ...) {
   invisible(x)
 }
 
-# Readable names for the parameter concepts that the regulators treat
+# Readable names for the groups of endpoints that the regulators treat
 # specially (see be_regulator()).
-.be_concept_label <- function(concept) {
-  unname(c(peak_conc = "Cmax", auc = "AUC")[concept])
+.be_like_label <- function(like) {
+  unname(c(cmax = "Cmax and the parameters judged like it", auc = "AUC and the parameters judged like it")[like])
 }
 
 #' Reference-scaled acceptance limits for bioequivalence
@@ -1156,27 +1186,77 @@ print.be_within_var <- function(x, ...) {
 # The acceptance rule of an expanding-limits framework for each endpoint, as a
 # character vector named by endpoint: "abel" (widened limits on the confidence
 # interval) for the endpoints that widen, "pe" (the point estimate alone) for
-# the concepts the framework judges by the point estimate, and "abe"
+# the endpoints the framework judges by the point estimate, and "abe"
 # (80.00-125.00% on the confidence interval) otherwise.  The endpoints that
-# widen are those whose PKNCA parameter concept the framework widens (when
-# `widen_default` is TRUE) and those in `widen_endpoints`.  Endpoints that are
-# not PKNCA parameters have no concept; those not in `widen_endpoints` are
-# listed in the "unclassified" attribute when the framework's own rules could
-# apply to them.  Other frameworks get NA for every endpoint.
+# widen are those judged like the group the framework widens (when
+# `widen_default` is TRUE; see .be_endpoint_like()) and those in
+# `widen_endpoints`.  Endpoints that name no PKNCA parameter, and are not in
+# `widen_endpoints`, are listed in the "unclassified" attribute when the
+# framework's own rules could apply to them.  Other frameworks get NA for every
+# endpoint.
 .be_endpoint_rules <- function(endpoints, reg, widen_endpoints = NULL, widen_default = TRUE) {
   endpoints <- unique(as.character(endpoints))
   rules <- stats::setNames(rep(NA_character_, length(endpoints)), endpoints)
   if (!identical(reg$scaling, "abel")) {
     return(rules)
   }
-  concept <- unname(parameter_classification()$concept[endpoints])
+  like <- vapply(endpoints, .be_endpoint_like, character(1), USE.NAMES = FALSE)
   named <- endpoints %in% widen_endpoints
-  widen <- (widen_default & concept %in% reg$widen_concepts) | named
-  rules[] <- ifelse(widen, "abel", ifelse(concept %in% reg$pe_only_concepts, "pe", "abe"))
-  own_rules_apply <- widen_default || length(reg$pe_only_concepts) > 0
+  widen <- (widen_default & like %in% reg$widen_like) | named
+  rules[] <- ifelse(widen, "abel", ifelse(like %in% reg$pe_only_like, "pe", "abe"))
+  own_rules_apply <- widen_default || length(reg$pe_only_like) > 0
   attr(rules, "unclassified") <-
-    if (own_rules_apply) endpoints[is.na(concept) & !named] else character()
+    if (own_rules_apply) endpoints[is.na(like) & !named] else character()
   rules
+}
+
+# The PKNCA parameters that the bioequivalence guidances judge like Cmax and
+# like AUC (see be_regulator() for the guidance sections), with their
+# dose-normalized forms.  The standard errors and degrees of freedom of the
+# sparse AUCs are not endpoints.
+.be_cmax_like_params <- c(
+  "cmax", "cmax.dn", "cmin", "cmin.dn", "ctrough", "ctrough.dn", "ermax"
+)
+.be_auc_like_params <- c(
+  "auclast", "auclast.dn", "aucall", "aucall.dn",
+  "aucinf.obs", "aucinf.obs.dn", "aucinf.pred", "aucinf.pred.dn",
+  "aucint.last", "aucint.all", "aucint.inf.obs", "aucint.inf.pred",
+  "aucivlast", "aucivall", "aucivinf.obs", "aucivinf.pred", "aucivint.last", "aucivint.all",
+  "sparse_auclast",
+  "cav", "cav.dn", "cav.int.last", "cav.int.all", "cav.int.inf.obs", "cav.int.inf.pred",
+  "ae", "fe"
+)
+
+# Whether an endpoint is judged like Cmax ("cmax"), like AUC ("auc"), or like
+# neither ("other"), from the PKNCA parameter it names directly or by its CDISC
+# PPTESTCD code; NA when it names no PKNCA parameter.
+.be_endpoint_like <- function(endpoint) {
+  params <- .be_endpoint_parameters(endpoint)
+  if (length(params) == 0) {
+    return(NA_character_)
+  }
+  like <- c(
+    if (any(params %in% .be_cmax_like_params)) "cmax",
+    if (any(params %in% .be_auc_like_params)) "auc"
+  )
+  if (length(like) == 1) like else "other"
+}
+
+# The PKNCA parameters an endpoint names: the parameter of that name, or else
+# the parameters whose CDISC PPTESTCD code it is (several parameters can share
+# a code, such as the dense and sparse AUClast).
+.be_endpoint_parameters <- function(endpoint) {
+  all_intervals <- get.interval.cols()
+  if (endpoint %in% names(all_intervals)) {
+    return(endpoint)
+  }
+  names(all_intervals)[vapply(all_intervals, .be_has_cdisc_code, logical(1), code = endpoint)]
+}
+
+# Whether an add.interval.col() specification has the CDISC PPTESTCD code
+# `code` (in any of its dense, sparse, or route variants).
+.be_has_cdisc_code <- function(spec, code) {
+  code %in% cdisc_value_variants(spec$pptestcd_cdisc)
 }
 
 # Check `widen_endpoints` and `widen_default` against the endpoints assessed
@@ -2137,8 +2217,8 @@ be_extract_param_isc <- function(fit, ds_ep, alpha = 0.10) {
 #' is the only place regulator decisions are made.  Each row shows the ratio and
 #' confidence interval that its decision used.  The expanding-limits frameworks
 #' decide each endpoint by its own rule (see [be_regulator()]); an endpoint that
-#' is not a PKNCA parameter cannot be classified, so it keeps 80.00-125.00%
-#' with a warning unless it is named in `widen_endpoints`.
+#' is neither a PKNCA parameter nor a CDISC code cannot be classified, so it
+#' keeps 80.00-125.00% with a warning unless it is named in `widen_endpoints`.
 #'
 #' @inheritParams be_assess
 #' @param params A data.frame of parameters from [be_extract_param()] (with an
@@ -2163,7 +2243,7 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
     rlang::warn(
       sprintf(
         paste(
-          "Endpoint '%s' is not a PKNCA parameter, so the %s framework cannot tell which of its rules applies;",
+          "Endpoint '%s' is neither a PKNCA parameter nor a CDISC PPTESTCD code, so the %s framework cannot tell which of its rules applies;",
           "its confidence interval must lie within 80.00-125.00%%.  Name it in `widen_endpoints` to widen its limits."
         ),
         ep, reg$name
@@ -2568,17 +2648,20 @@ be_fit_models <- function(object, reference_col, reference_value,
 #' drug-drug interaction studies.
 #'
 #' The expanding-limits frameworks widen only some endpoints, as their
-#' guidances specify (see [be_regulator()] for the sources): the EMA and the GCC
-#' widen Cmax, and Health Canada widens AUC and judges Cmax by its point
-#' estimate alone.  Every other endpoint needs its confidence interval within
-#' 80.00-125.00%.  The `rule` column names the criterion each row used.
-#' `widen_endpoints` adds endpoints to those that widen, for example
-#' `"ctrough"` for Ctau,ss of a modified-release product under the EMA
-#' modified-release guideline.  `widen_default = FALSE` drops the framework's
-#' own choice, for example when the protocol did not specify widening in
-#' advance, which the EMA and the GCC require; the endpoints in
-#' `widen_endpoints` still widen.  Health Canada judges Cmax by its point
-#' estimate unless Cmax is named in `widen_endpoints`.
+#' guidances specify (see [be_regulator()] for the sources and for which
+#' parameters, by PKNCA name or CDISC code, are judged like Cmax and like AUC):
+#' the EMA and the GCC widen Cmax and the parameters judged like it (such as
+#' Ctau,ss and Rmax), and Health Canada widens AUC and the parameters judged
+#' like it and judges the Cmax group by its point estimate alone.  Every other
+#' endpoint needs its confidence interval within 80.00-125.00%.  The `rule`
+#' column names the criterion each row used.  `widen_endpoints` adds endpoints
+#' to those that widen, for example `"aucint.last"` for a partial AUC of a
+#' modified-release product under the EMA modified-release guideline.
+#' `widen_default = FALSE` drops the framework's own choice, for example when
+#' the protocol did not specify widening in advance, which the EMA and the GCC
+#' require; the endpoints in `widen_endpoints` still widen.  Health Canada
+#' judges the Cmax group by its point estimate unless an endpoint is named in
+#' `widen_endpoints`.
 #'
 #' For the results of a sparse bootstrap (Shen and Machado 2017; see
 #' [sparse_bootstrap()]), there is one estimate per treatment, from the sparse
@@ -2639,11 +2722,11 @@ be_fit_models <- function(object, reference_col, reference_value,
 #'   variance for each treatment (see Details).
 #' @param widen_endpoints For the expanding-limits frameworks (`"EMA"`, `"HC"`,
 #'   and `"GCC"`), endpoints whose acceptance limits widen in addition to the
-#'   framework's own choice (Cmax for the EMA and GCC, AUC for Health Canada;
-#'   see [be_regulator()]).  Use it for an endpoint that the guidance widens but
-#'   PKNCA cannot recognize from its name, such as Ctau,ss or a partial AUC of a
-#'   modified-release product (EMA), or an endpoint that is not a PKNCA
-#'   parameter.  Naming an endpoint for another framework is an error;
+#'   framework's own choice (the endpoints judged like Cmax for the EMA and GCC,
+#'   like AUC for Health Canada; see [be_regulator()]).  Use it for an endpoint
+#'   that the guidance widens but PKNCA cannot recognize from its name, such as
+#'   a partial AUC of a modified-release product (EMA), or an endpoint that is
+#'   neither a PKNCA parameter nor a CDISC code.  Naming an endpoint for another framework is an error;
 #'   [be_compare()] passes it to the expanding-limits frameworks only, and each
 #'   adds it to its own choice.
 #' @param widen_default For the expanding-limits frameworks, whether the

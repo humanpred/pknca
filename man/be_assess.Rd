@@ -100,11 +100,11 @@ variance for each treatment (see Details).}
 
 \item{widen_endpoints}{For the expanding-limits frameworks (\code{"EMA"}, \code{"HC"},
 and \code{"GCC"}), endpoints whose acceptance limits widen in addition to the
-framework's own choice (Cmax for the EMA and GCC, AUC for Health Canada;
-see \code{\link[=be_regulator]{be_regulator()}}).  Use it for an endpoint that the guidance widens but
-PKNCA cannot recognize from its name, such as Ctau,ss or a partial AUC of a
-modified-release product (EMA), or an endpoint that is not a PKNCA
-parameter.  Naming an endpoint for another framework is an error;
+framework's own choice (the endpoints judged like Cmax for the EMA and GCC,
+like AUC for Health Canada; see \code{\link[=be_regulator]{be_regulator()}}).  Use it for an endpoint
+that the guidance widens but PKNCA cannot recognize from its name, such as
+a partial AUC of a modified-release product (EMA), or an endpoint that is
+neither a PKNCA parameter nor a CDISC code.  Naming an endpoint for another framework is an error;
 \code{\link[=be_compare]{be_compare()}} passes it to the expanding-limits frameworks only, and each
 adds it to its own choice.}
 
@@ -205,17 +205,20 @@ limits and reports no pass/fail, for comparisons such as food effect and
 drug-drug interaction studies.
 
 The expanding-limits frameworks widen only some endpoints, as their
-guidances specify (see \code{\link[=be_regulator]{be_regulator()}} for the sources): the EMA and the GCC
-widen Cmax, and Health Canada widens AUC and judges Cmax by its point
-estimate alone.  Every other endpoint needs its confidence interval within
-80.00-125.00\%.  The \code{rule} column names the criterion each row used.
-\code{widen_endpoints} adds endpoints to those that widen, for example
-\code{"ctrough"} for Ctau,ss of a modified-release product under the EMA
-modified-release guideline.  \code{widen_default = FALSE} drops the framework's
-own choice, for example when the protocol did not specify widening in
-advance, which the EMA and the GCC require; the endpoints in
-\code{widen_endpoints} still widen.  Health Canada judges Cmax by its point
-estimate unless Cmax is named in \code{widen_endpoints}.
+guidances specify (see \code{\link[=be_regulator]{be_regulator()}} for the sources and for which
+parameters, by PKNCA name or CDISC code, are judged like Cmax and like AUC):
+the EMA and the GCC widen Cmax and the parameters judged like it (such as
+Ctau,ss and Rmax), and Health Canada widens AUC and the parameters judged
+like it and judges the Cmax group by its point estimate alone.  Every other
+endpoint needs its confidence interval within 80.00-125.00\%.  The \code{rule}
+column names the criterion each row used.  \code{widen_endpoints} adds endpoints
+to those that widen, for example \code{"aucint.last"} for a partial AUC of a
+modified-release product under the EMA modified-release guideline.
+\code{widen_default = FALSE} drops the framework's own choice, for example when
+the protocol did not specify widening in advance, which the EMA and the GCC
+require; the endpoints in \code{widen_endpoints} still widen.  Health Canada
+judges the Cmax group by its point estimate unless an endpoint is named in
+\code{widen_endpoints}.
 
 For the results of a sparse bootstrap (Shen and Machado 2017; see
 \code{\link[=sparse_bootstrap]{sparse_bootstrap()}}), there is one estimate per treatment, from the sparse

@@ -16,9 +16,10 @@ be_regulator(
 An object of class \code{be_regulator}: a list with elements \code{name},
 \code{scaling} (one of \code{"none"}, \code{"abel"}, \code{"rsabe"}, \code{"ntid"}, \code{"hvntid"}),
 \code{cvswitch}, \code{r_const}, \code{cvcap}, \code{switch_swr}, \code{est_method} (\code{"anova"} or
-\code{"isc"}), \code{widen_concepts} (the parameter concepts whose limits widen, for
-the expanding-limits frameworks), \code{pe_only_concepts} (the concepts judged
-by the point estimate alone), \code{reference} (the source guidance, or \code{NA}),
+\code{"isc"}), \code{widen_like} (for the expanding-limits frameworks, whether the
+endpoints judged like \code{"cmax"} or like \code{"auc"} widen), \code{pe_only_like}
+(those judged by the point estimate alone), \code{reference} (the source
+guidance, or \code{NA}),
 \code{pe_constr}, \code{decision} (\code{FALSE} only for \code{"descriptive"}),
 \code{sw_ratio_cap}, and \code{switch_basis}.
 }
@@ -39,8 +40,9 @@ reference scaling
 (\href{https://database.ich.org/sites/default/files/ICH_M13A_Step4_Final_Guideline_2024_0723.pdf}{ICH M13A},
 section 2.2.4).
 \item \strong{EMA} -- average bioequivalence with expanding limits (ABEL) for
-\strong{Cmax only}; AUC keeps the 90\% confidence interval within
-80.00-125.00\% whatever its variability
+\strong{Cmax} and the parameters judged like it (see below); AUC and the
+parameters judged like it keep the 90\% confidence interval within
+80.00-125.00\% whatever their variability
 (\href{https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-investigation-bioequivalence-rev1_en.pdf}{EMA Guideline on the Investigation of Bioequivalence, Rev. 1},
 sections 4.1.8 and 4.1.10).  Cmax limits widen when the within-reference
 coefficient of variation (\code{CVwR}) exceeds 30\% (\code{cvswitch = 0.30}), as
@@ -50,23 +52,28 @@ within 80.00-125.00\%.  The constant is \code{log(1.25) / sqrt(log(1 + 0.30^2))}
 rounded to three decimals.  For modified-release products the EMA also
 allows the same widening for Cmax,ss, Ctau,ss, and partial AUCs
 (\href{https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-pharmacokinetic-and-clinical-evaluation-modified-release-dosage-forms_en.pdf}{EMA Guideline on the Pharmacokinetic and Clinical Evaluation of Modified Release Dosage Forms},
-section 6.8.2.2); PKNCA cannot tell those endpoints from their names, so
-name them in the \code{widen_endpoints} argument of \code{\link[=be_assess]{be_assess()}}, which adds
-them to Cmax.
-\item \strong{HC} -- Health Canada.  ABEL for \strong{AUC only}: the 90\% confidence
+section 6.8.2.2).  Cmax,ss and Ctau,ss are judged like Cmax; PKNCA cannot
+tell a partial AUC from AUC(0-tau) by its name, so name it in the
+\code{widen_endpoints} argument of \code{\link[=be_assess]{be_assess()}}.
+\item \strong{HC} -- Health Canada.  ABEL for \strong{AUC} and the parameters judged like
+it: the 90\% confidence
 interval within limits widened as \verb{exp(+/- 0.76 * swR)} when
 \code{swR > 0.294} (\verb{CVwR > 30\%}), capped at 66.7-150.0\% (\verb{CVwR = 57.4\%}), with
 the ratio of geometric means within 80.0-125.0\%
 (\href{https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/announcements/notice-policy-bioequivalence-standards-highly-variable-drug-products.html}{Policy on Bioequivalence Standards for Highly Variable Drug Products},
-effective 2018).  \strong{Cmax is judged by its point estimate alone}: the
-ratio of geometric means within 80.0-125.0\%, with no requirement on its
-confidence interval
+effective 2018).  \strong{Cmax}, and the parameters judged like it, \strong{is judged
+by its point estimate alone}: the ratio of geometric means within
+80.0-125.0\%, with no requirement on its confidence interval
 (\href{https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/applications-submissions/guidance-documents/bioavailability-bioequivalence/comparative-bioavailability-standards-formulations-used-systemic-effects.html}{Comparative Bioavailability Standards: Formulations Used for Systemic Effects},
-section 2.1).  These are the standards for drugs that are not critical
+sections 2.1 and 2.1.1.1).  Health Canada requires the relative mean Cmin
+at steady state to be at least 80.0\%, with no upper limit; judged like
+Cmax, it must also be at most 125.0\%.  Health Canada no longer uses
+urinary data.  These are the standards for drugs that are not critical
 dose drugs.
-\item \strong{GCC} -- Gulf Cooperation Council; the EMA rules: ABEL for \strong{Cmax
-only}, with \code{k = 0.760}, the 30\% switch, the 69.84-143.19\% cap, and the
-geometric mean ratio within 80.00-125.00\%; AUC keeps 80.00-125.00\%
+\item \strong{GCC} -- Gulf Cooperation Council; the EMA rules: ABEL for \strong{Cmax} and
+the parameters judged like it, with \code{k = 0.760}, the 30\% switch, the
+69.84-143.19\% cap, and the geometric mean ratio within 80.00-125.00\%; AUC
+and the parameters judged like it keep 80.00-125.00\%
 (\href{https://sfda.gov.sa/sites/default/files/2024-05/GCC_Guidelines_Bioequivalence32.pdf}{GCC Guidelines for Bioequivalence, version 3.2},
 sections 3.1.8 and 3.1.10).
 \item \strong{FDA} -- reference-scaled average bioequivalence (RSABE) for both AUC
@@ -97,12 +104,36 @@ drug-drug interaction studies.
 All decision frameworks additionally impose the point-estimate constraint
 that the geometric mean ratio fall within 80.00-125.00\%.
 
-An endpoint's kind comes from its PKNCA parameter concept (see
-\code{\link[=pknca_parameter_table]{pknca_parameter_table()}}): the peak concentrations (\code{cmax} and \code{cmax.dn})
-and the AUCs (including \verb{aucint.*}, dose-normalized, and sparse AUCs).
-Endpoints that a framework neither widens nor judges by the point estimate
-(such as \code{cmin} or \code{ctrough}) use the 90\% confidence interval within
-80.00-125.00\%.
+The guidances name more parameters than Cmax and AUC and judge each like
+one of them.  An endpoint is matched by its PKNCA parameter name or its
+CDISC \code{PPTESTCD} code (see \code{\link[=pknca_cdisc_codes]{pknca_cdisc_codes()}}).  Judged like Cmax:
+\itemize{
+\item \code{cmax}: Cmax, and Cmax,ss at steady state (EMA section 4.1.8);
+\item \code{cmin} and \code{ctrough}: Cmin,ss and Ctau,ss (EMA modified-release guideline
+section 6.8.2.2; Health Canada section 2.1.1.1);
+\item \code{ermax}: Rmax, the maximal rate of urinary excretion, "analysed using the
+same acceptance interval as for Cmax" (EMA section 4.1.8; GCC section
+3.1.8);
+\item and their dose-normalized forms.
+}
+
+Judged like AUC:
+\itemize{
+\item the AUCs: \code{auclast} (AUC(0-t)), \code{aucall}, \code{aucinf.obs} and \code{aucinf.pred}
+(AUC(0-inf)), \verb{aucint.*} (for example AUC(0-tau) at steady state and
+AUC(0-72h); EMA section 4.1.8, Health Canada section 2.1.1.4), the
+IV-extrapolated \verb{auciv*}, and \code{sparse_auclast};
+\item \verb{cav*}: the average concentration at steady state, AUC(0-tau)/tau;
+\item \code{ae}: Ae(0-t), the amount excreted in urine, "analysed using the same
+acceptance interval as stated above for AUC(0-t)" (EMA section 4.1.8; GCC
+section 3.1.8), and \code{fe}, Ae as a fraction of the dose;
+\item and their dose-normalized forms.
+}
+
+Other endpoints, such as \code{tmax}, use the 90\% confidence interval within
+80.00-125.00\%.  An endpoint that is neither a PKNCA parameter nor a CDISC
+code keeps 80.00-125.00\% under the expanding-limits frameworks, with a
+warning, unless it is named in \code{widen_endpoints}.
 }
 \examples{
 be_regulator("EMA")

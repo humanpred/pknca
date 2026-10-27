@@ -17,14 +17,14 @@ test_that("be_regulator returns the documented constants for every framework", {
   expect_equal(ema$cvcap, 0.50)
   expect_true(ema$pe_constr)
 
-  expect_identical(ema$widen_concepts, "peak_conc")
-  expect_identical(ema$pe_only_concepts, character())
+  expect_identical(ema$widen_like, "cmax")
+  expect_identical(ema$pe_only_like, character())
 
   hc <- be_regulator("HC")
   expect_equal(hc$r_const, 0.76)
   expect_equal(hc$cvcap, 0.57382)
-  expect_identical(hc$widen_concepts, "auc")
-  expect_identical(hc$pe_only_concepts, "peak_conc")
+  expect_identical(hc$widen_like, "auc")
+  expect_identical(hc$pe_only_like, "cmax")
 
   # GCC version 3.2 adopts the EMA rules.
   gcc <- be_regulator("GCC")
@@ -32,8 +32,8 @@ test_that("be_regulator returns the documented constants for every framework", {
   expect_equal(gcc$cvswitch, 0.30)
   expect_equal(gcc$r_const, 0.76)
   expect_equal(gcc$cvcap, 0.50)
-  expect_identical(gcc$widen_concepts, "peak_conc")
-  expect_identical(gcc$pe_only_concepts, character())
+  expect_identical(gcc$widen_like, "cmax")
+  expect_identical(gcc$pe_only_like, character())
 
   fda <- be_regulator("FDA")
   expect_equal(fda$scaling, "rsabe")
@@ -461,12 +461,12 @@ test_that("be_assess applies HC, GCC, and ABE limits correctly", {
 test_that("every regulator documents its endpoint rules and source", {
   for (nm in eval(formals(be_regulator)$name)) {
     reg <- be_regulator(nm)
-    expect_type(reg$widen_concepts, "character")
-    expect_type(reg$pe_only_concepts, "character")
-    expect_true(all(c(reg$widen_concepts, reg$pe_only_concepts) %in% pknca_concepts()), label = nm)
+    expect_type(reg$widen_like, "character")
+    expect_type(reg$pe_only_like, "character")
+    expect_true(all(c(reg$widen_like, reg$pe_only_like) %in% c("cmax", "auc")), label = nm)
     # Only the expanding-limits frameworks treat endpoints differently.
     expect_identical(
-      length(reg$widen_concepts) > 0, identical(reg$scaling, "abel"), label = nm
+      length(reg$widen_like) > 0, identical(reg$scaling, "abel"), label = nm
     )
     expect_identical(is.na(reg$reference), !reg$decision, label = nm)
   }
@@ -540,18 +540,20 @@ test_that("widen_endpoints adds endpoints and widen_default drops the framework'
 })
 
 test_that("be_compare adds widen_endpoints to each framework's own choice", {
+  # A partial AUC (aucint.last) of a modified-release product is judged like AUC,
+  # so the EMA and GCC widen it only when it is named.
   g <- generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40)
-  d <- rbind(be_replicate_long(g, "cmax"), be_replicate_long(g, "auclast"), be_replicate_long(g, "ctrough"))
-  endpoints <- c("cmax", "auclast", "ctrough")
+  d <- rbind(be_replicate_long(g, "cmax"), be_replicate_long(g, "auclast"), be_replicate_long(g, "aucint.last"))
+  endpoints <- c("cmax", "auclast", "aucint.last")
   regulators <- c("EMA", "HC", "GCC", "FDA")
-  cmp <- be_compare(d, "treatment", "R", endpoints, regulators = regulators, model_type = "anova", widen_endpoints = "ctrough")
+  cmp <- be_compare(d, "treatment", "R", endpoints, regulators = regulators, model_type = "anova", widen_endpoints = "aucint.last")
   expect_identical(
     stats::setNames(cmp$rule, paste(cmp$regulator, cmp$endpoint)),
     c(
-      "EMA cmax" = "ABEL", "EMA auclast" = "ABE", "EMA ctrough" = "ABEL",
-      "HC cmax" = "PE", "HC auclast" = "ABEL", "HC ctrough" = "ABEL",
-      "GCC cmax" = "ABEL", "GCC auclast" = "ABE", "GCC ctrough" = "ABEL",
-      "FDA cmax" = "RSABE", "FDA auclast" = "RSABE", "FDA ctrough" = "RSABE"
+      "EMA cmax" = "ABEL", "EMA auclast" = "ABE", "EMA aucint.last" = "ABEL",
+      "HC cmax" = "PE", "HC auclast" = "ABEL", "HC aucint.last" = "ABEL",
+      "GCC cmax" = "ABEL", "GCC auclast" = "ABE", "GCC aucint.last" = "ABEL",
+      "FDA cmax" = "RSABE", "FDA auclast" = "RSABE", "FDA aucint.last" = "RSABE"
     )
   )
   # widen_default = FALSE drops each expanding-limits framework's own choice and
@@ -560,10 +562,10 @@ test_that("be_compare adds widen_endpoints to each framework's own choice", {
   expect_identical(
     stats::setNames(cmp_none$rule, paste(cmp_none$regulator, cmp_none$endpoint)),
     c(
-      "EMA cmax" = "ABE", "EMA auclast" = "ABE", "EMA ctrough" = "ABE",
-      "HC cmax" = "PE", "HC auclast" = "ABE", "HC ctrough" = "ABE",
-      "GCC cmax" = "ABE", "GCC auclast" = "ABE", "GCC ctrough" = "ABE",
-      "FDA cmax" = "RSABE", "FDA auclast" = "RSABE", "FDA ctrough" = "RSABE"
+      "EMA cmax" = "ABE", "EMA auclast" = "ABE", "EMA aucint.last" = "ABE",
+      "HC cmax" = "PE", "HC auclast" = "ABE", "HC aucint.last" = "ABE",
+      "GCC cmax" = "ABE", "GCC auclast" = "ABE", "GCC aucint.last" = "ABE",
+      "FDA cmax" = "RSABE", "FDA auclast" = "RSABE", "FDA aucint.last" = "RSABE"
     )
   )
 })
@@ -590,15 +592,59 @@ test_that("the widened limits never narrow below 80.00-125.00%", {
   }
 })
 
-test_that("the endpoint concepts that the frameworks widen are the documented ones", {
+test_that("every registered exposure parameter is judged like Cmax or like AUC", {
+  # A new concentration, AUC, average-concentration, or urinary-amount
+  # parameter fails here until it is placed in one of the two groups.
   concept <- parameter_classification()$concept
-  expect_setequal(names(concept)[concept %in% "peak_conc"], c("cmax", "cmax.dn"))
-  auc <- names(concept)[concept %in% "auc"]
-  expect_true(all(c(
-    "auclast", "aucall", "aucinf.obs", "aucinf.pred", "aucint.last", "aucint.inf.obs",
-    "auclast.dn", "aucinf.obs.dn", "sparse_auclast"
-  ) %in% auc))
-  expect_false(any(c("aumclast", "aucabove.trough.all", "cmin", "ctrough", "tmax") %in% auc))
+  exposure <- names(concept)[concept %in% c(
+    "peak_conc", "min_conc", "trough_conc", "auc", "average_conc", "excreted_amount", "excreted_fraction"
+  )]
+  # The standard errors and degrees of freedom of the sparse AUCs are not
+  # endpoints.
+  exposure <- exposure[!grepl("_(se|df)$", exposure)]
+  expect_setequal(exposure, setdiff(c(.be_cmax_like_params, .be_auc_like_params), "ermax"))
+  expect_true(all(c(.be_cmax_like_params, .be_auc_like_params) %in% names(get.interval.cols())))
+  expect_length(intersect(.be_cmax_like_params, .be_auc_like_params), 0)
+  # Rmax is the only excretion rate the guidances judge.
+  expect_identical(names(concept)[concept %in% "excretion_rate" & names(concept) %in% .be_cmax_like_params], "ermax")
+})
+
+test_that("an endpoint is judged by its PKNCA name or its CDISC code", {
+  like <- c(
+    cmax = "cmax", CMAX = "cmax", CMAXD = "cmax", ctrough = "cmax", CTROUGH = "cmax", cmin = "cmax",
+    ermax = "cmax", ERMAX = "cmax",
+    auclast = "auc", AUCLST = "auc", AUCIFO = "auc", AUCINT = "auc", cav = "auc", CAVG = "auc",
+    ae = "auc", RCAMINT = "auc", fe = "auc",
+    tmax = "other", half.life = "other", SPARSEAS = "other",
+    peak = NA_character_
+  )
+  for (ep in names(like)) {
+    expect_identical(.be_endpoint_like(ep), like[[ep]], label = ep)
+  }
+  # No CDISC code names parameters from both groups.
+  codes <- unique(suppressMessages(pknca_cdisc_codes())$pptestcd_cdisc)
+  for (code in codes) {
+    params <- .be_endpoint_parameters(code)
+    expect_false(
+      any(params %in% .be_cmax_like_params) && any(params %in% .be_auc_like_params),
+      label = code
+    )
+  }
+})
+
+test_that("CDISC-coded, steady-state, and urinary endpoints follow the Cmax and AUC rules", {
+  g <- generate_be_replicate(24, 20240501, "full", cv_wr = 0.45, cv_wt = 0.40)
+  endpoints <- c("CMAX", "AUCLST", "ctrough", "ermax", "ae")
+  d <- do.call(rbind, lapply(endpoints, be_replicate_long, d = g))
+  expected <- list(
+    EMA = c(CMAX = "ABEL", AUCLST = "ABE", ctrough = "ABEL", ermax = "ABEL", ae = "ABE"),
+    GCC = c(CMAX = "ABEL", AUCLST = "ABE", ctrough = "ABEL", ermax = "ABEL", ae = "ABE"),
+    HC = c(CMAX = "PE", AUCLST = "ABEL", ctrough = "PE", ermax = "PE", ae = "ABEL")
+  )
+  for (rg in names(expected)) {
+    res <- expect_no_warning(be_assess(d, "treatment", "R", endpoints, regulator = rg, model_type = "anova"))
+    expect_identical(stats::setNames(res$rule, res$endpoint), expected[[rg]], label = rg)
+  }
 })
 
 test_that("widen_endpoints and widen_default are checked against the endpoints and the framework", {
