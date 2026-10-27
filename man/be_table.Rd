@@ -28,11 +28,11 @@ be_table(
 
 \item{widen_endpoints}{For the expanding-limits frameworks (\code{"EMA"}, \code{"HC"},
 and \code{"GCC"}), endpoints whose acceptance limits widen in addition to the
-framework's own choice (Cmax for the EMA and GCC, AUC for Health Canada;
-see \code{\link[=be_regulator]{be_regulator()}}).  Use it for an endpoint that the guidance widens but
-PKNCA cannot recognize from its name, such as Ctau,ss or a partial AUC of a
-modified-release product (EMA), or an endpoint that is not a PKNCA
-parameter.  Naming an endpoint for another framework is an error;
+framework's own choice (the endpoints judged like Cmax for the EMA and GCC,
+like AUC for Health Canada; see \code{\link[=be_regulator]{be_regulator()}}).  Use it for an endpoint
+that the guidance widens but PKNCA cannot recognize from its name, such as
+a partial AUC of a modified-release product (EMA), or an endpoint that is
+neither a PKNCA parameter nor a CDISC code.  Naming an endpoint for another framework is an error;
 \code{\link[=be_compare]{be_compare()}} passes it to the expanding-limits frameworks only, and each
 adds it to its own choice.}
 
@@ -60,8 +60,8 @@ reference-scaled criterion and the model contrast for the unscaled
 is the only place regulator decisions are made.  Each row shows the ratio and
 confidence interval that its decision used.  The expanding-limits frameworks
 decide each endpoint by its own rule (see \code{\link[=be_regulator]{be_regulator()}}); an endpoint that
-is not a PKNCA parameter cannot be classified, so it keeps 80.00-125.00\%
-with a warning unless it is named in \code{widen_endpoints}.
+is neither a PKNCA parameter nor a CDISC code cannot be classified, so it
+keeps 80.00-125.00\% with a warning unless it is named in \code{widen_endpoints}.
 }
 \seealso{
 Other Bioequivalence:
