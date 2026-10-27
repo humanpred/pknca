@@ -31,7 +31,7 @@ results: Tests were not run because tests are not installed.
 Sys.Date()
 ```
 
-    ## [1] "2026-10-22"
+    ## [1] "2026-10-27"
 
 ``` r
 
