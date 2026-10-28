@@ -2,10 +2,14 @@
 
 `be_expand_limits()` computes the (possibly widened) bioequivalence
 acceptance limits for a scaled-ABE framework given the within-reference
-standard deviation. For EMA and Health Canada the limits widen
-geometrically with `swR` and are capped; for the GCC they jump to a
-fixed wider band; below the switching variability they remain the
-conventional 80.00-125.00%.
+standard deviation. The limits widen geometrically with `swR` as
+`exp(+/- k * swR)` and are capped; below the switching variability they
+remain the conventional 80.00-125.00%. They apply to the endpoints the
+framework widens (Cmax for the EMA and GCC, AUC for Health Canada; see
+[`be_regulator()`](https://humanpred.github.io/pknca/reference/be_regulator.md)
+for the sources);
+[`be_assess()`](https://humanpred.github.io/pknca/reference/be_assess.md)
+keeps the other endpoints at 80.00-125.00%.
 
 ## Usage
 
@@ -54,13 +58,13 @@ Other Bioequivalence:
 ## Examples
 
 ``` r
-be_expand_limits(0.485, "EMA") # capped expansion
+be_expand_limits(0.485, "EMA") # capped expansion (69.84-143.19%)
 #>     lower     upper 
 #>  69.83678 143.19102 
 be_expand_limits(0.20, "EMA")  # below the switch: 80-125%
 #> lower upper 
 #>    80   125 
-be_expand_limits(0.40, "GCC")  # fixed GCC band
-#>    lower    upper 
-#>  75.0000 133.3333 
+be_expand_limits(0.60, "HC")   # Health Canada cap (66.7-150.0%)
+#>     lower     upper 
+#>  66.66666 150.00000 
 ```

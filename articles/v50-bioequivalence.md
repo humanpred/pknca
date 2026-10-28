@@ -79,7 +79,8 @@ interval as the intra-subject contrasts.
 | Regulator | Design required | Auto `model_type` | Notes |
 |----|----|----|----|
 | `ABE` | any (test & reference) | `lmer` (crossover/replicate) / `anova` (parallel) | unscaled 80.00-125.00% |
-| `EMA` / `HC` / `GCC` | replicated reference | `lmer` | expanding limits (ABEL) |
+| `EMA` / `GCC` | replicated reference | `lmer` | expanding limits (ABEL) for C_(max); AUC at 80.00-125.00% |
+| `HC` | replicated reference | `lmer` | expanding limits (ABEL) for AUC; C_(max) by its point estimate |
 | `FDA` (RSABE) | replicated reference | `isc` | intra-subject contrasts + linearized bound |
 | `NTID` / `HVNTID` | full replicate (test & reference) | `isc` | adds a swT/swR ratio constraint |
 | *(override)* | full replicate | `nlme` | treatment-specific variances from one mixed model |
@@ -221,11 +222,11 @@ be <- be_assess(
 knitr::kable(as.data.frame(be), digits = 2)
 ```
 
-| endpoint | test | n | design | gm_reference | gm_reference_lower | gm_reference_upper | gm_test | gm_test_lower | gm_test_upper | gmr_percent | ci_lower | ci_upper | cvwr_percent | cvwt_percent | swr | limit_lower | limit_upper | criterion | regulator | model_type | pass |
-|:---|:---|---:|:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|:---|:---|:---|
-| cmax | T | 24 | full_replicate | 1.59 | 1.55 | 1.62 | 1.58 | 1.55 | 1.62 | 99.68 | 97.21 | 102.20 | NA | NA | NA | 80 | 125 | NA | ABE | lmer | TRUE |
-| auclast | T | 24 | full_replicate | 16.90 | 15.86 | 18.00 | 17.55 | 16.47 | 18.69 | 103.83 | 100.83 | 106.93 | NA | NA | NA | 80 | 125 | NA | ABE | lmer | TRUE |
-| aucinf.obs | T | 24 | full_replicate | 18.66 | 17.12 | 20.34 | 19.61 | 17.99 | 21.38 | 105.09 | 101.26 | 109.07 | NA | NA | NA | 80 | 125 | NA | ABE | lmer | TRUE |
+| endpoint | test | n | design | gm_reference | gm_reference_lower | gm_reference_upper | gm_test | gm_test_lower | gm_test_upper | gmr_percent | ci_lower | ci_upper | cvwr_percent | cvwt_percent | swr | rule | limit_lower | limit_upper | criterion | regulator | model_type | pass |
+|:---|:---|---:|:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|:---|---:|---:|---:|:---|:---|:---|
+| cmax | T | 24 | full_replicate | 1.59 | 1.55 | 1.62 | 1.58 | 1.55 | 1.62 | 99.68 | 97.21 | 102.20 | NA | NA | NA | ABE | 80 | 125 | NA | ABE | lmer | TRUE |
+| auclast | T | 24 | full_replicate | 16.90 | 15.86 | 18.00 | 17.55 | 16.47 | 18.69 | 103.83 | 100.83 | 106.93 | NA | NA | NA | ABE | 80 | 125 | NA | ABE | lmer | TRUE |
+| aucinf.obs | T | 24 | full_replicate | 18.66 | 17.12 | 20.34 | 19.61 | 17.99 | 21.38 | 105.09 | 101.26 | 109.07 | NA | NA | NA | ABE | 80 | 125 | NA | ABE | lmer | TRUE |
 
 ## Interpreting the results
 
@@ -243,6 +244,8 @@ For each endpoint and test formulation the table reports:
 - `cvwr_percent`, `swr`: the within-reference coefficient of variation
   and standard deviation (used by the reference-scaling frameworks; `NA`
   for unscaled ABE),
+- `rule`: the criterion the decision used (`"ABE"`, `"ABEL"`, `"PE"` for
+  a point estimate alone, `"RSABE"`, `"NTID"`, or `"HVNTID"`),
 - `limit_lower`, `limit_upper`: the acceptance limits, and `criterion`
   for the FDA reference-scaled bound, and
 - `pass`: the regulatory decision.
@@ -273,20 +276,47 @@ the reference is given more than once. PKNCA implements the major
 frameworks through
 [`be_assess()`](https://humanpred.github.io/pknca/reference/be_assess.md):
 
-- **ABE** – average bioequivalence, the unscaled 80.00-125.00%
-  criterion.
-- **EMA**, **Health Canada (HC)**, and **GCC** – average bioequivalence
-  with expanding limits (ABEL); the limits widen with the
-  within-reference standard deviation, with framework-specific caps.
-- **FDA RSABE** – reference-scaled average bioequivalence using the
-  linearized Howe/Hyslop criterion.
+- **ABE** – average bioequivalence, the unscaled 80.00-125.00% criterion
+  for C_(max) and AUC ([ICH
+  M13A](https://database.ich.org/sites/default/files/ICH_M13A_Step4_Final_Guideline_2024_0723.pdf),
+  section 2.2.4).
+- **EMA** and **GCC** – average bioequivalence with expanding limits
+  (ABEL) for **C_(max)**: its limits widen with the within-reference
+  standard deviation above a 30% CV, up to 69.84-143.19%, while AUC
+  keeps 80.00-125.00% ([EMA
+  guideline](https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-investigation-bioequivalence-rev1_en.pdf),
+  sections 4.1.8 and 4.1.10; [GCC guidelines version
+  3.2](https://sfda.gov.sa/sites/default/files/2024-05/GCC_Guidelines_Bioequivalence32.pdf),
+  sections 3.1.8 and 3.1.10).
+- **Health Canada (HC)** – ABEL for **AUC**, up to 66.7-150.0% ([highly
+  variable drug
+  policy](https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/announcements/notice-policy-bioequivalence-standards-highly-variable-drug-products.html)),
+  and C_(max) judged by its point estimate alone within 80.0-125.0%
+  ([Comparative Bioavailability
+  Standards](https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/applications-submissions/guidance-documents/bioavailability-bioequivalence/comparative-bioavailability-standards-formulations-used-systemic-effects.html),
+  section 2.1).
+- **FDA RSABE** – reference-scaled average bioequivalence for C_(max)
+  and AUC, using the linearized Howe/Hyslop criterion ([progesterone
+  guidance](https://www.accessdata.fda.gov/drugsatfda_docs/psg/Progesterone_caps_19781_RC02-11.pdf)).
 - **FDA NTID** and **HVNTID** – the (highly variable) narrow therapeutic
   index drug frameworks, which add a constraint on the ratio of
-  within-subject standard deviations.
+  within-subject standard deviations ([warfarin
+  guidance](https://www.accessdata.fda.gov/drugsatfda_docs/psg/Warfarin_Sodium_tab_09218_RC12-12.pdf);
+  [dabigatran
+  guidance](https://www.accessdata.fda.gov/drugsatfda_docs/psg/Dabigatran%20etexilate%20mesylate_oral%20capsule_NDA%20022512_RV05-17.pdf)).
 
 All regulatory constants are built into PKNCA (see
-[`be_regulator()`](https://humanpred.github.io/pknca/reference/be_regulator.md));
-no external package is required.
+[`be_regulator()`](https://humanpred.github.io/pknca/reference/be_regulator.md),
+which lists the sources); no external package is required. The `rule`
+column of the results names the criterion each row used. The other
+parameters the guidances name are judged like C_(max) (C_(max,ss),
+C_(min,ss), C_(tau,ss), and the urinary R_(max)) or like AUC
+(AUC(0-tau), AUC(0-72h), C_(av), and the urinary A_(e)), matched by
+their PKNCA names or CDISC `PPTESTCD` codes. For a modified-release
+product, the EMA also allows widening partial AUCs, which PKNCA cannot
+tell from AUC(0-tau) by name; name them in `widen_endpoints`, which adds
+them to the framework’s own choice. `widen_default = FALSE` drops that
+choice, as when the protocol did not specify widening in advance.
 
 ### A replicate-design study
 
@@ -296,7 +326,7 @@ high within-subject variability.
 
 ``` r
 
-simulate_replicate <- function(nsub = 24, seed = 20251015, cv_wr = 0.45, cv_wt = 0.40) {
+simulate_replicate <- function(endpoint, nsub = 24, seed = 20251015, cv_wr = 0.45, cv_wt = 0.40) {
   set.seed(seed)
   seqs <- rep(c("TRTR", "RTRT"), length.out = nsub)
   swR <- sqrt(log(cv_wr^2 + 1))
@@ -310,7 +340,7 @@ simulate_replicate <- function(nsub = 24, seed = 20251015, cv_wr = 0.45, cv_wt =
       eff <- if (trt[p] == "T") log(1.05) else 0
       rows[[length(rows) + 1]] <- data.frame(
         subject = i, sequence = seqs[i], period = p, treatment = trt[p],
-        PPTESTCD = "auclast",
+        PPTESTCD = endpoint,
         PPORRES = exp(log(100) + eff + subj[i] + stats::rnorm(1, sd = sw))
       )
     }
@@ -318,7 +348,10 @@ simulate_replicate <- function(nsub = 24, seed = 20251015, cv_wr = 0.45, cv_wt =
   do.call(rbind, rows)
 }
 
-rep_data <- simulate_replicate()
+rep_data <- rbind(
+  simulate_replicate("cmax", seed = 20251016),
+  simulate_replicate("auclast", seed = 20251015)
+)
 ```
 
 [`be_assess()`](https://humanpred.github.io/pknca/reference/be_assess.md)
@@ -332,20 +365,24 @@ decision.
 ``` r
 
 ema <- be_assess(rep_data, reference_col = "treatment", reference_value = "R",
-                 endpoints = "auclast", regulator = "EMA")
+                 endpoints = c("cmax", "auclast"), regulator = "EMA")
 #> Warning: Units were not found in the data; omitting the `units` column. Supply
 #> units via a PKNCAresults object or `PPSTRESU`/`PPORRESU` columns.
 knitr::kable(as.data.frame(ema), digits = 3)
 ```
 
-| endpoint | test | n | design | gm_reference | gm_reference_lower | gm_reference_upper | gm_test | gm_test_lower | gm_test_upper | gmr_percent | ci_lower | ci_upper | cvwr_percent | cvwt_percent | swr | limit_lower | limit_upper | criterion | regulator | model_type | pass |
-|:---|:---|---:|:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|:---|:---|:---|
-| auclast | T | 24 | full_replicate | 110.423 | 93.1 | 130.969 | 103.353 | 87.139 | 122.584 | 93.598 | 81.783 | 107.12 | 52.289 | 30.063 | 0.492 | 69.837 | 143.191 | NA | EMA | lmer | TRUE |
+| endpoint | test | n | design | gm_reference | gm_reference_lower | gm_reference_upper | gm_test | gm_test_lower | gm_test_upper | gmr_percent | ci_lower | ci_upper | cvwr_percent | cvwt_percent | swr | rule | limit_lower | limit_upper | criterion | regulator | model_type | pass |
+|:---|:---|---:|:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|:---|---:|---:|---:|:---|:---|:---|
+| cmax | T | 24 | full_replicate | 90.856 | 78.058 | 105.753 | 106.277 | 91.306 | 123.702 | 116.973 | 100.474 | 136.181 | 43.749 | 46.227 | 0.418 | ABEL | 72.757 | 137.444 | NA | EMA | lmer | TRUE |
+| auclast | T | 24 | full_replicate | 110.423 | 93.100 | 130.969 | 103.353 | 87.139 | 122.584 | 93.598 | 81.783 | 107.120 | 52.289 | 30.063 | 0.492 | ABE | 80.000 | 125.000 | NA | EMA | lmer | TRUE |
 
-For this dataset the within-reference CV is about 50%, so the EMA limits
-expand from 80.00-125.00% toward their cap. The FDA reference-scaled
-criterion instead reports the linearized bound (`criterion`), which
-passes when it is at most zero:
+For C_(max) the within-reference CV is about 44%, so the EMA limits
+expand from 80.00-125.00% to about 72.8-137.4%, and the confidence
+interval, whose upper bound is above 125%, fits within them (`rule`
+`"ABEL"`). AUC keeps 80.00-125.00% (`rule` `"ABE"`) although its
+within-reference CV is higher. The FDA reference-scaled criterion
+instead reports the linearized bound (`criterion`), which passes when it
+is at most zero:
 
 ``` r
 
@@ -371,23 +408,26 @@ design cannot support are skipped with a warning.
 ``` r
 
 cmp <- be_compare(rep_data, reference_col = "treatment", reference_value = "R",
-                  endpoints = "auclast",
+                  endpoints = c("cmax", "auclast"),
                   regulators = c("EMA", "HC", "GCC", "FDA", "NTID", "HVNTID"))
 #> Warning: Units were not found in the data; omitting the `units` column. Supply
 #> units via a PKNCAresults object or `PPSTRESU`/`PPORRESU` columns.
 summary(cmp)
-#>   endpoint  EMA   HC  GCC  FDA NTID HVNTID
-#>  auclast:T TRUE TRUE TRUE TRUE TRUE   TRUE
+#>   endpoint  EMA   HC  GCC  FDA  NTID HVNTID
+#>  auclast:T TRUE TRUE TRUE TRUE  TRUE   TRUE
+#>     cmax:T TRUE TRUE TRUE TRUE FALSE  FALSE
 #> 
 #> Caption: Pass/fail by endpoint and regulator.
 ```
 
 The pass/fail decision can differ between frameworks for the same data.
-The narrow therapeutic index frameworks are the strictest: **NTID**
-requires the reference-scaled bound, the conventional 90% confidence
-interval within 80.00-125.00%, *and* the upper 90% bound of the
-within-subject standard-deviation ratio swT/swR at most 2.5; **HVNTID**
-(highly variable NTID) drops the reference-scaled bound but keeps the
+Here C_(max) passes under the EMA and GCC only because its limits widen,
+and under Health Canada on its point estimate alone. The narrow
+therapeutic index frameworks are the strictest: **NTID** requires the
+reference-scaled bound, the conventional 90% confidence interval within
+80.00-125.00%, *and* the upper 90% bound of the within-subject
+standard-deviation ratio swT/swR at most 2.5; **HVNTID** (highly
+variable NTID) drops the reference-scaled bound but keeps the
 conventional interval and the swT/swR constraint. These FDA criteria
 match those in `PowerTOST`’s `power.NTID()` / `power.HVNTID()`.
 
@@ -486,9 +526,9 @@ requirements:
 
 1.  **Framework and model**: the `regulator` and `model_type` columns
     record the framework and the average-BE model used, and the table’s
-    `caption` attribute gives a one-sentence methods statement (model,
-    confidence-interval method, within-subject variability, and the
-    decision rule).
+    `caption` attribute gives a short methods statement (model,
+    confidence-interval method, within-subject variability, the decision
+    rule for each endpoint, and its source guidance).
 2.  **%GMR, confidence interval, within-subject CV, limits/criterion,
     and the pass/fail decision**: one row per endpoint and test
     formulation in `as.data.frame(be_assess(...))`.

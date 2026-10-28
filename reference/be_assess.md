@@ -31,6 +31,8 @@ be_assess(
   design = NULL,
   covariates = NULL,
   heteroscedastic = FALSE,
+  widen_endpoints = NULL,
+  widen_default = TRUE,
   ...
 )
 
@@ -49,6 +51,8 @@ be_assess(
   design = NULL,
   covariates = NULL,
   heteroscedastic = FALSE,
+  widen_endpoints = NULL,
+  widen_default = TRUE,
   ...
 )
 ```
@@ -132,6 +136,32 @@ be_assess(
   Logical. When `TRUE`, estimate a separate residual variance for each
   treatment (see Details).
 
+- widen_endpoints:
+
+  For the expanding-limits frameworks (`"EMA"`, `"HC"`, and `"GCC"`),
+  endpoints whose acceptance limits widen in addition to the framework's
+  own choice (the endpoints judged like Cmax for the EMA and GCC, like
+  AUC for Health Canada; see
+  [`be_regulator()`](https://humanpred.github.io/pknca/reference/be_regulator.md)).
+  Use it for an endpoint that the guidance widens but PKNCA cannot
+  recognize from its name, such as a partial AUC of a modified-release
+  product (EMA), or an endpoint that is neither a PKNCA parameter nor a
+  CDISC code. Naming an endpoint for another framework is an error;
+  [`be_compare()`](https://humanpred.github.io/pknca/reference/be_compare.md)
+  passes it to the expanding-limits frameworks only, and each adds it to
+  its own choice.
+
+- widen_default:
+
+  For the expanding-limits frameworks, whether the framework's own
+  choice of endpoints widens (the default, `TRUE`). With `FALSE` only
+  the endpoints in `widen_endpoints` widen, for example none when the
+  protocol did not specify widening in advance; Health Canada still
+  judges Cmax by its point estimate. `FALSE` for another framework is an
+  error;
+  [`be_compare()`](https://humanpred.github.io/pknca/reference/be_compare.md)
+  applies it to the expanding-limits frameworks only.
+
 ## Value
 
 An object of class `be_assess` (a data.frame), ordered by endpoint (in
@@ -144,13 +174,17 @@ reference and test geometric means with their 90% confidence intervals
 on the measurement scale (`gm_reference`, `gm_reference_lower`,
 `gm_reference_upper`, `gm_test`, `gm_test_lower`, `gm_test_upper`),
 `gmr_percent`, `ci_lower`, `ci_upper`, `cvwr_percent`, `cvwt_percent`,
-`swr`, `limit_lower`, `limit_upper`, `criterion`, `regulator`,
-`model_type`, and `pass`. `limit_*` are `NA` for the RSABE criterion and
-`criterion` is `NA` for the limit-based frameworks. For
-`regulator = "descriptive"` the `limit_lower`, `limit_upper`,
+`swr`, `rule`, `limit_lower`, `limit_upper`, `criterion`, `regulator`,
+`model_type`, and `pass`. `rule` names the criterion the row's decision
+used: `"ABE"` (the confidence interval within 80.00-125.00%), `"ABEL"`
+(the confidence interval within widened limits), `"PE"` (the point
+estimate alone within 80.00-125.00%), `"RSABE"` (the reference-scaled
+bound), `"NTID"`, or `"HVNTID"`. `limit_*` are `NA` for the RSABE
+criterion and `criterion` is `NA` for the limit-based frameworks. For
+`regulator = "descriptive"` the `rule`, `limit_lower`, `limit_upper`,
 `criterion`, and `pass` columns are omitted. A `caption` attribute
-documents the model and the decision rule, or states that no regulatory
-decision was applied.
+documents the model, the decision rule for each endpoint, and its source
+guidance, or states that no regulatory decision was applied.
 
 ## Details
 
@@ -217,6 +251,24 @@ and its confidence interval exactly as for `"ABE"` but applies no
 acceptance limits and reports no pass/fail, for comparisons such as food
 effect and drug-drug interaction studies.
 
+The expanding-limits frameworks widen only some endpoints, as their
+guidances specify (see
+[`be_regulator()`](https://humanpred.github.io/pknca/reference/be_regulator.md)
+for the sources and for which parameters, by PKNCA name or CDISC code,
+are judged like Cmax and like AUC): the EMA and the GCC widen Cmax and
+the parameters judged like it (such as Ctau,ss and Rmax), and Health
+Canada widens AUC and the parameters judged like it and judges the Cmax
+group by its point estimate alone. Every other endpoint needs its
+confidence interval within 80.00-125.00%. The `rule` column names the
+criterion each row used. `widen_endpoints` adds endpoints to those that
+widen, for example `"aucint.last"` for a partial AUC of a
+modified-release product under the EMA modified-release guideline.
+`widen_default = FALSE` drops the framework's own choice, for example
+when the protocol did not specify widening in advance, which the EMA and
+the GCC require; the endpoints in `widen_endpoints` still widen. Health
+Canada judges the Cmax group by its point estimate unless an endpoint is
+named in `widen_endpoints`.
+
 For the results of a sparse bootstrap (Shen and Machado 2017; see
 [`sparse_bootstrap()`](https://humanpred.github.io/pknca/reference/sparse_bootstrap.md)),
 there is one estimate per treatment, from the sparse data, rather than
@@ -275,26 +327,27 @@ d <- do.call(rbind, lapply(seq_len(nsub), function(i) {
   trt <- strsplit(seqs[i], "")[[1]]
   data.frame(
     subject = i, sequence = seqs[i], period = seq_along(trt), treatment = trt,
-    PPTESTCD = "auclast",
+    PPTESTCD = "cmax",
     PPORRES = exp(log(100) + ifelse(trt == "T", 0.04, 0) + b[i] +
                     stats::rnorm(length(trt), sd = 0.45))
   )
 }))
+# The EMA widens the limits of Cmax
 be_assess(d, reference_col = "treatment", reference_value = "R",
-          endpoints = "auclast", regulator = "EMA")
+          endpoints = "cmax", regulator = "EMA")
 #> Warning: Units were not found in the data; omitting the `units` column. Supply units via a PKNCAresults object or `PPSTRESU`/`PPORRESU` columns.
 #> Bioequivalence assessment: EMA (model_type lmer, 90% CI)
 #> Design: full_replicate
 #> 
 #>  endpoint test  n         design gm_reference gm_reference_lower
-#>   auclast    T 24 full_replicate       114.44              95.46
+#>      cmax    T 24 full_replicate       114.44              95.46
 #>  gm_reference_upper gm_test gm_test_lower gm_test_upper gmr_percent ci_lower
 #>               137.2  112.15         93.55        134.46          98    85.72
-#>  ci_upper cvwr_percent cvwt_percent  swr limit_lower limit_upper criterion
-#>    112.04        34.11        47.67 0.33       77.71      128.68        NA
+#>  ci_upper cvwr_percent cvwt_percent  swr rule limit_lower limit_upper criterion
+#>    112.04        34.11        47.67 0.33 ABEL       77.71      128.68        NA
 #>  regulator model_type pass
 #>        EMA       lmer TRUE
 #> 
-#> Caption: EMA bioequivalence assessment (90% CI). Geometric means and the geometric mean ratio are least-squares means from a mixed-effects model (lmerTest::lmer, Satterthwaite degrees of freedom); the 90% CI comes from exponentiated least-squares-mean differences (emmeans). Acceptance limits are widened by the within-reference variability (ABEL) and capped per the regulator. Within-formulation variances (swR, swT) are estimated by ANOVA on each formulation's replicates.
+#> Caption: EMA bioequivalence assessment (90% CI). Geometric means and the geometric mean ratio are least-squares means from a mixed-effects model (lmerTest::lmer, Satterthwaite degrees of freedom); the 90% CI comes from exponentiated least-squares-mean differences (emmeans). The confidence-interval limits of cmax widen with the within-reference variability (ABEL) when CVwR exceeds 30%, capped per the regulator. Source: EMA Guideline on the Investigation of Bioequivalence (CPMP/EWP/QWP/1401/98 Rev. 1), sections 4.1.8 and 4.1.10. Within-formulation variances (swR, swT) are estimated by ANOVA on each formulation's replicates.
 #> 
 ```

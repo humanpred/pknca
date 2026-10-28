@@ -407,14 +407,14 @@ be_assess(
     ##  gm_reference_upper gm_test gm_test_lower gm_test_upper gmr_percent ci_lower
     ##               48.68   38.92         31.99         46.63       98.62    72.97
     ##                4.08    2.99          2.92          3.82       98.23    73.29
-    ##  ci_upper cvwr_percent cvwt_percent swr limit_lower limit_upper criterion
-    ##    133.54           NA           NA  NA          80         125        NA
-    ##    126.14           NA           NA  NA          80         125        NA
+    ##  ci_upper cvwr_percent cvwt_percent swr rule limit_lower limit_upper criterion
+    ##    133.54           NA           NA  NA  ABE          80         125        NA
+    ##    126.14           NA           NA  NA  ABE          80         125        NA
     ##  regulator model_type  pass
     ##        ABE  bootstrap FALSE
     ##        ABE  bootstrap FALSE
     ## 
-    ## Caption: ABE bioequivalence assessment (90% CI). The estimates and their ratio come from the sparse data of each treatment; each 90% CI is the percentile interval of 200 replicates of a stratified nonparametric bootstrap (Shen and Machado 2017). Bioequivalence requires the confidence interval within 80.00-125.00%.
+    ## Caption: ABE bioequivalence assessment (90% CI). The estimates and their ratio come from the sparse data of each treatment; each 90% CI is the percentile interval of 200 replicates of a stratified nonparametric bootstrap (Shen and Machado 2017). Bioequivalence requires the confidence interval within 80.00-125.00%. Source: ICH M13A (2024), section 2.2.4.
 
 The bootstrap methods are from Shen M. and Machado S. G. (2017).
 Bioequivalence evaluation of sparse sampling pharmacokinetics data using

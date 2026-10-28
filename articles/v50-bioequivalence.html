@@ -82,7 +82,7 @@
                         <h4 data-toc-skip class="author">Bill
 Denney</h4>
             
-            <h4 data-toc-skip class="date">2026-10-27</h4>
+            <h4 data-toc-skip class="date">2026-10-28</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/humanpred/pknca/blob/main/vignettes/v50-bioequivalence.Rmd" class="external-link"><code>vignettes/v50-bioequivalence.Rmd</code></a></small>
       <div class="d-none name"><code>v50-bioequivalence.Rmd</code></div>
@@ -191,20 +191,28 @@ contrasts.</p>
 </tr>
 <tr class="even">
 <td>
-<code>EMA</code> / <code>HC</code> / <code>GCC</code>
+<code>EMA</code> / <code>GCC</code>
 </td>
 <td>replicated reference</td>
 <td><code>lmer</code></td>
-<td>expanding limits (ABEL)</td>
+<td>expanding limits (ABEL) for C<sub>max</sub>; AUC at
+80.00-125.00%</td>
 </tr>
 <tr class="odd">
+<td><code>HC</code></td>
+<td>replicated reference</td>
+<td><code>lmer</code></td>
+<td>expanding limits (ABEL) for AUC; C<sub>max</sub> by its point
+estimate</td>
+</tr>
+<tr class="even">
 <td>
 <code>FDA</code> (RSABE)</td>
 <td>replicated reference</td>
 <td><code>isc</code></td>
 <td>intra-subject contrasts + linearized bound</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>
 <code>NTID</code> / <code>HVNTID</code>
 </td>
@@ -212,13 +220,13 @@ contrasts.</p>
 <td><code>isc</code></td>
 <td>adds a swT/swR ratio constraint</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><em>(override)</em></td>
 <td>full replicate</td>
 <td><code>nlme</code></td>
 <td>treatment-specific variances from one mixed model</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>any, with <code>heteroscedastic = TRUE</code>
 </td>
 <td>any (full replicate if scaling)</td>
@@ -227,7 +235,7 @@ contrasts.</p>
 (parallel)</td>
 <td>treatment-specific residual variances</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code>descriptive</code></td>
 <td>any (test &amp; reference)</td>
 <td>as for <code>ABE</code>
@@ -468,6 +476,7 @@ study is not replicated, so only average bioequivalence
 <col width="5%">
 <col width="5%">
 <col width="1%">
+<col width="2%">
 <col width="4%">
 <col width="4%">
 <col width="4%">
@@ -492,6 +501,7 @@ study is not replicated, so only average bioequivalence
 <th align="right">cvwr_percent</th>
 <th align="right">cvwt_percent</th>
 <th align="right">swr</th>
+<th align="left">rule</th>
 <th align="right">limit_lower</th>
 <th align="right">limit_upper</th>
 <th align="right">criterion</th>
@@ -517,6 +527,7 @@ study is not replicated, so only average bioequivalence
 <td align="right">NA</td>
 <td align="right">NA</td>
 <td align="right">NA</td>
+<td align="left">ABE</td>
 <td align="right">80</td>
 <td align="right">125</td>
 <td align="right">NA</td>
@@ -541,6 +552,7 @@ study is not replicated, so only average bioequivalence
 <td align="right">NA</td>
 <td align="right">NA</td>
 <td align="right">NA</td>
+<td align="left">ABE</td>
 <td align="right">80</td>
 <td align="right">125</td>
 <td align="right">NA</td>
@@ -565,6 +577,7 @@ study is not replicated, so only average bioequivalence
 <td align="right">NA</td>
 <td align="right">NA</td>
 <td align="right">NA</td>
+<td align="left">ABE</td>
 <td align="right">80</td>
 <td align="right">125</td>
 <td align="right">NA</td>
@@ -601,6 +614,11 @@ confidence interval for the GMR (90% by default, controlled by
 coefficient of variation and standard deviation (used by the
 reference-scaling frameworks; <code>NA</code> for unscaled ABE),</li>
 <li>
+<code>rule</code>: the criterion the decision used
+(<code>"ABE"</code>, <code>"ABEL"</code>, <code>"PE"</code> for a point
+estimate alone, <code>"RSABE"</code>, <code>"NTID"</code>, or
+<code>"HVNTID"</code>),</li>
+<li>
 <code>limit_lower</code>, <code>limit_upper</code>: the acceptance
 limits, and <code>criterion</code> for the FDA reference-scaled bound,
 and</li>
@@ -630,22 +648,47 @@ frameworks through <code><a href="../reference/be_assess.html">be_assess()</a></
 <ul>
 <li>
 <strong>ABE</strong> – average bioequivalence, the unscaled
-80.00-125.00% criterion.</li>
+80.00-125.00% criterion for C<sub>max</sub> and AUC (<a href="https://database.ich.org/sites/default/files/ICH_M13A_Step4_Final_Guideline_2024_0723.pdf" class="external-link">ICH
+M13A</a>, section 2.2.4).</li>
 <li>
-<strong>EMA</strong>, <strong>Health Canada (HC)</strong>, and
-<strong>GCC</strong> – average bioequivalence with expanding limits
-(ABEL); the limits widen with the within-reference standard deviation,
-with framework-specific caps.</li>
+<strong>EMA</strong> and <strong>GCC</strong> – average
+bioequivalence with expanding limits (ABEL) for
+<strong>C<sub>max</sub></strong>: its limits widen with the
+within-reference standard deviation above a 30% CV, up to 69.84-143.19%,
+while AUC keeps 80.00-125.00% (<a href="https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-investigation-bioequivalence-rev1_en.pdf" class="external-link">EMA
+guideline</a>, sections 4.1.8 and 4.1.10; <a href="https://sfda.gov.sa/sites/default/files/2024-05/GCC_Guidelines_Bioequivalence32.pdf" class="external-link">GCC
+guidelines version 3.2</a>, sections 3.1.8 and 3.1.10).</li>
+<li>
+<strong>Health Canada (HC)</strong> – ABEL for <strong>AUC</strong>,
+up to 66.7-150.0% (<a href="https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/announcements/notice-policy-bioequivalence-standards-highly-variable-drug-products.html" class="external-link">highly
+variable drug policy</a>), and C<sub>max</sub> judged by its point
+estimate alone within 80.0-125.0% (<a href="https://www.canada.ca/en/health-canada/services/drugs-health-products/drug-products/applications-submissions/guidance-documents/bioavailability-bioequivalence/comparative-bioavailability-standards-formulations-used-systemic-effects.html" class="external-link">Comparative
+Bioavailability Standards</a>, section 2.1).</li>
 <li>
 <strong>FDA RSABE</strong> – reference-scaled average bioequivalence
-using the linearized Howe/Hyslop criterion.</li>
+for C<sub>max</sub> and AUC, using the linearized Howe/Hyslop criterion
+(<a href="https://www.accessdata.fda.gov/drugsatfda_docs/psg/Progesterone_caps_19781_RC02-11.pdf" class="external-link">progesterone
+guidance</a>).</li>
 <li>
 <strong>FDA NTID</strong> and <strong>HVNTID</strong> – the (highly
 variable) narrow therapeutic index drug frameworks, which add a
-constraint on the ratio of within-subject standard deviations.</li>
+constraint on the ratio of within-subject standard deviations (<a href="https://www.accessdata.fda.gov/drugsatfda_docs/psg/Warfarin_Sodium_tab_09218_RC12-12.pdf" class="external-link">warfarin
+guidance</a>; <a href="https://www.accessdata.fda.gov/drugsatfda_docs/psg/Dabigatran%20etexilate%20mesylate_oral%20capsule_NDA%20022512_RV05-17.pdf" class="external-link">dabigatran
+guidance</a>).</li>
 </ul>
 <p>All regulatory constants are built into PKNCA (see
-<code><a href="../reference/be_regulator.html">be_regulator()</a></code>); no external package is required.</p>
+<code><a href="../reference/be_regulator.html">be_regulator()</a></code>, which lists the sources); no external
+package is required. The <code>rule</code> column of the results names
+the criterion each row used. The other parameters the guidances name are
+judged like C<sub>max</sub> (C<sub>max,ss</sub>, C<sub>min,ss</sub>,
+C<sub>tau,ss</sub>, and the urinary R<sub>max</sub>) or like AUC
+(AUC(0-tau), AUC(0-72h), C<sub>av</sub>, and the urinary A<sub>e</sub>),
+matched by their PKNCA names or CDISC <code>PPTESTCD</code> codes. For a
+modified-release product, the EMA also allows widening partial AUCs,
+which PKNCA cannot tell from AUC(0-tau) by name; name them in
+<code>widen_endpoints</code>, which adds them to the framework’s own
+choice. <code>widen_default = FALSE</code> drops that choice, as when
+the protocol did not specify widening in advance.</p>
 <div class="section level3">
 <h3 id="a-replicate-design-study">A replicate-design study<a class="anchor" aria-label="anchor" href="#a-replicate-design-study"></a>
 </h3>
@@ -654,7 +697,7 @@ four-period, two-sequence full replicate design
 (<code>TRTR</code>/<code>RTRT</code>) with high within-subject
 variability.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">simulate_replicate</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">nsub</span> <span class="op">=</span> <span class="fl">24</span>, <span class="va">seed</span> <span class="op">=</span> <span class="fl">20251015</span>, <span class="va">cv_wr</span> <span class="op">=</span> <span class="fl">0.45</span>, <span class="va">cv_wt</span> <span class="op">=</span> <span class="fl">0.40</span><span class="op">)</span> <span class="op">{</span></span>
+<code class="sourceCode R"><span><span class="va">simulate_replicate</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">endpoint</span>, <span class="va">nsub</span> <span class="op">=</span> <span class="fl">24</span>, <span class="va">seed</span> <span class="op">=</span> <span class="fl">20251015</span>, <span class="va">cv_wr</span> <span class="op">=</span> <span class="fl">0.45</span>, <span class="va">cv_wt</span> <span class="op">=</span> <span class="fl">0.40</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="va">seed</span><span class="op">)</span></span>
 <span>  <span class="va">seqs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"TRTR"</span>, <span class="st">"RTRT"</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="va">nsub</span><span class="op">)</span></span>
 <span>  <span class="va">swR</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">cv_wr</span><span class="op">^</span><span class="fl">2</span> <span class="op">+</span> <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
@@ -668,7 +711,7 @@ variability.</p>
 <span>      <span class="va">eff</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="va">trt</span><span class="op">[</span><span class="va">p</span><span class="op">]</span> <span class="op">==</span> <span class="st">"T"</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">1.05</span><span class="op">)</span> <span class="kw">else</span> <span class="fl">0</span></span>
 <span>      <span class="va">rows</span><span class="op">[[</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">rows</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>        subject <span class="op">=</span> <span class="va">i</span>, sequence <span class="op">=</span> <span class="va">seqs</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, period <span class="op">=</span> <span class="va">p</span>, treatment <span class="op">=</span> <span class="va">trt</span><span class="op">[</span><span class="va">p</span><span class="op">]</span>,</span>
-<span>        PPTESTCD <span class="op">=</span> <span class="st">"auclast"</span>,</span>
+<span>        PPTESTCD <span class="op">=</span> <span class="va">endpoint</span>,</span>
 <span>        PPORRES <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span> <span class="op">+</span> <span class="va">eff</span> <span class="op">+</span> <span class="va">subj</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">+</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">1</span>, sd <span class="op">=</span> <span class="va">sw</span><span class="op">)</span><span class="op">)</span></span>
 <span>      <span class="op">)</span></span>
 <span>    <span class="op">}</span></span>
@@ -676,7 +719,10 @@ variability.</p>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">rows</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span></span>
-<span><span class="va">rep_data</span> <span class="op">&lt;-</span> <span class="fu">simulate_replicate</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">rep_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span></span>
+<span>  <span class="fu">simulate_replicate</span><span class="op">(</span><span class="st">"cmax"</span>, seed <span class="op">=</span> <span class="fl">20251016</span><span class="op">)</span>,</span>
+<span>  <span class="fu">simulate_replicate</span><span class="op">(</span><span class="st">"auclast"</span>, seed <span class="op">=</span> <span class="fl">20251015</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><code><a href="../reference/be_assess.html">be_assess()</a></code> takes the long data (or a
 <code>PKNCAresults</code> object), the column that identifies the
 formulation, the reference value, and the framework. It returns one row
@@ -685,7 +731,7 @@ confidence interval, the within-subject variability, the (possibly
 scaled) acceptance limits or criterion, and the pass/fail decision.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ema</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/be_assess.html">be_assess</a></span><span class="op">(</span><span class="va">rep_data</span>, reference_col <span class="op">=</span> <span class="st">"treatment"</span>, reference_value <span class="op">=</span> <span class="st">"R"</span>,</span>
-<span>                 endpoints <span class="op">=</span> <span class="st">"auclast"</span>, regulator <span class="op">=</span> <span class="st">"EMA"</span><span class="op">)</span></span>
+<span>                 endpoints <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cmax"</span>, <span class="st">"auclast"</span><span class="op">)</span>, regulator <span class="op">=</span> <span class="st">"EMA"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: Units were not found in the data; omitting the `units` column. Supply</span></span>
 <span><span class="co">#&gt; units via a PKNCAresults object or `PPSTRESU`/`PPORRESU` columns.</span></span>
 <span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">ema</span><span class="op">)</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span></code></pre></div>
@@ -706,6 +752,7 @@ scaled) acceptance limits or criterion, and the pass/fail decision.</p>
 <col width="3%">
 <col width="5%">
 <col width="5%">
+<col width="2%">
 <col width="2%">
 <col width="4%">
 <col width="4%">
@@ -731,6 +778,7 @@ scaled) acceptance limits or criterion, and the pass/fail decision.</p>
 <th align="right">cvwr_percent</th>
 <th align="right">cvwt_percent</th>
 <th align="right">swr</th>
+<th align="left">rule</th>
 <th align="right">limit_lower</th>
 <th align="right">limit_upper</th>
 <th align="right">criterion</th>
@@ -738,35 +786,67 @@ scaled) acceptance limits or criterion, and the pass/fail decision.</p>
 <th align="left">model_type</th>
 <th align="left">pass</th>
 </tr></thead>
-<tbody><tr class="odd">
+<tbody>
+<tr class="odd">
+<td align="left">cmax</td>
+<td align="left">T</td>
+<td align="right">24</td>
+<td align="left">full_replicate</td>
+<td align="right">90.856</td>
+<td align="right">78.058</td>
+<td align="right">105.753</td>
+<td align="right">106.277</td>
+<td align="right">91.306</td>
+<td align="right">123.702</td>
+<td align="right">116.973</td>
+<td align="right">100.474</td>
+<td align="right">136.181</td>
+<td align="right">43.749</td>
+<td align="right">46.227</td>
+<td align="right">0.418</td>
+<td align="left">ABEL</td>
+<td align="right">72.757</td>
+<td align="right">137.444</td>
+<td align="right">NA</td>
+<td align="left">EMA</td>
+<td align="left">lmer</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="even">
 <td align="left">auclast</td>
 <td align="left">T</td>
 <td align="right">24</td>
 <td align="left">full_replicate</td>
 <td align="right">110.423</td>
-<td align="right">93.1</td>
+<td align="right">93.100</td>
 <td align="right">130.969</td>
 <td align="right">103.353</td>
 <td align="right">87.139</td>
 <td align="right">122.584</td>
 <td align="right">93.598</td>
 <td align="right">81.783</td>
-<td align="right">107.12</td>
+<td align="right">107.120</td>
 <td align="right">52.289</td>
 <td align="right">30.063</td>
 <td align="right">0.492</td>
-<td align="right">69.837</td>
-<td align="right">143.191</td>
+<td align="left">ABE</td>
+<td align="right">80.000</td>
+<td align="right">125.000</td>
 <td align="right">NA</td>
 <td align="left">EMA</td>
 <td align="left">lmer</td>
 <td align="left">TRUE</td>
-</tr></tbody>
+</tr>
+</tbody>
 </table>
-<p>For this dataset the within-reference CV is about 50%, so the EMA
-limits expand from 80.00-125.00% toward their cap. The FDA
-reference-scaled criterion instead reports the linearized bound
-(<code>criterion</code>), which passes when it is at most zero:</p>
+<p>For C<sub>max</sub> the within-reference CV is about 44%, so the EMA
+limits expand from 80.00-125.00% to about 72.8-137.4%, and the
+confidence interval, whose upper bound is above 125%, fits within them
+(<code>rule</code> <code>"ABEL"</code>). AUC keeps 80.00-125.00%
+(<code>rule</code> <code>"ABE"</code>) although its within-reference CV
+is higher. The FDA reference-scaled criterion instead reports the
+linearized bound (<code>criterion</code>), which passes when it is at
+most zero:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fda</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/be_assess.html">be_assess</a></span><span class="op">(</span><span class="va">rep_data</span>, reference_col <span class="op">=</span> <span class="st">"treatment"</span>, reference_value <span class="op">=</span> <span class="st">"R"</span>,</span>
 <span>                 endpoints <span class="op">=</span> <span class="st">"auclast"</span>, regulator <span class="op">=</span> <span class="st">"FDA"</span><span class="op">)</span></span>
@@ -813,17 +893,20 @@ frameworks at once; frameworks the design cannot support are skipped
 with a warning.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/be_compare.html">be_compare</a></span><span class="op">(</span><span class="va">rep_data</span>, reference_col <span class="op">=</span> <span class="st">"treatment"</span>, reference_value <span class="op">=</span> <span class="st">"R"</span>,</span>
-<span>                  endpoints <span class="op">=</span> <span class="st">"auclast"</span>,</span>
+<span>                  endpoints <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cmax"</span>, <span class="st">"auclast"</span><span class="op">)</span>,</span>
 <span>                  regulators <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"EMA"</span>, <span class="st">"HC"</span>, <span class="st">"GCC"</span>, <span class="st">"FDA"</span>, <span class="st">"NTID"</span>, <span class="st">"HVNTID"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: Units were not found in the data; omitting the `units` column. Supply</span></span>
 <span><span class="co">#&gt; units via a PKNCAresults object or `PPSTRESU`/`PPORRESU` columns.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">cmp</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   endpoint  EMA   HC  GCC  FDA NTID HVNTID</span></span>
-<span><span class="co">#&gt;  auclast:T TRUE TRUE TRUE TRUE TRUE   TRUE</span></span>
+<span><span class="co">#&gt;   endpoint  EMA   HC  GCC  FDA  NTID HVNTID</span></span>
+<span><span class="co">#&gt;  auclast:T TRUE TRUE TRUE TRUE  TRUE   TRUE</span></span>
+<span><span class="co">#&gt;     cmax:T TRUE TRUE TRUE TRUE FALSE  FALSE</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Caption: Pass/fail by endpoint and regulator.</span></span></code></pre></div>
 <p>The pass/fail decision can differ between frameworks for the same
-data. The narrow therapeutic index frameworks are the strictest:
+data. Here C<sub>max</sub> passes under the EMA and GCC only because its
+limits widen, and under Health Canada on its point estimate alone. The
+narrow therapeutic index frameworks are the strictest:
 <strong>NTID</strong> requires the reference-scaled bound, the
 conventional 90% confidence interval within 80.00-125.00%, <em>and</em>
 the upper 90% bound of the within-subject standard-deviation ratio
@@ -991,9 +1074,10 @@ requirements:</p>
 <li>
 <strong>Framework and model</strong>: the <code>regulator</code> and
 <code>model_type</code> columns record the framework and the average-BE
-model used, and the table’s <code>caption</code> attribute gives a
-one-sentence methods statement (model, confidence-interval method,
-within-subject variability, and the decision rule).</li>
+model used, and the table’s <code>caption</code> attribute gives a short
+methods statement (model, confidence-interval method, within-subject
+variability, the decision rule for each endpoint, and its source
+guidance).</li>
 <li>
 <strong>%GMR, confidence interval, within-subject CV,
 limits/criterion, and the pass/fail decision</strong>: one row per

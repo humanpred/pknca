@@ -24,7 +24,9 @@ be_compare(
   period = NULL,
   design = NULL,
   covariates = NULL,
-  heteroscedastic = FALSE
+  heteroscedastic = FALSE,
+  widen_endpoints = NULL,
+  widen_default = TRUE
 )
 ```
 
@@ -101,6 +103,30 @@ be_compare(
   Logical. When `TRUE`, estimate a separate residual variance for each
   treatment (see Details).
 
+- widen_endpoints:
+
+  For the expanding-limits frameworks (`"EMA"`, `"HC"`, and `"GCC"`),
+  endpoints whose acceptance limits widen in addition to the framework's
+  own choice (the endpoints judged like Cmax for the EMA and GCC, like
+  AUC for Health Canada; see
+  [`be_regulator()`](https://humanpred.github.io/pknca/reference/be_regulator.md)).
+  Use it for an endpoint that the guidance widens but PKNCA cannot
+  recognize from its name, such as a partial AUC of a modified-release
+  product (EMA), or an endpoint that is neither a PKNCA parameter nor a
+  CDISC code. Naming an endpoint for another framework is an error;
+  `be_compare()` passes it to the expanding-limits frameworks only, and
+  each adds it to its own choice.
+
+- widen_default:
+
+  For the expanding-limits frameworks, whether the framework's own
+  choice of endpoints widens (the default, `TRUE`). With `FALSE` only
+  the endpoints in `widen_endpoints` widen, for example none when the
+  protocol did not specify widening in advance; Health Canada still
+  judges Cmax by its point estimate. `FALSE` for another framework is an
+  error; `be_compare()` applies it to the expanding-limits frameworks
+  only.
+
 ## Value
 
 An object of class `be_compare` (a data.frame) with the
@@ -144,14 +170,14 @@ be_compare(d, reference_col = "treatment", reference_value = "R",
 #> Warning: Units were not found in the data; omitting the `units` column. Supply units via a PKNCAresults object or `PPSTRESU`/`PPORRESU` columns.
 #> Bioequivalence comparison across EMA, HC, GCC, FDA (90% CI)
 #> 
-#>  regulator endpoint test gmr_percent ci_lower ci_upper cvwr_percent limit_lower
-#>        EMA  auclast    T          98    85.72   112.04        34.11       77.71
-#>         HC  auclast    T          98    85.72   112.04        34.11       77.71
-#>        GCC  auclast    T          98    85.72   112.04        34.11       75.00
-#>        FDA  auclast    T          98    85.48   112.35        34.11          NA
-#>  limit_upper criterion pass
-#>       128.68        NA TRUE
-#>       128.68        NA TRUE
-#>       133.33        NA TRUE
-#>           NA  -0.05022 TRUE
+#>  regulator endpoint test gmr_percent ci_lower ci_upper cvwr_percent  rule
+#>        EMA  auclast    T          98    85.72   112.04        34.11   ABE
+#>         HC  auclast    T          98    85.72   112.04        34.11  ABEL
+#>        GCC  auclast    T          98    85.72   112.04        34.11   ABE
+#>        FDA  auclast    T          98    85.48   112.35        34.11 RSABE
+#>  limit_lower limit_upper criterion pass
+#>        80.00      125.00        NA TRUE
+#>        77.71      128.68        NA TRUE
+#>        80.00      125.00        NA TRUE
+#>           NA          NA  -0.05022 TRUE
 ```

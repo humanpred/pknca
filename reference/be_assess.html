@@ -100,6 +100,8 @@ decision.  It is a thin wrapper over <code><a href="be_fit_models.html">be_fit_m
 <span>  design <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  covariates <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  heteroscedastic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  widen_endpoints <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  widen_default <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -118,6 +120,8 @@ decision.  It is a thin wrapper over <code><a href="be_fit_models.html">be_fit_m
 <span>  design <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  covariates <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  heteroscedastic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  widen_endpoints <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  widen_default <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -200,6 +204,27 @@ use covariates.</p></dd>
 <dd><p>Logical.  When <code>TRUE</code>, estimate a separate residual
 variance for each treatment (see Details).</p></dd>
 
+
+<dt id="arg-widen-endpoints">widen_endpoints<a class="anchor" aria-label="anchor" href="#arg-widen-endpoints"></a></dt>
+<dd><p>For the expanding-limits frameworks (<code>"EMA"</code>, <code>"HC"</code>,
+and <code>"GCC"</code>), endpoints whose acceptance limits widen in addition to the
+framework's own choice (the endpoints judged like Cmax for the EMA and GCC,
+like AUC for Health Canada; see <code><a href="be_regulator.html">be_regulator()</a></code>).  Use it for an endpoint
+that the guidance widens but PKNCA cannot recognize from its name, such as
+a partial AUC of a modified-release product (EMA), or an endpoint that is
+neither a PKNCA parameter nor a CDISC code.  Naming an endpoint for another framework is an error;
+<code><a href="be_compare.html">be_compare()</a></code> passes it to the expanding-limits frameworks only, and each
+adds it to its own choice.</p></dd>
+
+
+<dt id="arg-widen-default">widen_default<a class="anchor" aria-label="anchor" href="#arg-widen-default"></a></dt>
+<dd><p>For the expanding-limits frameworks, whether the
+framework's own choice of endpoints widens (the default, <code>TRUE</code>).  With
+<code>FALSE</code> only the endpoints in <code>widen_endpoints</code> widen, for example none when
+the protocol did not specify widening in advance; Health Canada still judges
+Cmax by its point estimate.  <code>FALSE</code> for another framework is an error;
+<code><a href="be_compare.html">be_compare()</a></code> applies it to the expanding-limits frameworks only.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -212,13 +237,18 @@ is omitted with a warning when units are not provided), the reference and
 test geometric means with their 90% confidence intervals on the measurement
 scale (<code>gm_reference</code>, <code>gm_reference_lower</code>, <code>gm_reference_upper</code>, <code>gm_test</code>,
 <code>gm_test_lower</code>, <code>gm_test_upper</code>), <code>gmr_percent</code>, <code>ci_lower</code>, <code>ci_upper</code>,
-<code>cvwr_percent</code>, <code>cvwt_percent</code>, <code>swr</code>, <code>limit_lower</code>, <code>limit_upper</code>,
-<code>criterion</code>, <code>regulator</code>, <code>model_type</code>, and <code>pass</code>.  <code>limit_*</code> are <code>NA</code> for
-the RSABE criterion and <code>criterion</code> is <code>NA</code> for the limit-based frameworks.
-For <code>regulator = "descriptive"</code> the <code>limit_lower</code>, <code>limit_upper</code>,
-<code>criterion</code>, and <code>pass</code> columns are omitted.  A <code>caption</code> attribute
-documents the model and the decision rule, or states that no regulatory
-decision was applied.</p>
+<code>cvwr_percent</code>, <code>cvwt_percent</code>, <code>swr</code>, <code>rule</code>, <code>limit_lower</code>,
+<code>limit_upper</code>, <code>criterion</code>, <code>regulator</code>, <code>model_type</code>, and <code>pass</code>.  <code>rule</code>
+names the criterion the row's decision used: <code>"ABE"</code> (the confidence
+interval within 80.00-125.00%), <code>"ABEL"</code> (the confidence interval within
+widened limits), <code>"PE"</code> (the point estimate alone within 80.00-125.00%),
+<code>"RSABE"</code> (the reference-scaled bound), <code>"NTID"</code>, or <code>"HVNTID"</code>.
+<code>limit_*</code> are <code>NA</code> for the RSABE criterion and <code>criterion</code> is <code>NA</code> for the
+limit-based frameworks.  For <code>regulator = "descriptive"</code> the <code>rule</code>,
+<code>limit_lower</code>, <code>limit_upper</code>, <code>criterion</code>, and <code>pass</code> columns are omitted.
+A <code>caption</code> attribute documents the model, the decision rule for each
+endpoint, and its source guidance, or states that no regulatory decision
+was applied.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -275,6 +305,21 @@ per-formulation variances are then used as the within-subject variances.</p>
 its confidence interval exactly as for <code>"ABE"</code> but applies no acceptance
 limits and reports no pass/fail, for comparisons such as food effect and
 drug-drug interaction studies.</p>
+<p>The expanding-limits frameworks widen only some endpoints, as their
+guidances specify (see <code><a href="be_regulator.html">be_regulator()</a></code> for the sources and for which
+parameters, by PKNCA name or CDISC code, are judged like Cmax and like AUC):
+the EMA and the GCC widen Cmax and the parameters judged like it (such as
+Ctau,ss and Rmax), and Health Canada widens AUC and the parameters judged
+like it and judges the Cmax group by its point estimate alone.  Every other
+endpoint needs its confidence interval within 80.00-125.00%.  The <code>rule</code>
+column names the criterion each row used.  <code>widen_endpoints</code> adds endpoints
+to those that widen, for example <code>"aucint.last"</code> for a partial AUC of a
+modified-release product under the EMA modified-release guideline.
+<code>widen_default = FALSE</code> drops the framework's own choice, for example when
+the protocol did not specify widening in advance, which the EMA and the GCC
+require; the endpoints in <code>widen_endpoints</code> still widen.  Health Canada
+judges the Cmax group by its point estimate unless an endpoint is named in
+<code>widen_endpoints</code>.</p>
 <p>For the results of a sparse bootstrap (Shen and Machado 2017; see
 <code><a href="sparse_bootstrap.html">sparse_bootstrap()</a></code>), there is one estimate per treatment, from the sparse
 data, rather than one per subject.  The ratio of the test and reference
@@ -327,27 +372,28 @@ doi:10.1080/10543406.2016.1265543</p>
 <span class="r-in"><span>  <span class="va">trt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">seqs</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, <span class="st">""</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>    subject <span class="op">=</span> <span class="va">i</span>, sequence <span class="op">=</span> <span class="va">seqs</span><span class="op">[</span><span class="va">i</span><span class="op">]</span>, period <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">trt</span><span class="op">)</span>, treatment <span class="op">=</span> <span class="va">trt</span>,</span></span>
-<span class="r-in"><span>    PPTESTCD <span class="op">=</span> <span class="st">"auclast"</span>,</span></span>
+<span class="r-in"><span>    PPTESTCD <span class="op">=</span> <span class="st">"cmax"</span>,</span></span>
 <span class="r-in"><span>    PPORRES <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fl">100</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">trt</span> <span class="op">==</span> <span class="st">"T"</span>, <span class="fl">0.04</span>, <span class="fl">0</span><span class="op">)</span> <span class="op">+</span> <span class="va">b</span><span class="op">[</span><span class="va">i</span><span class="op">]</span> <span class="op">+</span></span></span>
 <span class="r-in"><span>                    <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">trt</span><span class="op">)</span>, sd <span class="op">=</span> <span class="fl">0.45</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># The EMA widens the limits of Cmax</span></span></span>
 <span class="r-in"><span><span class="fu">be_assess</span><span class="op">(</span><span class="va">d</span>, reference_col <span class="op">=</span> <span class="st">"treatment"</span>, reference_value <span class="op">=</span> <span class="st">"R"</span>,</span></span>
-<span class="r-in"><span>          endpoints <span class="op">=</span> <span class="st">"auclast"</span>, regulator <span class="op">=</span> <span class="st">"EMA"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>          endpoints <span class="op">=</span> <span class="st">"cmax"</span>, regulator <span class="op">=</span> <span class="st">"EMA"</span><span class="op">)</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Units were not found in the data; omitting the `units` column. Supply units via a PKNCAresults object or `PPSTRESU`/`PPORRESU` columns.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Bioequivalence assessment: EMA (model_type lmer, 90% CI)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Design: full_replicate</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  endpoint test  n         design gm_reference gm_reference_lower</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   auclast    T 24 full_replicate       114.44              95.46</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      cmax    T 24 full_replicate       114.44              95.46</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  gm_reference_upper gm_test gm_test_lower gm_test_upper gmr_percent ci_lower</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>               137.2  112.15         93.55        134.46          98    85.72</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  ci_upper cvwr_percent cvwt_percent  swr limit_lower limit_upper criterion</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    112.04        34.11        47.67 0.33       77.71      128.68        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  ci_upper cvwr_percent cvwt_percent  swr rule limit_lower limit_upper criterion</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    112.04        34.11        47.67 0.33 ABEL       77.71      128.68        NA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  regulator model_type pass</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>        EMA       lmer TRUE</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Caption: EMA bioequivalence assessment (90% CI). Geometric means and the geometric mean ratio are least-squares means from a mixed-effects model (lmerTest::lmer, Satterthwaite degrees of freedom); the 90% CI comes from exponentiated least-squares-mean differences (emmeans). Acceptance limits are widened by the within-reference variability (ABEL) and capped per the regulator. Within-formulation variances (swR, swT) are estimated by ANOVA on each formulation's replicates.</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Caption: EMA bioequivalence assessment (90% CI). Geometric means and the geometric mean ratio are least-squares means from a mixed-effects model (lmerTest::lmer, Satterthwaite degrees of freedom); the 90% CI comes from exponentiated least-squares-mean differences (emmeans). The confidence-interval limits of cmax widen with the within-reference variability (ABEL) when CVwR exceeds 30%, capped per the regulator. Source: EMA Guideline on the Investigation of Bioequivalence (CPMP/EWP/QWP/1401/98 Rev. 1), sections 4.1.8 and 4.1.10. Within-formulation variances (swR, swT) are estimated by ANOVA on each formulation's replicates.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 </code></pre></div>
     </div>

@@ -90,7 +90,9 @@ Rows for the <code>"descriptive"</code> framework have <code>NA</code> in the de
 <span>  period <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  design <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  covariates <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  heteroscedastic <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  heteroscedastic <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  widen_endpoints <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  widen_default <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -167,6 +169,27 @@ use covariates.</p></dd>
 <dd><p>Logical.  When <code>TRUE</code>, estimate a separate residual
 variance for each treatment (see Details).</p></dd>
 
+
+<dt id="arg-widen-endpoints">widen_endpoints<a class="anchor" aria-label="anchor" href="#arg-widen-endpoints"></a></dt>
+<dd><p>For the expanding-limits frameworks (<code>"EMA"</code>, <code>"HC"</code>,
+and <code>"GCC"</code>), endpoints whose acceptance limits widen in addition to the
+framework's own choice (the endpoints judged like Cmax for the EMA and GCC,
+like AUC for Health Canada; see <code><a href="be_regulator.html">be_regulator()</a></code>).  Use it for an endpoint
+that the guidance widens but PKNCA cannot recognize from its name, such as
+a partial AUC of a modified-release product (EMA), or an endpoint that is
+neither a PKNCA parameter nor a CDISC code.  Naming an endpoint for another framework is an error;
+<code>be_compare()</code> passes it to the expanding-limits frameworks only, and each
+adds it to its own choice.</p></dd>
+
+
+<dt id="arg-widen-default">widen_default<a class="anchor" aria-label="anchor" href="#arg-widen-default"></a></dt>
+<dd><p>For the expanding-limits frameworks, whether the
+framework's own choice of endpoints widens (the default, <code>TRUE</code>).  With
+<code>FALSE</code> only the endpoints in <code>widen_endpoints</code> widen, for example none when
+the protocol did not specify widening in advance; Health Canada still judges
+Cmax by its point estimate.  <code>FALSE</code> for another framework is an error;
+<code>be_compare()</code> applies it to the expanding-limits frameworks only.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -209,16 +232,16 @@ columns for every endpoint, test formulation, and regulator.</p>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>Units were not found in the data; omitting the `units` column. Supply units via a PKNCAresults object or `PPSTRESU`/`PPORRESU` columns.</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Bioequivalence comparison across EMA, HC, GCC, FDA (90% CI)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  regulator endpoint test gmr_percent ci_lower ci_upper cvwr_percent limit_lower</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        EMA  auclast    T          98    85.72   112.04        34.11       77.71</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         HC  auclast    T          98    85.72   112.04        34.11       77.71</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        GCC  auclast    T          98    85.72   112.04        34.11       75.00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>        FDA  auclast    T          98    85.48   112.35        34.11          NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  limit_upper criterion pass</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       128.68        NA TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       128.68        NA TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       133.33        NA TRUE</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>           NA  -0.05022 TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  regulator endpoint test gmr_percent ci_lower ci_upper cvwr_percent  rule</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        EMA  auclast    T          98    85.72   112.04        34.11   ABE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         HC  auclast    T          98    85.72   112.04        34.11  ABEL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        GCC  auclast    T          98    85.72   112.04        34.11   ABE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        FDA  auclast    T          98    85.48   112.35        34.11 RSABE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  limit_lower limit_upper criterion pass</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        80.00      125.00        NA TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        77.71      128.68        NA TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        80.00      125.00        NA TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           NA          NA  -0.05022 TRUE</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
