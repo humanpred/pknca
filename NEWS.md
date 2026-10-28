@@ -8,6 +8,30 @@ the dosing including dose amount and route.
 
 ## Breaking changes
 
+* The expanding-limits frameworks of `be_assess()` widen only the endpoints
+  their guidances allow (@billdenney).  The EMA and the GCC widen Cmax and keep
+  AUC at 80.00-125.00%; Health Canada widens AUC and judges Cmax by its point
+  estimate alone (80.0-125.0%, with no requirement on its confidence interval).
+  Before, all three widened every endpoint.  The other parameters the guidances
+  name are judged like Cmax (Cmax,ss, Cmin,ss, Ctau,ss, and the urinary Rmax,
+  `ermax`) or like AUC (AUC(0-tau), AUC(0-72h), Cav, and the urinary Ae, `ae`),
+  matched by PKNCA name or CDISC `PPTESTCD` code.  The GCC follows its guidelines
+  version 3.2 (2024), the EMA rules, instead of the earlier fixed 75.00-133.33%.
+  The new `rule` column names the criterion each row used (`"ABE"`, `"ABEL"`,
+  `"PE"`, `"RSABE"`, `"NTID"`, or `"HVNTID"`), the caption names each
+  endpoint's rule and cites the source guidance, and `be_regulator()` documents
+  the limits of every framework with links to its sources.  The new
+  `widen_endpoints` argument adds endpoints to those that widen, for example
+  `"aucint.last"` for a partial AUC of a modified-release product under the EMA
+  modified-release guideline, and `widen_default = FALSE` drops the
+  framework's own choice, as when the protocol did not specify widening in
+  advance.  `be_compare()` adds `widen_endpoints` to each framework's own
+  choice.  An endpoint that is neither a PKNCA parameter nor a CDISC code keeps
+  80.00-125.00% under these frameworks, with a warning, unless it is named in
+  `widen_endpoints`.  Widened limits
+  never narrow below 80.00-125.00%; the rounded constant 0.76 made them
+  fractionally narrower for a within-reference CV just above 30%.
+
 * Parameter names and descriptions follow one style, so some column headers of
   `summary()` and some descriptions change (@billdenney):
   * Pretty names write lambda.z as math (`$\lambda_z$`), including "Number of

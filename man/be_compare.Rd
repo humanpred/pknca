@@ -17,7 +17,9 @@ be_compare(
   period = NULL,
   design = NULL,
   covariates = NULL,
-  heteroscedastic = FALSE
+  heteroscedastic = FALSE,
+  widen_endpoints = NULL,
+  widen_default = TRUE
 )
 }
 \arguments{
@@ -68,6 +70,23 @@ use covariates.}
 
 \item{heteroscedastic}{Logical.  When \code{TRUE}, estimate a separate residual
 variance for each treatment (see Details).}
+
+\item{widen_endpoints}{For the expanding-limits frameworks (\code{"EMA"}, \code{"HC"},
+and \code{"GCC"}), endpoints whose acceptance limits widen in addition to the
+framework's own choice (the endpoints judged like Cmax for the EMA and GCC,
+like AUC for Health Canada; see \code{\link[=be_regulator]{be_regulator()}}).  Use it for an endpoint
+that the guidance widens but PKNCA cannot recognize from its name, such as
+a partial AUC of a modified-release product (EMA), or an endpoint that is
+neither a PKNCA parameter nor a CDISC code.  Naming an endpoint for another framework is an error;
+\code{\link[=be_compare]{be_compare()}} passes it to the expanding-limits frameworks only, and each
+adds it to its own choice.}
+
+\item{widen_default}{For the expanding-limits frameworks, whether the
+framework's own choice of endpoints widens (the default, \code{TRUE}).  With
+\code{FALSE} only the endpoints in \code{widen_endpoints} widen, for example none when
+the protocol did not specify widening in advance; Health Canada still judges
+Cmax by its point estimate.  \code{FALSE} for another framework is an error;
+\code{\link[=be_compare]{be_compare()}} applies it to the expanding-limits frameworks only.}
 }
 \value{
 An object of class \code{be_compare} (a data.frame) with the \code{\link[=be_assess]{be_assess()}}
