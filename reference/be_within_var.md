@@ -83,7 +83,10 @@ An object of class `be_within_var`: a list with `swR`, `swT`, `s2wR`,
 `swT`/`swR`), `sw_ratio_ci_upper` (the upper `1 - alpha` confidence
 bound of the ratio), `model_type`, and `alpha`. `swT` and the ratio are
 `NA` when the test formulation is not replicated (for example a partial
-replicate design).
+replicate design), with `NA` degrees of freedom. A formulation that is
+replicated but whose replicates leave no residual degrees of freedom
+(too few subjects with replicate administrations) also has `NA`
+variances, with 0 degrees of freedom.
 
 ## See also
 

@@ -71,20 +71,23 @@ tss_mono <-
 #> Warning in nlme.formula(conc ~ ctrough.ss * (1 - exp(tss.constant * time/tss)),
 #> : Iteration 1, LME step: nlminb() did not converge (code = 1). Do increase
 #> 'msMaxIter'!
+#> Warning in nlme.formula(conc ~ ctrough.ss * (1 - exp(tss.constant * time/tss)),
+#> : Iteration 2, LME step: nlminb() did not converge (code = 1). Do increase
+#> 'msMaxIter'!
 tss_mono
 #>    subject tss.monoexponential.population tss.monoexponential.popind
-#> 1        1                       26.41701                   36.94302
-#> 2       10                       26.41701                   31.95440
-#> 3       11                       26.41701                   22.79700
-#> 4       12                       26.41701                   26.59834
-#> 5        2                       26.41701                   23.53955
-#> 6        3                       26.41701                   24.72274
-#> 7        4                       26.41701                   25.73791
-#> 8        5                       26.41701                   26.93386
-#> 9        6                       26.41701                   23.21917
-#> 10       7                       26.41701                   25.39804
-#> 11       8                       26.41701                   24.54281
-#> 12       9                       26.41701                   24.61729
+#> 1        1                       26.41711                   36.94252
+#> 2       10                       26.41711                   31.95567
+#> 3       11                       26.41711                   22.79716
+#> 4       12                       26.41711                   26.59872
+#> 5        2                       26.41711                   23.53953
+#> 6        3                       26.41711                   24.72262
+#> 7        4                       26.41711                   25.73825
+#> 8        5                       26.41711                   26.93415
+#> 9        6                       26.41711                   23.21922
+#> 10       7                       26.41711                   25.39770
+#> 11       8                       26.41711                   24.54252
+#> 12       9                       26.41711                   24.61726
 #>    tss.monoexponential.individual tss.monoexponential.single
 #> 1                        40.65290                   27.87592
 #> 2                        24.72591                   27.87592

@@ -5,8 +5,11 @@
 under several regulatory frameworks and stacks the results, so the same
 study can be judged side by side under the different reference-scaling
 rules. Frameworks that the design does not support (for example NTID on
-a partial replicate) are skipped with a warning. Rows for the
-`"descriptive"` framework have `NA` in the decision columns.
+a partial replicate) are skipped with a warning. When every framework
+fails because the data give no usable estimate (for example no degrees
+of freedom; an error of class `pknca_error_be_not_estimable`), that
+error is raised. Rows for the `"descriptive"` framework have `NA` in the
+decision columns.
 
 ## Usage
 
