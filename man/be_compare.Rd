@@ -97,7 +97,10 @@ columns for every endpoint, test formulation, and regulator.
 stacks the results, so the same study can be judged side by side under the
 different reference-scaling rules.  Frameworks that the design does not
 support (for example NTID on a partial replicate) are skipped with a warning.
-Rows for the \code{"descriptive"} framework have \code{NA} in the decision columns.
+When every framework fails because the data give no usable estimate (for
+example no degrees of freedom; an error of class
+\code{pknca_error_be_not_estimable}), that error is raised.  Rows for the
+\code{"descriptive"} framework have \code{NA} in the decision columns.
 }
 \examples{
 \dontshow{if (requireNamespace("lme4", quietly = TRUE) && requireNamespace("lmerTest", quietly = TRUE) && requireNamespace("emmeans", quietly = TRUE)) withAutoprint(\{ # examplesIf}

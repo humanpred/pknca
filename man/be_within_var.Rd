@@ -46,7 +46,10 @@ An object of class \code{be_within_var}: a list with \code{swR}, \code{swT},
 \code{sw_ratio} (= \code{swT}/\code{swR}), \code{sw_ratio_ci_upper} (the upper \code{1 - alpha}
 confidence bound of the ratio), \code{model_type}, and \code{alpha}.  \code{swT} and the
 ratio are \code{NA} when the test formulation is not replicated (for example a
-partial replicate design).
+partial replicate design), with \code{NA} degrees of freedom.  A formulation
+that is replicated but whose replicates leave no residual degrees of
+freedom (too few subjects with replicate administrations) also has \code{NA}
+variances, with 0 degrees of freedom.
 }
 \description{
 \code{be_within_var()} estimates the within-subject standard deviations of the

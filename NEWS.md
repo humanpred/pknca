@@ -8,30 +8,6 @@ the dosing including dose amount and route.
 
 ## Breaking changes
 
-* The expanding-limits frameworks of `be_assess()` widen only the endpoints
-  their guidances allow (@billdenney).  The EMA and the GCC widen Cmax and keep
-  AUC at 80.00-125.00%; Health Canada widens AUC and judges Cmax by its point
-  estimate alone (80.0-125.0%, with no requirement on its confidence interval).
-  Before, all three widened every endpoint.  The other parameters the guidances
-  name are judged like Cmax (Cmax,ss, Cmin,ss, Ctau,ss, and the urinary Rmax,
-  `ermax`) or like AUC (AUC(0-tau), AUC(0-72h), Cav, and the urinary Ae, `ae`),
-  matched by PKNCA name or CDISC `PPTESTCD` code.  The GCC follows its guidelines
-  version 3.2 (2024), the EMA rules, instead of the earlier fixed 75.00-133.33%.
-  The new `rule` column names the criterion each row used (`"ABE"`, `"ABEL"`,
-  `"PE"`, `"RSABE"`, `"NTID"`, or `"HVNTID"`), the caption names each
-  endpoint's rule and cites the source guidance, and `be_regulator()` documents
-  the limits of every framework with links to its sources.  The new
-  `widen_endpoints` argument adds endpoints to those that widen, for example
-  `"aucint.last"` for a partial AUC of a modified-release product under the EMA
-  modified-release guideline, and `widen_default = FALSE` drops the
-  framework's own choice, as when the protocol did not specify widening in
-  advance.  `be_compare()` adds `widen_endpoints` to each framework's own
-  choice.  An endpoint that is neither a PKNCA parameter nor a CDISC code keeps
-  80.00-125.00% under these frameworks, with a warning, unless it is named in
-  `widen_endpoints`.  Widened limits
-  never narrow below 80.00-125.00%; the rounded constant 0.76 made them
-  fractionally narrower for a within-reference CV just above 30%.
-
 * Parameter names and descriptions follow one style, so some column headers of
   `summary()` and some descriptions change (@billdenney):
   * Pretty names write lambda.z as math (`$\lambda_z$`), including "Number of
@@ -101,11 +77,8 @@ the dosing including dose amount and route.
   be updated.  For example, `pknca_conc_none` is now
   `pknca_warning_no_concentration`, `pknca_no_intervals` is now
   `pknca_warning_no_intervals`, and `pknca_all_warnings_no_results` is now
-  `pknca_warning_no_results`.  One change goes beyond renaming: the two classes
-  `pknca_sparse_auclast_change_auclast` and
-  `pknca_sparse_aumclast_change_auc_type` were merged into the single class
-  `pknca_error_auc_last_type_override`, so they can no longer be caught
-  separately.
+  `pknca_warning_no_results`, and `pknca_sparse_auclast_change_auclast` is now
+  `pknca_error_auc_last_type_override`.
 
 * With `verbose = TRUE`, `pk.nca()` reports one "Starting PK NCA calculations."
   message (condition class `pknca_message_pk_start`) in place of the separate
@@ -640,6 +613,27 @@ the generated intervals:
   sequence, so no model drops such rows while the subject count includes them.
   (@billdenney)
 
+* The expanding-limits frameworks of `be_assess()` widen only the endpoints
+  their guidances allow (@billdenney).  The EMA and the GCC widen Cmax and keep
+  AUC at 80.00-125.00%; Health Canada widens AUC and judges Cmax by its point
+  estimate alone (80.0-125.0%, with no requirement on its confidence interval).
+  The other parameters the guidances name are judged like Cmax (Cmax,ss,
+  Cmin,ss, Ctau,ss, and the urinary Rmax, `ermax`) or like AUC (AUC(0-tau),
+  AUC(0-72h), Cav, and the urinary Ae, `ae`), matched by PKNCA name or CDISC
+  `PPTESTCD` code.  The GCC follows its guidelines version 3.2 (2024), the EMA
+  rules.  The `rule` column names the criterion each row used (`"ABE"`,
+  `"ABEL"`, `"PE"`, `"RSABE"`, `"NTID"`, or `"HVNTID"`), the caption names each
+  endpoint's rule and cites the source guidance, and `be_regulator()` documents
+  the limits of every framework with links to its sources.  The
+  `widen_endpoints` argument adds endpoints to those that widen, for example
+  `"aucint.last"` for a partial AUC of a modified-release product under the EMA
+  modified-release guideline, and `widen_default = FALSE` drops the
+  framework's own choice, as when the protocol did not specify widening in
+  advance.  `be_compare()` adds `widen_endpoints` to each framework's own
+  choice.  An endpoint that is neither a PKNCA parameter nor a CDISC code keeps
+  80.00-125.00% under these frameworks, with a warning, unless it is named in
+  `widen_endpoints`.  Widened limits never narrow below 80.00-125.00%.
+
 * Secondary parameters can now be calculated by linking intervals with
   `interval_id` and `<parameter>_ref` columns in the interval specification.
   The reference interval supplies the cross-profile input (the plasma AUC for
@@ -932,9 +926,11 @@ the generated intervals:
   as the `start_conc0` imputation adds at the start of an interval, is now used
   by the sparse estimators (such as `auclast` and `aucinf.obs`):  it is a known
   value, so it enters the estimate without adding to its variance or degrees of
-  freedom.  `as_sparse_pk()` marks such a concentration with a missing subject.
-  Other imputed values are estimates whose uncertainty the sparse estimators
-  cannot include, so they are still refused (`pknca_error_sparse_impute`).
+  freedom.  `as_sparse_pk()` marks such a concentration with a missing subject,
+  and a time cannot mix imputed and measured concentrations
+  (`pknca_error_sparse_pk_mixed_imputed`).  Other imputed values are estimates
+  whose uncertainty the sparse estimators cannot include, so they are still
+  refused (`pknca_error_sparse_impute`).
 
 * The sparse degrees of freedom (`auclast_df`, `aumclast_df`, and the deprecated
   `sparse_auc_df` and `sparse_aumc_df`) are now calculated when subjects
@@ -1062,6 +1058,11 @@ the generated intervals:
   one row; with grouped data, every group must be in `norm_table`, so no
   result rows are dropped silently.
 
+* `update()` on a `PKNCAresults` object recalculates the results with new
+  concentration or dose data, running only the groups whose data changed, for
+  applications that repeat an analysis with small changes such as excluding a
+  point (#416, @billdenney).
+
 * `filter()` on a `PKNCAresults` object whose expressions use only group columns
   (the columns after the `|` in the formula) is evaluated once on the results,
   and the concentration data, the dose data, and the intervals in `$data` keep
@@ -1089,8 +1090,9 @@ the generated intervals:
   (@billdenney)
 
 * `pknca_exclude_rules()` lists the automatic exclusion rules
-  (`exclude_nca_*()`) with their descriptions, arguments and defaults, the
-  `PKNCA.options()` entries they use, and the parameters each can exclude.  Each
+  (`exclude_nca_*()`) with their descriptions, their arguments (each with its
+  description and default, in the `arguments` column), the `PKNCA.options()`
+  entries they use, and the parameters each can exclude.  Each
   rule is registered with its description next to its definition (as interval
   columns are with `add.interval.col()`); the options and parameters come from
   the function the rule returns, which records them in its
@@ -1125,21 +1127,20 @@ the generated intervals:
   it.  An exclusion function that returns neither one value nor one value per
   row of its group is now the `pknca_error_exclude_fun_length` error
   (#269, @billdenney).
-* The standard error and degrees of freedom of a sparse AUClast or AUMClast
-  (`auclast_se`, `auclast_df`, `aumclast_se`, `aumclast_df`, and the deprecated
-  `sparse_*` equivalents) no longer include the times after tlast.  The point
-  estimate stops at tlast, the last time with a positive mean, but the variance
-  weighted every sampled time, so a profile whose last times have a zero mean
-  (more than half of the samples BLQ) had too large a standard error:  in one
-  example 3.68 instead of the 2.10 of Bailer's method, and 35.2 instead of 8.52
-  for the AUMC.  `pk.calc.sparse_auc()` and `pk.calc.sparse_aumc()` with
-  `auc.type = "AUCall"` include the triangle after tlast in the variance too, and
-  they now refuse other `auc.type` values, whose variance they do not calculate
+* The standard error and degrees of freedom of a sparse AUClast (`auclast_se`
+  and `auclast_df`, previously `sparse_auc_se` and `sparse_auc_df`) no longer
+  include the times after tlast.  The point estimate stops at tlast, the last
+  time with a positive mean, but the variance weighted every sampled time, so a
+  profile whose last times have a zero mean (more than half of the samples BLQ)
+  had too large a standard error:  in one example 3.68 instead of the 2.10 of
+  Bailer's method.  `pk.calc.sparse_auc()` with `auc.type = "AUCall"` includes
+  the triangle after tlast in the variance too, and it now refuses other
+  `auc.type` values, whose variance it does not calculate
   (`pknca_error_sparse_auc_type`).
 
-* When a sparse AUClast or AUMClast is `NA` because there is no concentration at
-  the start of the interval, its standard error and degrees of freedom are now
-  `NA` too, instead of the variance of an area that was not estimated.
+* When a sparse AUClast is `NA` because there is no concentration at the start
+  of the interval, its standard error and degrees of freedom are now `NA` too,
+  instead of the variance of an area that was not estimated.
 
 * The `aucint` and `aumcint` parameters are dose-aware.  The profile
   being integrated ends at the first dose at or after the end of the interval,
@@ -1205,10 +1206,9 @@ the generated intervals:
 
 * An imputation that a sparse estimator cannot use is now a clear error
   (`pknca_error_sparse_impute`) naming the interval and the imputation method,
-  instead of corrupting the subject bookkeeping silently or, since the
-  `as_sparse_pk()` subject check became a real assertion, dying with an
-  internal assertion failure.  An imputed measurement belongs to no animal, and
-  the sparse standard error depends on which animal contributed which sample.
+  instead of corrupting the subject bookkeeping silently.  An imputed
+  measurement belongs to no animal, and the sparse standard error depends on
+  which animal contributed which sample.
   The error is raised only when the imputation changes the pooled samples with
   something other than a zero at a time without samples (see the sparse
   imputation entry under New features):  an imputation that finds what it would
@@ -1218,9 +1218,7 @@ the generated intervals:
 
 * `as_sparse_pk()` now raises an error when `subject` is `NULL` or has a
   different length than `conc`.  Previously the check was inert and such inputs
-  passed silently into the sparse calculations.  A missing subject marks an
-  imputed concentration, and a time cannot mix imputed and measured
-  concentrations (`pknca_error_sparse_pk_mixed_imputed`).
+  passed silently into the sparse calculations.
 
 * `pk.calc.sparse_auc()` and `pk.calc.sparse_aumc()` now use their
   `options` argument when integrating the mean concentration-time profile, so
@@ -1269,14 +1267,6 @@ the generated intervals:
 * `get_halflife_points()` now correctly accounts for start time != 0 and sets
   times outside of any interval to `NA` (#470)
 
-* `update()` on a `PKNCAresults` object now works when group columns
-  are factors whose levels differ between the old and new data (for example,
-  ordered factors like `datasets::Theoph$Subject` after re-leveling); group
-  columns are matched by value while keeping their classes and levels in the
-  results.  `update()` also no longer warns "No concentration data" for every
-  unchanged group, because the intervals are now filtered to the changed groups
-  along with the concentration and dose data (#581).
-
 * `pk.nca()` no longer errors on unsorted concentration-time data.
   Group-level concentration data are now sorted by time before calculation, so
   parameters that use the full group (e.g. `aucint.all` and the other `aucint*`
@@ -1324,11 +1314,10 @@ the generated intervals:
   fits failed, a `pknca_warning_tss_stepwise_fit_failed` warning names the
   failures instead of the `NA` being silent.  (@billdenney)
 
-* `pknca_exclude_rules()` and `exclude_nca_by_param()` (and so the
-  `exclude_nca_*()` rules built on it) no longer need testthat:  the
-  threshold checks used checkmate's testthat expectations
-  (`expect_number()`), which loaded testthat and failed when it was not
-  installed.  They now use `assert_number()`.  (@billdenney)
+* `exclude_nca_by_param()` (and so the `exclude_nca_*()` rules built on it) no
+  longer needs testthat:  the threshold checks used checkmate's testthat
+  expectations (`expect_number()`), which loaded testthat and failed when it was
+  not installed.  They now use `assert_number()`.  (@billdenney)
 
 * PKNCA loads in a session where `utils` is not attached (an
   `Rscript` with a trimmed `R_DEFAULT_PACKAGES`, or a `callr` subprocess).
@@ -1426,10 +1415,8 @@ the generated intervals:
 
 * The documentation of the exclusion rules and the imputation methods is
   generated from their registrations, so each description is written once.
-  The registration of a rule now also describes its arguments, and
-  `pknca_exclude_rules()` gives those descriptions in a new `description`
-  column of `arguments`.  The `pknca_exclude_rules()` and
-  `pknca_impute_methods()` help pages have tables of the rules and the methods.
+  The `pknca_exclude_rules()` and `pknca_impute_methods()` help pages have
+  tables of the rules and the methods.
   Tests require every registered rule and method to be documented from its
   registration, and the installed help to agree with the registry.
   (@billdenney)

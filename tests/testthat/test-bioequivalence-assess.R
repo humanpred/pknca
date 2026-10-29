@@ -1168,3 +1168,196 @@ test_that("the be_assess object keeps the classes of its table", {
   expect_equal(attr(result, "alpha"), 0.1)
   expect_equal(attr(result, "regulator"), "ABE")
 })
+
+# Degrees of freedom and finite estimates ------------------------------------
+#
+# A confidence interval or a within-subject variance without residual degrees
+# of freedom would be NaN, and a decision on it a silent FAIL; each is an error
+# of class pknca_error_be_no_df instead.  A decision on any estimate that is
+# not finite is an error of class pknca_error_be_estimate_not_finite.  Both
+# inherit from pknca_error_be_not_estimable.
+
+test_that("a fixed-effects ANOVA contrast without degrees of freedom is an error", {
+  # A 2x2 crossover of two subjects: four observations for the intercept,
+  # subject, period, and treatment.  The contrast is checked before the
+  # geometric means, so emmeans does not warn about NaNs first.
+  d2 <- be_replicate_long(generate_be_replicate(2, 20240501, "2x2"))
+  for (rg in c("ABE", "descriptive")) {
+    expect_no_warning(expect_error(
+      be_assess(d2, "treatment", "R", "auclast", regulator = rg, model_type = "anova"),
+      regexp = "the fixed-effects ANOVA gives 0 degrees of freedom",
+      class = "pknca_error_be_contrast_no_df"
+    ))
+  }
+  # A parallel study of one subject per arm.
+  p2 <- generate_be_parallel(n_per_arm = 1, effect = c(R = 0, T1 = log(1.1)), sd = c(R = 0.2, T1 = 0.2))
+  expect_error(
+    be_assess(p2, "treatment", "R", "auclast"),
+    regexp = "the fixed-effects ANOVA gives 0 degrees of freedom",
+    class = "pknca_error_be_contrast_no_df"
+  )
+  # A 3x3 Williams design of three subjects: each pairwise comparison has six
+  # observations for six coefficients.
+  expect_error(
+    be_assess(generate_be_williams(nsub = 3), "treatment", "R", "auclast", model_type = "anova"),
+    class = "pknca_error_be_contrast_no_df"
+  )
+})
+
+test_that(".be_check_contrast_df accepts only one positive, finite value", {
+  expect_identical(.be_check_contrast_df(2, "T", "R", "model"), 2)
+  for (bad in list(0, -1, NA_real_, NaN, Inf, numeric(), c(1, 2))) {
+    expect_error(
+      .be_check_contrast_df(bad, "T", "R", "model"),
+      class = "pknca_error_be_contrast_no_df",
+      label = paste(format(bad), collapse = ",")
+    )
+  }
+})
+
+test_that("a gls treatment of one observation is an error whatever the row order", {
+  # The Satterthwaite degrees of freedom of such a contrast are not identified:
+  # 0 for one row order and a small positive number for another.
+  cases <- list(
+    data.frame(treatment = c("T", "R", "R"), PPORRES = c(20, 22, 25)),
+    data.frame(treatment = c("R", "R", "T"), PPORRES = c(22, 25, 20)),
+    data.frame(treatment = c("R", "R", "R", "T"), PPORRES = c(22, 25, 21, 20)),
+    data.frame(treatment = c("R", "T", "T"), PPORRES = c(22, 20, 24))
+  )
+  for (case in cases) {
+    d <- cbind(subject = seq_len(nrow(case)), period = 1L, case, PPTESTCD = "auclast", PPORRESU = "h*ng/mL")
+    expect_error(
+      be_assess(d, "treatment", "R", "auclast", model_type = "gls"),
+      regexp = "needs at least two observations per treatment",
+      class = "pknca_error_be_contrast_no_df",
+      label = paste(case$treatment, collapse = "")
+    )
+  }
+})
+
+test_that("a replicated formulation without within-subject degrees of freedom is not called unreplicated", {
+  # Two subjects of a full replicate: each formulation is replicated, but
+  # lm(log ~ subject + period) on its rows leaves no residual degrees of freedom.
+  d <- generate_be_replicate(2, 20240501, "full")
+  wv <- be_within_var(d, "PK", "subject", "period", "treatment", "R")
+  expect_identical(c(wv$df_wR, wv$df_wT), c(0, 0))
+  expect_true(is.na(wv$swR))
+  expect_output(print(wv), "Test:      no residual degrees of freedom (df = 0", fixed = TRUE)
+  expect_error(
+    be_within_var(d, "PK", "subject", "period", "treatment", "R", model_type = "nlme"),
+    class = "pknca_error_be_within_var_no_df"
+  )
+  # Each expanding-limits framework on the endpoint it widens, so its decision
+  # needs the reference variance.
+  for (case in list(c("EMA", "cmax"), c("GCC", "cmax"), c("HC", "auclast"))) {
+    expect_error(
+      be_assess(be_replicate_long(d, case[2]), "treatment", "R", case[2], regulator = case[1], model_type = "anova"),
+      regexp = "no residual degrees of freedom",
+      class = "pknca_error_be_within_var_no_df",
+      label = case[1]
+    )
+  }
+  # The nlme path keeps the ANOVA's 0 degrees of freedom.
+  expect_error(
+    suppressWarnings(be_assess(be_replicate_long(d, "cmax"), "treatment", "R", "cmax", regulator = "EMA", model_type = "nlme")),
+    class = "pknca_error_be_within_var_no_df"
+  )
+  # A formulation given once to each subject is still reported as unreplicated.
+  wv_2x2 <- be_within_var(generate_be_replicate(8, 1, "2x2"), "PK", "subject", "period", "treatment", "R")
+  expect_true(is.na(wv_2x2$df_wR))
+  expect_output(print(wv_2x2), "Test:      not replicated", fixed = TRUE)
+})
+
+# The parameters of a full replicate's Cmax from the FDA model type, which
+# carry both the model and the intra-subject contrast estimates.
+be_test_cmax_params <- function() {
+  d <- be_replicate_long(generate_be_replicate(24, 20240501, "full"), "cmax")
+  ds <- be_dataset(d, "treatment", "R", "cmax")
+  ds_ep <- ds$data[ds$data$PPTESTCD == "cmax", ]
+  p <- be_extract_param(be_fit_model_single(ds_ep, "isc"), ds_ep, alpha = 0.10)
+  p$endpoint <- "cmax"
+  p
+}
+
+test_that("every scaling decision stops when a within-subject variance it needs is missing", {
+  p <- be_test_cmax_params()
+  passes <- c(EMA = TRUE, GCC = TRUE, HC = TRUE, FDA = TRUE, NTID = FALSE, HVNTID = FALSE)
+  for (rg in names(passes)) {
+    expect_identical(be_table(p, rg)$pass, passes[[rg]], label = rg)
+  }
+  p_auc <- p
+  p_auc$endpoint <- "auclast"
+  # Regulator, the parameters, and the variance columns its decision reads.
+  cases <- list(
+    list("EMA", p, "swr", "df_wr", "abel_reference"),
+    list("GCC", p, "swr", "df_wr", "abel_reference"),
+    list("HC", p_auc, "swr", "df_wr", "abel_reference"),
+    list("FDA", p, "isc_swr", "isc_df_wr", "rsabe_reference"),
+    list("NTID", p, "isc_swr", "isc_df_wr", "ntid"),
+    list("NTID", p, "isc_swt", "isc_df_wt", "ntid"),
+    list("HVNTID", p, "isc_swr", "isc_df_wr", "hvntid"),
+    list("HVNTID", p, "isc_swt", "isc_df_wt", "hvntid")
+  )
+  for (case in cases) {
+    label <- paste(case[[1]], case[[3]])
+    no_df <- case[[2]]
+    no_df[[case[[3]]]] <- NA_real_
+    no_df[[case[[4]]]] <- 0
+    expect_error(be_table(no_df, case[[1]]), class = "pknca_error_be_within_var_no_df", label = label)
+    unreplicated <- case[[2]]
+    unreplicated[[case[[3]]]] <- NA_real_
+    unreplicated[[case[[4]]]] <- NA_real_
+    expect_error(
+      be_table(unreplicated, case[[1]]),
+      class = sprintf("pknca_error_be_%s_not_replicated", case[[5]]),
+      label = label
+    )
+  }
+})
+
+test_that("every decision stops when an estimate it uses is not finite", {
+  p <- be_test_cmax_params()
+  p_auc <- p
+  p_auc$endpoint <- "auclast"
+  # Regulator, the parameters, and the column made NaN.
+  cases <- list(
+    list("ABE", p, "model_ci_lower"),
+    list("EMA", p, "model_ci_upper"),
+    list("GCC", p, "model_gmr_percent"),
+    list("HC", p_auc, "model_ci_lower"),
+    list("HC", p, "model_gmr_percent"),
+    list("FDA", p, "isc_se"),
+    list("NTID", p, "model_ci_upper"),
+    list("NTID", p, "isc_se"),
+    list("HVNTID", p, "model_ci_lower")
+  )
+  for (case in cases) {
+    bad <- case[[2]]
+    bad[[case[[3]]]] <- NaN
+    expect_error(
+      be_table(bad, case[[1]]),
+      class = "pknca_error_be_estimate_not_finite",
+      label = paste(case[[1]], case[[3]])
+    )
+  }
+  # Health Canada judges Cmax by its point estimate alone, which needs no
+  # interval; the descriptive framework makes no decision.
+  no_ci <- p
+  no_ci$model_ci_lower <- NaN
+  expect_true(be_table(no_ci, "HC")$pass)
+  expect_true(is.nan(be_table(no_ci, "descriptive")$ci_lower))
+})
+
+test_that("be_compare raises the error when the data stop every framework", {
+  d2 <- be_replicate_long(generate_be_replicate(2, 20240501, "2x2"))
+  expect_error(
+    suppressWarnings(be_compare(d2, "treatment", "R", "auclast", regulators = c("ABE", "descriptive"), model_type = "anova")),
+    class = "pknca_error_be_contrast_no_df"
+  )
+  # When a framework fails for another reason (here the design), the generic
+  # error stays.
+  expect_error(
+    suppressWarnings(be_compare(d2, "treatment", "R", "auclast", regulators = c("ABE", "EMA"), model_type = "anova")),
+    class = "pknca_error_be_no_frameworks"
+  )
+})

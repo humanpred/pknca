@@ -567,9 +567,11 @@ print.be_design <- function(x, ...) {
   invisible(x)
 }
 
-# Empty within-formulation variance, used when a formulation is not replicated.
-.be_arm_var_na <- function() {
-  list(s2w = NA_real_, sw = NA_real_, df = NA_real_, cv = NA_real_)
+# Empty within-formulation variance, used when a formulation is not replicated
+# (`df = NA`) or when its replicates leave no residual degrees of freedom
+# (`df = 0`).
+.be_arm_var_na <- function(df = NA_real_) {
+  list(s2w = NA_real_, sw = NA_real_, df = df, cv = NA_real_)
 }
 
 # ANOVA within-formulation variance on a single formulation's replicate rows.
@@ -600,12 +602,13 @@ print.be_design <- function(x, ...) {
     } else {
       .logval ~ .subject + .period
     }
-  a <- stats::anova(stats::lm(fit_formula, data = arm))
-  s2w <- a["Residuals", "Mean Sq"]
-  df <- a["Residuals", "Df"]
-  if (is.na(df) || df < 1) {
-    return(.be_arm_var_na())
+  fit <- stats::lm(fit_formula, data = arm)
+  df <- fit$df.residual
+  if (df < 1) {
+    return(.be_arm_var_na(df = 0))
   }
+  # The residual mean square of the ANOVA, without anova()'s F-tests.
+  s2w <- stats::deviance(fit) / df
   list(s2w = s2w, sw = sqrt(s2w), df = df, cv = sqrt(exp(s2w) - 1) * 100)
 }
 
@@ -651,7 +654,10 @@ print.be_design <- function(x, ...) {
 #'   `sw_ratio` (= `swT`/`swR`), `sw_ratio_ci_upper` (the upper `1 - alpha`
 #'   confidence bound of the ratio), `model_type`, and `alpha`.  `swT` and the
 #'   ratio are `NA` when the test formulation is not replicated (for example a
-#'   partial replicate design).
+#'   partial replicate design), with `NA` degrees of freedom.  A formulation
+#'   that is replicated but whose replicates leave no residual degrees of
+#'   freedom (too few subjects with replicate administrations) also has `NA`
+#'   variances, with 0 degrees of freedom.
 #' @family Bioequivalence
 #' @seealso [be_assess()]
 #' @export
@@ -705,9 +711,10 @@ be_within_var <- function(data, value, subject, period, treatment, reference_val
     # only).  Variances come from the model; degrees of freedom are kept from
     # the ANOVA above (the design-based within-subject replication).
     if (is.na(ref_v$sw) || is.na(test_v$sw)) {
-      rlang::abort(
+      .be_within_unavailable(
+        c(ref_v$df, test_v$df),
         "model_type = 'nlme' requires a fully replicated design with both formulations replicated; use model_type = 'anova'.",
-        class = "pknca_error_be_within_var_nlme_not_replicated"
+        "pknca_error_be_within_var_nlme_not_replicated"
       )
     }
     mixed <- .be_within_var_mixed(work, reference_value, test_levels)
@@ -798,6 +805,8 @@ print.be_within_var <- function(x, ...) {
                 x$swT, x$cvwt_percent, x$df_wT))
     cat(sprintf("  swT/swR = %.5f (upper %g%% confidence bound = %.5f)\n",
                 x$sw_ratio, (1 - x$alpha) * 100, x$sw_ratio_ci_upper))
+  } else if (x$df_wT %in% 0) {
+    cat("  Test:      no residual degrees of freedom (df = 0; swT unavailable)\n")
   } else {
     cat("  Test:      not replicated (swT unavailable)\n")
   }
@@ -965,6 +974,7 @@ print.be_within_var <- function(x, ...) {
 
 # Average bioequivalence: conventional 80-125% on the 90% confidence interval.
 .be_abe <- function(est, wv, reg, alpha, unscaled = est) {
+  .be_check_finite(est, c("gmr_percent", "ci_lower", "ci_upper"))
   list(
     limit_lower = 80, limit_upper = 125, criterion = NA_real_,
     pass = isTRUE(est$ci_lower >= 80 && est$ci_upper <= 125),
@@ -977,11 +987,13 @@ print.be_within_var <- function(x, ...) {
 # are the conventional ones, so the rule is "ABE".
 .be_abel <- function(est, wv, reg, alpha, unscaled = est) {
   if (is.na(wv$swR)) {
-    rlang::abort(
+    .be_within_unavailable(
+      wv$df_wR,
       "Reference scaling requires a replicated reference; the reference is not replicated.",
-      class = "pknca_error_be_abel_reference_not_replicated"
+      "pknca_error_be_abel_reference_not_replicated"
     )
   }
+  .be_check_finite(est, c("gmr_percent", "ci_lower", "ci_upper"))
   lim <- be_expand_limits(wv$swR, reg)
   ci_ok <- est$ci_lower >= lim[["lower"]] && est$ci_upper <= lim[["upper"]]
   list(
@@ -996,6 +1008,7 @@ print.be_within_var <- function(x, ...) {
 # The point estimate alone within 80.00-125.00%, with no requirement on its
 # confidence interval: Health Canada's standard for Cmax.
 .be_pe <- function(est, wv, reg, alpha, unscaled = est) {
+  .be_check_finite(est, "gmr_percent")
   list(
     limit_lower = 80, limit_upper = 125, criterion = NA_real_,
     pass = isTRUE(.be_pe_ok(reg, est$gmr_percent)),
@@ -1008,14 +1021,16 @@ print.be_within_var <- function(x, ...) {
 # the `unscaled` estimate (the FDA mixed model by default).
 .be_rsabe <- function(est, wv, reg, alpha, unscaled = est) {
   if (is.na(wv$swR)) {
-    rlang::abort(
+    .be_within_unavailable(
+      wv$df_wR,
       "Reference scaling requires a replicated reference; the reference is not replicated.",
-      class = "pknca_error_be_rsabe_reference_not_replicated"
+      "pknca_error_be_rsabe_reference_not_replicated"
     )
   }
   if (!is.na(reg$switch_swr) && wv$swR < reg$switch_swr) {
     # Unscaled average bioequivalence fallback.
     .be_check_unscaled(unscaled)
+    .be_check_finite(unscaled, c("gmr_percent", "ci_lower", "ci_upper"))
     list(
       limit_lower = 80, limit_upper = 125, criterion = NA_real_,
       pass = isTRUE(
@@ -1024,6 +1039,7 @@ print.be_within_var <- function(x, ...) {
       report = unscaled, rule = "ABE"
     )
   } else {
+    .be_check_finite(est, c("pe_log", "se", "gmr_percent"))
     bound <- .be_rsabe_bound(est$pe_log, est$se, est$df, wv$s2wR, wv$df_wR, reg$r_const)
     list(
       limit_lower = NA_real_, limit_upper = NA_real_, criterion = bound,
@@ -1039,13 +1055,16 @@ print.be_within_var <- function(x, ...) {
 # swT/swR must be at most the regulator's ratio cap (2.5), as in the FDA
 # warfarin guidance.
 .be_ntid <- function(est, wv, reg, alpha, unscaled = est) {
-  if (is.na(wv$swT)) {
-    rlang::abort(
+  if (is.na(wv$swR) || is.na(wv$swT)) {
+    .be_within_unavailable(
+      c(wv$df_wR, wv$df_wT),
       "NTID assessment requires a fully replicated design (both formulations replicated).",
-      class = "pknca_error_be_ntid_not_replicated"
+      "pknca_error_be_ntid_not_replicated"
     )
   }
   .be_check_unscaled(unscaled)
+  .be_check_finite(est, c("pe_log", "se", "gmr_percent"))
+  .be_check_finite(unscaled, c("ci_lower", "ci_upper"))
   bound <- .be_rsabe_bound(est$pe_log, est$se, est$df, wv$s2wR, wv$df_wR, reg$r_const)
   list(
     limit_lower = 80, limit_upper = 125, criterion = bound,
@@ -1065,13 +1084,15 @@ print.be_within_var <- function(x, ...) {
 # ratio cap (2.5).  There is no reference-scaled bound (reference scaling does
 # not apply to highly variable NTIDs).
 .be_hvntid <- function(est, wv, reg, alpha, unscaled = est) {
-  if (is.na(wv$swT)) {
-    rlang::abort(
+  if (is.na(wv$swR) || is.na(wv$swT)) {
+    .be_within_unavailable(
+      c(wv$df_wR, wv$df_wT),
       "HVNTID assessment requires a fully replicated design (both formulations replicated).",
-      class = "pknca_error_be_hvntid_not_replicated"
+      "pknca_error_be_hvntid_not_replicated"
     )
   }
   .be_check_unscaled(unscaled)
+  .be_check_finite(unscaled, c("gmr_percent", "ci_lower", "ci_upper"))
   list(
     limit_lower = 80, limit_upper = 125, criterion = NA_real_,
     pass = isTRUE(
@@ -1081,6 +1102,47 @@ print.be_within_var <- function(x, ...) {
     ),
     report = unscaled, rule = "HVNTID"
   )
+}
+
+# Stop because a within-subject variance that a decision needs is missing.
+# `df` holds the degrees of freedom of the variances involved: 0 means a
+# formulation is replicated but its replicates leave no residual degrees of
+# freedom (too few subjects with replicate administrations); otherwise a
+# formulation is not replicated, reported with `msg` and `class`.
+.be_within_unavailable <- function(df, msg, class) {
+  if (any(df %in% 0)) {
+    rlang::abort(
+      paste(
+        "A within-subject variance has no residual degrees of freedom:",
+        "too few subjects have replicate administrations of the formulation."
+      ),
+      class = c("pknca_error_be_within_var_no_df", "pknca_error_be_no_df", "pknca_error_be_not_estimable")
+    )
+  }
+  rlang::abort(msg, class = class)
+}
+
+# Stop when an estimate that a decision uses is missing or not finite, so
+# that the decision is never a FAIL by default.  `fields` names the elements of
+# `est` the decision reads.
+.be_check_finite <- function(est, fields) {
+  bad <- fields[!vapply(fields, .be_finite_field, logical(1), est = est)]
+  if (length(bad) > 0) {
+    rlang::abort(
+      sprintf(
+        "The bioequivalence decision needs a finite %s, which the estimate does not have.",
+        paste(bad, collapse = ", ")
+      ),
+      class = c("pknca_error_be_estimate_not_finite", "pknca_error_be_not_estimable")
+    )
+  }
+  invisible(est)
+}
+
+# Whether element `field` of `est` is one finite number.
+.be_finite_field <- function(field, est) {
+  value <- est[[field]]
+  length(value) == 1 && is.numeric(value) && is.finite(value)
 }
 
 # Stop when the unscaled criterion needs the model estimate but the model
@@ -1249,6 +1311,25 @@ print.be_within_var <- function(x, ...) {
 }
 
 
+# Stop when the confidence interval of the test-versus-reference contrast has
+# no usable degrees of freedom (zero, or not finite, as when an arm or the
+# residual has too few observations); its interval would be NaN.
+.be_check_contrast_df <- function(df, test_level, reference_value, model_desc) {
+  if (length(df) != 1 || !is.finite(df) || df <= 0) {
+    rlang::abort(
+      sprintf(
+        paste(
+          "The confidence interval of treatment '%s' versus '%s' cannot be estimated:",
+          "the %s gives %s degrees of freedom (too few observations)."
+        ),
+        test_level, reference_value, model_desc, if (length(df) == 0) "no" else paste(format(df), collapse = ", ")
+      ),
+      class = c("pknca_error_be_contrast_no_df", "pknca_error_be_no_df", "pknca_error_be_not_estimable")
+    )
+  }
+  invisible(df)
+}
+
 # Fixed-effects ANOVA average-BE estimate (Method A): subject as a fixed effect,
 # reproducing replicateBE::method.A's geometric mean ratio and CI.  A parallel
 # design has one observation per subject, so subject would be aliased with
@@ -1293,6 +1374,7 @@ print.be_within_var <- function(x, ...) {
   est <- cf[term, "Estimate"]
   se <- cf[term, "Std. Error"]
   df <- model$df.residual
+  .be_check_contrast_df(df, test_level, reference_value, "fixed-effects ANOVA")
   ci <- exp(est + c(-1, 1) * stats::qt(1 - alpha / 2, df) * se) * 100
   list(
     pe_log = est, se = se, df = df, n = NA_integer_,
@@ -1835,6 +1917,20 @@ be_fit_model_nlme <- function(ds_ep, scaling = TRUE) {
 # (one observation per subject, so there is no within-subject variance).  The
 # formula is inlined into the call (bquote) so emmeans can re-evaluate it.
 be_fit_model_gls <- function(ds_ep) {
+  # A treatment-specific variance needs at least two observations per arm; with
+  # one, the variance and the Satterthwaite degrees of freedom of the contrast
+  # are not identified (the degrees of freedom then depend on the row order).
+  arm_n <- table(droplevels(factor(ds_ep$.trt)))
+  if (any(arm_n < 2)) {
+    rlang::abort(
+      sprintf(
+        "The gls model with treatment-specific variances needs at least two observations per treatment; %s has %s.",
+        paste0("'", names(arm_n)[arm_n < 2], "'", collapse = ", "),
+        paste(arm_n[arm_n < 2], collapse = ", ")
+      ),
+      class = c("pknca_error_be_contrast_no_df", "pknca_error_be_no_df", "pknca_error_be_not_estimable")
+    )
+  }
   fixed <- .be_model_formula(ds_ep, random = FALSE)
   model <- eval(bquote(
     nlme::gls(
@@ -1967,6 +2063,7 @@ be_extract_param <- function(fit, ds_ep, alpha = 0.10) {
   for (tl in test_levels) {
     t_arm <- arm[[tl]]
     crow <- cs[as.character(cs$contrast) == tl, , drop = FALSE]
+    .be_check_contrast_df(crow$df, tl, reference_value, sprintf("'%s' model", class(model)[1]))
     contrasts[[tl]] <- list(
       gm_test = t_arm$gm, gm_test_lower = t_arm$lower, gm_test_upper = t_arm$upper,
       gmr_percent = exp(crow$estimate) * 100,
@@ -2009,8 +2106,8 @@ be_extract_param_lmer <- function(fit, alpha = 0.10) {
 # be_within_var().
 .be_nlme_arm_var <- function(dat, level, sigma, mult) {
   anova_var <- .be_arm_var(dat[dat$.trt == level, , drop = FALSE])
-  if (is.na(anova_var$df)) {
-    return(.be_arm_var_na())
+  if (is.na(anova_var$sw)) {
+    return(anova_var)
   }
   s2 <- (sigma * mult[[level]])^2
   list(s2w = s2, sw = sqrt(s2), df = anova_var$df, cv = sqrt(exp(s2) - 1) * 100)
@@ -2050,8 +2147,13 @@ be_extract_param_gls <- function(fit, ds_ep, alpha = 0.10) {
 be_extract_param_anova <- function(fit, ds_ep, alpha = 0.10) {
   reference_value <- levels(ds_ep$.trt)[1]
   test_levels <- setdiff(levels(ds_ep$.trt), reference_value)
-  # Geometric means (with confidence intervals) from the fixed-effects model;
-  # the geometric mean ratio and CI come from the intra-subject ANOVA contrast.
+  # The geometric mean ratio and CI come from the intra-subject ANOVA contrast;
+  # they are estimated first so that a contrast without degrees of freedom
+  # stops before the geometric means.  The geometric means (with confidence
+  # intervals) come from the fixed-effects model of all formulations, which has
+  # at least the degrees of freedom of each contrast.
+  ests <- lapply(stats::setNames(test_levels, test_levels), .be_anova_est,
+                 work = ds_ep, reference_value = reference_value, alpha = alpha)
   arm <-
     if (requireNamespace("emmeans", quietly = TRUE)) {
       .be_arm_gm_from_emm(emmeans::emmeans(fit$model, specs = ".trt"), alpha)
@@ -2062,7 +2164,7 @@ be_extract_param_anova <- function(fit, ds_ep, alpha = 0.10) {
   ref <- if (is.null(arm[[reference_value]])) na_arm else arm[[reference_value]]
   contrasts <- list()
   for (tl in test_levels) {
-    est <- .be_anova_est(ds_ep, reference_value, tl, alpha)
+    est <- ests[[tl]]
     t_arm <- if (is.null(arm[[tl]])) na_arm else arm[[tl]]
     contrasts[[tl]] <- list(
       gm_test = t_arm$gm, gm_test_lower = t_arm$lower, gm_test_upper = t_arm$upper,
@@ -2771,7 +2873,10 @@ print.summary_be_assess <- function(x, ...) {
 #' stacks the results, so the same study can be judged side by side under the
 #' different reference-scaling rules.  Frameworks that the design does not
 #' support (for example NTID on a partial replicate) are skipped with a warning.
-#' Rows for the `"descriptive"` framework have `NA` in the decision columns.
+#' When every framework fails because the data give no usable estimate (for
+#' example no degrees of freedom; an error of class
+#' `pknca_error_be_not_estimable`), that error is raised.  Rows for the
+#' `"descriptive"` framework have `NA` in the decision columns.
 #'
 #' @inheritParams be_assess
 #' @param regulators A character vector of regulatory frameworks to compare (see
@@ -2820,6 +2925,7 @@ be_compare <- function(object, reference_col, reference_value,
   )
   .be_check_widening(widen_endpoints, widen_default, ds$endpoints)
   results <- list()
+  failures <- list()
   units_missing <- FALSE
   for (rg in regulators) {
     # Only the expanding-limits frameworks widen; each adds `widen_endpoints`
@@ -2844,8 +2950,9 @@ be_compare <- function(object, reference_col, reference_value,
       }
     )
     if (inherits(res, "try-error")) {
+      failures[[rg]] <- attr(res, "condition")
       rlang::warn(
-        sprintf("Skipping %s: %s", rg, conditionMessage(attr(res, "condition"))),
+        sprintf("Skipping %s: %s", rg, conditionMessage(failures[[rg]])),
         class = "pknca_warning_be_skipped_framework"
       )
     } else {
@@ -2856,6 +2963,10 @@ be_compare <- function(object, reference_col, reference_value,
     .be_warn_units_missing()
   }
   if (length(results) == 0) {
+    if (all(vapply(failures, inherits, logical(1), what = "pknca_error_be_not_estimable"))) {
+      # The data, not the frameworks, prevent every assessment.
+      rlang::cnd_signal(failures[[1]])
+    }
     rlang::abort(
       "No regulatory framework could be assessed for this design.",
       class = "pknca_error_be_no_frameworks"
