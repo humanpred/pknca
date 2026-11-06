@@ -352,11 +352,11 @@ the generated intervals:
 
 ## New features
 
-* Cav is available for every AUC that covers only the interval, as `cav.all`
-  (from `aucall`) and, for IV bolus dosing, `cav.iv.last`, `cav.iv.all`,
+* Cav is available for every AUC that covers only the interval, as `cav.last`
+  (from `auclast`), `cav.all` (from `aucall`) and, for IV bolus dosing, `cav.iv.last`, `cav.iv.all`,
   `cav.ivint.last`, `cav.ivint.all`, `cav.ivint.inf.obs`, and
-  `cav.ivint.inf.pred` (from the `auciv*` AUCs), alongside `cav` (from
-  `auclast`) and the `cav.int.*` variants.  Each is its AUC divided by the
+  `cav.ivint.inf.pred` (from the `auciv*` AUCs), alongside the `cav.int.*`
+  variants.  Each is its AUC divided by the
   interval duration.  There is no Cav from AUCinf,obs or AUCinf,pred, which
   include the area after the interval.  New `aucivint.inf.obs` and
   `aucivint.inf.pred` complete the IV interval AUCs (`aucint.inf.obs` and
@@ -367,6 +367,13 @@ the generated intervals:
   PKPARMCD has no codes for them, so they carry sponsor-defined PPTESTCD codes
   (`CAVGALL`, `CAVGIVL`, `CAVGIVA`, `CAVGIVIL`, `CAVGIVIA`, `CAVGIVIO`,
   `CAVGIVIP`, `AUCIVIIO`, `AUCIVIIP`) (@billdenney).
+
+* `cav` and `cav.dn` are deprecated in favor of `cav.last` and `cav.last.dn`,
+  whose names say which AUC they are calculated from.  They still calculate the
+  same values, but requesting them gives the classed warning
+  `pknca_warning_deprecated_parameter` (once per session), and
+  `pknca_interval_table()` no longer offers them.  `deg.fluc` is now calculated
+  from `cav.last` (@billdenney).
 
 * `PKNCAconc()` has a new `frac_unbound` argument: a value or the name of a
   column, greater than 0 and at most 1, with `NA` where fraction unbound does

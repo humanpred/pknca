@@ -1806,6 +1806,8 @@ pk.calc.cav <- function(auc, start, end) {
 }
 
 pknca_concept(pk.calc.cav) <- "average_conc"
+# Deprecated in favor of cav.last (see deprecated_renamed_parameters), and
+# calculates the identical value
 add.interval.col(
   "cav",
   FUN = "pk.calc.cav",
@@ -1818,6 +1820,37 @@ add.interval.col(
   pptestcd_cdisc="CAVG",
   pptest_cdisc="Average Conc",
   formula = "$C_{av} = \\frac{AUC_{\\text{last}}}{t_{end} - t_{start}}$")
+
+add.interval.col(
+  "cav.last",
+  FUN = "pk.calc.cav",
+  values = c(FALSE, TRUE),
+  unit_type = "conc",
+  pretty_name = "Cav (based on AUClast)",
+  desc = "Avg conc in interval (AUClast)",
+  depends = "auclast",
+  formalsmap = list(auc = "auclast"),
+  pptestcd_cdisc = "CAVG",
+  pptest_cdisc = "Average Conc",
+  formula = "$C_{av,\\text{last}} = \\frac{AUC_{\\text{last}}}{t_{end} - t_{start}}$")
+
+# Interval-specification names replaced by a name that says which AUC they are
+# calculated from.  They still calculate, and give the same values they always
+# have, but they are deprecated:  see warn_deprecated_renamed_parameters().
+deprecated_renamed_parameters <- c(
+  cav = "cav.last",
+  cav.dn = "cav.last.dn"
+)
+
+warn_deprecated_renamed_parameters <- function(requested) {
+  warn_deprecated_parameter_names(
+    requested = requested,
+    replacements = deprecated_renamed_parameters,
+    new_name = c("the new name", "the new names"),
+    class = "pknca_warning_deprecated_parameter",
+    frequency_id = "pknca_deprecated_renamed"
+  )
+}
 
 add.interval.col(
   "cav.int.last",
@@ -2113,7 +2146,8 @@ add.interval.col("deg.fluc",
                  unit_type="%",
                  pretty_name="Degree of fluctuation",
                  desc="Degree of fluctuation",
-                 depends=c("cmax", "cmin", "cav"),
+                 depends=c("cmax", "cmin", "cav.last"),
+                 formalsmap=list(cav="cav.last"),
                  pptestcd_cdisc="DEGFLUC",
                  pptest_cdisc="Degree of fluctuation",
                  formula="$DF = 100 \\cdot \\frac{C_{\\max} - C_{\\min}}{C_{av}}$",
@@ -2346,7 +2380,7 @@ add.interval.col(
 # SET SUMMARY STATISTICS
 # =============================================================================
 #===============================================================================
-# CONCENTRATION PARAMETERS - count: 20
+# CONCENTRATION PARAMETERS - count: 21
 # Ordered: base → trough/start → average → interval → special
 #===============================================================================
 PKNCA.set.summary(
@@ -2357,8 +2391,8 @@ PKNCA.set.summary(
     # Trough and start  - count: 3
     "ctrough", "cstart", "ceoi",
     
-    # Average concentrations  - count: 12
-    "cav", "cav.all",
+    # Average concentrations  - count: 13
+    "cav", "cav.last", "cav.all",
     "cav.int.all", "cav.int.last", "cav.int.inf.obs", "cav.int.inf.pred",
     "cav.iv.last", "cav.iv.all",
     "cav.ivint.last", "cav.ivint.all", "cav.ivint.inf.obs", "cav.ivint.inf.pred",

@@ -143,7 +143,8 @@ context_parameters <- function(dosing, route, sample_type, tier, auc_basis) {
       },
       FUN.VALUE = TRUE
     )
-  params <- params[keep]
+  # A deprecated name duplicates the parameter that replaced it
+  params <- setdiff(params[keep], names(deprecated_renamed_parameters))
   if (identical(tier, "common")) {
     params <- params[classification$tier[params] %in% "common"]
   }
