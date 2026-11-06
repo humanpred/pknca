@@ -81,11 +81,16 @@ concentration at the start of the interval from the profile before the
 dose (see \code{\link[=pk.calc.auxcint]{pk.calc.auxcint()}}), which is the trough rather than the
 concentration just after the bolus.  The segment from the start of the
 interval to the first concentration after the dose is replaced by the one
-starting from \eqn{C_0}, which is back-extrapolated from the concentrations
-after the dose (and before the next dose) with the methods of
-\code{\link[=pk.calc.c0]{pk.calc.c0()}}.  A concentration measured at the dose time is taken to be
-measured before the dose, as for \code{\link[=interp.extrap.conc.dose]{interp.extrap.conc.dose()}}, so it is not
-used as \eqn{C_0}.
+starting from \eqn{C_0}, which is back-extrapolated with the methods of
+\code{\link[=pk.calc.c0]{pk.calc.c0()}} from the concentrations after the dose that are within the
+interval and before the next dose (with BLQ and missing concentrations
+handled as the AUCint handles them).  A concentration measured at the dose
+time is taken to be measured before the dose, as for
+\code{\link[=interp.extrap.conc.dose]{interp.extrap.conc.dose()}}, so it is not used as \eqn{C_0}.
+
+An interval that starts at an IV infusion has nothing to back-extrapolate,
+so the AUXCint is returned unchanged; an interval that does not start at an
+IV dose gives \code{NA}.
 }
 \section{Functions}{
 \itemize{

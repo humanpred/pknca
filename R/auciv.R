@@ -133,11 +133,16 @@ pknca_concept(pk.calc.auciv) <- "auc"
 #'   dose (see [pk.calc.auxcint()]), which is the trough rather than the
 #'   concentration just after the bolus.  The segment from the start of the
 #'   interval to the first concentration after the dose is replaced by the one
-#'   starting from \eqn{C_0}, which is back-extrapolated from the concentrations
-#'   after the dose (and before the next dose) with the methods of
-#'   [pk.calc.c0()].  A concentration measured at the dose time is taken to be
-#'   measured before the dose, as for [interp.extrap.conc.dose()], so it is not
-#'   used as \eqn{C_0}.
+#'   starting from \eqn{C_0}, which is back-extrapolated with the methods of
+#'   [pk.calc.c0()] from the concentrations after the dose that are within the
+#'   interval and before the next dose (with BLQ and missing concentrations
+#'   handled as the AUCint handles them).  A concentration measured at the dose
+#'   time is taken to be measured before the dose, as for
+#'   [interp.extrap.conc.dose()], so it is not used as \eqn{C_0}.
+#'
+#'   An interval that starts at an IV infusion has nothing to back-extrapolate,
+#'   so the AUXCint is returned unchanged; an interval that does not start at an
+#'   IV dose gives `NA`.
 #'
 #' @param conc,time All concentrations and their times for the group
 #' @param start,end The start and end of the interval
@@ -160,22 +165,37 @@ pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extra
   if (is.na(auxc)) {
     return(structure(NA_real_, exclude = "AUCint is not calculated"))
   }
-  bolus_at_start <-
-    !is.na(time.dose) & time.dose == start &
-    route %in% "intravascular" & duration.dose %in% 0
-  if (!any(bolus_at_start)) {
+  if (length(time.dose) == 0 || all(is.na(time.dose))) {
+    return(structure(NA_real_, exclude = "dose time is missing"))
+  }
+  route <- rep_len(route, length(time.dose))
+  duration.dose <- rep_len(duration.dose, length(time.dose))
+  dose_at_start <- !is.na(time.dose) & time.dose == start & route %in% "intravascular"
+  if (any(dose_at_start & !(duration.dose %in% 0))) {
+    # An infusion starts from the concentration before it, which the AUCint
+    # already uses, so there is nothing to back-extrapolate
+    return(auxc)
+  }
+  if (!any(dose_at_start)) {
     return(structure(NA_real_, exclude = "The interval does not start at an IV bolus dose"))
   }
-  # The profile after the dose at the start of the interval:  up to the next
-  # dose and the end of the interval
+  # The concentrations the AUCint integrates:  up to the first dose at or after
+  # the end of the interval, cleaned of BLQ and missing values the same way
+  dose_after_end <- time.dose[!is.na(time.dose) & time.dose >= end]
+  window_end <- min(c(dose_after_end, Inf))
+  mask_window <- time <= window_end
+  data <-
+    clean.conc.blq(
+      conc = conc[mask_window], time = time[mask_window], options = options, check = FALSE
+    )
+  # The profile after the dose at the start of the interval:  within the
+  # interval and before the next dose
   next_dose <- min(c(time.dose[!is.na(time.dose) & time.dose > start], Inf))
-  mask_after <- !is.na(conc) & time > start & time <= min(end, next_dose)
-  if (!any(mask_after)) {
+  data_after <- data[data$time > start & data$time <= min(end, next_dose), , drop = FALSE]
+  if (nrow(data_after) == 0) {
     return(structure(NA_real_, exclude = "No concentration after the IV bolus dose in the interval"))
   }
-  conc_after <- conc[mask_after]
-  time_after <- time[mask_after]
-  c0 <- pk.calc.c0(conc = conc_after, time = time_after, time.dose = start, check = FALSE)
+  c0 <- pk.calc.c0(conc = data_after$conc, time = data_after$time, time.dose = start, check = FALSE)
   if (is.na(c0)) {
     return(structure(NA_real_, exclude = "c0 is not calculated"))
   }
@@ -186,7 +206,7 @@ pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extra
   segment_trough <-
     withCallingHandlers(
       fun_auxcint_last(
-        conc = conc, time = time, start = start, end = time_after[1],
+        conc = conc, time = time, start = start, end = data_after$time[1],
         time.dose = time.dose, route = route, duration.dose = duration.dose,
         options = options
       ),
@@ -194,8 +214,8 @@ pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extra
     )
   segment_c0 <-
     fun_auxcint_last(
-      conc = c(c0, conc_after[1]), time = c(start, time_after[1]),
-      start = start, end = time_after[1], options = options
+      conc = c(c0, data_after$conc[1]), time = c(start, data_after$time[1]),
+      start = start, end = data_after$time[1], options = options
     )
   auxc - as.numeric(segment_trough) + as.numeric(segment_c0)
 }

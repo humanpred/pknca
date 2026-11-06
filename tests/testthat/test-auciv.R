@@ -755,7 +755,7 @@ test_that("aucivint.* and aumcivint.* back-extrapolate C0 of the dose that start
     }
   }
   # Without the back-extrapolation, the second interval starts from the trough
-  expect_lt(value_of("aucint.last", 12), true_auc[2] - 2)
+  expect_equal(value_of("aucint.last", 12), 47.0928367, tolerance = 1e-6)
 })
 
 test_that("pk.calc.auciv.int needs an IV bolus at the start of the interval", {
@@ -768,12 +768,15 @@ test_that("pk.calc.auciv.int needs an IV bolus at the start of the interval", {
     do.call(pk.calc.auciv.int, c(args, list(route = c("intravascular", "extravascular")))),
     structure(NA_real_, exclude = "The interval does not start at an IV bolus dose")
   )
-  # An infusion is not a bolus
+  # An infusion starts from the concentration before it, so the AUCint is
+  # returned unchanged
   args_infusion <- args
   args_infusion$duration.dose <- c(0, 1)
+  expect_equal(do.call(pk.calc.auciv.int, c(args_infusion, list(route = "intravascular"))), 47)
+  # Without dose times, the bolus cannot be found
   expect_equal(
-    do.call(pk.calc.auciv.int, c(args_infusion, list(route = "intravascular"))),
-    structure(NA_real_, exclude = "The interval does not start at an IV bolus dose")
+    do.call(pk.calc.auciv.int, c(modifyList(args, list(time.dose = NA_real_, duration.dose = 0)), list(route = "intravascular"))),
+    structure(NA_real_, exclude = "dose time is missing")
   )
   # No concentration after the dose within the interval
   expect_equal(
@@ -789,4 +792,47 @@ test_that("pk.calc.auciv.int needs an IV bolus at the start of the interval", {
     do.call(pk.calc.auciv.int, c(modifyList(args, list(auc = NA_real_)), list(route = "intravascular"))),
     structure(NA_real_, exclude = "AUCint is not calculated")
   )
+})
+
+test_that("aucivint replaces the segment the AUCint integrates when the first sample after the dose is BLQ", {
+  conc_blq <- iv_md_conc
+  conc_blq[iv_md_time == 12.5] <- 0
+  args <-
+    list(
+      conc = conc_blq, time = iv_md_time, start = 12, end = 24,
+      time.dose = c(0, 12), route = "intravascular", duration.dose = 0
+    )
+  auc <- do.call(pk.calc.aucint.last, args)
+  # The AUCint drops the BLQ sample in the middle of the profile, so its first
+  # segment after the dose ends at 13; C0 is back-extrapolated from 13 and 14
+  conc_13 <- conc_blq[iv_md_time == 13]
+  conc_14 <- conc_blq[iv_md_time == 14]
+  c0 <- conc_13*(conc_13/conc_14)
+  expected <-
+    auc -
+    do.call(pk.calc.aucint.last, modifyList(args, list(end = 13))) +
+    pk.calc.auc.last(conc = c(c0, conc_13), time = c(0, 1))
+  expect_equal(do.call(pk.calc.auciv.int, c(args, list(auc = auc))), expected)
+  expect_gt(expected, auc)
+})
+
+test_that("aucivint for an interval starting at an IV infusion is the AUCint", {
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(data.frame(conc = iv_md_conc, time = iv_md_time), conc~time),
+      PKNCAdose(
+        data.frame(dose = 100, time = c(0, 12), duration = 0.5),
+        dose~time, route = "intravascular", duration = "duration"
+      ),
+      intervals =
+        data.frame(start = c(0, 12), end = c(12, 24), aucint.last = TRUE, aucivint.last = TRUE, mrt.ivint.last = TRUE)
+    )
+  r <- as.data.frame(suppressWarnings(pk.nca(o_data)))
+  for (start in c(0, 12)) {
+    expect_equal(
+      r$PPORRES[r$PPTESTCD == "aucivint.last" & r$start == start],
+      r$PPORRES[r$PPTESTCD == "aucint.last" & r$start == start]
+    )
+    expect_true(is.finite(r$PPORRES[r$PPTESTCD == "mrt.ivint.last" & r$start == start]))
+  }
 })
