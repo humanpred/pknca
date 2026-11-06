@@ -1224,6 +1224,8 @@ print.be_within_var <- function(x, ...) {
   "aucivlast", "aucivall", "aucivinf.obs", "aucivinf.pred", "aucivint.last", "aucivint.all",
   "sparse_auclast",
   "cav", "cav.dn", "cav.int.last", "cav.int.all", "cav.int.inf.obs", "cav.int.inf.pred",
+  "cav.all", "cav.inf.obs", "cav.inf.pred",
+  "cav.iv.last", "cav.iv.all", "cav.iv.inf.obs", "cav.iv.inf.pred", "cav.ivint.last", "cav.ivint.all",
   "ae", "fe"
 )
 

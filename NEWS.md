@@ -352,6 +352,19 @@ the generated intervals:
 
 ## New features
 
+* Cav is available for every AUC type, as `cav.all`, `cav.inf.obs`,
+  `cav.inf.pred` (from `aucall`, `aucinf.obs`, and `aucinf.pred`) and, for IV
+  bolus dosing, `cav.iv.last`, `cav.iv.all`, `cav.iv.inf.obs`,
+  `cav.iv.inf.pred`, `cav.ivint.last`, and `cav.ivint.all` (from the `auciv*`
+  AUCs), alongside `cav` (from `auclast`) and the `cav.int.*` variants.  Each
+  is its AUC divided by the interval duration.  They are in the `"uncommon"`
+  tier, so `pknca_interval_table()` offers the one matching the interval's AUC
+  basis when `tier = "all"` or when `include` names it or the
+  `"average_conc"` concept.  CDISC PKPARMCD has no codes for them, so they
+  carry sponsor-defined PPTESTCD codes (`CAVGALL`, `CAVGIFO`, `CAVGIFP`,
+  `CAVGIVL`, `CAVGIVA`, `CAVGIVO`, `CAVGIVP`, `CAVGIVIL`, `CAVGIVIA`)
+  (@billdenney).
+
 * `PKNCAconc()` has a new `frac_unbound` argument: a value or the name of a
   column, greater than 0 and at most 1, with `NA` where fraction unbound does
   not apply (for example, urine).  When it is given, `pk.nca()` calculates the

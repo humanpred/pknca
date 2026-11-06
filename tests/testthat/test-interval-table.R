@@ -334,7 +334,7 @@ test_that("every parameter is reachable from some context, or documented as not"
       "aucint.all", "aumcint.all",
       "aucivall", "aumcivall", "aucivpbextall",
       "aucivint.all", "aumcivint.all", "aucivpbextint.all",
-      "cav.int.all",
+      "cav.all", "cav.int.all", "cav.iv.all", "cav.ivint.all",
       "cl.all", "cl.int.all", "cl.iv.all", "cl.ivint.all",
       "kel.all", "kel.int.all", "kel.iv.all", "kel.ivint.all",
       "mrt.all", "mrt.int.all", "mrt.iv.all", "mrt.ivint.all",

@@ -413,6 +413,32 @@ test_that("pk.calc.cav", {
                info="If end == start, return NA_real_")
 })
 
+test_that("every cav variant is its AUC divided by the interval duration", {
+  # Every registered cav variant (other than the dose-normalized one), so that a
+  # new variant is checked without editing this test
+  all_cols <- get.interval.cols()
+  cav_params <- setdiff(grep("^cav", names(all_cols), value = TRUE), "cav.dn")
+  expect_true(length(cav_params) >= 14)
+  auc_of <- vapply(lapply(all_cols[cav_params], `[[`, "formalsmap"), `[[`, "", "auc")
+  d_conc <- as.data.frame(datasets::Indometh)[datasets::Indometh$Subject == 1, ]
+  d_dose <- data.frame(dose = 25, time = 0)
+  intervals <- data.frame(start = 0, end = 8)
+  intervals[, c(cav_params, unique(auc_of))] <- TRUE
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time),
+      PKNCAdose(d_dose, dose ~ time, route = "intravascular"),
+      intervals = intervals,
+      impute = "start_conc0"
+    )
+  results <- as.data.frame(pk.nca(o_data))
+  value <- stats::setNames(results$PPORRES, results$PPTESTCD)
+  for (p in cav_params) {
+    expect_true(is.finite(value[[p]]), info = p)
+    expect_equal(value[[p]], value[[auc_of[[p]]]] / 8, info = p)
+  }
+})
+
 test_that("pk.calc.ctrough", {
   expect_equal(pk.calc.ctrough(1:5, 0:4, 0), 1,
                info="Found and it's the first time")
