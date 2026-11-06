@@ -297,6 +297,7 @@ d_dose_352 <- data.frame(dose = 100, time = 0)
 params_352 <-
   c(
     "aucivlast", "aucivall", "aucivint.last", "aucivint.all",
+    "aucivint.inf.obs", "aucivint.inf.pred",
     "aucivinf.obs", "aucivinf.pred",
     "aumcivlast", "aumcivall", "aumcivint.last", "aumcivint.all",
     "aumcivinf.obs", "aumcivinf.pred",
@@ -328,12 +329,40 @@ test_that("IV AUC is calculated without a time 0 concentration (#352)", {
   expect_equal(unname(value["aucivint.all"]), 95.06123, tolerance = 1e-6)
   expect_equal(unname(value["aucivinf.obs"]), 109.02992, tolerance = 1e-6)
   expect_equal(unname(value["aucivinf.pred"]), 108.45559, tolerance = 1e-6)
+  # Over 0 to infinity, the interval AUCs extrapolated to infinity are the
+  # AUCs to infinity
+  expect_equal(unname(value["aucivint.inf.obs"]), 109.02992, tolerance = 1e-6)
+  expect_equal(unname(value["aucivint.inf.pred"]), 108.45559, tolerance = 1e-6)
   expect_equal(unname(value["aumcivlast"]), 1685.66716, tolerance = 1e-6)
   expect_equal(unname(value["aumcivall"]), 1685.66716, tolerance = 1e-6)
   expect_equal(unname(value["aumcivint.last"]), 1685.66716, tolerance = 1e-6)
   expect_equal(unname(value["aumcivint.all"]), 1685.66716, tolerance = 1e-6)
   expect_equal(unname(value["aumcivinf.obs"]), 2957.39875, tolerance = 1e-6)
   expect_equal(unname(value["aumcivinf.pred"]), 2905.11073, tolerance = 1e-6)
+})
+
+test_that("aucivint.inf.* need no extrapolation for an interval ending before Tlast", {
+  d_intervals <-
+    data.frame(
+      start = 0, end = 30,
+      aucivint.last = TRUE, aucivint.inf.obs = TRUE, aucivint.inf.pred = TRUE
+    )
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_iv_352, conc~time),
+      PKNCAdose(d_dose_352, dose~time, route = "intravascular"),
+      intervals = d_intervals
+    )
+  # Only 15 and 30 follow Tmax within the interval, so lambda.z (which the
+  # inf variants depend on) is not estimable; it is not needed before Tlast
+  expect_warning(
+    r <- as.data.frame(pk.nca(o_data)),
+    regexp = "Too few points for half-life calculation"
+  )
+  value <- stats::setNames(r$PPORRES, r$PPTESTCD)
+  expect_true(is.finite(value[["aucivint.last"]]))
+  expect_equal(value[["aucivint.inf.obs"]], value[["aucivint.last"]])
+  expect_equal(value[["aucivint.inf.pred"]], value[["aucivint.last"]])
 })
 
 test_that("the percent back-extrapolated is NA without a time 0 concentration (#352)", {

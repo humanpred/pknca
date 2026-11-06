@@ -1870,7 +1870,10 @@ add.interval.col(
 
 # Cav for the remaining AUC types.  CDISC PKPARMCD has codes only for CAVG
 # (AUClast) and CAVGINT (AUCint,last), so these keep sponsor-defined codes, as
-# the other cav.int.* variants do.
+# the other cav.int.* variants do.  There is no Cav from AUCinf,obs or
+# AUCinf,pred:  those include the area after the end of the interval, so
+# dividing them by the interval duration is not an average over the interval
+# (the AUCint,inf variants integrate only to the end of the interval).
 add.interval.col(
   "cav.all",
   FUN = "pk.calc.cav",
@@ -1883,30 +1886,6 @@ add.interval.col(
   pptestcd_cdisc = "CAVGALL",
   pptest_cdisc = "Average Conc (AUCall)",
   formula = "$C_{av,\\text{all}} = \\frac{AUC_{\\text{all}}}{t_{end} - t_{start}}$")
-add.interval.col(
-  "cav.inf.obs",
-  FUN = "pk.calc.cav",
-  values = c(FALSE, TRUE),
-  unit_type = "conc",
-  pretty_name = "Cav (based on AUCinf,obs)",
-  desc = "Avg conc in interval (AUCinf,obs)",
-  depends = "aucinf.obs",
-  formalsmap = list(auc = "aucinf.obs"),
-  pptestcd_cdisc = "CAVGIFO",
-  pptest_cdisc = "Average Conc (AUCinf,obs)",
-  formula = "$C_{av,\\infty\\text{,obs}} = \\frac{AUC_{\\infty\\text{,obs}}}{t_{end} - t_{start}}$")
-add.interval.col(
-  "cav.inf.pred",
-  FUN = "pk.calc.cav",
-  values = c(FALSE, TRUE),
-  unit_type = "conc",
-  pretty_name = "Cav (based on AUCinf,pred)",
-  desc = "Avg conc in interval (AUCinf,pred)",
-  depends = "aucinf.pred",
-  formalsmap = list(auc = "aucinf.pred"),
-  pptestcd_cdisc = "CAVGIFP",
-  pptest_cdisc = "Average Conc (AUCinf,pred)",
-  formula = "$C_{av,\\infty\\text{,pred}} = \\frac{AUC_{\\infty\\text{,pred}}}{t_{end} - t_{start}}$")
 add.interval.col(
   "cav.iv.last",
   FUN = "pk.calc.cav",
@@ -1932,30 +1911,6 @@ add.interval.col(
   pptest_cdisc = "Average Conc (IV, AUCall)",
   formula = "$C_{av,\\text{iv,all}} = \\frac{AUC_{\\text{iv,all}}}{t_{end} - t_{start}}$")
 add.interval.col(
-  "cav.iv.inf.obs",
-  FUN = "pk.calc.cav",
-  values = c(FALSE, TRUE),
-  unit_type = "conc",
-  pretty_name = "Cav (for IV dosing, based on AUCinf,obs)",
-  desc = "Avg conc in interval (IV AUCinf,obs)",
-  depends = "aucivinf.obs",
-  formalsmap = list(auc = "aucivinf.obs"),
-  pptestcd_cdisc = "CAVGIVO",
-  pptest_cdisc = "Average Conc (IV, AUCinf,obs)",
-  formula = "$C_{av,\\text{iv,}\\infty\\text{,obs}} = \\frac{AUC_{\\text{iv,}\\infty\\text{,obs}}}{t_{end} - t_{start}}$")
-add.interval.col(
-  "cav.iv.inf.pred",
-  FUN = "pk.calc.cav",
-  values = c(FALSE, TRUE),
-  unit_type = "conc",
-  pretty_name = "Cav (for IV dosing, based on AUCinf,pred)",
-  desc = "Avg conc in interval (IV AUCinf,pred)",
-  depends = "aucivinf.pred",
-  formalsmap = list(auc = "aucivinf.pred"),
-  pptestcd_cdisc = "CAVGIVP",
-  pptest_cdisc = "Average Conc (IV, AUCinf,pred)",
-  formula = "$C_{av,\\text{iv,}\\infty\\text{,pred}} = \\frac{AUC_{\\text{iv,}\\infty\\text{,pred}}}{t_{end} - t_{start}}$")
-add.interval.col(
   "cav.ivint.last",
   FUN = "pk.calc.cav",
   values = c(FALSE, TRUE),
@@ -1979,6 +1934,30 @@ add.interval.col(
   pptestcd_cdisc = "CAVGIVIA",
   pptest_cdisc = "Average Conc (IV, AUCint,all)",
   formula = "$C_{av,\\text{ivint,all}} = \\frac{AUC_{\\text{ivint,all}}}{t_{end} - t_{start}}$")
+add.interval.col(
+  "cav.ivint.inf.obs",
+  FUN = "pk.calc.cav",
+  values = c(FALSE, TRUE),
+  unit_type = "conc",
+  pretty_name = "Cav (for IV dosing, based on AUCint,inf,obs)",
+  desc = "Avg conc in intvl (IV AUCint,inf,obs)",
+  depends = "aucivint.inf.obs",
+  formalsmap = list(auc = "aucivint.inf.obs"),
+  pptestcd_cdisc = "CAVGIVIO",
+  pptest_cdisc = "Average Conc (IV, AUCint,inf,obs)",
+  formula = "$C_{av,\\text{ivint,}\\infty\\text{,obs}} = \\frac{AUC_{\\text{ivint,}\\infty\\text{,obs}}}{t_{end} - t_{start}}$")
+add.interval.col(
+  "cav.ivint.inf.pred",
+  FUN = "pk.calc.cav",
+  values = c(FALSE, TRUE),
+  unit_type = "conc",
+  pretty_name = "Cav (for IV dosing, based on AUCint,inf,pred)",
+  desc = "Avg conc in intvl (IV AUCint,inf,pred)",
+  depends = "aucivint.inf.pred",
+  formalsmap = list(auc = "aucivint.inf.pred"),
+  pptestcd_cdisc = "CAVGIVIP",
+  pptest_cdisc = "Average Conc (IV, AUCint,inf,pred)",
+  formula = "$C_{av,\\text{ivint,}\\infty\\text{,pred}} = \\frac{AUC_{\\text{ivint,}\\infty\\text{,pred}}}{t_{end} - t_{start}}$")
 
 
 #' Determine the trough (end of interval) concentration
@@ -2367,7 +2346,7 @@ add.interval.col(
 # SET SUMMARY STATISTICS
 # =============================================================================
 #===============================================================================
-# CONCENTRATION PARAMETERS - count: 22
+# CONCENTRATION PARAMETERS - count: 20
 # Ordered: base → trough/start → average → interval → special
 #===============================================================================
 PKNCA.set.summary(
@@ -2378,11 +2357,11 @@ PKNCA.set.summary(
     # Trough and start  - count: 3
     "ctrough", "cstart", "ceoi",
     
-    # Average concentrations  - count: 14
-    "cav", "cav.all", "cav.inf.obs", "cav.inf.pred",
+    # Average concentrations  - count: 12
+    "cav", "cav.all",
     "cav.int.all", "cav.int.last", "cav.int.inf.obs", "cav.int.inf.pred",
-    "cav.iv.last", "cav.iv.all", "cav.iv.inf.obs", "cav.iv.inf.pred",
-    "cav.ivint.last", "cav.ivint.all",
+    "cav.iv.last", "cav.iv.all",
+    "cav.ivint.last", "cav.ivint.all", "cav.ivint.inf.obs", "cav.ivint.inf.pred",
     
     # Special AUC above  - count: 2
     "aucabove.predose.all", "aucabove.trough.all"

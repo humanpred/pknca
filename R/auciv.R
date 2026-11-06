@@ -277,6 +277,32 @@ add.interval.col(
   formula = "$AUC_{\\text{iv,int,all}} = AUC_{\\text{int,all}} + AUC(C_0, t_1) - AUC(C(0), t_1)$")
 
 add.interval.col(
+  name = "aucivint.inf.obs",
+  FUN = "pk.calc.auciv",
+  unit_type = "auc",
+  pretty_name = "AUCint,inf,obs (IV dosing)",
+  depends = c("aucint.inf.obs", "c0"),
+  desc = "AUCint,inf,obs, IV back-extrap C0",
+  sparse = FALSE,
+  formalsmap = list(auc="aucint.inf.obs", auc.type=NULL, lambda.z=NULL, clast=NULL),
+  pptestcd_cdisc="AUCIVIIO",
+  pptest_cdisc="AUCint,inf,obs (IV dosing)",
+  formula = "$AUC_{\\text{iv,int,}\\infty\\text{,obs}} = AUC_{\\text{int,}\\infty\\text{,obs}} + AUC(C_0, t_1) - AUC(C(0), t_1)$")
+
+add.interval.col(
+  name = "aucivint.inf.pred",
+  FUN = "pk.calc.auciv",
+  unit_type = "auc",
+  pretty_name = "AUCint,inf,pred (IV dosing)",
+  depends = c("aucint.inf.pred", "c0"),
+  desc = "AUCint,inf,pred, IV back-extrap C0",
+  sparse = FALSE,
+  formalsmap = list(auc="aucint.inf.pred", auc.type=NULL, lambda.z=NULL, clast=NULL),
+  pptestcd_cdisc="AUCIVIIP",
+  pptest_cdisc="AUCint,inf,pred (IV dosing)",
+  formula = "$AUC_{\\text{iv,int,}\\infty\\text{,pred}} = AUC_{\\text{int,}\\infty\\text{,pred}} + AUC(C_0, t_1) - AUC(C(0), t_1)$")
+
+add.interval.col(
   name = "aucivinf.obs",
   FUN = "pk.calc.auciv",
   FUN_sparse = "pk.calc.aucivinf.obs_sparse",
@@ -648,13 +674,14 @@ add.interval.col(
 
 
 #===============================================================================
-# PKNCA.set.summary - Count: 18
+# PKNCA.set.summary - Count: 20
 # Ordered: base → int (last → all) → inf (obs → pred)
 #===============================================================================
 # Geometric summaries for AUC and AUMC IV
 PKNCA.set.summary(
   name = c(
-    "aucivlast", "aucivall", "aucivint.last", "aucivint.all", "aucivinf.obs", "aucivinf.pred",
+    "aucivlast", "aucivall", "aucivint.last", "aucivint.all", "aucivint.inf.obs", "aucivint.inf.pred",
+    "aucivinf.obs", "aucivinf.pred",
     "aumcivlast", "aumcivall", "aumcivint.last", "aumcivint.all", "aumcivinf.obs", "aumcivinf.pred"
   ),
   description = "geometric mean and geometric coefficient of variation",

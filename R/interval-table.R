@@ -57,7 +57,7 @@ pknca_auc_roots <- function() {
       "auclast", "aucall", "aucinf.obs", "aucinf.pred",
       "aucint.last", "aucint.all", "aucint.inf.obs", "aucint.inf.pred",
       "aucivlast", "aucivall", "aucivinf.obs", "aucivinf.pred",
-      "aucivint.last", "aucivint.all"
+      "aucivint.last", "aucivint.all", "aucivint.inf.obs", "aucivint.inf.pred"
     )
   intersect(c(ret, sub("^auc", "aumc", ret)), names(get.interval.cols()))
 }

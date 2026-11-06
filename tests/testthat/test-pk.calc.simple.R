@@ -418,7 +418,7 @@ test_that("every cav variant is its AUC divided by the interval duration", {
   # new variant is checked without editing this test
   all_cols <- get.interval.cols()
   cav_params <- setdiff(grep("^cav", names(all_cols), value = TRUE), "cav.dn")
-  expect_true(length(cav_params) >= 14)
+  expect_true(length(cav_params) >= 12)
   auc_of <- vapply(lapply(all_cols[cav_params], `[[`, "formalsmap"), `[[`, "", "auc")
   d_conc <- as.data.frame(datasets::Indometh)[datasets::Indometh$Subject == 1, ]
   d_dose <- data.frame(dose = 25, time = 0)
