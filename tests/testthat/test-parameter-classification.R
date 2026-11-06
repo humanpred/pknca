@@ -235,7 +235,7 @@ test_that("back-extrapolation to c0 is bolus-only", {
   expect_equal(pknca_parameter_table("mrt.ivint.all")$route, all_iv)
 })
 
-test_that("the bolus-only set is exactly what c0 reaches without a dose duration", {
+test_that("the bolus-only set is exactly what back-extrapolation reaches without a dose duration", {
   classification <- PKNCA:::parameter_classification()
   bolus_only <-
     names(classification$route)[
@@ -244,8 +244,13 @@ test_that("the bolus-only set is exactly what c0 reaches without a dose duration
   specs <- PKNCA:::set_requires_inputs(names(classification$route))
   needs_duration <-
     names(specs)[vapply(specs, function(x) isTRUE(x$requires_dose_dur), TRUE)]
-  from_c0 <- intersect(get.parameter.deps("c0"), names(classification$route))
-  expect_equal(sort(bolus_only), sort(setdiff(from_c0, needs_duration)))
+  # The c0 parameter, and the IV interval AUCs and AUMCs that back-extrapolate
+  # C0 of the dose that starts the interval themselves
+  seeds <- c("c0", "aucivint.last", "aucivint.all", "aucivint.inf.obs", "aucivint.inf.pred",
+             "aumcivint.last", "aumcivint.all")
+  from_back_extrapolation <-
+    intersect(unique(unlist(lapply(seeds, get.parameter.deps))), names(classification$route))
+  expect_equal(sort(bolus_only), sort(setdiff(from_back_extrapolation, needs_duration)))
   expect_length(bolus_only, 51L)
 })
 

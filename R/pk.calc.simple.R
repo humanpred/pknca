@@ -2380,7 +2380,7 @@ add.interval.col(
 # SET SUMMARY STATISTICS
 # =============================================================================
 #===============================================================================
-# CONCENTRATION PARAMETERS - count: 21
+# CONCENTRATION PARAMETERS
 # Ordered: base → trough/start → average → interval → special
 #===============================================================================
 PKNCA.set.summary(
@@ -2391,7 +2391,7 @@ PKNCA.set.summary(
     # Trough and start  - count: 3
     "ctrough", "cstart", "ceoi",
     
-    # Average concentrations  - count: 13
+    # Average concentrations
     "cav", "cav.last", "cav.all",
     "cav.int.all", "cav.int.last", "cav.int.inf.obs", "cav.int.inf.pred",
     "cav.iv.last", "cav.iv.all",

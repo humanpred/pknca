@@ -707,3 +707,86 @@ test_that("every IV AUC and AUMC calculates for sparse IV bolus data", {
     }
   }
 })
+
+# ============================================================================
+# IV interval AUCs and AUMCs after a later dose
+# ============================================================================
+
+# Two IV bolus doses (at 0 and 12) of a one-compartment drug with C0 = 10 per
+# dose and k = 0.2, sampled after each dose and at the second dose (predose)
+iv_md_k <- 0.2
+iv_md_time <- c(0.5, 1, 2, 4, 8, 12, 12.5, 13, 14, 16, 20, 24)
+iv_md_conc <-
+  10*exp(-iv_md_k*iv_md_time) +
+  ifelse(iv_md_time > 12, 10*exp(-iv_md_k*(iv_md_time - 12)), 0)
+iv_md_true_conc <- function(t) {
+  10*exp(-iv_md_k*t) + ifelse(t >= 12, 10*exp(-iv_md_k*(t - 12)), 0)
+}
+iv_md_true_moment <- function(t) t*iv_md_true_conc(t)
+
+test_that("aucivint.* and aumcivint.* back-extrapolate C0 of the dose that starts the interval", {
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(data.frame(conc = iv_md_conc, time = iv_md_time), conc~time),
+      PKNCAdose(data.frame(dose = 100, time = c(0, 12)), dose~time, route = "intravascular"),
+      intervals =
+        data.frame(
+          start = c(0, 12), end = c(12, 24),
+          aucint.last = TRUE, aucivint.last = TRUE, aucivint.all = TRUE,
+          aucivint.inf.obs = TRUE, aucivint.inf.pred = TRUE,
+          aumcint.last = TRUE, aumcivint.last = TRUE, aumcivint.all = TRUE
+        )
+    )
+  # interp.extrap.conc.dose() warns about the later dose; that is not what is
+  # tested here
+  r <- as.data.frame(suppressWarnings(pk.nca(o_data)))
+  value_of <- function(param, start) r$PPORRES[r$PPTESTCD == param & r$start == start]
+  # The samples are exact and the elimination is monoexponential, so the
+  # log-down trapezoids give the true areas
+  true_auc <- c(integrate(iv_md_true_conc, 0, 12)$value, integrate(iv_md_true_conc, 12, 24)$value)
+  true_aumc <- c(integrate(iv_md_true_moment, 0, 12)$value, integrate(iv_md_true_moment, 12, 24)$value)
+  for (i in 1:2) {
+    start <- c(0, 12)[i]
+    for (param in c("aucivint.last", "aucivint.all", "aucivint.inf.obs", "aucivint.inf.pred")) {
+      expect_equal(value_of(param, start), true_auc[i], tolerance = 1e-6, info = paste(param, start))
+    }
+    for (param in c("aumcivint.last", "aumcivint.all")) {
+      expect_equal(value_of(param, start), true_aumc[i], tolerance = 1e-6, info = paste(param, start))
+    }
+  }
+  # Without the back-extrapolation, the second interval starts from the trough
+  expect_lt(value_of("aucint.last", 12), true_auc[2] - 2)
+})
+
+test_that("pk.calc.auciv.int needs an IV bolus at the start of the interval", {
+  args <-
+    list(
+      conc = iv_md_conc, time = iv_md_time, start = 12, end = 24,
+      time.dose = c(0, 12), duration.dose = c(0, 0), auc = 47
+    )
+  expect_equal(
+    do.call(pk.calc.auciv.int, c(args, list(route = c("intravascular", "extravascular")))),
+    structure(NA_real_, exclude = "The interval does not start at an IV bolus dose")
+  )
+  # An infusion is not a bolus
+  args_infusion <- args
+  args_infusion$duration.dose <- c(0, 1)
+  expect_equal(
+    do.call(pk.calc.auciv.int, c(args_infusion, list(route = "intravascular"))),
+    structure(NA_real_, exclude = "The interval does not start at an IV bolus dose")
+  )
+  # No concentration after the dose within the interval
+  expect_equal(
+    pk.calc.auciv.int(
+      conc = iv_md_conc[iv_md_time <= 12], time = iv_md_time[iv_md_time <= 12],
+      start = 12, end = 24, time.dose = c(0, 12), route = "intravascular",
+      duration.dose = 0, auc = 47
+    ),
+    structure(NA_real_, exclude = "No concentration after the IV bolus dose in the interval")
+  )
+  # The AUCint is not calculated
+  expect_equal(
+    do.call(pk.calc.auciv.int, c(modifyList(args, list(auc = NA_real_)), list(route = "intravascular"))),
+    structure(NA_real_, exclude = "AUCint is not calculated")
+  )
+})

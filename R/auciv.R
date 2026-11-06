@@ -124,6 +124,119 @@ pk.calc.auciv <- function(conc, time, c0, auc, auc.type = NULL,
 
 pknca_concept(pk.calc.auciv) <- "auc"
 
+#' Calculate AUXC (AUC or AUMC) over an interval for IV bolus dosing with C0
+#' back-extrapolation
+#'
+#' @details The interval must start at an IV bolus dose.  The AUXC over the
+#'   interval from the AUCint or AUMCint family (`auxc`) estimates the
+#'   concentration at the start of the interval from the profile before the
+#'   dose (see [pk.calc.auxcint()]), which is the trough rather than the
+#'   concentration just after the bolus.  The segment from the start of the
+#'   interval to the first concentration after the dose is replaced by the one
+#'   starting from \eqn{C_0}, which is back-extrapolated from the concentrations
+#'   after the dose (and before the next dose) with the methods of
+#'   [pk.calc.c0()].  A concentration measured at the dose time is taken to be
+#'   measured before the dose, as for [interp.extrap.conc.dose()], so it is not
+#'   used as \eqn{C_0}.
+#'
+#' @param conc,time All concentrations and their times for the group
+#' @param start,end The start and end of the interval
+#' @param time.dose,route,duration.dose The dose times, routes, and durations
+#'   for the group (`route` and `duration.dose` default to an extravascular
+#'   dose, as for [pk.calc.aucint()], so a bolus must be given as
+#'   `"intravascular"` with a duration of zero)
+#' @param auxc The AUXC over the interval from the AUCint or AUMCint family
+#' @param fun_auxcint_last The AUClast-type AUXCint function
+#'   ([pk.calc.aucint.last()] or [pk.calc.aumcint.last()]) used for the segment
+#'   that is replaced
+#' @inheritParams PKNCA.choose.option
+#' @return The AUXC over the interval with C0 back-extrapolated
+#' @family AUC calculations
+#' @family AUMC calculations
+#' @export
+pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extravascular",
+                               duration.dose = 0,
+                               auxc, fun_auxcint_last, options = list()) {
+  if (is.na(auxc)) {
+    return(structure(NA_real_, exclude = "AUCint is not calculated"))
+  }
+  bolus_at_start <-
+    !is.na(time.dose) & time.dose == start &
+    route %in% "intravascular" & duration.dose %in% 0
+  if (!any(bolus_at_start)) {
+    return(structure(NA_real_, exclude = "The interval does not start at an IV bolus dose"))
+  }
+  # The profile after the dose at the start of the interval:  up to the next
+  # dose and the end of the interval
+  next_dose <- min(c(time.dose[!is.na(time.dose) & time.dose > start], Inf))
+  mask_after <- !is.na(conc) & time > start & time <= min(end, next_dose)
+  if (!any(mask_after)) {
+    return(structure(NA_real_, exclude = "No concentration after the IV bolus dose in the interval"))
+  }
+  conc_after <- conc[mask_after]
+  time_after <- time[mask_after]
+  c0 <- pk.calc.c0(conc = conc_after, time = time_after, time.dose = start, check = FALSE)
+  if (is.na(c0)) {
+    return(structure(NA_real_, exclude = "c0 is not calculated"))
+  }
+  # Both segments come from the same AUXCint function, so they use its time
+  # scale and integration method.  The trough segment interpolates the same
+  # data that `auxc` did, so a warning about that interpolation repeats one
+  # that calculating `auxc` already gave.
+  segment_trough <-
+    withCallingHandlers(
+      fun_auxcint_last(
+        conc = conc, time = time, start = start, end = time_after[1],
+        time.dose = time.dose, route = route, duration.dose = duration.dose,
+        options = options
+      ),
+      pknca_warning_interp_extrap_conc_dose = muffle_warning_condition
+    )
+  segment_c0 <-
+    fun_auxcint_last(
+      conc = c(c0, conc_after[1]), time = c(start, time_after[1]),
+      start = start, end = time_after[1], options = options
+    )
+  auxc - as.numeric(segment_trough) + as.numeric(segment_c0)
+}
+
+# Muffle a warning condition (as a calling handler)
+muffle_warning_condition <- function(cnd) {
+  invokeRestart("muffleWarning")
+}
+
+#' @describeIn pk.calc.auxciv.int Calculate AUC over an interval for IV bolus
+#'   dosing with C0 back-extrapolation
+#' @param auc The AUC over the interval from the AUCint family
+#' @export
+pk.calc.auciv.int <- function(conc, time, start, end, time.dose, route = "extravascular",
+                              duration.dose = 0,
+                              auc, options = list()) {
+  pk.calc.auxciv.int(
+    conc = conc, time = time, start = start, end = end,
+    time.dose = time.dose, route = route, duration.dose = duration.dose,
+    auxc = auc, fun_auxcint_last = pk.calc.aucint.last, options = options
+  )
+}
+
+pknca_concept(pk.calc.auciv.int) <- "auc"
+
+#' @describeIn pk.calc.auxciv.int Calculate AUMC over an interval for IV bolus
+#'   dosing with C0 back-extrapolation
+#' @param aumc The AUMC over the interval from the AUMCint family
+#' @export
+pk.calc.aumciv.int <- function(conc, time, start, end, time.dose, route = "extravascular",
+                               duration.dose = 0,
+                               aumc, options = list()) {
+  pk.calc.auxciv.int(
+    conc = conc, time = time, start = start, end = end,
+    time.dose = time.dose, route = route, duration.dose = duration.dose,
+    auxc = aumc, fun_auxcint_last = pk.calc.aumcint.last, options = options
+  )
+}
+
+pknca_concept(pk.calc.aumciv.int) <- "aumc"
+
 #' Sparse AUC and AUMC for IV bolus dosing with C0 back-extrapolation
 #'
 #' These are the `FUN_sparse` of `aucivlast`, `aucivall`, `aucivinf.obs`,
@@ -252,55 +365,67 @@ add.interval.col(
 
 add.interval.col(
   name = "aucivint.last",
-  FUN = "pk.calc.auciv",
+  FUN = "pk.calc.auciv.int",
   unit_type = "auc",
   pretty_name = "AUCint,last (IV dosing)",
-  depends = c("aucint.last", "c0"),
+  depends = "aucint.last",
   desc = "AUCint,last, IV back-extrap C0",
   sparse = FALSE,
-  formalsmap = list(auc="aucint.last", auc.type=NULL, lambda.z=NULL, clast=NULL),
+  formalsmap = list(auc = "aucint.last", conc = "conc.group", time = "time.group", time.dose = "time.dose.group",
+                    route = "route.group", duration.dose = "duration.dose.group"),
+  # The bolus at the start of the interval makes this IV bolus only
+  selection = list(route = "iv_bolus"),
   pptestcd_cdisc="AUCIVILT",
   pptest_cdisc="AUCint,last (IV dosing)",
-  formula = "$AUC_{\\text{iv,int,last}} = AUC_{\\text{int,last}} + AUC(C_0, t_1) - AUC(C(0), t_1)$")
+  formula = "$AUC_{\\text{iv,int,last}} = AUC_{\\text{int,last}} + AUC(C_0, t_1) - AUC(C_{start}, t_1)$")
 
 add.interval.col(
   name = "aucivint.all",
-  FUN = "pk.calc.auciv",
+  FUN = "pk.calc.auciv.int",
   unit_type = "auc",
   pretty_name = "AUCint,all (IV dosing)",
-  depends = c("aucint.all", "c0"),
+  depends = "aucint.all",
   desc = "AUCint,all, IV back-extrap C0",
   sparse = FALSE,
-  formalsmap = list(auc="aucint.all", auc.type=NULL, lambda.z=NULL, clast=NULL),
+  formalsmap = list(auc = "aucint.all", conc = "conc.group", time = "time.group", time.dose = "time.dose.group",
+                    route = "route.group", duration.dose = "duration.dose.group"),
+  # The bolus at the start of the interval makes this IV bolus only
+  selection = list(route = "iv_bolus"),
   pptestcd_cdisc="AUCIVINA",
   pptest_cdisc="AUCint,all (IV dosing)",
-  formula = "$AUC_{\\text{iv,int,all}} = AUC_{\\text{int,all}} + AUC(C_0, t_1) - AUC(C(0), t_1)$")
+  formula = "$AUC_{\\text{iv,int,all}} = AUC_{\\text{int,all}} + AUC(C_0, t_1) - AUC(C_{start}, t_1)$")
 
 add.interval.col(
   name = "aucivint.inf.obs",
-  FUN = "pk.calc.auciv",
+  FUN = "pk.calc.auciv.int",
   unit_type = "auc",
   pretty_name = "AUCint,inf,obs (IV dosing)",
-  depends = c("aucint.inf.obs", "c0"),
+  depends = "aucint.inf.obs",
   desc = "AUCint,inf,obs, IV back-extrap C0",
   sparse = FALSE,
-  formalsmap = list(auc="aucint.inf.obs", auc.type=NULL, lambda.z=NULL, clast=NULL),
+  formalsmap = list(auc = "aucint.inf.obs", conc = "conc.group", time = "time.group", time.dose = "time.dose.group",
+                    route = "route.group", duration.dose = "duration.dose.group"),
+  # The bolus at the start of the interval makes this IV bolus only
+  selection = list(route = "iv_bolus"),
   pptestcd_cdisc="AUCIVIIO",
   pptest_cdisc="AUCint,inf,obs (IV dosing)",
-  formula = "$AUC_{\\text{iv,int,}\\infty\\text{,obs}} = AUC_{\\text{int,}\\infty\\text{,obs}} + AUC(C_0, t_1) - AUC(C(0), t_1)$")
+  formula = "$AUC_{\\text{iv,int,}\\infty\\text{,obs}} = AUC_{\\text{int,}\\infty\\text{,obs}} + AUC(C_0, t_1) - AUC(C_{start}, t_1)$")
 
 add.interval.col(
   name = "aucivint.inf.pred",
-  FUN = "pk.calc.auciv",
+  FUN = "pk.calc.auciv.int",
   unit_type = "auc",
   pretty_name = "AUCint,inf,pred (IV dosing)",
-  depends = c("aucint.inf.pred", "c0"),
+  depends = "aucint.inf.pred",
   desc = "AUCint,inf,pred, IV back-extrap C0",
   sparse = FALSE,
-  formalsmap = list(auc="aucint.inf.pred", auc.type=NULL, lambda.z=NULL, clast=NULL),
+  formalsmap = list(auc = "aucint.inf.pred", conc = "conc.group", time = "time.group", time.dose = "time.dose.group",
+                    route = "route.group", duration.dose = "duration.dose.group"),
+  # The bolus at the start of the interval makes this IV bolus only
+  selection = list(route = "iv_bolus"),
   pptestcd_cdisc="AUCIVIIP",
   pptest_cdisc="AUCint,inf,pred (IV dosing)",
-  formula = "$AUC_{\\text{iv,int,}\\infty\\text{,pred}} = AUC_{\\text{int,}\\infty\\text{,pred}} + AUC(C_0, t_1) - AUC(C(0), t_1)$")
+  formula = "$AUC_{\\text{iv,int,}\\infty\\text{,pred}} = AUC_{\\text{int,}\\infty\\text{,pred}} + AUC(C_0, t_1) - AUC(C_{start}, t_1)$")
 
 add.interval.col(
   name = "aucivinf.obs",
@@ -598,26 +723,32 @@ add.interval.col(
 
 add.interval.col(
   name = "aumcivint.last",
-  FUN = "pk.calc.aumciv",
+  FUN = "pk.calc.aumciv.int",
   unit_type = "aumc",
   pretty_name = "AUMCint,last (IV dosing)",
-  depends = c("aumcint.last", "c0"),
+  depends = "aumcint.last",
   desc = "AUMCint,last, IV back-extrap C0",
   sparse = FALSE,
-  formalsmap = list(aumc = "aumcint.last", auc.type = NULL, lambda.z = NULL, clast = NULL),
+  formalsmap = list(aumc = "aumcint.last", conc = "conc.group", time = "time.group", time.dose = "time.dose.group",
+                    route = "route.group", duration.dose = "duration.dose.group"),
+  # The bolus at the start of the interval makes this IV bolus only
+  selection = list(route = "iv_bolus"),
   pptestcd_cdisc = "AUMCIVIL",
   pptest_cdisc = "AUMCint,last (IV dosing)"
 )
 
 add.interval.col(
   name = "aumcivint.all",
-  FUN = "pk.calc.aumciv",
+  FUN = "pk.calc.aumciv.int",
   unit_type = "aumc",
   pretty_name = "AUMCint,all (IV dosing)",
-  depends = c("aumcint.all", "c0"),
+  depends = "aumcint.all",
   desc = "AUMCint,all, IV back-extrap C0",
   sparse = FALSE,
-  formalsmap = list(aumc = "aumcint.all", auc.type = NULL, lambda.z = NULL, clast = NULL),
+  formalsmap = list(aumc = "aumcint.all", conc = "conc.group", time = "time.group", time.dose = "time.dose.group",
+                    route = "route.group", duration.dose = "duration.dose.group"),
+  # The bolus at the start of the interval makes this IV bolus only
+  selection = list(route = "iv_bolus"),
   pptestcd_cdisc = "AUMCIVIA",
   pptest_cdisc = "AUMCint,all (IV dosing)"
 )
@@ -674,7 +805,7 @@ add.interval.col(
 
 
 #===============================================================================
-# PKNCA.set.summary - Count: 20
+# PKNCA.set.summary
 # Ordered: base → int (last → all) → inf (obs → pred)
 #===============================================================================
 # Geometric summaries for AUC and AUMC IV

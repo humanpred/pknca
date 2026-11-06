@@ -1140,6 +1140,18 @@ the generated intervals:
 
 ## Bug fixes
 
+* The IV interval AUCs and AUMCs (`aucivint.last`, `aucivint.all`,
+  `aumcivint.last`, `aumcivint.all`, and the new `aucivint.inf.obs` and
+  `aucivint.inf.pred`) are calculated by the new `pk.calc.auciv.int()` and
+  `pk.calc.aumciv.int()`.  They back-extrapolate C0 of the IV bolus that starts
+  the interval from the concentrations after it, and replace the AUCint's
+  first segment (which starts from the trough before the dose) with the one
+  starting from that C0.  Before, they used the `c0` parameter and assumed the
+  interval started from a zero concentration, so an interval starting at a
+  later dose took the predose trough as C0 and gave the AUCint unchanged.  An
+  interval that does not start at an IV bolus now gives `NA` with the reason
+  (@billdenney).
+
 * Running an NCA no longer changes what `get.interval.cols()` returns
   (@billdenney).
 
