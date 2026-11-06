@@ -352,6 +352,30 @@ the generated intervals:
 
 ## New features
 
+* An interval specification whose parameters are not calculated on one basis
+  now gives one classed warning, `pknca_warning_interval_inconsistent_parameters`,
+  from `PKNCAdata()`, `set_intervals()`, and `pk.nca()` (one warning for the
+  whole specification, listing each problem with the number of intervals it
+  affects).  A parameter calculated from an AUC (a clearance, volume, mean
+  residence time, or average concentration, for example) is judged against the
+  other parameters of its interval:  single-dose AUCs mixed with interval AUCs
+  (`aucint.all` with `cav`), AUClast mixed with AUCall (`cl.last` with
+  `vz.all`), AUCinf,obs mixed with AUCinf,pred (`cl.obs` with `vz.pred`), and a
+  parameter that needs a finite interval end (an average concentration, or a
+  parameter that applies only to repeated dosing) requested for an interval
+  that ends at infinity.  The compatible sets are the parameter sets that
+  `pknca_interval_table()` gives for each context, so they follow the
+  registry, including parameters registered by other packages.  AUCs, AUMCs,
+  and their percent extrapolated may be reported on any mixture of bases, and
+  routes and sample types are not judged, because one interval commonly
+  covers both arms of a crossover or plasma and urine (@billdenney).
+* `pknca_interval_table()` has a new `auc_type` argument (`"last"`, the
+  default, or `"all"`) to build an interval on AUCall (`aucall` or
+  `aucint.all` and the parameters calculated from it), and an interval that
+  ends at infinity no longer gets parameters that need a finite end (an
+  average concentration, which would be zero, or a parameter that applies only
+  to repeated dosing) (@billdenney).
+
 * `PKNCAconc()` has a new `frac_unbound` argument: a value or the name of a
   column, greater than 0 and at most 1, with `NA` where fraction unbound does
   not apply (for example, urine).  When it is given, `pk.nca()` calculates the

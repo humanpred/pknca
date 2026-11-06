@@ -15,16 +15,16 @@
 #   which imputation is appropriate, and which parameters must not receive it.
 
 # The AUCs an interval is built on.  A single dose is summarized by the AUC to
-# the last measurable concentration and by the extrapolation to infinity.  A
-# repeated dose is summarized over the interval itself, which needs the
-# concentration at both boundaries, so it uses the AUCint family.
-context_auc_basis <- function(dosing, clast_type) {
+# the last measurable concentration (or AUCall) and by the extrapolation to
+# infinity.  A repeated dose is summarized over the interval itself, which needs
+# the concentration at both boundaries, so it uses the AUCint family.
+context_auc_basis <- function(dosing, clast_type, auc_type = "last") {
   inf_suffix <- paste0("inf.", clast_type)
   ret <-
     if (identical(dosing, "single")) {
-      c("auclast", paste0("auc", inf_suffix))
+      c(paste0("auc", auc_type), paste0("auc", inf_suffix))
     } else {
-      c("aucint.last", paste0("aucint.", inf_suffix))
+      c(paste0("aucint.", auc_type), paste0("aucint.", inf_suffix))
     }
   # The moment curve follows the same basis as the area, so that the mean
   # residence time and the volume at steady state have one to be built on
@@ -60,6 +60,20 @@ pknca_auc_roots <- function() {
       "aucivint.last", "aucivint.all"
     )
   intersect(c(ret, sub("^auc", "aumc", ret)), names(get.interval.cols()))
+}
+
+# The parameters that need an interval with a finite end:  an average
+# concentration over an infinite interval is zero (and so is everything
+# calculated from one), and a parameter that applies only to repeated dosing
+# describes a dosing interval.
+finite_interval_params <- function() {
+  classification <- parameter_classification()
+  params <- names(classification$concept)
+  average <- params[classification$concept %in% "average_conc"]
+  from_average <- unlist(lapply(X = average, FUN = get.parameter.deps))
+  repeated_only <-
+    params[!vapply(X = classification$dosing, FUN = `%in%`, x = "single", FUN.VALUE = TRUE)]
+  sort(unique(c(average, from_average, repeated_only)))
 }
 
 # The imputation an interval needs, assuming it starts at a dose.  An interval
@@ -133,9 +147,10 @@ context_parameters <- function(dosing, route, sample_type, tier, auc_basis) {
     vapply(
       X = params,
       FUN = function(n) {
-        route %in% classification$route[[n]] &&
+        # A NULL route or sample type matches any
+        (is.null(route) || route %in% classification$route[[n]]) &&
           dosing %in% classification$dosing[[n]] &&
-          identical(classification$sample_type[[n]], sample_type) &&
+          (is.null(sample_type) || identical(classification$sample_type[[n]], sample_type)) &&
           !classification$sparse[[n]] &&
           # A secondary parameter needs inputs from another profile, which one
           # interval cannot supply; it is reached by name through `include`
@@ -229,6 +244,10 @@ resolve_selection <- function(x, available, arg_name) {
 #'   [pknca_presets()].  Arguments given explicitly override the preset.
 #' @param clast_type Should the extrapolation to infinity use the observed
 #'   (`"obs"`) or predicted (`"pred"`) last concentration?
+#' @param auc_type Is the AUC over the observations the AUC to the last
+#'   measurable concentration (`"last"`, giving `auclast` or `aucint.last` and
+#'   what follows from it) or AUCall (`"all"`, giving `aucall` or
+#'   `aucint.all`)?
 #' @param ... Columns to add to every row, typically the groups the interval
 #'   applies to.
 #' @returns A data.frame with one or more rows per interval:  `start`, `end`, a
@@ -245,6 +264,11 @@ resolve_selection <- function(x, available, arg_name) {
 #'   the AUCint family, which interpolates at both interval boundaries.  The
 #'   clearance, volume, and mean residence time that follow from that AUC are
 #'   chosen to match.
+#'
+#'   An interval that ends at infinity gets no parameter that needs a finite
+#'   end:  no average concentration (which would be zero) or anything
+#'   calculated from one, and no parameter that applies only to repeated
+#'   dosing.
 #' @seealso [pknca_parameter_table()] for how each parameter is classified,
 #'   [PKNCAdata()], and the vignette "Selection of Calculation Intervals"
 #' @examples
@@ -274,6 +298,7 @@ pknca_interval_table <- function(start, end,
                                  impute = NULL,
                                  preset = NULL,
                                  clast_type = "obs",
+                                 auc_type = "last",
                                  ...) {
   if (!is.null(preset)) {
     args <- pknca_preset_args(preset)
@@ -289,6 +314,7 @@ pknca_interval_table <- function(start, end,
   sample_type <- match.arg(sample_type, choices = pknca_sample_types())
   tier <- match.arg(tier, choices = c("common", "all"))
   clast_type <- match.arg(clast_type, choices = c("obs", "pred"))
+  auc_type <- match.arg(auc_type, choices = c("last", "all"))
   checkmate::assert_flag(sparse)
 
   conflict <- intersect(include, exclude)
@@ -302,7 +328,7 @@ pknca_interval_table <- function(start, end,
     )
   }
 
-  auc_basis <- context_auc_basis(dosing = dosing, clast_type = clast_type)
+  auc_basis <- context_auc_basis(dosing = dosing, clast_type = clast_type, auc_type = auc_type)
   available <-
     context_parameters(
       dosing = dosing, route = route, sample_type = sample_type,
@@ -345,6 +371,9 @@ pknca_interval_table <- function(start, end,
   for (n in names(extra)) {
     long[[n]] <- extra[[n]]
   }
+  # An interval that ends at infinity cannot give a parameter that needs a
+  # finite end
+  long <- long[!(is.infinite(long$end) & long$param %in% finite_interval_params()), , drop = FALSE]
   template <- data.frame(start = interval_starts, end = interval_ends)
   ret <- interval_wider(long, template)
   # An interval with no imputation anywhere does not need the column
