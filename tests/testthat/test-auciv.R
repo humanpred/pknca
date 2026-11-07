@@ -773,6 +773,13 @@ test_that("pk.calc.auciv.int needs an IV bolus at the start of the interval", {
   args_infusion <- args
   args_infusion$duration.dose <- c(0, 1)
   expect_equal(do.call(pk.calc.auciv.int, c(args_infusion, list(route = "intravascular"))), 47)
+  # An IV dose without a duration is neither a known bolus nor a known infusion
+  args_no_duration <- args
+  args_no_duration$duration.dose <- c(0, NA)
+  expect_equal(
+    do.call(pk.calc.auciv.int, c(args_no_duration, list(route = "intravascular"))),
+    structure(NA_real_, exclude = "dose duration is missing")
+  )
   # Without dose times, the bolus cannot be found
   expect_equal(
     do.call(pk.calc.auciv.int, c(modifyList(args, list(time.dose = NA_real_, duration.dose = 0)), list(route = "intravascular"))),
@@ -825,14 +832,20 @@ test_that("aucivint for an interval starting at an IV infusion is the AUCint", {
         dose~time, route = "intravascular", duration = "duration"
       ),
       intervals =
-        data.frame(start = c(0, 12), end = c(12, 24), aucint.last = TRUE, aucivint.last = TRUE, mrt.ivint.last = TRUE)
+        data.frame(
+          start = c(0, 12), end = c(12, 24),
+          aucint.last = TRUE, aumcint.last = TRUE, aucivint.last = TRUE, aumcivint.last = TRUE,
+          mrt.ivint.last = TRUE, vss.ivint.last = TRUE, kel.ivint.last = TRUE
+        )
     )
   r <- as.data.frame(suppressWarnings(pk.nca(o_data)))
+  value_of <- function(param, start) r$PPORRES[r$PPTESTCD == param & r$start == start]
   for (start in c(0, 12)) {
-    expect_equal(
-      r$PPORRES[r$PPTESTCD == "aucivint.last" & r$start == start],
-      r$PPORRES[r$PPTESTCD == "aucint.last" & r$start == start]
-    )
-    expect_true(is.finite(r$PPORRES[r$PPTESTCD == "mrt.ivint.last" & r$start == start]))
+    expect_equal(value_of("aucivint.last", start), value_of("aucint.last", start))
+    expect_equal(value_of("aumcivint.last", start), value_of("aumcint.last", start))
   }
+  # The infusion-capable parameters calculated from them
+  expect_equal(value_of("mrt.ivint.last", 12), 15.7534, tolerance = 1e-5)
+  expect_equal(value_of("vss.ivint.last", 12), 33.4518, tolerance = 1e-5)
+  expect_equal(value_of("kel.ivint.last", 12), 0.063478, tolerance = 1e-4)
 })

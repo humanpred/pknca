@@ -171,6 +171,9 @@ pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extra
   route <- rep_len(route, length(time.dose))
   duration.dose <- rep_len(duration.dose, length(time.dose))
   dose_at_start <- !is.na(time.dose) & time.dose == start & route %in% "intravascular"
+  if (any(dose_at_start & is.na(duration.dose))) {
+    return(structure(NA_real_, exclude = "dose duration is missing"))
+  }
   if (any(dose_at_start & !(duration.dose %in% 0))) {
     # An infusion starts from the concentration before it, which the AUCint
     # already uses, so there is nothing to back-extrapolate

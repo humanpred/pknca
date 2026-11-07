@@ -1150,8 +1150,10 @@ the generated intervals:
   interval started from a zero concentration, so an interval starting at a
   later dose took the predose trough as C0 and gave the AUCint unchanged.  An
   interval that starts at an IV infusion has nothing to back-extrapolate and
-  gives the AUCint, and an interval that does not start at an IV dose gives
-  `NA` with the reason (@billdenney).
+  gives the AUCint (before, an infusion starting at time 0 was
+  back-extrapolated as if it were a bolus, so its IV interval AUC and the MRT,
+  Vss, and Kel from it change), and an interval that does not start at an IV
+  dose gives `NA` with the reason (@billdenney).
 
 * Running an NCA no longer changes what `get.interval.cols()` returns
   (@billdenney).
