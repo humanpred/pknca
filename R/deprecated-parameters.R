@@ -79,8 +79,7 @@ warn_deprecated_renamed_parameters <- function(requested) {
 # The requested deprecated names that are not calculated by a function of their
 # own but given by the calculation of another parameter (as tobit_residual is
 # by half.life)
-deprecated_output_names <- function(requested) {
-  all_intervals <- get.interval.cols()
+deprecated_output_names <- function(requested, all_intervals = get.interval.cols()) {
   old <- intersect(requested, names(deprecated_renamed_parameters))
   old[vapply(X = all_intervals[old], FUN = function(x) is.na(interval_col_fun(x)), FUN.VALUE = TRUE)]
 }

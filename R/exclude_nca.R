@@ -989,13 +989,16 @@ exclude_nca_by_param <- function(
     rlang::abort("if both defined min_thr must be less than max_thr", class = "pknca_error_min_thr_gt_max_thr")
   }
 
+  # A deprecated name gives the same value as the parameter that replaced it,
+  # so the parameter is read under its old name when it was requested only by
+  # that name, and the old names of the affected parameters are affected too
+  parameter_names <- parameter_and_deprecated_names(parameter)
+  affected_names <- unique(unlist(lapply(X = affected_parameters, FUN = parameter_and_deprecated_names)))
   ret_fun <- function(x, ...) {
     ret <- rep(NA_character_, nrow(x))
-    # A deprecated name gives the same value, and is used when the parameter
-    # was requested only by that name
-    found_name <- intersect(parameter_and_deprecated_names(parameter), x$PPTESTCD)[1]
-    idx_param <- which(x$PPTESTCD %in% found_name)
-    idx_aff_params <- which(x$PPTESTCD %in% affected_parameters)
+    found_name <- intersect(parameter_names, x$PPTESTCD)
+    idx_param <- if (length(found_name) == 0) integer(0) else which(x$PPTESTCD == found_name[1])
+    idx_aff_params <- which(x$PPTESTCD %in% affected_names)
 
     if (length(idx_param) > 1) {
       rlang::abort(

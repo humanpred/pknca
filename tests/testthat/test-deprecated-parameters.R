@@ -97,8 +97,26 @@ test_that("exclusion rules read a parameter requested only by a deprecated name"
   excluded_count <-
     as.data.frame(exclude(suppressMessages(pk.nca(o_data_count)), FUN = exclude_nca_count_conc_measured(min_count = 20)))
   expect_equal(excluded_count$exclude[excluded_count$PPTESTCD == "auclast"], "count.conc.measured < 20")
-  # With both names requested, the parameter's own name is read
+  # With both names requested, the parameter's own name is read, and both
+  # rows are excluded
   expect_equal(parameter_and_deprecated_names("count.conc.measured"), c("count.conc.measured", "count_conc_measured"))
+  o_data_both <-
+    suppressWarnings(PKNCAdata(
+      o_conc,
+      intervals = data.frame(start = 0, end = Inf, aucpext.obs = TRUE, aucpext.inf.obs = TRUE, aucinf.obs = TRUE)
+    ))
+  excluded_both <- as.data.frame(exclude(suppressMessages(pk.nca(o_data_both)), FUN = exclude_nca_max.aucinf.pext(20)))
+  expect_equal(
+    excluded_both$exclude[excluded_both$PPTESTCD %in% c("aucpext.obs", "aucpext.inf.obs", "aucinf.obs")],
+    rep("aucpext > 20", 3)
+  )
+  # A rule built on the new name reads, and excludes, a parameter requested
+  # only by its old name
+  result_old <- suppressMessages(pk.nca(o_data_old))
+  excluded_by_param <-
+    as.data.frame(exclude(result_old, FUN = exclude_nca_by_param("aucpext.inf.obs", max_thr = 1)))
+  expect_equal(excluded_by_param$exclude[excluded_by_param$PPTESTCD == "aucpext.obs"], "aucpext.inf.obs > 1")
+  expect_true(is.na(excluded_by_param$exclude[excluded_by_param$PPTESTCD == "aucinf.obs"]))
 })
 
 test_that("each CDISC PPTESTCD code names one PPTEST", {
