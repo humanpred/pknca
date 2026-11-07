@@ -13,8 +13,8 @@ pk.calc.dn <- function(parameter, dose) {
 local({
   for (n in c("auclast", "aucall", "aucinf.obs", "aucinf.pred",
               "aumclast", "aumcall", "aumcinf.obs", "aumcinf.pred",
-              "cmax", "cmin", "clast.obs", "clast.pred", "cav", "cav.last", "ctrough",
-              "clr.last", "clr.obs", "clr.pred")) {
+              "cmax", "cmin", "clast.obs", "clast.pred", "cav.last", "ctrough",
+              "clr.last", "clr.inf.obs", "clr.inf.pred")) {
     current_unit_type <- get.interval.cols()[[n]]$unit_type
     current_pretty_name <- get.interval.cols()[[n]]$pretty_name
     current_pptestcd_cdisc <- get.interval.cols()[[n]]$pptestcd_cdisc
@@ -72,5 +72,14 @@ local({
       description="geometric mean and geometric coefficient of variation",
       point=business.geomean,
       spread=business.geocv)
+  }
+})
+
+# The deprecated parameter names, each registered as a copy of the parameter
+# that replaced it (see deprecated_renamed_parameters).  This comes after every
+# replacement is registered, including the dose-normalized ones above.
+local({
+  for (current_old in names(deprecated_renamed_parameters)) {
+    register_deprecated_parameter(current_old, deprecated_renamed_parameters[[current_old]])
   }
 })

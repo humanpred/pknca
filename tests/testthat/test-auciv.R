@@ -301,8 +301,8 @@ params_352 <-
     "aucivinf.obs", "aucivinf.pred",
     "aumcivlast", "aumcivall", "aumcivint.last", "aumcivint.all",
     "aumcivinf.obs", "aumcivinf.pred",
-    "aucivpbextlast", "aucivpbextall", "aucivpbextint.last",
-    "aucivpbextint.all", "aucivpbextinf.obs", "aucivpbextinf.pred"
+    "aucivpbext.last", "aucivpbext.all", "aucivpbext.int.last",
+    "aucivpbext.int.all", "aucivpbext.inf.obs", "aucivpbext.inf.pred"
   )
 
 nca_352 <- function(d_conc) {
@@ -383,7 +383,7 @@ test_that("the percent back-extrapolated is NA without a time 0 concentration (#
   # AUClast, AUCall, AUCinf,obs, and AUCinf,pred also carry the reason they
   # could not be calculated; the aucint family calculates and does not.
   expect_equal(
-    unname(exclude[c("aucivpbextlast", "aucivpbextall", "aucivpbextinf.obs", "aucivpbextinf.pred")]),
+    unname(exclude[c("aucivpbext.last", "aucivpbext.all", "aucivpbext.inf.obs", "aucivpbext.inf.pred")]),
     rep(
       paste(
         "Requesting an AUC range starting (0) before the first measurement (5) is not allowed",
@@ -394,7 +394,7 @@ test_that("the percent back-extrapolated is NA without a time 0 concentration (#
     )
   )
   expect_equal(
-    unname(exclude[c("aucivpbextint.last", "aucivpbextint.all")]),
+    unname(exclude[c("aucivpbext.int.last", "aucivpbext.int.all")]),
     rep("Percent back-extrapolated requires a measured concentration at time 0", 2)
   )
   # The AUCs that c0 makes calculable are not excluded.
@@ -412,12 +412,12 @@ test_that("a measured zero at time 0 gives the same IV parameters (#352)", {
   # The percent back-extrapolated is calculable only when the AUC without
   # back-extrapolation is.
   with_t0_value <- stats::setNames(with_t0$PPORRES, with_t0$PPTESTCD)
-  expect_equal(unname(with_t0_value["aucivpbextlast"]), 14.62568, tolerance = 1e-6)
-  expect_equal(unname(with_t0_value["aucivpbextall"]), 14.62568, tolerance = 1e-6)
-  expect_equal(unname(with_t0_value["aucivpbextint.last"]), 14.62568, tolerance = 1e-6)
-  expect_equal(unname(with_t0_value["aucivpbextint.all"]), 14.62568, tolerance = 1e-6)
-  expect_equal(unname(with_t0_value["aucivpbextinf.obs"]), 12.75187, tolerance = 1e-6)
-  expect_equal(unname(with_t0_value["aucivpbextinf.pred"]), 12.81940, tolerance = 1e-6)
+  expect_equal(unname(with_t0_value["aucivpbext.last"]), 14.62568, tolerance = 1e-6)
+  expect_equal(unname(with_t0_value["aucivpbext.all"]), 14.62568, tolerance = 1e-6)
+  expect_equal(unname(with_t0_value["aucivpbext.int.last"]), 14.62568, tolerance = 1e-6)
+  expect_equal(unname(with_t0_value["aucivpbext.int.all"]), 14.62568, tolerance = 1e-6)
+  expect_equal(unname(with_t0_value["aucivpbext.inf.obs"]), 12.75187, tolerance = 1e-6)
+  expect_equal(unname(with_t0_value["aucivpbext.inf.pred"]), 12.81940, tolerance = 1e-6)
 })
 
 test_that("pk.calc.auxciv calculates the AUXC from c0 when auxc is NA", {
