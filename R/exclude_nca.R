@@ -85,7 +85,7 @@
 #' my_data <- PKNCAdata(my_conc,
 #'                      intervals=data.frame(start=0, end=Inf,
 #'                                           aucinf.obs=TRUE,
-#'                                           aucpext.obs=TRUE))
+#'                                           aucpext.inf.obs=TRUE))
 #' my_result <- pk.nca(my_data)
 #' my_result_excluded <- exclude(my_result,
 #'                               FUN=exclude_nca_max.aucinf.pext())
@@ -233,13 +233,13 @@ exclude_nca_max.aucinf.pext <- function(max.aucinf.pext) {
   # Exclude for both obs and pred
   exc_obs <-
     exclude_nca_by_param(
-      parameter = "aucpext.obs",
+      parameter = "aucpext.inf.obs",
       max_thr = max.aucinf.pext,
       affected_parameters = get.parameter.deps("aucinf.obs")
     )
   exc_pred <-
     exclude_nca_by_param(
-      parameter = "aucpext.pred",
+      parameter = "aucpext.inf.pred",
       max_thr = max.aucinf.pext,
       affected_parameters = get.parameter.deps("aucinf.pred")
     )
@@ -247,8 +247,8 @@ exclude_nca_max.aucinf.pext <- function(max.aucinf.pext) {
     res_obs <- exc_obs(x, ...)
     res_pred <- exc_pred(x, ...)
     # Combine results, prioritizing non-NA from either
-    is.obs <- grepl(paste0("aucpext.obs > ", max.aucinf.pext), res_obs)
-    is.pred <- grepl(paste0("aucpext.pred > ", max.aucinf.pext), res_pred)
+    is.obs <- grepl(paste0("aucpext.inf.obs > ", max.aucinf.pext), res_obs)
+    is.pred <- grepl(paste0("aucpext.inf.pred > ", max.aucinf.pext), res_pred)
     ret <- ifelse(
       is.obs | is.pred,
       gsub(
@@ -294,7 +294,7 @@ exclude_nca_count_conc_measured <- function(min_count, exclude_param_pattern = c
       )
     )))
   exclude_nca_by_param(
-    parameter = "count_conc_measured",
+    parameter = "count.conc.measured",
     min_thr = min_count,
     affected_parameters = affected_parameters
   )

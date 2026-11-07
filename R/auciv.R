@@ -536,7 +536,7 @@ pk.calc.auciv_pbext <- function(conc, time, auc, auciv, ..., options = list(), c
 pknca_concept(pk.calc.auciv_pbext) <- "auc_extrapolation"
 
 add.interval.col(
-  name = "aucivpbextlast",
+  name = "aucivpbext.last",
   FUN = "pk.calc.auciv_pbext",
   unit_type = "%",
   pretty_name = "AUCbext (based on AUClast)",
@@ -549,7 +549,7 @@ add.interval.col(
   formula = "$\\%AUC_{\\text{bext,last}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{last}}}{AUC_{\\text{iv,last}}}\\right)$")
 
 add.interval.col(
-  name = "aucivpbextall",
+  name = "aucivpbext.all",
   FUN = "pk.calc.auciv_pbext",
   unit_type = "%",
   pretty_name = "AUCbext (based on AUCall)",
@@ -562,7 +562,7 @@ add.interval.col(
   formula = "$\\%AUC_{\\text{bext,all}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{all}}}{AUC_{\\text{iv,all}}}\\right)$")
 
 add.interval.col(
-  name = "aucivpbextint.last",
+  name = "aucivpbext.int.last",
   FUN = "pk.calc.auciv_pbext",
   unit_type = "%",
   pretty_name = "AUCbext (based on AUCint,last)",
@@ -575,7 +575,7 @@ add.interval.col(
   formula = "$\\%AUC_{\\text{bext,int,last}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{int,last}}}{AUC_{\\text{iv,int,last}}}\\right)$")
 
 add.interval.col(
-  name = "aucivpbextint.all",
+  name = "aucivpbext.int.all",
   FUN = "pk.calc.auciv_pbext",
   unit_type = "%",
   pretty_name = "AUCbext (based on AUCint,all)",
@@ -588,7 +588,7 @@ add.interval.col(
   formula = "$\\%AUC_{\\text{bext,int,all}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{int,all}}}{AUC_{\\text{iv,int,all}}}\\right)$")
 
 add.interval.col(
-  name = "aucivpbextinf.obs",
+  name = "aucivpbext.inf.obs",
   FUN = "pk.calc.auciv_pbext",
   unit_type = "%",
   pretty_name = "AUCbext (based on AUCinf,obs)",
@@ -601,7 +601,7 @@ add.interval.col(
   formula = "$\\%AUC_{\\text{bext,}\\infty\\text{,obs}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\infty,\\text{obs}}}{AUC_{\\text{iv,}\\infty\\text{,obs}}}\\right)$")
 
 add.interval.col(
-  name = "aucivpbextinf.pred",
+  name = "aucivpbext.inf.pred",
   FUN = "pk.calc.auciv_pbext",
   unit_type = "%",
   pretty_name = "AUCbext (based on AUCinf,pred)",
@@ -758,6 +758,38 @@ add.interval.col(
 )
 
 add.interval.col(
+  name = "aumcivint.inf.pred",
+  FUN = "pk.calc.aumciv.int",
+  unit_type = "aumc",
+  pretty_name = "AUMCint,inf,pred (IV dosing)",
+  depends = "aumcint.inf.pred",
+  desc = "AUMCint,inf,pred, IV back-extrap C0",
+  sparse = FALSE,
+  formalsmap = list(aumc = "aumcint.inf.pred", conc = "conc.group", time = "time.group", time.dose = "time.dose.group",
+                    route = "route.group", duration.dose = "duration.dose.group"),
+  # The bolus at the start of the interval makes this IV bolus only
+  selection = list(route = "iv_bolus"),
+  pptestcd_cdisc = "AUMCIVIP",
+  pptest_cdisc = "AUMCint,inf,pred (IV dosing)"
+)
+
+add.interval.col(
+  name = "aumcivint.inf.obs",
+  FUN = "pk.calc.aumciv.int",
+  unit_type = "aumc",
+  pretty_name = "AUMCint,inf,obs (IV dosing)",
+  depends = "aumcint.inf.obs",
+  desc = "AUMCint,inf,obs, IV back-extrap C0",
+  sparse = FALSE,
+  formalsmap = list(aumc = "aumcint.inf.obs", conc = "conc.group", time = "time.group", time.dose = "time.dose.group",
+                    route = "route.group", duration.dose = "duration.dose.group"),
+  # The bolus at the start of the interval makes this IV bolus only
+  selection = list(route = "iv_bolus"),
+  pptestcd_cdisc = "AUMCIVIO",
+  pptest_cdisc = "AUMCint,inf,obs (IV dosing)"
+)
+
+add.interval.col(
   name = "aumcivint.all",
   FUN = "pk.calc.aumciv.int",
   unit_type = "aumc",
@@ -833,7 +865,7 @@ PKNCA.set.summary(
   name = c(
     "aucivlast", "aucivall", "aucivint.last", "aucivint.all", "aucivint.inf.obs", "aucivint.inf.pred",
     "aucivinf.obs", "aucivinf.pred",
-    "aumcivlast", "aumcivall", "aumcivint.last", "aumcivint.all", "aumcivinf.obs", "aumcivinf.pred"
+    "aumcivlast", "aumcivall", "aumcivint.last", "aumcivint.inf.pred", "aumcivint.inf.obs", "aumcivint.all", "aumcivinf.obs", "aumcivinf.pred"
   ),
   description = "geometric mean and geometric coefficient of variation",
   point = business.geomean,
@@ -897,7 +929,7 @@ PKNCA.set.summary(
 # Arithmetic summaries for percent back-extrapolation
 PKNCA.set.summary(
   name = c(
-    "aucivpbextlast", "aucivpbextall", "aucivpbextint.last", "aucivpbextint.all", "aucivpbextinf.obs", "aucivpbextinf.pred"
+    "aucivpbext.last", "aucivpbext.all", "aucivpbext.int.last", "aucivpbext.int.all", "aucivpbext.inf.obs", "aucivpbext.inf.pred"
   ),
   description = "arithmetic mean and standard deviation",
   point = business.mean,

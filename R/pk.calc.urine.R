@@ -98,7 +98,72 @@ add.interval.col("clr.last",
                  formula="$CL_{R,\\text{last}} = \\frac{AE}{AUC_{\\text{last}}}$",
                  selection = list(secondary = TRUE))
 
-add.interval.col("clr.obs",
+add.interval.col("clr.int.inf.pred",
+                 FUN="pk.calc.clr",
+                 values=c(FALSE, TRUE),
+                 unit_type="renal_clearance",
+                 pretty_name="Renal clearance (based on AUCint,inf,pred)",
+                 formalsmap=list(auc=pknca_ref("aucint.inf.pred")),
+                 depends="ae",
+                 desc="Renal clearance, AUCint,inf,pred",
+                 pptestcd_cdisc="RENALCL",
+                 pptest_cdisc="Renal CL",
+                 formula="$CL_{R,\\text{last}} = \\frac{AE}{AUC_{\\text{last}}}$",
+                 selection = list(secondary = TRUE))
+
+add.interval.col("clr.int.inf.obs",
+                 FUN="pk.calc.clr",
+                 values=c(FALSE, TRUE),
+                 unit_type="renal_clearance",
+                 pretty_name="Renal clearance (based on AUCint,inf,obs)",
+                 formalsmap=list(auc=pknca_ref("aucint.inf.obs")),
+                 depends="ae",
+                 desc="Renal clearance, AUCint,inf,obs",
+                 pptestcd_cdisc="RENALCL",
+                 pptest_cdisc="Renal CL",
+                 formula="$CL_{R,\\text{last}} = \\frac{AE}{AUC_{\\text{last}}}$",
+                 selection = list(secondary = TRUE))
+
+add.interval.col("clr.int.all",
+                 FUN="pk.calc.clr",
+                 values=c(FALSE, TRUE),
+                 unit_type="renal_clearance",
+                 pretty_name="Renal clearance (based on AUCint,all)",
+                 formalsmap=list(auc=pknca_ref("aucint.all")),
+                 depends="ae",
+                 desc="Renal clearance, AUCint,all",
+                 pptestcd_cdisc="RENALCL",
+                 pptest_cdisc="Renal CL",
+                 formula="$CL_{R,\\text{last}} = \\frac{AE}{AUC_{\\text{last}}}$",
+                 selection = list(secondary = TRUE))
+
+add.interval.col("clr.int.last",
+                 FUN="pk.calc.clr",
+                 values=c(FALSE, TRUE),
+                 unit_type="renal_clearance",
+                 pretty_name="Renal clearance (based on AUCint,last)",
+                 formalsmap=list(auc=pknca_ref("aucint.last")),
+                 depends="ae",
+                 desc="Renal clearance, AUCint,last",
+                 pptestcd_cdisc="RENALCL",
+                 pptest_cdisc="Renal CL",
+                 formula="$CL_{R,\\text{last}} = \\frac{AE}{AUC_{\\text{last}}}$",
+                 selection = list(secondary = TRUE))
+
+add.interval.col("clr.all",
+                 FUN="pk.calc.clr",
+                 values=c(FALSE, TRUE),
+                 unit_type="renal_clearance",
+                 pretty_name="Renal clearance (based on AUCall)",
+                 formalsmap=list(auc=pknca_ref("aucall")),
+                 depends="ae",
+                 desc="Renal clearance, AUCall",
+                 pptestcd_cdisc="RENALCL",
+                 pptest_cdisc="Renal CL",
+                 formula="$CL_{R,\\text{last}} = \\frac{AE}{AUC_{\\text{last}}}$",
+                 selection = list(secondary = TRUE))
+
+add.interval.col("clr.inf.obs",
                  FUN="pk.calc.clr",
                  values=c(FALSE, TRUE),
                  unit_type="renal_clearance",
@@ -112,7 +177,7 @@ add.interval.col("clr.obs",
                  tier = "common",
                  selection = list(secondary = TRUE))
 
-add.interval.col("clr.pred",
+add.interval.col("clr.inf.pred",
                  FUN="pk.calc.clr",
                  values=c(FALSE, TRUE),
                  unit_type="renal_clearance",
@@ -402,7 +467,7 @@ add.interval.col("erlst",
                  formula_note="The last collection with a nonzero excretion rate, ordered by collection midpoint")
 
 PKNCA.set.summary(
-  name = c("volpk", "ae", "clr.last", "clr.obs", "clr.pred", "fe", "ermax", "erint", "erlst"),
+  name = c("volpk", "ae", "clr.last", "clr.int.inf.pred", "clr.int.inf.obs", "clr.int.all", "clr.int.last", "clr.all", "clr.inf.obs", "clr.inf.pred", "fe", "ermax", "erint", "erlst"),
   description = "geometric mean and geometric coefficient of variation",
   point = business.geomean,
   spread = business.geocv
