@@ -76,6 +76,21 @@ warn_deprecated_renamed_parameters <- function(requested) {
   )
 }
 
+# The requested deprecated names that are not calculated by a function of their
+# own but given by the calculation of another parameter (as tobit_residual is
+# by half.life)
+deprecated_output_names <- function(requested) {
+  all_intervals <- get.interval.cols()
+  old <- intersect(requested, names(deprecated_renamed_parameters))
+  old[vapply(X = all_intervals[old], FUN = function(x) is.na(interval_col_fun(x)), FUN.VALUE = TRUE)]
+}
+
+# The names an exclusion rule looks a parameter up by:  the parameter, then the
+# deprecated names that it replaced, which give the same value
+parameter_and_deprecated_names <- function(parameter) {
+  c(parameter, names(deprecated_renamed_parameters)[deprecated_renamed_parameters %in% parameter])
+}
+
 # Register a deprecated parameter name as a copy of the parameter that
 # replaced it, with the same summary.  The tier is left at "uncommon" so that
 # the profile selector does not offer a deprecated name among the common ones.

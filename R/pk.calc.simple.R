@@ -361,8 +361,8 @@ add.interval.col("thalf.eff.int.inf.pred",
                  formalsmap=list(mrt="mrt.int.inf.pred"),
                  depends="mrt.int.inf.pred",
                  pptestcd_cdisc="EFFIPHL",
-                 pptest_cdisc="Effective Half-Life (based on AUClast)",
-                 formula="$t_{1/2,\\text{eff,last}} = \\ln(2) \\cdot MRT_{\\text{last}}$")
+                 pptest_cdisc="Effective HL (based on AUCint,inf,pred)",
+                 formula="$t_{1/2,\\text{eff,int,inf,pred}} = \\ln(2) \\cdot MRT_{\\text{int,inf,pred}}$")
 
 add.interval.col("thalf.eff.int.inf.obs",
                  FUN="pk.calc.thalf.eff",
@@ -373,8 +373,8 @@ add.interval.col("thalf.eff.int.inf.obs",
                  formalsmap=list(mrt="mrt.int.inf.obs"),
                  depends="mrt.int.inf.obs",
                  pptestcd_cdisc="EFFIOHL",
-                 pptest_cdisc="Effective Half-Life (based on AUClast)",
-                 formula="$t_{1/2,\\text{eff,last}} = \\ln(2) \\cdot MRT_{\\text{last}}$")
+                 pptest_cdisc="Effective HL (based on AUCint,inf,obs)",
+                 formula="$t_{1/2,\\text{eff,int,inf,obs}} = \\ln(2) \\cdot MRT_{\\text{int,inf,obs}}$")
 
 add.interval.col("thalf.eff.int.all",
                  FUN="pk.calc.thalf.eff",
@@ -385,8 +385,8 @@ add.interval.col("thalf.eff.int.all",
                  formalsmap=list(mrt="mrt.int.all"),
                  depends="mrt.int.all",
                  pptestcd_cdisc="EFFIAHL",
-                 pptest_cdisc="Effective Half-Life (based on AUClast)",
-                 formula="$t_{1/2,\\text{eff,last}} = \\ln(2) \\cdot MRT_{\\text{last}}$")
+                 pptest_cdisc="Effective HL (based on AUCint,all)",
+                 formula="$t_{1/2,\\text{eff,int,all}} = \\ln(2) \\cdot MRT_{\\text{int,all}}$")
 
 add.interval.col("thalf.eff.int.last",
                  FUN="pk.calc.thalf.eff",
@@ -397,8 +397,8 @@ add.interval.col("thalf.eff.int.last",
                  formalsmap=list(mrt="mrt.int.last"),
                  depends="mrt.int.last",
                  pptestcd_cdisc="EFFILHL",
-                 pptest_cdisc="Effective Half-Life (based on AUClast)",
-                 formula="$t_{1/2,\\text{eff,last}} = \\ln(2) \\cdot MRT_{\\text{last}}$")
+                 pptest_cdisc="Effective HL (based on AUCint,last)",
+                 formula="$t_{1/2,\\text{eff,int,last}} = \\ln(2) \\cdot MRT_{\\text{int,last}}$")
 
 add.interval.col("thalf.eff.all",
                  FUN="pk.calc.thalf.eff",
@@ -409,8 +409,8 @@ add.interval.col("thalf.eff.all",
                  formalsmap=list(mrt="mrt.all"),
                  depends="mrt.all",
                  pptestcd_cdisc="EFFAHL",
-                 pptest_cdisc="Effective Half-Life (based on AUClast)",
-                 formula="$t_{1/2,\\text{eff,last}} = \\ln(2) \\cdot MRT_{\\text{last}}$")
+                 pptest_cdisc="Effective Half-Life (based on AUCall)",
+                 formula="$t_{1/2,\\text{eff,all}} = \\ln(2) \\cdot MRT_{\\text{all}}$")
 
 add.interval.col("thalf.eff.iv.inf.obs",
                  FUN="pk.calc.thalf.eff",
@@ -457,8 +457,8 @@ add.interval.col("thalf.eff.ivint.inf.pred",
                  formalsmap=list(mrt="mrt.ivint.inf.pred"),
                  depends="mrt.ivint.inf.pred",
                  pptestcd_cdisc="EFFWPHL",
-                 pptest_cdisc="Effective HL (IV dosing, MRT last)",
-                 formula="$t_{1/2,\\text{eff,iv,last}} = \\ln(2) \\cdot MRT_{\\text{iv,last}}$")
+                 pptest_cdisc="Effective HL (IV, MRTint,inf,pred)",
+                 formula="$t_{1/2,\\text{eff,iv,int,inf,pred}} = \\ln(2) \\cdot MRT_{\\text{iv,int,inf,pred}}$")
 
 add.interval.col("thalf.eff.ivint.inf.obs",
                  FUN="pk.calc.thalf.eff",
@@ -469,8 +469,8 @@ add.interval.col("thalf.eff.ivint.inf.obs",
                  formalsmap=list(mrt="mrt.ivint.inf.obs"),
                  depends="mrt.ivint.inf.obs",
                  pptestcd_cdisc="EFFWOHL",
-                 pptest_cdisc="Effective HL (IV dosing, MRT last)",
-                 formula="$t_{1/2,\\text{eff,iv,last}} = \\ln(2) \\cdot MRT_{\\text{iv,last}}$")
+                 pptest_cdisc="Effective HL (IV, MRTint,inf,obs)",
+                 formula="$t_{1/2,\\text{eff,iv,int,inf,obs}} = \\ln(2) \\cdot MRT_{\\text{iv,int,inf,obs}}$")
 
 add.interval.col("thalf.eff.ivint.all",
                  FUN="pk.calc.thalf.eff",
@@ -481,8 +481,8 @@ add.interval.col("thalf.eff.ivint.all",
                  formalsmap=list(mrt="mrt.ivint.all"),
                  depends="mrt.ivint.all",
                  pptestcd_cdisc="EFFWAHL",
-                 pptest_cdisc="Effective HL (IV dosing, MRT last)",
-                 formula="$t_{1/2,\\text{eff,iv,last}} = \\ln(2) \\cdot MRT_{\\text{iv,last}}$")
+                 pptest_cdisc="Effective HL (IV, MRTint,all)",
+                 formula="$t_{1/2,\\text{eff,iv,int,all}} = \\ln(2) \\cdot MRT_{\\text{iv,int,all}}$")
 
 add.interval.col("thalf.eff.ivint.last",
                  FUN="pk.calc.thalf.eff",
@@ -493,8 +493,8 @@ add.interval.col("thalf.eff.ivint.last",
                  formalsmap=list(mrt="mrt.ivint.last"),
                  depends="mrt.ivint.last",
                  pptestcd_cdisc="EFFWLHL",
-                 pptest_cdisc="Effective HL (IV dosing, MRT last)",
-                 formula="$t_{1/2,\\text{eff,iv,last}} = \\ln(2) \\cdot MRT_{\\text{iv,last}}$")
+                 pptest_cdisc="Effective HL (IV, MRTint,last)",
+                 formula="$t_{1/2,\\text{eff,iv,int,last}} = \\ln(2) \\cdot MRT_{\\text{iv,int,last}}$")
 
 add.interval.col("thalf.eff.iv.all",
                  FUN="pk.calc.thalf.eff",
@@ -505,8 +505,8 @@ add.interval.col("thalf.eff.iv.all",
                  formalsmap=list(mrt="mrt.iv.all"),
                  depends="mrt.iv.all",
                  pptestcd_cdisc="EFFIVAHL",
-                 pptest_cdisc="Effective HL (IV dosing, MRT last)",
-                 formula="$t_{1/2,\\text{eff,iv,last}} = \\ln(2) \\cdot MRT_{\\text{iv,last}}$")
+                 pptest_cdisc="Effective HL (IV dosing, MRT all)",
+                 formula="$t_{1/2,\\text{eff,iv,all}} = \\ln(2) \\cdot MRT_{\\text{iv,all}}$")
 
 
 #' Calculate the AUC percent extrapolated
@@ -1023,7 +1023,7 @@ add.interval.col("cl.ivint.inf.pred",
                  depends = "aucivint.inf.pred",
                  pptestcd_cdisc = "CLWP",
                  pptest_cdisc = "CL (IV dose interval, AUCint,inf,pred)",
-                 formula = "$CL_{\\text{iv,int,last}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,int,last}}}$")
+                 formula = "$CL_{\\text{iv,int,inf,pred}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,int,inf,pred}}}$")
 
 add.interval.col("cl.ivint.inf.obs",
                  FUN = "pk.calc.cl",
@@ -1035,7 +1035,7 @@ add.interval.col("cl.ivint.inf.obs",
                  depends = "aucivint.inf.obs",
                  pptestcd_cdisc = "CLWO",
                  pptest_cdisc = "CL (IV dose interval, AUCint,inf,obs)",
-                 formula = "$CL_{\\text{iv,int,last}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,int,last}}}$")
+                 formula = "$CL_{\\text{iv,int,inf,obs}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,int,inf,obs}}}$")
 
 add.interval.col("cl.sparse.last",
                  FUN = NA,
@@ -1139,7 +1139,7 @@ add.interval.col("f.all",
                  depends=c("totdose", "aucall"),
                  pptestcd_cdisc="FAB",
                  pptest_cdisc="Absolute Bioavailability",
-                 formula="$F = \\frac{AUC_{last,2} / Dose_2}{AUC_{last,1} / Dose_1}$",
+                 formula="$F = \\frac{AUC_{all,2} / Dose_2}{AUC_{all,1} / Dose_1}$",
                  selection = list(secondary = TRUE))
 
 add.interval.col("f.int.last",
@@ -1737,7 +1737,7 @@ add.interval.col("vz.ivint.inf.pred",
                  depends = c("cl.ivint.inf.pred", "lambda.z"),
                  pptestcd_cdisc = "VZWP",
                  pptest_cdisc = "Vz (IV dose interval, AUCint,inf,pred)",
-                 formula = "$V_{z,\\text{iv,int,last}} = \\frac{CL_{\\text{iv,int,last}}}{\\lambda_z}$")
+                 formula = "$V_{z,\\text{iv,int,inf,pred}} = \\frac{CL_{\\text{iv,int,inf,pred}}}{\\lambda_z}$")
 
 add.interval.col("vz.ivint.inf.obs",
                  FUN = "pk.calc.vz",
@@ -1749,7 +1749,7 @@ add.interval.col("vz.ivint.inf.obs",
                  depends = c("cl.ivint.inf.obs", "lambda.z"),
                  pptestcd_cdisc = "VZWO",
                  pptest_cdisc = "Vz (IV dose interval, AUCint,inf,obs)",
-                 formula = "$V_{z,\\text{iv,int,last}} = \\frac{CL_{\\text{iv,int,last}}}{\\lambda_z}$")
+                 formula = "$V_{z,\\text{iv,int,inf,obs}} = \\frac{CL_{\\text{iv,int,inf,obs}}}{\\lambda_z}$")
 
 add.interval.col("vz.last",
                  FUN = "pk.calc.vz",

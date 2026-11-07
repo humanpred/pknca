@@ -772,7 +772,7 @@ add.interval.col(
                     route = "route.group", duration.dose = "duration.dose.group"),
   # The bolus at the start of the interval makes this IV bolus only
   selection = list(route = "iv_bolus"),
-  pptestcd_cdisc = "AUMCIVIP",
+  pptestcd_cdisc = "AUMIVIIP",
   pptest_cdisc = "AUMCint,inf,pred (IV dosing)"
 )
 
@@ -788,7 +788,7 @@ add.interval.col(
                     route = "route.group", duration.dose = "duration.dose.group"),
   # The bolus at the start of the interval makes this IV bolus only
   selection = list(route = "iv_bolus"),
-  pptestcd_cdisc = "AUMCIVIO",
+  pptestcd_cdisc = "AUMIVIIO",
   pptest_cdisc = "AUMCint,inf,obs (IV dosing)"
 )
 

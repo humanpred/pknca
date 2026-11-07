@@ -108,7 +108,7 @@ add.interval.col("clr.int.inf.pred",
                  desc="Renal clearance, AUCint,inf,pred",
                  pptestcd_cdisc="RENALCL",
                  pptest_cdisc="Renal CL",
-                 formula="$CL_{R,\\text{last}} = \\frac{AE}{AUC_{\\text{last}}}$",
+                 formula="$CL_{R,\\text{int,inf,pred}} = \\frac{AE}{AUC_{\\text{int,inf,pred}}}$",
                  selection = list(secondary = TRUE))
 
 add.interval.col("clr.int.inf.obs",
@@ -121,7 +121,7 @@ add.interval.col("clr.int.inf.obs",
                  desc="Renal clearance, AUCint,inf,obs",
                  pptestcd_cdisc="RENALCL",
                  pptest_cdisc="Renal CL",
-                 formula="$CL_{R,\\text{last}} = \\frac{AE}{AUC_{\\text{last}}}$",
+                 formula="$CL_{R,\\text{int,inf,obs}} = \\frac{AE}{AUC_{\\text{int,inf,obs}}}$",
                  selection = list(secondary = TRUE))
 
 add.interval.col("clr.int.all",
@@ -134,7 +134,7 @@ add.interval.col("clr.int.all",
                  desc="Renal clearance, AUCint,all",
                  pptestcd_cdisc="RENALCL",
                  pptest_cdisc="Renal CL",
-                 formula="$CL_{R,\\text{last}} = \\frac{AE}{AUC_{\\text{last}}}$",
+                 formula="$CL_{R,\\text{int,all}} = \\frac{AE}{AUC_{\\text{int,all}}}$",
                  selection = list(secondary = TRUE))
 
 add.interval.col("clr.int.last",
@@ -147,7 +147,7 @@ add.interval.col("clr.int.last",
                  desc="Renal clearance, AUCint,last",
                  pptestcd_cdisc="RENALCL",
                  pptest_cdisc="Renal CL",
-                 formula="$CL_{R,\\text{last}} = \\frac{AE}{AUC_{\\text{last}}}$",
+                 formula="$CL_{R,\\text{int,last}} = \\frac{AE}{AUC_{\\text{int,last}}}$",
                  selection = list(secondary = TRUE))
 
 add.interval.col("clr.all",
@@ -160,7 +160,7 @@ add.interval.col("clr.all",
                  desc="Renal clearance, AUCall",
                  pptestcd_cdisc="RENALCL",
                  pptest_cdisc="Renal CL",
-                 formula="$CL_{R,\\text{last}} = \\frac{AE}{AUC_{\\text{last}}}$",
+                 formula="$CL_{R,\\text{all}} = \\frac{AE}{AUC_{\\text{all}}}$",
                  selection = list(secondary = TRUE))
 
 add.interval.col("clr.inf.obs",

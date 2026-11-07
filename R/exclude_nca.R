@@ -991,7 +991,10 @@ exclude_nca_by_param <- function(
 
   ret_fun <- function(x, ...) {
     ret <- rep(NA_character_, nrow(x))
-    idx_param <- which(x$PPTESTCD == parameter)
+    # A deprecated name gives the same value, and is used when the parameter
+    # was requested only by that name
+    found_name <- intersect(parameter_and_deprecated_names(parameter), x$PPTESTCD)[1]
+    idx_param <- which(x$PPTESTCD %in% found_name)
     idx_aff_params <- which(x$PPTESTCD %in% affected_parameters)
 
     if (length(idx_param) > 1) {
