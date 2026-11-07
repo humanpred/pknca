@@ -13,7 +13,7 @@ pk.calc.dn <- function(parameter, dose) {
 local({
   for (n in c("auclast", "aucall", "aucinf.obs", "aucinf.pred",
               "aumclast", "aumcall", "aumcinf.obs", "aumcinf.pred",
-              "cmax", "cmin", "clast.obs", "clast.pred", "cav", "ctrough",
+              "cmax", "cmin", "clast.obs", "clast.pred", "cav", "cav.last", "ctrough",
               "clr.last", "clr.obs", "clr.pred")) {
     current_unit_type <- get.interval.cols()[[n]]$unit_type
     current_pretty_name <- get.interval.cols()[[n]]$pretty_name
