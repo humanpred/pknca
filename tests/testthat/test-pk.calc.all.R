@@ -1448,7 +1448,10 @@ test_that("pk.nca can be run for each parameter independently (#473)", {
   
   # ── Test dense params with dense data ────────────────────────────────────
   for (param in dense_params) {
-    intervals_with_param <- intervals_dense
+    # A parameter that needs a finite interval end is requested only on the
+    # interval that has one
+    intervals_with_param <-
+      intervals_dense[!(param %in% finite_interval_params() & is.infinite(intervals_dense$end)), ]
     intervals_with_param[[param]] <- TRUE
     o_data <- PKNCAdata(o_conc_dense, o_dose_dense,
                         intervals = intervals_with_param)

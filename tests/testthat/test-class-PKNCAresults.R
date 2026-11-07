@@ -237,24 +237,29 @@ test_that("exclude values are maintained in derived parameters during automatic 
 test_that("ctrough is correctly calculated", {
   my_conc <- data.frame(time=0:6, conc=2^(0:-6), subject=1)
   conc_obj <- PKNCAconc(my_conc, conc~time|subject)
-  data_obj <-
-    PKNCAdata(
-      data.conc=conc_obj,
-      intervals=
-        data.frame(
-          start=0,
-          end=c(6, Inf),
-          ctrough=TRUE
-        )
-    )
+  # The trough at an infinite end is NA, which the interval check points out
+  expect_warning(
+    data_obj <-
+      PKNCAdata(
+        data.conc=conc_obj,
+        intervals=
+          data.frame(
+            start=0,
+            end=c(6, Inf),
+            ctrough=TRUE
+          )
+      ),
+    class = "pknca_warning_interval_inconsistent_parameters"
+  )
   # ctrough is calculated from conc and time alone (#538)
   expect_no_message(
-    expect_equal(
-      as.data.frame(pk.nca(data_obj))$PPORRES,
-      c(2^-6, NA_real_)
+    expect_warning(
+      results <- pk.nca(data_obj),
+      class = "pknca_warning_interval_inconsistent_parameters"
     ),
     class="pknca_message_missing_dose"
   )
+  expect_equal(as.data.frame(results)$PPORRES, c(2^-6, NA_real_))
 })
 
 test_that("single subject, ungrouped data works (#74)", {

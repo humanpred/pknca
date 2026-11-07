@@ -456,13 +456,12 @@ summary(o_nca_update)
 Only the participants whose concentration data changed are recalculated;
 results for all other participants are carried over unchanged.
 
-Now, assume that instead of calculating `auclast` from time 0 to 24, we want to
-calculate `aucint.inf.obs`. We can change the intervals to create a new
-`PKNCAdata` object:
+Now, assume that instead of calculating `auclast`, we want to calculate
+`aucall`. We can change the intervals to create a new `PKNCAdata` object:
 
 ```{r update-example-newdata}
 d_intervals <- o_data$intervals
-d_intervals$aucint.inf.obs <- d_intervals$auclast
+d_intervals$aucall <- d_intervals$auclast
 d_intervals$auclast <- FALSE
 o_data_update <- PKNCAdata(o_conc, o_dose, intervals = d_intervals)
 ```
