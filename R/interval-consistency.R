@@ -1,30 +1,39 @@
 # Whether the parameters an interval requests are calculated on one basis
 #
-# pknca_interval_table() chooses the parameters of an interval from its context:
-# a single dose uses AUClast (or AUCall) and the extrapolation to infinity with
-# the observed (or predicted) last concentration, a repeated dose uses the
-# AUCint family on the same choices, and an interval that ends at infinity has
-# no parameter that needs a finite end.  The parameters that one context can
-# give together are consistent with each other.  An interval specification that
-# requests parameters no context gives together mixes bases:  AUCint,all with a
-# clearance from AUClast, say, or a clearance from AUCinf,obs with a volume from
-# AUCinf,pred.
+# pknca_interval_table() builds an interval on one set of AUCs (see
+# context_auc_basis()):  a single dose on AUClast (or AUCall) and the
+# extrapolation to infinity with the observed (or predicted) last
+# concentration, and a repeated dose on the AUCint family with the same
+# choices.  A parameter calculated from AUCs is on a basis when an AUC it is
+# calculated from is in that basis (as pknca_interval_table() chooses them; the
+# percent extrapolated is calculated from AUClast and AUCinf, for example), and
+# two parameters are consistent when one basis holds both.  So `aucint.all` (a repeated-dose basis with AUCall) and
+# `cav` (calculated from AUClast) are not, nor are `cl.obs` (AUCinf,obs) and
+# `vz.pred` (AUCinf,pred).  The multiple-dose mean residence time is calculated
+# from the single-dose AUCs, so it is consistent with them.
 #
-# The route and the sample type are not judged:  one interval commonly applies
-# to IV and oral groups of a crossover, or to plasma and urine, and each
-# parameter is only calculated for the profiles it applies to.
+# The AUCs and AUMCs, and their percent extrapolated (the AUC reports), are not
+# judged against each other, because reporting AUClast with AUCall, or
+# AUCinf,obs with AUCinf,pred, is common; for the same reason, an AUC report is
+# judged against a parameter calculated from AUCs only on whether they are
+# single-dose or interval AUCs and AUClast or AUCall, not on AUCinf,obs or
+# AUCinf,pred.  A parameter calculated from no AUC (Cmax, Ctrough, the swing) is
+# consistent with every basis, and so, as pknca_interval_table() treats them,
+# is a parameter that applies only to repeated dosing:  the multiple-dose mean
+# residence time combines the AUC over the dosing interval with the
+# extrapolation to infinity by its definition.  The route and the sample type are
+# not judged:  one interval commonly applies to IV and oral groups of a
+# crossover, or to plasma and urine, and each parameter is only calculated for
+# the profiles it applies to.
 #
-# Nor are the AUCs and AUMCs, and their percent extrapolated, judged against
-# each other:  reporting AUClast with AUCall, or AUCinf,obs with AUCinf,pred, is
-# common.  What is judged is a parameter calculated from an AUC (a clearance,
-# volume, mean residence time, or average concentration, say) against every
-# other parameter of the interval.
+# Every requested parameter is also judged against the end of its interval:  a
+# parameter that needs a finite end (see finite_interval_params()) cannot be
+# requested for an interval that ends at infinity.
 
 # The concepts of the AUC reports, which are not judged against each other
 auc_report_concepts <- c("auc", "aumc", "auc_extrapolation")
 
-# The dimensions of a context that decide the basis of its parameters, with how
-# a mixture of their values is described
+# How a mixture of the values of each dimension of the basis is described
 consistency_dimensions <-
   c(
     dosing = "single-dose AUCs (AUClast, AUCall, AUCinf) mixed with interval AUCs (AUCint)",
@@ -33,146 +42,139 @@ consistency_dimensions <-
     end = "a parameter that needs a finite interval end"
   )
 
-# The parameter set of each context, with the context's values of the
-# dimensions.  Cached, and dropped when the registry changes, because it is
-# built from the whole classification.
+# The most problems listed in one warning
+max_consistency_problems <- 20
+
+# The IV bolus AUC (or AUMC) that back-extrapolates the given one, when
+# registered:  auclast -> aucivlast, aucint.inf.obs -> aucivint.inf.obs
+auc_iv_counterpart <- function(x) {
+  intersect(sub("^au(m?)c", "au\\1civ", x), names(get.interval.cols()))
+}
+
+# The AUC bases, which parameters fit each, and which parameters are judged.
+# Cached, and dropped when the registry changes, because it is built from the
+# whole registry.
 interval_consistent_sets <- function() {
   key <- names(get.interval.cols())
   cached <- get0("interval_consistent_sets", envir = .PKNCAEnv)
   if (!is.null(cached) && identical(cached$key, key)) {
     return(cached$value)
   }
-  contexts <-
+  bases <-
     expand.grid(
-      dosing = pknca_dosing(),
+      dosing = c("single", "multiple"),
       auc_type = c("last", "all"),
       clast_type = c("obs", "pred"),
-      end = c("finite", "infinite"),
       stringsAsFactors = FALSE
     )
-  finite_only <- finite_interval_params()
-  sets <-
+  basis_aucs <-
     lapply(
-      X = seq_len(nrow(contexts)),
-      FUN = consistent_set_for_context,
-      contexts = contexts,
-      finite_only = finite_only
+      X = seq_len(nrow(bases)),
+      FUN = basis_aucs_for,
+      bases = bases
     )
-  value <- list(contexts = contexts, sets = sets, governed = sort(unique(unlist(sets))))
+  # The AUCs each parameter is calculated from (an AUC is calculated from
+  # itself)
+  families <- auc_basis_families()
+  params <- sort(unique(unlist(families)))
+  aucs_of <- stats::setNames(vector("list", length(params)), params)
+  for (root in names(families)) {
+    for (p in families[[root]]) {
+      aucs_of[[p]] <- c(aucs_of[[p]], root)
+    }
+  }
+  # Which bases hold an AUC of each parameter
+  fits <- matrix(FALSE, nrow = length(params), ncol = nrow(bases), dimnames = list(params, NULL))
+  for (p in params) {
+    for (i in seq_len(nrow(bases))) {
+      fits[p, i] <- any(aucs_of[[p]] %in% basis_aucs[[i]])
+    }
+  }
+  # A parameter that applies only to repeated dosing is not judged (see above)
+  classification <- parameter_classification()
+  repeated_only <-
+    params[!vapply(X = classification$dosing[params], FUN = `%in%`, x = "single", FUN.VALUE = TRUE)]
+  judged <- setdiff(params[rowSums(fits) > 0], repeated_only)
+  fits <- fits[judged, , drop = FALSE]
+  # Which bases each parameter fits when AUCinf,obs and AUCinf,pred are not
+  # told apart
+  basis_without_clast <- paste(bases$dosing, bases$auc_type)
+  fits_without_clast <-
+    vapply(
+      X = unique(basis_without_clast),
+      FUN = fits_any_basis,
+      fits = fits, basis_group = basis_without_clast,
+      FUN.VALUE = logical(length(judged))
+    )
+  fits_without_clast <- matrix(fits_without_clast, nrow = length(judged), dimnames = list(judged, NULL))
+  value <-
+    list(
+      bases = bases,
+      fits = fits,
+      compatible = tcrossprod(fits * 1) > 0,
+      compatible_with_report = tcrossprod(fits_without_clast * 1) > 0,
+      judged = judged,
+      is_report = stats::setNames(classification$concept[judged] %in% auc_report_concepts, judged),
+      finite_only = finite_interval_params()
+    )
   assign("interval_consistent_sets", list(key = key, value = value), envir = .PKNCAEnv)
   value
 }
 
-# The parameters pknca_interval_table() can give for one context, over every
-# route and sample type
-consistent_set_for_context <- function(i, contexts, finite_only) {
-  auc_basis <-
-    context_auc_basis(
-      dosing = contexts$dosing[i], clast_type = contexts$clast_type[i],
-      auc_type = contexts$auc_type[i]
-    )
+# Whether each parameter fits any basis in one group of bases
+fits_any_basis <- function(group, fits, basis_group) {
+  rowSums(fits[, basis_group == group, drop = FALSE]) > 0
+}
+
+# The AUCs and AUMCs of one basis, with their IV bolus counterparts
+basis_aucs_for <- function(i, bases) {
   ret <-
-    context_parameters(
-      dosing = contexts$dosing[i], route = NULL, sample_type = NULL,
-      tier = "all", auc_basis = auc_basis
+    context_auc_basis(
+      dosing = bases$dosing[i], clast_type = bases$clast_type[i], auc_type = bases$auc_type[i]
     )
-  if (contexts$end[i] == "infinite") {
-    ret <- setdiff(ret, finite_only)
-  }
-  sort(ret)
+  ret <- intersect(ret, names(get.interval.cols()))
+  c(ret, auc_iv_counterpart(ret))
 }
 
-# Every parameter that the requested parameters are calculated from, so that
-# requesting a parameter together with its own inputs is never a mixture (the
-# degree of fluctuation is calculated from Cav, for example)
-interval_param_inputs <- function(params, all_intervals) {
+# The problems with the parameters of one interval, as text
+interval_param_problems <- function(params, infinite_end, consistent) {
   ret <- character()
-  current <- params
-  while (length(current) > 0) {
-    deps <- unlist(lapply(X = all_intervals[current], FUN = `[[`, "depends"))
-    current <- setdiff(deps, ret)
-    ret <- union(ret, current)
-  }
-  ret
-}
-
-# Which sets contain every one of the parameters
-sets_containing <- function(params, sets) {
-  vapply(X = sets, FUN = function_all_in, params = params, FUN.VALUE = TRUE)
-}
-
-function_all_in <- function(set, params) {
-  all(params %in% set)
-}
-
-# Why the parameters of one interval are not consistent:  each pair that no
-# context gives together, described by the dimensions whose values differ, and
-# each parameter that no context with the interval's end gives
-describe_inconsistency <- function(params, infinite_end, consistent) {
-  end_rows <- consistent$contexts$end == if (infinite_end) "infinite" else "finite"
-  sets <- consistent$sets[end_rows]
-  contexts <- consistent$contexts[end_rows, , drop = FALSE]
-  ret <- character()
-  alone <- params[!vapply(X = params, FUN = function_any_set_has, sets = sets, FUN.VALUE = TRUE)]
-  if (length(alone) > 0) {
-    ret <-
-      c(ret, sprintf("%s (%s)", paste(alone, collapse = ", "), consistency_dimensions[["end"]]))
-  }
-  together <- setdiff(params, alone)
-  is_report <- parameter_classification()$concept[together] %in% auc_report_concepts
-  for (a in seq_along(together)) {
-    for (b in seq_along(together)[-seq_len(a)]) {
-      pair <- together[c(a, b)]
-      if (!(is_report[a] && is_report[b]) && !any(sets_containing(pair, sets))) {
-        ret <- c(ret, sprintf("%s with %s (%s)", pair[1], pair[2], pair_reason(pair, sets, contexts)))
-      }
+  if (infinite_end) {
+    needs_finite <- intersect(params, consistent$finite_only)
+    if (length(needs_finite) > 0) {
+      ret <- sprintf("%s (%s)", paste(needs_finite, collapse = ", "), consistency_dimensions[["end"]])
     }
   }
-  if (length(ret) == 0) {
-    # No single parameter or pair explains it; name them all
-    ret <- sprintf("%s (no single basis gives all of them)", paste(params, collapse = ", "))
+  judged <- intersect(params, consistent$judged)
+  for (a in seq_along(judged)) {
+    for (b in seq_along(judged)[-seq_len(a)]) {
+      pair <- judged[c(a, b)]
+      any_report <- any(consistent$is_report[pair])
+      if (all(consistent$is_report[pair])) {
+        next
+      }
+      compatible <- if (any_report) consistent$compatible_with_report else consistent$compatible
+      if (compatible[pair[1], pair[2]]) {
+        next
+      }
+      pair <- sort(pair)
+      ret <- c(ret, sprintf("%s with %s (%s)", pair[1], pair[2], pair_reason(pair, consistent, any_report)))
+    }
   }
   ret
 }
 
-# Whether the parameters of one interval are consistent:  the AUC reports may be
-# on any mixture of bases, so the parameters must be consistent with each
-# report separately, together with every parameter calculated from an AUC
-interval_params_consistent <- function(params, infinite_end, consistent) {
-  sets <- consistent$sets[consistent$contexts$end == if (infinite_end) "infinite" else "finite"]
-  is_report <- parameter_classification()$concept[params] %in% auc_report_concepts
-  derived <- params[!is_report]
-  reports <- params[is_report]
-  if (length(reports) == 0) {
-    return(any(sets_containing(derived, sets)))
-  }
-  all(vapply(
-    X = reports,
-    FUN = function_consistent_with_report,
-    derived = derived, sets = sets,
-    FUN.VALUE = TRUE
-  ))
-}
-
-function_consistent_with_report <- function(report, derived, sets) {
-  any(sets_containing(c(report, derived), sets))
-}
-
-function_any_set_has <- function(param, sets) {
-  any(sets_containing(param, sets))
-}
-
-# The dimensions on which the contexts that give one parameter and the contexts
-# that give the other do not overlap
-pair_reason <- function(pair, sets, contexts) {
-  has_first <- sets_containing(pair[1], sets)
-  has_second <- sets_containing(pair[2], sets)
-  dims <- c("dosing", "auc_type", "clast_type")
+# The dimensions on which the bases that one parameter fits and the bases that
+# the other fits do not overlap
+pair_reason <- function(pair, consistent, any_report) {
+  fits_first <- consistent$fits[pair[1], ]
+  fits_second <- consistent$fits[pair[2], ]
+  dims <- if (any_report) c("dosing", "auc_type") else c("dosing", "auc_type", "clast_type")
   disjoint <-
     dims[vapply(
       X = dims,
       FUN = dimension_disjoint,
-      contexts = contexts, has_first = has_first, has_second = has_second,
+      bases = consistent$bases, fits_first = fits_first, fits_second = fits_second,
       FUN.VALUE = TRUE
     )]
   if (length(disjoint) == 0) {
@@ -181,15 +183,8 @@ pair_reason <- function(pair, sets, contexts) {
   paste(consistency_dimensions[disjoint], collapse = "; ")
 }
 
-dimension_disjoint <- function(dim, contexts, has_first, has_second) {
-  first <- contexts[[dim]][has_first]
-  second <- contexts[[dim]][has_second]
-  # "single" against the repeated-dose contexts, which share their parameters
-  if (identical(dim, "dosing")) {
-    first <- first == "single"
-    second <- second == "single"
-  }
-  length(intersect(first, second)) == 0
+dimension_disjoint <- function(dim, bases, fits_first, fits_second) {
+  length(intersect(bases[[dim]][fits_first], bases[[dim]][fits_second])) == 0
 }
 
 #' Warn when an interval requests parameters calculated on different bases
@@ -209,7 +204,7 @@ warn_inconsistent_interval_parameters <- function(intervals) {
     return(invisible(NULL))
   }
   consistent <- interval_consistent_sets()
-  params <- intersect(consistent$governed, names(intervals))
+  params <- intersect(union(consistent$judged, consistent$finite_only), names(intervals))
   if (length(params) == 0) {
     return(invisible(NULL))
   }
@@ -219,38 +214,40 @@ warn_inconsistent_interval_parameters <- function(intervals) {
   }
   infinite_end <- is.infinite(pknca_interval_bound_number(intervals$end))
   pattern <- paste(infinite_end, apply(requested, 1, paste, collapse = ""))
-  all_intervals <- get.interval.cols()
   # The number of intervals with each problem
   problems <- integer()
   for (current in unique(pattern)) {
     rows <- which(pattern == current)
-    row_params <- params[requested[rows[1], ]]
-    # A parameter requested along with one calculated from it is not judged
-    # against it
-    row_params <- setdiff(row_params, interval_param_inputs(row_params, all_intervals))
-    if (length(row_params) == 0) {
-      next
-    }
-    if (interval_params_consistent(row_params, infinite_end[rows[1]], consistent)) {
-      next
-    }
-    for (reason in describe_inconsistency(row_params, infinite_end[rows[1]], consistent)) {
-      problems[reason] <- sum(problems[reason], length(rows), na.rm = TRUE)
+    row_problems <-
+      interval_param_problems(
+        params = params[requested[rows[1], ]],
+        infinite_end = infinite_end[rows[1]],
+        consistent = consistent
+      )
+    for (problem in row_problems) {
+      problems[problem] <- sum(problems[problem], length(rows), na.rm = TRUE)
     }
   }
   if (length(problems) == 0) {
     return(invisible(NULL))
   }
-  problems <-
+  lines <-
     sprintf(
       "%s (%d %s)", names(problems), problems,
       ifelse(problems == 1, "interval", "intervals")
     )
+  if (length(lines) > max_consistency_problems) {
+    lines <-
+      c(
+        lines[seq_len(max_consistency_problems)],
+        sprintf("... and %d more", length(lines) - max_consistency_problems)
+      )
+  }
   rlang::warn(
     paste0(
       "Some intervals request parameters that are not calculated on one basis, ",
       "so they may not describe the same thing:\n",
-      paste0("  ", problems, collapse = "\n")
+      paste0("  ", lines, collapse = "\n")
     ),
     class = "pknca_warning_interval_inconsistent_parameters"
   )

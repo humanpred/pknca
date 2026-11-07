@@ -438,3 +438,15 @@ test_that("an interval ending at infinity gets no parameter that needs a finite 
   expect_false("cav" %in% single_infinite)
   expect_true("auclast" %in% single_infinite)
 })
+
+test_that("a parameter included by name but dropped at an infinite end is said to be dropped", {
+  expect_warning(
+    ret <- pknca_interval_table(0, Inf, include = c("cav", "ctrough")),
+    regexp = "need a finite interval end, so they are not given for an interval that ends at infinity: cav, ctrough",
+    class = "pknca_warning_interval_include_finite_end"
+  )
+  expect_false(any(unlist(ret[intersect(c("cav", "ctrough"), names(ret))])))
+  # The same request with a finite end gives them, silently
+  expect_no_warning(ret_finite <- pknca_interval_table(0, 24, include = c("cav", "ctrough")))
+  expect_true(any(ret_finite$cav) && any(ret_finite$ctrough))
+})

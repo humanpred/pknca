@@ -372,8 +372,21 @@ pknca_interval_table <- function(start, end,
     long[[n]] <- extra[[n]]
   }
   # An interval that ends at infinity cannot give a parameter that needs a
-  # finite end
-  long <- long[!(is.infinite(long$end) & long$param %in% finite_interval_params()), , drop = FALSE]
+  # finite end; one that was asked for by name or concept is said to be dropped
+  finite_only <- finite_interval_params()
+  if (any(is.infinite(interval_ends))) {
+    dropped <- intersect(resolve_selection(include, available, "include"), finite_only)
+    if (length(dropped) > 0) {
+      rlang::warn(
+        sprintf(
+          "These parameters need a finite interval end, so they are not given for an interval that ends at infinity: %s",
+          paste(dropped, collapse = ", ")
+        ),
+        class = "pknca_warning_interval_include_finite_end"
+      )
+    }
+  }
+  long <- long[!(is.infinite(long$end) & long$param %in% finite_only), , drop = FALSE]
   template <- data.frame(start = interval_starts, end = interval_ends)
   ret <- interval_wider(long, template)
   # An interval with no imputation anywhere does not need the column
