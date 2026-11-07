@@ -360,7 +360,9 @@ the generated intervals:
   that `pknca_interval_table()` builds intervals on (single-dose or interval
   AUCs, AUClast or AUCall, AUCinf,obs or AUCinf,pred), and parameters that no
   basis holds together are reported:  `aucint.all` with `cav`, `cl.last` with
-  `vz.all`, and `cl.obs` with `vz.pred`, for example.  A parameter that needs a
+  `vz.all`, and `cl.obs` with `vz.pred`, for example.  Secondary parameters
+  (`f.*`, `ratio.*`) and renal clearance (`clr.*`), which name their AUC with
+  `pknca_ref()`, are judged by the AUC they reference.  A parameter that needs a
   finite interval end (an average concentration, or a parameter that applies
   only to repeated dosing) requested for an interval that ends at infinity is
   reported too.  The AUCs, AUMCs, and percent extrapolated are not judged

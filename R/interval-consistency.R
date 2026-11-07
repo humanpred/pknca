@@ -7,10 +7,11 @@
 # choices.  A parameter calculated from AUCs is on a basis when an AUC it is
 # calculated from is in that basis (as pknca_interval_table() chooses them; the
 # percent extrapolated is calculated from AUClast and AUCinf, for example), and
-# two parameters are consistent when one basis holds both.  So `aucint.all` (a repeated-dose basis with AUCall) and
-# `cav` (calculated from AUClast) are not, nor are `cl.obs` (AUCinf,obs) and
-# `vz.pred` (AUCinf,pred).  The multiple-dose mean residence time is calculated
-# from the single-dose AUCs, so it is consistent with them.
+# two parameters are consistent when one basis holds both.  So `aucint.all` (a
+# repeated-dose basis with AUCall) and `cav` (calculated from AUClast) are not,
+# nor are `cl.obs` (AUCinf,obs) and `vz.pred` (AUCinf,pred).  The multiple-dose
+# mean residence time is calculated from the single-dose AUCs, so it is
+# consistent with them.
 #
 # The AUCs and AUMCs, and their percent extrapolated (the AUC reports), are not
 # judged against each other, because reporting AUClast with AUCall, or
@@ -73,16 +74,8 @@ interval_consistent_sets <- function() {
       FUN = basis_aucs_for,
       bases = bases
     )
-  # The AUCs each parameter is calculated from (an AUC is calculated from
-  # itself)
-  families <- auc_basis_families()
-  params <- sort(unique(unlist(families)))
-  aucs_of <- stats::setNames(vector("list", length(params)), params)
-  for (root in names(families)) {
-    for (p in families[[root]]) {
-      aucs_of[[p]] <- c(aucs_of[[p]], root)
-    }
-  }
+  aucs_of <- parameter_basis_aucs()
+  params <- names(aucs_of)
   # Which bases hold an AUC of each parameter
   fits <- matrix(FALSE, nrow = length(params), ncol = nrow(bases), dimnames = list(params, NULL))
   for (p in params) {
@@ -106,7 +99,8 @@ interval_consistent_sets <- function() {
       fits = fits, basis_group = basis_without_clast,
       FUN.VALUE = logical(length(judged))
     )
-  fits_without_clast <- matrix(fits_without_clast, nrow = length(judged), dimnames = list(judged, NULL))
+  fits_without_clast <-
+    matrix(fits_without_clast, nrow = length(judged), dimnames = list(judged, NULL))
   value <-
     list(
       bases = bases,
@@ -119,6 +113,42 @@ interval_consistent_sets <- function() {
     )
   assign("interval_consistent_sets", list(key = key, value = value), envir = .PKNCAEnv)
   value
+}
+
+# The AUCs each parameter is calculated from (an AUC is calculated from
+# itself).  auc_basis_families() follows `depends`; a parameter that takes an
+# AUC through pknca_ref() (renal clearance) and the parameters calculated from
+# it are added by following every parameter's references until none is added.
+parameter_basis_aucs <- function() {
+  all_intervals <- get.interval.cols()
+  families <- auc_basis_families()
+  ret <- list()
+  for (root in names(families)) {
+    for (p in families[[root]]) {
+      ret[[p]] <- union(ret[[p]], root)
+    }
+  }
+  refs <-
+    lapply(
+      X = stats::setNames(nm = names(all_intervals)),
+      FUN = parameter_direct_refs,
+      all_intervals = all_intervals, optional_dose = TRUE
+    )
+  repeat {
+    added <- FALSE
+    for (p in names(refs)) {
+      inherited <- unique(unlist(ret[intersect(refs[[p]], names(ret))], use.names = FALSE))
+      new_aucs <- setdiff(inherited, ret[[p]])
+      if (length(new_aucs) > 0) {
+        ret[[p]] <- c(ret[[p]], new_aucs)
+        added <- TRUE
+      }
+    }
+    if (!added) {
+      break
+    }
+  }
+  ret[sort(names(ret))]
 }
 
 # Whether each parameter fits any basis in one group of bases
@@ -142,7 +172,10 @@ interval_param_problems <- function(params, infinite_end, consistent) {
   if (infinite_end) {
     needs_finite <- intersect(params, consistent$finite_only)
     if (length(needs_finite) > 0) {
-      ret <- sprintf("%s (%s)", paste(needs_finite, collapse = ", "), consistency_dimensions[["end"]])
+      ret <-
+        sprintf(
+          "%s (%s)", paste(needs_finite, collapse = ", "), consistency_dimensions[["end"]]
+        )
     }
   }
   judged <- intersect(params, consistent$judged)
@@ -158,7 +191,8 @@ interval_param_problems <- function(params, infinite_end, consistent) {
         next
       }
       pair <- sort(pair)
-      ret <- c(ret, sprintf("%s with %s (%s)", pair[1], pair[2], pair_reason(pair, consistent, any_report)))
+      reason <- pair_reason(pair, consistent, any_report)
+      ret <- c(ret, sprintf("%s with %s (%s)", pair[1], pair[2], reason))
     }
   }
   ret
@@ -208,7 +242,8 @@ warn_inconsistent_interval_parameters <- function(intervals) {
   if (length(params) == 0) {
     return(invisible(NULL))
   }
-  requested <- matrix(FALSE, nrow = nrow(intervals), ncol = length(params), dimnames = list(NULL, params))
+  requested <-
+    matrix(FALSE, nrow = nrow(intervals), ncol = length(params), dimnames = list(NULL, params))
   for (p in params) {
     requested[, p] <- intervals[[p]] %in% TRUE
   }

@@ -52,6 +52,23 @@ test_that("secondary parameters are judged by the AUCs they are calculated from"
   expect_true(is.na(inconsistency_message(data.frame(start = 0, end = Inf, f.obs = TRUE, cl.obs = TRUE, ratio.auclast = TRUE))))
 })
 
+test_that("a parameter that takes an AUC through pknca_ref() is judged by that AUC", {
+  # Renal clearance references its AUC with pknca_ref() rather than `depends`;
+  # it and the parameters calculated from it are judged by that AUC
+  expect_match(
+    inconsistency_message(data.frame(start = 0, end = Inf, clr.obs = TRUE, cl.pred = TRUE)),
+    "cl.pred with clr.obs (AUCinf,obs mixed with AUCinf,pred)",
+    fixed = TRUE
+  )
+  expect_match(
+    inconsistency_message(data.frame(start = 0, end = 24, clr.last.dn = TRUE, vz.all = TRUE)),
+    "clr.last.dn with vz.all (AUClast mixed with AUCall)",
+    fixed = TRUE
+  )
+  expect_true(is.na(inconsistency_message(data.frame(start = 0, end = Inf, clr.last = TRUE, clr.obs = TRUE, cl.obs = TRUE))))
+  expect_equal(parameter_basis_aucs()[["clr.obs.dn"]], "aucinf.obs")
+})
+
 test_that("parameters from AUClast and AUCall warn", {
   expect_match(
     inconsistency_message(data.frame(start = 0, end = 24, cl.last = TRUE, vz.all = TRUE)),
