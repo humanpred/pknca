@@ -234,7 +234,7 @@ pknca_units_table.PKNCAdata <- function(concu, ..., conversions = data.frame()) 
       if (length(join_cols) == 0) {
         dplyr::cross_join(d_concu, d_doseu)
       } else {
-        dplyr::left_join(d_concu, d_doseu, by = join_cols)
+        join_unify_factor_keys(d_concu, d_doseu, by = join_cols, join_fun = dplyr::left_join)
       } %>%
       dplyr::mutate(dplyr::across(dplyr::everything(), ~ as.character(.))) %>%
       unique()

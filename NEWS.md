@@ -1117,6 +1117,16 @@ the generated intervals:
 
 ## Bug fixes
 
+* Group columns that are ordered factors with different levels in the
+  concentration data, the dose data, the intervals, or a normalization table
+  now join by value.  Before, `PKNCAdata()` with units, `pk.nca()`,
+  date-time intervals, `as.data.frame(filter_requested = TRUE)`, and
+  `normalize()` stopped with "Can't join ... due to incompatible types".  The
+  most common case was `update()` on results from `datasets::Theoph` (an nlme
+  `groupedData`, whose subsetting drops unused levels), which failed for every
+  change.  The joined group column is a factor with the levels of both sides
+  (@billdenney).
+
 * Running an NCA no longer changes what `get.interval.cols()` returns
   (@billdenney).
 
