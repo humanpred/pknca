@@ -1132,6 +1132,7 @@ the generated intervals:
 * The deprecated `sparse_auclast` and `sparse_auc_se` are now in the
   `"uncommon"` tier of `pknca_parameter_table()`, like the other deprecated
   sparse parameter names, rather than `"common"`.
+
 * The dose-normalized renal clearances (`clr.last.dn`, `clr.obs.dn`, and
   `clr.pred.dn`) can now be calculated.  Before, every request stopped with
   "The secondary parameter 'clr.last.dn' has arguments not covered by
