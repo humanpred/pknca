@@ -1143,3 +1143,15 @@ test_that("get_impute_column and get_impute_method on a zero-row table", {
     class = "pknca_error_interval_impute_not_character"
   )
 })
+
+test_that("PKNCA_impute_fun_list ignores leading and trailing separators", {
+  expect_equal(
+    PKNCA_impute_fun_list(c(" ", " , ", " start_conc0", "start_predose, start_conc0 ,")),
+    list(
+      NA_character_,
+      NA_character_,
+      "PKNCA_impute_method_start_conc0",
+      c("PKNCA_impute_method_start_predose", "PKNCA_impute_method_start_conc0")
+    )
+  )
+})

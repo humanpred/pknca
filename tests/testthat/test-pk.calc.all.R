@@ -2346,3 +2346,207 @@ test_that("parameter_arg_spec() caches per parameter and sparse flag until the r
   assign("interval.cols", registry_mean, envir = PKNCA:::.PKNCAEnv)
   expect_identical(parameter_arg_spec("pknca_test_arg_spec"), spec_mean)
 })
+
+test_that("an empty imputation string means no imputation", {
+  d_conc <- data.frame(time = 1:4, conc = c(4, 3, 2, 1))
+  o_conc <- PKNCAconc(d_conc, conc~time)
+  o_dose <- PKNCAdose(data.frame(time = 0, dose = 1), dose~time)
+  intervals <- data.frame(start = 0, end = 4, auclast = TRUE)
+  expect_warning(
+    res_none <- as.data.frame(pk.nca(PKNCAdata(o_conc, o_dose, intervals = intervals))),
+    class = "pknca_warning_auc_before_first"
+  )
+  # No concentration at the interval start, so auclast is not calculable
+  expect_equal(res_none$PPORRES, NA_real_)
+  for (current_impute in c("", " ", " , ")) {
+    # As the whole-dataset setting
+    expect_warning(
+      res_arg <- as.data.frame(pk.nca(PKNCAdata(o_conc, o_dose, intervals = intervals, impute = current_impute))),
+      class = "pknca_warning_auc_before_first"
+    )
+    expect_equal(res_arg$PPORRES, NA_real_)
+    expect_equal(res_arg$exclude, res_none$exclude)
+    # As an interval column, next to an interval that does impute
+    intervals_col <- data.frame(start = 0, end = c(4, 4), auclast = TRUE, impute = c(current_impute, "start_conc0"))
+    expect_warning(
+      res_col <- as.data.frame(pk.nca(PKNCAdata(o_conc, o_dose, intervals = intervals_col))),
+      class = "pknca_warning_auc_before_first"
+    )
+    # 4*1/2 for the imputed 0 at time 0, then the log-down trapezoids of the
+    # observed data
+    expect_equal(
+      res_col$PPORRES,
+      c(NA_real_, 2 + (4 - 3)/log(4/3) + (3 - 2)/log(3/2) + (2 - 1)/log(2/1))
+    )
+  }
+})
+
+test_that("pk.nca() reads a PKNCAdata object without an impute setting as no imputation", {
+  d_conc <- data.frame(time = 0:4, conc = c(0, 4, 3, 2, 1))
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time),
+      PKNCAdose(data.frame(time = 0, dose = 1), dose~time),
+      intervals = data.frame(start = 0, end = 4, auclast = TRUE)
+    )
+  o_data_null <- o_data
+  o_data_null$impute <- NULL
+  expect_equal(
+    as.data.frame(pk.nca(o_data_null))$PPORRES,
+    as.data.frame(pk.nca(o_data))$PPORRES
+  )
+})
+
+test_that("volume and collection duration follow the observations through imputation", {
+  # Urine collections starting at 2, 6, 12, and 18 hours; none starts at the
+  # dose.  The plasma profile gives the AUC for renal clearance.
+  d_conc <-
+    data.frame(
+      subject = 1,
+      PCSPEC = rep(c("plasma", "urine"), times = c(3, 4)),
+      time = c(0, 12, 24, 2, 6, 12, 18),
+      duration = c(0, 0, 0, 4, 6, 6, 6),
+      conc = c(0, 6, 2, 100, 50, 20, 10),
+      vol = c(NA, NA, NA, 1, 2, 3, 4)
+    )
+  o_conc <- PKNCAconc(d_conc, conc~time|PCSPEC+subject, volume = "vol", duration = "duration")
+  o_dose <- PKNCAdose(data.frame(subject = 1, time = 0, dose = 1000), dose~time|subject)
+  urine_params <- c("ae", "fe", "volpk", "ermax", "ertmax", "ertlst", "erlst", "erint", "clr.last")
+  intervals <-
+    data.frame(
+      PCSPEC = c("plasma", "urine"),
+      start = 0, end = 24,
+      interval_id = c("plasma024", NA),
+      auclast = c(TRUE, FALSE),
+      clr.last_ref = c(NA, "plasma024")
+    )
+  intervals[urine_params] <- rep(list(c(FALSE, TRUE)), length(urine_params))
+  # start_conc0 adds a concentration of 0 at time 0 to the urine.  It has no
+  # collection, so it adds nothing to the amount or the volume and has no
+  # excretion rate:  the results are those of the four collections.
+  expect_no_warning(
+    res <-
+      as.data.frame(pk.nca(PKNCAdata(
+        o_conc, o_dose, intervals = intervals, impute = "start_conc0",
+        options = list(auc.method = "linear")
+      )))
+  )
+  res_urine <- res[res$PCSPEC == "urine", ]
+  expected <-
+    c(
+      ae = 100 + 100 + 60 + 40, fe = 300/1000, volpk = 10,
+      # The excretion rates are 25, 50/3, 10, and 20/3 at the midpoints 4, 9,
+      # 15, and 21
+      ermax = 25, ertmax = 4, ertlst = 21, erlst = 40/6,
+      erint = 300/24,
+      # auclast = (0+6)/2*12 + (6+2)/2*12 = 84
+      clr.last = 300/84
+    )
+  expect_equal(
+    setNames(res_urine$PPORRES, res_urine$PPTESTCD)[names(expected)],
+    expected
+  )
+  expect_equal(res_urine$exclude, rep(NA_character_, nrow(res_urine)))
+
+  # end_conc_drop drops the collection that starts at the end of the interval,
+  # with its volume and duration
+  o_conc_urine <-
+    PKNCAconc(d_conc[d_conc$PCSPEC == "urine", ], conc~time|subject, volume = "vol", duration = "duration")
+  intervals_drop <- data.frame(start = 0, end = 18)
+  intervals_drop[c("ae", "volpk", "ermax", "ertlst", "erlst")] <- TRUE
+  expect_no_warning(
+    res_drop <- as.data.frame(pk.nca(PKNCAdata(o_conc_urine, o_dose, intervals = intervals_drop, impute = "end_conc_drop")))
+  )
+  expect_equal(
+    setNames(res_drop$PPORRES, res_drop$PPTESTCD)[c("ae", "volpk", "ermax", "ertlst", "erlst")],
+    c(ae = 260, volpk = 6, ermax = 25, ertlst = 15, erlst = 10)
+  )
+})
+
+test_that("ctrough, cstart, and aumcint use the interval's own times for an interval not starting at zero", {
+  d_conc <- data.frame(
+    time = c(0, 1, 2, 4, 8, 12, 13, 14, 16, 20, 24),
+    conc = c(0, 5, 4, 3, 2, 1, 5.5, 4.5, 3.2, 2.1, 1.1)
+  )
+  d_dose <- data.frame(time = c(0, 12), dose = 1)
+  intervals <-
+    data.frame(
+      start = c(0, 12), end = c(12, 24),
+      ctrough = TRUE, cstart = TRUE, auclast = TRUE, aumclast = TRUE,
+      aucint.last = TRUE, aumcint.last = TRUE, cav.int.last = TRUE
+    )
+  o_data <- PKNCAdata(PKNCAconc(d_conc, conc ~ time), PKNCAdose(d_dose, dose ~ time), intervals = intervals)
+  result <- as.data.frame(pk.nca(o_data))
+  get_value <- function(start, testcd) {
+    result$PPORRES[result$start == start & result$PPTESTCD == testcd]
+  }
+  # The concentrations at the start and end of each interval
+  expect_equal(get_value(0, "cstart"), 0)
+  expect_equal(get_value(0, "ctrough"), 1)
+  expect_equal(get_value(12, "cstart"), 1)
+  expect_equal(get_value(12, "ctrough"), 1.1)
+  # AUMC uses the time since the start of the interval, whether integrated over
+  # the interval's own data (aumclast) or over the group's (aumcint.last)
+  aumc_second <- as.numeric(pk.calc.aumc(conc = d_conc$conc[6:11], time = d_conc$time[6:11] - 12))
+  expect_equal(get_value(12, "aumclast"), aumc_second)
+  expect_equal(get_value(12, "aumcint.last"), aumc_second)
+  expect_equal(get_value(0, "aumcint.last"), get_value(0, "aumclast"))
+  # AUC and Cav do not depend on where time zero is
+  auc_second <- as.numeric(pk.calc.auc(conc = d_conc$conc[6:11], time = d_conc$time[6:11] - 12))
+  expect_equal(get_value(12, "aucint.last"), auc_second)
+  expect_equal(get_value(12, "cav.int.last"), auc_second / 12)
+})
+
+test_that("aumcint.inf.obs matches aumcinf.obs for an interval starting at a later dose", {
+  d_conc <- data.frame(
+    time = c(0, 1, 2, 4, 8, 12, 13, 14, 16, 20, 24),
+    conc = c(0, 5, 4, 3, 2, 1, 5.5, 4.5, 3.2, 2.1, 1.1)
+  )
+  d_dose <- data.frame(time = c(0, 12), dose = 1)
+  intervals <- data.frame(start = 12, end = Inf, aumcinf.obs = TRUE, aumcint.inf.obs = TRUE)
+  o_data <- PKNCAdata(PKNCAconc(d_conc, conc ~ time), PKNCAdose(d_dose, dose ~ time), intervals = intervals)
+  result <- as.data.frame(pk.nca(o_data))
+  expect_equal(
+    result$PPORRES[result$PPTESTCD == "aumcint.inf.obs"],
+    result$PPORRES[result$PPTESTCD == "aumcinf.obs"]
+  )
+})
+
+test_that("every time given to a calculation function is relative to the interval start", {
+  fn_name <- "pknca_test_time_scale_fn_"
+  received <- new.env(parent = emptyenv())
+  assign(
+    fn_name,
+    function(conc, time, time.dose, time.group, time.dose.group, start, end) {
+      received$args <-
+        list(
+          time = time, time.dose = time.dose, time.group = time.group,
+          time.dose.group = time.dose.group, start = start, end = end
+        )
+      1
+    },
+    envir = .GlobalEnv
+  )
+  local_interval_cols()
+  on.exit(rm(list = fn_name, envir = .GlobalEnv), add = TRUE)
+  add.interval.col(
+    "pknca_test_time_scale_col_",
+    FUN = fn_name,
+    unit_type = "conc",
+    pretty_name = "Test: time scale",
+    desc = "Test of the time scale"
+  )
+  d_conc <- data.frame(time = c(0, 2, 12, 14, 24), conc = c(0, 5, 1, 5, 1))
+  d_dose <- data.frame(time = c(0, 12), dose = 1)
+  intervals <- data.frame(start = 12, end = 24, pknca_test_time_scale_col_ = TRUE)
+  o_data <- PKNCAdata(PKNCAconc(d_conc, conc ~ time), PKNCAdose(d_dose, dose ~ time), intervals = intervals)
+  suppressMessages(pk.nca(o_data))
+  expect_equal(
+    received$args,
+    list(
+      time = c(0, 2, 12), time.dose = 0,
+      time.group = c(-12, -10, 0, 2, 12), time.dose.group = c(-12, 0),
+      start = 0, end = 12
+    )
+  )
+})
