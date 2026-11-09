@@ -394,6 +394,24 @@ be_expand_limits <- function(swR, regulator) {
   paste(trt[idx], collapse = "")
 }
 
+# Stop when a subject has more than one row in a period.  The design and the
+# within-subject variances are defined for one endpoint, with one row per
+# subject and period; the long data of several endpoints (several `PPTESTCD`
+# values) would otherwise read as replicated administrations.  `subj` and `per`
+# are the subject and period of each row (a missing period counts as a period).
+.be_check_one_row_per_period <- function(subj, per, class) {
+  dup <- duplicated(data.frame(subj = subj, per = as.character(per)))
+  if (any(dup)) {
+    rlang::abort(
+      sprintf(
+        "Subject(s) %s have more than one row in a period; give one row per subject and period, such as the rows of one endpoint (`PPTESTCD`) and one interval.",
+        paste(utils::head(unique(subj[dup]), 5), collapse = ", ")
+      ),
+      class = class
+    )
+  }
+}
+
 #' Classify a bioequivalence crossover design
 #'
 #' `be_design()` inspects the treatment-by-period pattern of a crossover study
@@ -402,8 +420,8 @@ be_expand_limits <- function(swR, regulator) {
 #' scaling (EMA/HC/GCC/FDA) requires the reference to be replicated; the narrow
 #' therapeutic index frameworks additionally require the test to be replicated.
 #'
-#' @param data A long data.frame with one row per concentration-derived
-#'   observation (subject, period, treatment).
+#' @param data A long data.frame with one row per subject and period for a
+#'   single endpoint (filter long NCA results to one `PPTESTCD` first).
 #' @param subject,sequence,period,treatment Column names (length-1 character)
 #'   identifying the subject, randomization sequence, period, and treatment.
 #'   `sequence` may be `NA` to derive it from the treatment-by-period pattern.
@@ -454,6 +472,7 @@ be_design <- function(data, subject, sequence, period, treatment, reference_valu
   subj <- as.character(data[[subject]])
   trt <- as.character(data[[treatment]])
   per <- data[[period]]
+  .be_check_one_row_per_period(subj, per, "pknca_error_be_design_duplicate_period")
   # Per-subject treatment pattern, ordered by period -- the realized sequence.
   patterns <- tapply(seq_len(nrow(data)), subj, .be_subject_pattern, per = per, trt = trt)
   # Per-subject replication counts of the reference.
@@ -675,6 +694,9 @@ be_within_var <- function(data, value, subject, period, treatment, reference_val
   }
   assert_numeric_between(alpha, lower = 0, upper = 1)
   reference_value <- as.character(reference_value)
+  .be_check_one_row_per_period(
+    as.character(data[[subject]]), data[[period]], "pknca_error_be_within_var_duplicate_period"
+  )
 
   work <- data.frame(
     .subject = factor(as.character(data[[subject]])),
@@ -1492,11 +1514,12 @@ be_dataset.default <- function(object, reference_col, reference_value,
   }
 
   data <- data[!is.na(data[[value_col]]) & data[[value_col]] > 0, , drop = FALSE]
+  analyzed <- data[data$PPTESTCD %in% endpoints, , drop = FALSE]
   .be_check_design_cols(
-    data[data$PPTESTCD %in% endpoints, , drop = FALSE],
+    analyzed,
     subject = subject, sequence = sequence, period = period, treatment = reference_col
   )
-  missing_cov <- covariates[vapply(data[covariates], anyNA, logical(1))]
+  missing_cov <- covariates[vapply(analyzed[covariates], anyNA, logical(1))]
   if (length(missing_cov) > 0) {
     rlang::abort(
       sprintf(
@@ -2348,9 +2371,10 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
 #'
 #' `be_fit_models()` runs the single bioequivalence calculation path and returns
 #' the regulatory pass/fail table.  It coordinates the stages in order:
-#' [be_dataset()] to prepare the data, [be_design()] to classify the design and
-#' choose the model, [be_fit_model_single()] to fit, [be_extract_param()] to
-#' extract the parameters, and [be_table()] to apply the regulatory decision.
+#' [be_dataset()] to prepare the data, [be_design()] to classify the design
+#' (from the rows of each endpoint) and choose the model,
+#' [be_fit_model_single()] to fit, [be_extract_param()] to extract the
+#' parameters, and [be_table()] to apply the regulatory decision.
 #' [be_assess()] and [be_compare()] are thin verbs over it.
 #'
 #' @inheritParams be_assess
@@ -2372,10 +2396,7 @@ be_fit_models <- function(object, reference_col, reference_value,
     covariates = covariates
   )
   if (is.null(design)) {
-    design <- be_design(
-      ds$data, ds$columns$subject, ds$columns$sequence, ds$columns$period,
-      ds$columns$treatment, ds$reference_value
-    )
+    design <- .be_design_endpoints(ds)
   } else if (!inherits(design, "be_design")) {
     rlang::abort(
       "`design` must be a `be_design` object from `be_design()`.",
@@ -2416,6 +2437,44 @@ be_fit_models <- function(object, reference_col, reference_value,
     endpoint_rules = .be_endpoint_rules(ds$endpoints, reg, widen_endpoints, widen_default)
   )
   .be_table_finish(tbl, ds, caption = caption)
+}
+
+# The design of a be_dataset(), classified from the rows of each endpoint (the
+# long data hold one row per subject, period, and endpoint).  One framework
+# and one model type apply to every endpoint, so the endpoints must agree on
+# the design, on the replication of each formulation, and on whether subjects
+# have repeated measures.
+.be_design_endpoints <- function(ds) {
+  designs <- list()
+  for (ep in ds$endpoints) {
+    ds_ep <- ds$data[!is.na(ds$data$PPTESTCD) & ds$data$PPTESTCD == ep, , drop = FALSE]
+    designs[[ep]] <- be_design(
+      ds_ep, ds$columns$subject, ds$columns$sequence, ds$columns$period,
+      ds$columns$treatment, ds$reference_value
+    )
+  }
+  descriptions <- vapply(designs, .be_design_description, character(1))
+  if (length(unique(descriptions)) > 1) {
+    rlang::abort(
+      sprintf(
+        "The endpoints have different designs (%s); assess them separately or give `design`.",
+        paste(names(descriptions), descriptions, sep = ": ", collapse = "; ")
+      ),
+      class = "pknca_error_be_design_endpoints_differ"
+    )
+  }
+  designs[[1]]
+}
+
+# The parts of a be_design() that choose the model and the feasible frameworks
+.be_design_description <- function(design) {
+  sprintf(
+    "%s of %s, reference %s, test %s, %s",
+    design$design, paste(design$treatments, collapse = "/"),
+    if (design$replicate_reference) "replicated" else "not replicated",
+    if (design$replicate_test) "replicated" else "not replicated",
+    if (identical(design$recommended_model_type, "anova")) "one measurement per subject" else "repeated measures"
+  )
 }
 
 # Order the table from be_table() by endpoint (in the requested order) then by
@@ -2709,8 +2768,9 @@ be_fit_models <- function(object, reference_col, reference_value,
 #' @param subject,sequence,period Column names for the subject, randomization
 #'   sequence, and period.  When `NULL` they are taken from the `PKNCAresults`
 #'   object or detected from common column names.  `sequence` may be absent.
-#' @param design An optional [be_design()] object; computed from the data when
-#'   `NULL`.
+#' @param design An optional [be_design()] object.  When `NULL`, the design is
+#'   classified from the rows of each endpoint, and the endpoints must all have
+#'   the same design.
 #' @param covariates An optional character vector of column names added to
 #'   every model as additive fixed effects (numeric columns as linear terms,
 #'   character or factor columns as factors).  They must not be missing in any

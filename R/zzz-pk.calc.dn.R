@@ -10,6 +10,29 @@ pk.calc.dn <- function(parameter, dose) {
   parameter/dose
 }
 
+#' Dose-normalized renal clearance
+#'
+#' Renal clearance is a secondary parameter:  the amount excreted comes from
+#' the urine interval and the AUC from a plasma interval.  Secondary
+#' parameters are calculated from NCA parameter values only, so the
+#' dose-normalized form takes everything renal clearance does plus the
+#' interval's total dose (`totdose`), and is linked to its plasma interval
+#' the same way.
+#'
+#' @inheritParams pk.calc.clr
+#' @inheritParams pk.calc.dn
+#' @returns The renal clearance divided by the dose
+#' @keywords Internal
+#' @noRd
+pk.calc.clr.dn <- function(ae, auc, dose) {
+  pk.calc.dn(parameter = pk.calc.clr(ae = ae, auc = auc), dose = dose)
+}
+pknca_concept(pk.calc.clr.dn) <- "renal_clearance"
+
+# The calculation function for the dose-normalized form of each secondary
+# parameter that has one, by the calculation function of the parameter
+pknca_secondary_dn_fun <- c(pk.calc.clr = "pk.calc.clr.dn")
+
 local({
   for (n in c("auclast", "aucall", "aucinf.obs", "aucinf.pred",
               "aumclast", "aumcall", "aumcinf.obs", "aumcinf.pred",
@@ -53,19 +76,35 @@ local({
       }
       dn_formula <- paste0("$", lhs_dn, " = \\frac{", lhs, "}{Dose}$")
     }
+    current_spec <- get.interval.cols()[[n]]
+    if (isTRUE(current_spec$selection$secondary)) {
+      # A secondary parameter is calculated from NCA parameter values only, so
+      # its dose-normalized form is a secondary parameter of its own with the
+      # same inputs and reference, and with the dose from `totdose`.
+      current_fun <- pknca_secondary_dn_fun[[current_spec$FUN]]
+      current_formalsmap <- c(current_spec$formalsmap, list(dose="totdose"))
+      current_depends <- c(current_spec$depends, "totdose")
+      current_selection <- current_spec$selection
+    } else {
+      current_fun <- "pk.calc.dn"
+      current_formalsmap <- list(parameter=n)
+      current_depends <- n
+      current_selection <- NULL
+    }
     # Add the column to the interval specification
     add.interval.col(
       name=paste(n, "dn", sep="."),
-      FUN="pk.calc.dn",
+      FUN=current_fun,
       values=c(FALSE, TRUE),
       unit_type=paste0(current_unit_type, "_dose"),
       pretty_name=paste(current_pretty_name, "(dose-normalized)"),
       desc=paste("Dose-normalized", n),
-      formalsmap=list(parameter=n),
-      depends=c(n),
+      formalsmap=current_formalsmap,
+      depends=current_depends,
       formula=dn_formula,
       pptestcd_cdisc=dn_pptestcd,
-      pptest_cdisc=dn_pptest
+      pptest_cdisc=dn_pptest,
+      selection=current_selection
     )
     PKNCA.set.summary(
       name=paste(n, "dn", sep="."),
