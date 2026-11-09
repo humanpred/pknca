@@ -424,11 +424,12 @@ the generated intervals:
   * Every `"common"` tier parameter has a `pptestcd_cdisc` that is a real
     CDISC PKPARMCD code and a `pptest_cdisc` matching its decode text exactly,
     except two that have no CDISC PP parameter code at all (`count_conc` and
-    `cl.int.inf.obs`; see their `add.interval.col()` registrations).  CDISC has one "AUC from T1 to T2" code regardless of the
-    extrapolation basis, and no code for a sparsely estimated AUClast, so those
-    parameters share a code and `PPANMETH` records the method.  Every
-    registered `pptestcd_cdisc` is at most 8 characters and `pptest_cdisc` at
-    most 40, except the code of `count_conc_measured`.
+    `cl.int.inf.obs`; see their `add.interval.col()` registrations).  CDISC
+    has one "AUC from T1 to T2" code regardless of the extrapolation basis, and
+    no code for a sparsely estimated AUClast, so those parameters share a code
+    and `PPANMETH` records the method.  Every registered `pptestcd_cdisc` is at
+    most 8 characters and `pptest_cdisc` at most 40, except the code of
+    `count_conc_measured`.
   * `pknca_cdisc_codes()` lists every registered `pptestcd_cdisc` and
     `pptest_cdisc` (expanded across route and dense/sparse variants) and
     whether each code is a CDISC PKPARMCD term.  Its `in_ct` column is checked
@@ -1128,10 +1129,6 @@ the generated intervals:
   inputs such as `conc`, `time`, and `dose`.
 
 ## Bug fixes
-
-* The deprecated `sparse_auclast` and `sparse_auc_se` are now in the
-  `"uncommon"` tier of `pknca_parameter_table()`, like the other deprecated
-  sparse parameter names, rather than `"common"`.
 
 * The dose-normalized renal clearances (`clr.last.dn`, `clr.obs.dn`, and
   `clr.pred.dn`) can now be calculated.  Before, every request stopped with
