@@ -257,6 +257,25 @@ test_that("get.parameter.deps(recursive=TRUE) reaches the inputs a parameter is 
   )
 })
 
+test_that("get.parameter.deps(recursive=TRUE) gives leaf inputs and never a parameter name", {
+  # Inputs of the function: the data and its other arguments, here `check`
+  expect_equal(get.parameter.deps("cmax", recursive = TRUE), c("check", "conc"))
+  expect_equal(get.parameter.deps("auclast", recursive = TRUE), c("conc", "options", "time"))
+  # Nothing is calculated for the interval bounds
+  expect_equal(get.parameter.deps("start", recursive = TRUE), character(0))
+  # cl.obs goes through the half-life and the AUC to infinity, and neither
+  # intermediate parameter is in the result
+  cl_deps <- get.parameter.deps("cl.obs", recursive = TRUE)
+  expect_true(all(c("conc", "time", "dose", "options", "check", "manually.selected.points") %in% cl_deps))
+  expect_false(any(c("half.life", "kel.obs", "aucinf.obs", "auclast") %in% cl_deps))
+  # Enumerate the registry so that a parameter added later is held to it
+  for (param in names(get.interval.cols())) {
+    deps <- get.parameter.deps(param, recursive = TRUE)
+    expect_equal(intersect(deps, names(get.interval.cols())), character(0), info = param)
+    expect_equal(deps, sort(unique(deps)), info = param)
+  }
+})
+
 test_that("dose amount, time, and duration are required separately (#538)", {
   expect_equal(
     unlist(set_requires_inputs("c0")[["c0"]][c("requires_dose_amt", "requires_dose_time", "requires_dose_dur")]),

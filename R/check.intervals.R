@@ -656,13 +656,19 @@ parameter_source_inputs <- function(x, all_intervals = get.interval.cols(),
 #'   details.
 #' @returns With `recursive = FALSE` (default), a character vector of
 #'   parameter names that depend on the parameter `x`; empty if none do.
-#'   With `recursive = TRUE`, the unique set of everything `x` is calculated
-#'   from, following each dependency to the end.
+#'   With `recursive = TRUE`, the sorted, unique set of the inputs `x` is
+#'   calculated from, following each dependency through the intermediate
+#'   parameters to the end; empty if `x` has none (such as `"start"`).  The
+#'   result never contains the name of a parameter.
 #' @details The two directions answer different questions.  The default
 #'   answers "what becomes invalid if `x` changes?".  `recursive = TRUE`
-#'   answers "what does `x` need?", and its result mixes parameter names
-#'   with the raw inputs the calculation ends at, such as `"conc"`,
-#'   `"time"`, `"dose"`, and `"time.dose"`.
+#'   answers "what does `x` need?".  Its result is the leaf inputs only, not
+#'   the intermediate parameters on the way to them (`cl.obs` gives `"dose"`
+#'   and the inputs of the half-life, not `"half.life"` or `"aucinf.obs"`).
+#'   The leaves are the data the calculation reads (`"conc"`, `"time"`,
+#'   `"dose"`, `"time.dose"`, `"duration.dose"`, and so on) and the other
+#'   arguments of the calculation functions, such as `"options"`, `"check"`,
+#'   and `"manually.selected.points"`.
 #' @family Interval specifications
 #' @export
 get.parameter.deps <- function(x, recursive = FALSE) {

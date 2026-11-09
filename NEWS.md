@@ -1335,6 +1335,12 @@ the generated intervals:
 
 ## Other changes
 
+* The help of `get.parameter.deps()` no longer says that `recursive = TRUE`
+  mixes parameter names with raw inputs.  It returns only the leaf inputs (data
+  such as `"conc"`, `"time"`, and `"dose"`, and other function arguments such
+  as `"options"`, `"check"`, and `"manually.selected.points"`), never an
+  intermediate parameter.
+
 * The help of `exclude_nca_tmax_early()` no longer says it is often used for
   extravascular dosing with a Tmax of 0:  its default `tmax_early = 0` excludes
   only a Tmax below 0.  The help of `exclude_nca_tmax_0()`, which excludes a
