@@ -1118,8 +1118,7 @@ the generated intervals:
 
 * The deprecated `sparse_auclast` and `sparse_auc_se` are now in the
   `"uncommon"` tier of `pknca_parameter_table()`, like the other deprecated
-  sparse parameter names, rather than `"common"`.  `pknca_interval_table()`
-  with its default `tier = "common"` no longer selects them.
+  sparse parameter names, rather than `"common"`.
 
 * Running an NCA no longer changes what `get.interval.cols()` returns
   (@billdenney).
