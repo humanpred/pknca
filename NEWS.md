@@ -1336,6 +1336,15 @@ the generated intervals:
   `reference` or `ref_vary`.  The helper also no longer warns about the
   unknown `interval_id` column of tibble intervals.  (@billdenney)
 
+* `interval_add_param()`, `interval_remove_param()`, `interval_add_impute()`,
+  `interval_remove_impute()`, and `interval_add_secondary()` now stop with
+  `pknca_error_unknown_argument` for an argument they do not take.  Before, such
+  an argument was silently dropped, so
+  `interval_add_param(intervals, "auclast", start = 0, end = 12)` added
+  `auclast` to every interval.  Select intervals by their times with
+  `target_groups = data.frame(start = 0, end = 12)`, which the error message
+  suggests.  (@billdenney)
+
 ## Other changes
 
 * The sparse AUC vignette and the help of `var_sparse_auc()` and

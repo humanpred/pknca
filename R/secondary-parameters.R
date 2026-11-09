@@ -2075,6 +2075,7 @@ interval_add_secondary <- function(data, param, reference = NULL,
 interval_add_secondary.data.frame <- function(data, param, reference = NULL,
                                               target_groups = NULL, ref_id = NULL,
                                               ref_vary = NULL, ...) {
+  assert_interval_edit_dots("interval_add_secondary", ...)
   interval_edit_secondary(
     data, param = param, reference = reference, target_groups = target_groups,
     ref_id = ref_id, ref_vary = ref_vary
@@ -2085,6 +2086,7 @@ interval_add_secondary.data.frame <- function(data, param, reference = NULL,
 interval_add_secondary.PKNCAdata <- function(data, param, reference = NULL,
                                              target_groups = NULL, ref_id = NULL,
                                              ref_vary = NULL, ...) {
+  assert_interval_edit_dots("interval_add_secondary", ...)
   conc <- as_PKNCAconc(data)
   assert_ref_vary(assert_ref_vary_arg(ref_vary), conc)
   data$intervals <-
