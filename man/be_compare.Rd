@@ -58,8 +58,8 @@ sequence, and period.  When \code{NULL} they are taken from the \code{PKNCAresul
 object or detected from common column names.  \code{sequence} may be absent.}
 
 \item{design}{An optional \code{\link[=be_design]{be_design()}} object.  When \code{NULL}, the design is
-classified from the rows of each endpoint, and the endpoints must all have
-the same design.}
+classified from the subjects, periods, and treatments of the requested
+endpoints, including administrations where an endpoint's value is missing.}
 
 \item{covariates}{An optional character vector of column names added to
 every model as additive fixed effects (numeric columns as linear terms,

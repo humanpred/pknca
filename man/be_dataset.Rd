@@ -66,8 +66,11 @@ use covariates.}
 An object of class \code{be_dataset}: a list with \code{data} (the
 standardized long frame, including a \code{.units} column and one \verb{.cov_<name>}
 column per covariate), \code{columns} (the resolved column names, including
-\code{units} and \code{covariates}), \code{reference_value}, \code{test_levels}, and
-\code{endpoints} (those present).  For the results of a sparse bootstrap (see
+\code{units} and \code{covariates}), \code{reference_value}, \code{test_levels}, \code{endpoints}
+(those present), and \code{design_rows} (the distinct subject, sequence, period,
+and treatment combinations of the requested endpoints, including those
+whose value is missing, from which \code{\link[=be_design]{be_design()}} classifies the study).
+For the results of a sparse bootstrap (see
 \code{\link[=sparse_bootstrap]{sparse_bootstrap()}}), \code{data} has one row per bootstrap replicate, group,
 and endpoint instead of one per subject and period.
 }
