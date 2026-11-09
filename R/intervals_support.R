@@ -150,9 +150,12 @@ interval_match_groups <- function(data, target_groups) {
   Reduce(`|`, lapply(seq_len(nrow(target_groups)), match_one_row))
 }
 
-# Split an impute specification into its component method names
+# Split an impute specification into its component method names.  A separator
+# at the start splits off an empty name before the first method, which is
+# dropped.
 impute_split <- function(impute_vals) {
-  strsplit(ifelse(is.na(impute_vals), "", impute_vals), split = "[ ,]+")
+  ret <- strsplit(ifelse(is.na(impute_vals), "", impute_vals), split = "[ ,]+")
+  lapply(X = ret, FUN = function(v) v[nzchar(v)])
 }
 
 # Paste impute method names back into a specification, optionally mapping the

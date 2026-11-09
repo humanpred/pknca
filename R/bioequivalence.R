@@ -398,19 +398,23 @@ be_expand_limits <- function(swR, regulator) {
 # within-subject variances are defined for one endpoint, with one row per
 # subject and period; the long data of several endpoints (several `PPTESTCD`
 # values) would otherwise read as replicated administrations.  `subj` and `per`
-# are the subject and period of each row (a missing period counts as a period).
-.be_check_one_row_per_period <- function(subj, per, class) {
+# are the subject and period of each row (a missing period counts as a period),
+# and `msg` is a sprintf() format whose one `%s` receives the subjects (the
+# first five).
+.be_check_one_row_per_period <- function(subj, per, class, msg) {
   dup <- duplicated(data.frame(subj = subj, per = as.character(per)))
   if (any(dup)) {
     rlang::abort(
-      sprintf(
-        "Subject(s) %s have more than one row in a period; give one row per subject and period, such as the rows of one endpoint (`PPTESTCD`) and one interval.",
-        paste(utils::head(unique(subj[dup]), 5), collapse = ", ")
-      ),
+      sprintf(msg, paste(utils::head(unique(subj[dup]), 5), collapse = ", ")),
       class = class
     )
   }
 }
+
+# The message of .be_check_one_row_per_period() for a function given the rows
+# of one endpoint
+.be_one_endpoint_msg <-
+  "Subject(s) %s have more than one row in a period; give one row per subject and period, such as the rows of one endpoint (`PPTESTCD`) and one interval."
 
 #' Classify a bioequivalence crossover design
 #'
@@ -472,7 +476,7 @@ be_design <- function(data, subject, sequence, period, treatment, reference_valu
   subj <- as.character(data[[subject]])
   trt <- as.character(data[[treatment]])
   per <- data[[period]]
-  .be_check_one_row_per_period(subj, per, "pknca_error_be_design_duplicate_period")
+  .be_check_one_row_per_period(subj, per, "pknca_error_be_design_duplicate_period", .be_one_endpoint_msg)
   # Per-subject treatment pattern, ordered by period -- the realized sequence.
   patterns <- tapply(seq_len(nrow(data)), subj, .be_subject_pattern, per = per, trt = trt)
   # Per-subject replication counts of the reference.
@@ -695,7 +699,8 @@ be_within_var <- function(data, value, subject, period, treatment, reference_val
   assert_numeric_between(alpha, lower = 0, upper = 1)
   reference_value <- as.character(reference_value)
   .be_check_one_row_per_period(
-    as.character(data[[subject]]), data[[period]], "pknca_error_be_within_var_duplicate_period"
+    as.character(data[[subject]]), data[[period]], "pknca_error_be_within_var_duplicate_period",
+    .be_one_endpoint_msg
   )
 
   work <- data.frame(
@@ -1455,8 +1460,11 @@ print.be_within_var <- function(x, ...) {
 #' @returns An object of class `be_dataset`: a list with `data` (the
 #'   standardized long frame, including a `.units` column and one `.cov_<name>`
 #'   column per covariate), `columns` (the resolved column names, including
-#'   `units` and `covariates`), `reference_value`, `test_levels`, and
-#'   `endpoints` (those present).  For the results of a sparse bootstrap (see
+#'   `units` and `covariates`), `reference_value`, `test_levels`, `endpoints`
+#'   (those present), and `design_rows` (the distinct subject, sequence, period,
+#'   and treatment combinations of the requested endpoints, including those
+#'   whose value is missing, from which [be_design()] classifies the study).
+#'   For the results of a sparse bootstrap (see
 #'   [sparse_bootstrap()]), `data` has one row per bootstrap replicate, group,
 #'   and endpoint instead of one per subject and period.
 #' @family Bioequivalence
@@ -1513,11 +1521,29 @@ be_dataset.default <- function(object, reference_col, reference_value,
     )
   }
 
-  data <- data[!is.na(data[[value_col]]) & data[[value_col]] > 0, , drop = FALSE]
+  has_value <- !is.na(data[[value_col]]) & data[[value_col]] > 0
+  design_rows <- .be_design_rows(
+    data[data$PPTESTCD %in% endpoints, , drop = FALSE],
+    has_value = has_value[data$PPTESTCD %in% endpoints],
+    cols = c(subject, if (!is.na(sequence)) sequence, period, reference_col)
+  )
+  data <- data[has_value, , drop = FALSE]
   analyzed <- data[data$PPTESTCD %in% endpoints, , drop = FALSE]
   .be_check_design_cols(
     analyzed,
     subject = subject, sequence = sequence, period = period, treatment = reference_col
+  )
+  .be_check_one_row_per_period(
+    sprintf("%s for %s", analyzed[[subject]], analyzed$PPTESTCD), analyzed[[period]],
+    "pknca_error_be_dataset_duplicate_period",
+    paste(
+      "Subject(s) %s have more than one value in a period; the results may hold several intervals for an endpoint.",
+      "Filter them to one interval per endpoint before the bioequivalence assessment."
+    )
+  )
+  .be_check_one_row_per_period(
+    design_rows[[subject]], design_rows[[period]], "pknca_error_be_dataset_design_conflict",
+    "Subject(s) %s have a period whose treatment or sequence differs between endpoints."
   )
   missing_cov <- covariates[vapply(analyzed[covariates], anyNA, logical(1))]
   if (length(missing_cov) > 0) {
@@ -1554,10 +1580,23 @@ be_dataset.default <- function(object, reference_col, reference_value,
       ),
       reference_value = reference_value,
       test_levels = setdiff(levels(data$.trt), reference_value),
-      endpoints = present
+      endpoints = present,
+      design_rows = design_rows
     ),
     class = "be_dataset"
   )
+}
+
+# The rows that define the study design: the distinct subject, sequence,
+# period, and treatment combinations (`cols`) of the requested endpoints'
+# rows, `data`.  Rows whose value is missing (`has_value` is FALSE) still
+# count when their design columns are complete, so an endpoint that could not
+# be calculated for an administration does not change the design.
+.be_design_rows <- function(data, has_value, cols) {
+  keep <- has_value | stats::complete.cases(data[cols])
+  rows <- unique(data[keep, cols, drop = FALSE])
+  rownames(rows) <- NULL
+  rows
 }
 
 # Stop when a design column (subject, sequence, period, or treatment) is
@@ -2372,9 +2411,9 @@ be_table <- function(params, regulator, alpha = 0.10, design = NA_character_, mo
 #' `be_fit_models()` runs the single bioequivalence calculation path and returns
 #' the regulatory pass/fail table.  It coordinates the stages in order:
 #' [be_dataset()] to prepare the data, [be_design()] to classify the design
-#' (from the rows of each endpoint) and choose the model,
-#' [be_fit_model_single()] to fit, [be_extract_param()] to extract the
-#' parameters, and [be_table()] to apply the regulatory decision.
+#' (from the subjects, periods, and treatments of the requested endpoints) and
+#' choose the model, [be_fit_model_single()] to fit, [be_extract_param()] to
+#' extract the parameters, and [be_table()] to apply the regulatory decision.
 #' [be_assess()] and [be_compare()] are thin verbs over it.
 #'
 #' @inheritParams be_assess
@@ -2396,7 +2435,7 @@ be_fit_models <- function(object, reference_col, reference_value,
     covariates = covariates
   )
   if (is.null(design)) {
-    design <- .be_design_endpoints(ds)
+    design <- .be_design_dataset(ds)
   } else if (!inherits(design, "be_design")) {
     rlang::abort(
       "`design` must be a `be_design` object from `be_design()`.",
@@ -2423,6 +2462,7 @@ be_fit_models <- function(object, reference_col, reference_value,
   params <- list()
   for (ep in ds$endpoints) {
     ds_ep <- ds$data[!is.na(ds$data$PPTESTCD) & ds$data$PPTESTCD == ep, , drop = FALSE]
+    .be_check_endpoint_repeated(ds_ep, model_type, ep)
     fit <- be_fit_model_single(ds_ep, model_type, scaling = reg$scaling != "none")
     p <- be_extract_param(fit, ds_ep, alpha)
     p$endpoint <- ep
@@ -2439,42 +2479,28 @@ be_fit_models <- function(object, reference_col, reference_value,
   .be_table_finish(tbl, ds, caption = caption)
 }
 
-# The design of a be_dataset(), classified from the rows of each endpoint (the
-# long data hold one row per subject, period, and endpoint).  One framework
-# and one model type apply to every endpoint, so the endpoints must agree on
-# the design, on the replication of each formulation, and on whether subjects
-# have repeated measures.
-.be_design_endpoints <- function(ds) {
-  designs <- list()
-  for (ep in ds$endpoints) {
-    ds_ep <- ds$data[!is.na(ds$data$PPTESTCD) & ds$data$PPTESTCD == ep, , drop = FALSE]
-    designs[[ep]] <- be_design(
-      ds_ep, ds$columns$subject, ds$columns$sequence, ds$columns$period,
-      ds$columns$treatment, ds$reference_value
-    )
-  }
-  descriptions <- vapply(designs, .be_design_description, character(1))
-  if (length(unique(descriptions)) > 1) {
-    rlang::abort(
-      sprintf(
-        "The endpoints have different designs (%s); assess them separately or give `design`.",
-        paste(names(descriptions), descriptions, sep = ": ", collapse = "; ")
-      ),
-      class = "pknca_error_be_design_endpoints_differ"
-    )
-  }
-  designs[[1]]
+# The design of a be_dataset(), classified from its design rows (see
+# .be_design_rows()): one row per subject and period, whichever endpoints
+# have a value there.
+.be_design_dataset <- function(ds) {
+  be_design(
+    ds$design_rows, ds$columns$subject, ds$columns$sequence, ds$columns$period,
+    ds$columns$treatment, ds$reference_value
+  )
 }
 
-# The parts of a be_design() that choose the model and the feasible frameworks
-.be_design_description <- function(design) {
-  sprintf(
-    "%s of %s, reference %s, test %s, %s",
-    design$design, paste(design$treatments, collapse = "/"),
-    if (design$replicate_reference) "replicated" else "not replicated",
-    if (design$replicate_test) "replicated" else "not replicated",
-    if (identical(design$recommended_model_type, "anova")) "one measurement per subject" else "repeated measures"
-  )
+# Stop when an endpoint has one measurement per subject but `model_type` needs
+# repeated measures (the endpoint is missing in the other periods)
+.be_check_endpoint_repeated <- function(ds_ep, model_type, endpoint) {
+  if (model_type %in% c("lmer", "nlme") && .be_is_parallel(ds_ep)) {
+    rlang::abort(
+      sprintf(
+        "Endpoint %s has one value per subject, so model_type = '%s', which needs repeated measures, cannot be fit; assess it separately.",
+        endpoint, model_type
+      ),
+      class = c("pknca_error_be_endpoint_not_repeated", "pknca_error_be_not_estimable")
+    )
+  }
 }
 
 # Order the table from be_table() by endpoint (in the requested order) then by
@@ -2769,8 +2795,8 @@ be_fit_models <- function(object, reference_col, reference_value,
 #'   sequence, and period.  When `NULL` they are taken from the `PKNCAresults`
 #'   object or detected from common column names.  `sequence` may be absent.
 #' @param design An optional [be_design()] object.  When `NULL`, the design is
-#'   classified from the rows of each endpoint, and the endpoints must all have
-#'   the same design.
+#'   classified from the subjects, periods, and treatments of the requested
+#'   endpoints, including administrations where an endpoint's value is missing.
 #' @param covariates An optional character vector of column names added to
 #'   every model as additive fixed effects (numeric columns as linear terms,
 #'   character or factor columns as factors).  They must not be missing in any
