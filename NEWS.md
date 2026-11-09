@@ -1381,7 +1381,9 @@ the generated intervals:
   `impute` argument or in an imputation column) is now no imputation; before,
   `pk.nca()` stopped with `could not find function "NA"`.  A separator before
   the first method (`" start_conc0"`) no longer makes an empty method name that
-  is not found (@billdenney).
+  is not found, and `interval_add_impute()` and `interval_remove_impute()` no
+  longer leave an empty name in the result (`",start_conc0,start_predose"`)
+  (@billdenney).
 
 * Urine and feces parameters (`ae`, `fe`, `clr.last`, `clr.obs`, `clr.pred`,
   `volpk`, `ermax`, `ertmax`, `ertlst`, `erlst`, `erint`) are now right when
