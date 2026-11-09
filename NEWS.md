@@ -1327,6 +1327,15 @@ the generated intervals:
   function name has a dot in it, so loading the package failed with `could not
   find function "getS3method"`.  `getS3method` is now imported.
 
+* `interval_add_secondary()` works on automatically generated intervals, which
+  have one row per subject.  A `reference` such as
+  `data.frame(start = 0, end = 12)` matched one row per subject, and the helper
+  stopped with `pknca_error_secondary_ref_ambiguous_spec` because it chose
+  among those rows by their times alone; each interval now takes the reference
+  row of its own group (its own subject), ignoring the group columns named in
+  `reference` or `ref_vary`.  The helper also no longer warns about the
+  unknown `interval_id` column of tibble intervals.  (@billdenney)
+
 ## Other changes
 
 * The sparse AUC vignette and the help of `var_sparse_auc()` and
