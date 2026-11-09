@@ -29,7 +29,10 @@ test_that("normalize.PKNCAresults appends normalized parameters", {
   res <- normalize(o_nca, norm_table, parameters = "cmax", suffix = ".wn")
   # A PKNCAresults object goes in, and one comes out with the original rows kept
   expect_s3_class(res, "PKNCAresults")
-  expect_equal(nrow(res$result), 2 * nrow(o_nca$result))
+  # The original rows plus one normalized row for each cmax row (o_nca has only
+  # cmax rows, so that doubles the rows)
+  n_cmax <- sum(o_nca$result$PPTESTCD == "cmax")
+  expect_equal(nrow(res$result), nrow(o_nca$result) + n_cmax)
   expect_equal(res$result[seq_len(nrow(o_nca$result)), ], o_nca$result)
   expect_true(any(res$result$PPTESTCD == "cmax.wn"))
   expect_equal(
@@ -44,6 +47,14 @@ test_that("normalize.PKNCAresults appends normalized parameters", {
     res$result$PPSTRESU[res$result$PPTESTCD == "cmax.wn"],
     paste0("(", res$result$PPSTRESU[res$result$PPTESTCD == "cmax"], ")/kg")
   )
+})
+
+test_that("normalize.data.frame drops rows of groups that are not in the normalization table", {
+  df <- data.frame(ID = 1:3, PPTESTCD = "cmax", PPORRES = c(10, 20, 30), PPORRESU = "ng/mL")
+  norm_table <- data.frame(ID = 1:2, normalization = c(2, 4), unit = "kg")
+  res <- normalize(df, norm_table, parameters = "cmax", suffix = ".wn")
+  expect_equal(res$ID, 1:2)
+  expect_equal(res$PPORRES, c(5, 5))
 })
 
 test_that("normalize.data.frame errors for missing group", {

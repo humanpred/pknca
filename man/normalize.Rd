@@ -17,10 +17,12 @@ normalize(object, norm_table, parameters, suffix)
 }
 \value{
 For a data.frame, a data.frame with one row for each row of the
-requested \code{parameters}, with the normalized values and units and the
-parameter names (\code{PPTESTCD}) extended with \code{suffix}; the original rows are
-not included.  For a PKNCAresults object, the PKNCAresults object with
-those rows added to its results (the original rows are kept).
+requested \code{parameters} whose group is in \code{norm_table}, with the
+normalized values and units and the parameter names (\code{PPTESTCD}) extended
+with \code{suffix}.  The original rows are not included, and rows of a group
+that is not in \code{norm_table} are dropped.  For a PKNCAresults object, the
+PKNCAresults object with those rows added to its results (the original
+rows are kept).
 }
 \description{
 Normalize parameters in a PKNCAresults object or data.frame

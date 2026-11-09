@@ -425,11 +425,12 @@ the generated intervals:
   * Every `"common"` tier parameter has a `pptestcd_cdisc` that is a real
     CDISC PKPARMCD code and a `pptest_cdisc` matching its decode text exactly,
     except two that have no CDISC PP parameter code at all (`count_conc` and
-    `cl.int.inf.obs`; see their `add.interval.col()` registrations).  CDISC has one "AUC from T1 to T2" code regardless of the
-    extrapolation basis, and no code for a sparsely estimated AUClast, so those
-    parameters share a code and `PPANMETH` records the method.  Every
-    registered `pptestcd_cdisc` is at most 8 characters and `pptest_cdisc` at
-    most 40, except the code of `count_conc_measured`.
+    `cl.int.inf.obs`; see their `add.interval.col()` registrations).  CDISC
+    has one "AUC from T1 to T2" code regardless of the extrapolation basis, and
+    no code for a sparsely estimated AUClast, so those parameters share a code
+    and `PPANMETH` records the method.  Every registered `pptestcd_cdisc` is at
+    most 8 characters and `pptest_cdisc` at most 40, except the code of
+    `count_conc_measured`.
   * `pknca_cdisc_codes()` lists every registered `pptestcd_cdisc` and
     `pptest_cdisc` (expanded across route and dense/sparse variants) and
     whether each code is a CDISC PKPARMCD term.  Its `in_ct` column is checked
@@ -614,13 +615,20 @@ the generated intervals:
   (@billdenney)
 
 * `be_assess()`, `be_compare()`, and `be_fit_models()` classify the design from
-  the rows of each endpoint, so long data with several `PPTESTCD` values give
-  the design of one endpoint:  a 2x2 crossover with Cmax and AUC rows is
-  `"2x2x2"`, where reference scaling is not feasible, and a parallel study with
-  two endpoints is `"parallel"` and uses the fixed-effects ANOVA.  Endpoints
-  with different designs stop with `pknca_error_be_design_endpoints_differ`.
-  `be_design()` and `be_within_var()` stop with
-  `pknca_error_be_design_duplicate_period` and
+  the subjects, periods, and treatments of the requested endpoints, one row per
+  subject and period, so long data with several `PPTESTCD` values give the
+  study design:  a 2x2 crossover with Cmax and AUC rows is `"2x2x2"`, where
+  reference scaling is not feasible, and a parallel study with two endpoints is
+  `"parallel"` and uses the fixed-effects ANOVA.  An administration whose value
+  is missing (an `aucinf.obs` without an estimable lambda.z) still counts, so
+  missing values do not change the design.  `be_dataset()` stops with
+  `pknca_error_be_dataset_duplicate_period` when an endpoint has more than one
+  value for a subject and period (results with several intervals), and with
+  `pknca_error_be_dataset_design_conflict` when endpoints disagree on a
+  subject's treatment or sequence in a period; `be_compare()` raises both once.
+  An endpoint left with one value per subject stops a mixed model with
+  `pknca_error_be_endpoint_not_repeated`.  `be_design()` and `be_within_var()`
+  stop with `pknca_error_be_design_duplicate_period` and
   `pknca_error_be_within_var_duplicate_period` when a subject has more than one
   row in a period, which is what the rows of several endpoints look like.  A
   covariate missing only in rows of an endpoint that is not assessed is not an
@@ -1130,10 +1138,6 @@ the generated intervals:
 
 ## Bug fixes
 
-* The deprecated `sparse_auclast` and `sparse_auc_se` are now in the
-  `"uncommon"` tier of `pknca_parameter_table()`, like the other deprecated
-  sparse parameter names, rather than `"common"`.
-
 * The dose-normalized renal clearances (`clr.last.dn`, `clr.obs.dn`, and
   `clr.pred.dn`) can now be calculated.  Before, every request stopped with
   "The secondary parameter 'clr.last.dn' has arguments not covered by
@@ -1160,8 +1164,8 @@ the generated intervals:
 * Group columns that are ordered factors with different levels in the
   concentration data, the dose data, the intervals, or a normalization table
   now join by value.  Before, `PKNCAdata()` with units, `pk.nca()`,
-  date-time intervals, `as.data.frame(filter_requested = TRUE)`, and
-  `normalize()` stopped with "Can't join ... due to incompatible types".  The
+  date-time intervals, `as.data.frame(filter_requested = TRUE)`,
+  `summary()` by group, and `normalize()` stopped with "Can't join ... due to incompatible types".  The
   most common case was `update()` on results from `datasets::Theoph` (an nlme
   `groupedData`, whose subsetting drops unused levels), which failed for every
   change.  The joined group column is a factor with the levels of both sides
@@ -1433,7 +1437,9 @@ the generated intervals:
   `impute` argument or in an imputation column) is now no imputation; before,
   `pk.nca()` stopped with `could not find function "NA"`.  A separator before
   the first method (`" start_conc0"`) no longer makes an empty method name that
-  is not found (@billdenney).
+  is not found, and `interval_add_impute()` and `interval_remove_impute()` no
+  longer leave an empty name in the result (`",start_conc0,start_predose"`)
+  (@billdenney).
 
 * Urine and feces parameters (`ae`, `fe`, `clr.last`, `clr.obs`, `clr.pred`,
   `volpk`, `ermax`, `ertmax`, `ertlst`, `erlst`, `erint`) are now right when

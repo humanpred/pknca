@@ -6,10 +6,12 @@
 #' @param parameters character vector of parameter names to normalize
 #' @param suffix character value to add for the normalized parameter names
 #' @return For a data.frame, a data.frame with one row for each row of the
-#'   requested `parameters`, with the normalized values and units and the
-#'   parameter names (`PPTESTCD`) extended with `suffix`; the original rows are
-#'   not included.  For a PKNCAresults object, the PKNCAresults object with
-#'   those rows added to its results (the original rows are kept).
+#'   requested `parameters` whose group is in `norm_table`, with the
+#'   normalized values and units and the parameter names (`PPTESTCD`) extended
+#'   with `suffix`.  The original rows are not included, and rows of a group
+#'   that is not in `norm_table` are dropped.  For a PKNCAresults object, the
+#'   PKNCAresults object with those rows added to its results (the original
+#'   rows are kept).
 #' @export
 normalize <- function(object, norm_table, parameters, suffix) {
   UseMethod("normalize", object)
