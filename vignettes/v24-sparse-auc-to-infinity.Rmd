@@ -1236,8 +1236,8 @@ after $t_{last}$, a bias of
 `r conv_range("bias_lambda_z", blq = "none", duration = 24)`% of the AUC with
 sampling to 24 hours.  Sampling longer shrank that part (to
 `r conv_range("bias_lambda_z", blq = "none", duration = 72, digits = 2)`% with
-sampling to 72 hours) as less of the AUC was extrapolated, but the total bias
-did not shrink:  the linear trapezoidal rule overestimated the area more over
+sampling to 72 hours) as less of the AUC was extrapolated, but by 72 hours the
+total bias was larger in every scenario:  the linear trapezoidal rule overestimated the area more over
 the long gaps of the extended designs (24 to 48 and 48 to 72 hours), and the
 AUC to infinity was biased high by
 `r conv_range("bias_total", blq = "none", duration = 72)`% with sampling to 72
@@ -1248,7 +1248,7 @@ typical animal's with longer sampling (for that scenario,
 `r conv_value("half_life_converged", compartments = 2, route = "oral", elimination = "slow", blq = "none", duration = 48)`,
 and
 `r conv_value("half_life_converged", compartments = 2, route = "oral", elimination = "slow", blq = "none", duration = 72)`
-hours to 24, 48, and 72 hours, against
+hours with sampling to 24, 48, and 72 hours, against
 `r conv_value("half_life_typical", compartments = 2, route = "oral", elimination = "slow", blq = "none", duration = 24)`
 hours), so the half-life of the mean profile is a property of the design as
 much as of the drug.  With BLQ samples, counting them as zero lowered the mean

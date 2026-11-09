@@ -61,3 +61,75 @@ test_that("population_blq_mean() matches numerical integration over the residual
   conc_low <- matrix(c(0.5, 0.6, 1.5), ncol = 1)
   expect_equal(population_blq_mean(conc_low, lloq), 0)
 })
+
+test_that("converged_population() averages over animals:  two animals with different elimination", {
+  scenario <- design_scenarios()
+  scenario <- scenario[scenario$route == "iv" & scenario$design == "serial" & scenario$blq == "none" &
+    scenario$elimination == "fast" & scenario$compartments == 1, ]
+  animals <- data.frame(ka = 5, cl = c(1, 3), v1 = c(10, 12))
+  k <- animals$cl/animals$v1
+  c0 <- model$dose/animals$v1
+  result <- converged_population(animals, scenario)
+  expect_equal(result$duration, c(24, 24, 48, 72))
+  # The population mean curve is the mean of two exponentials, so its local
+  # slope, the area after a time, and the AUC to infinity have closed forms
+  mean_at <- function(t) mean(c0*exp(-k*t))
+  for (i in seq_len(nrow(result))) {
+    t <- result$tlast[i]
+    lambda_local <- sum(c0*k*exp(-k*t))/sum(c0*exp(-k*t))
+    tail_area <- mean(c0/k*exp(-k*t))
+    aucinf <- mean(c0/k)
+    expect_equal(result$half_life_local[i], log(2)/lambda_local, tolerance = 1e-7)
+    expect_equal(result$half_life_effective[i], log(2)*tail_area/mean_at(t))
+    expect_equal(result$percent_extrapolated[i], 100*tail_area/aucinf)
+    lambda_fit <- log(2)/result$half_life_converged[i]
+    expect_equal(result$bias_lambda_z[i], 100*(mean_at(t)/lambda_fit - tail_area)/aucinf)
+  }
+  # The mean of two exponentials declines ever more slowly, so the fitted
+  # half-life lies between the faster animal's and the local half-life
+  no_blq <- result[result$blq == "none", ]
+  expect_true(all(no_blq$half_life_converged > log(2)/max(k)))
+  expect_true(all(no_blq$half_life_converged < no_blq$half_life_local))
+
+  # With BLQ samples, Clast is the mean with BLQ samples counted as zero, and
+  # its bias is measured against the population mean
+  blq_row <- result[result$blq == "moderate", ]
+  lloq <- scenario_lloq(transform(scenario, blq = "moderate"))
+  c_24 <- c0*exp(-k*24)
+  s <- model$sigma
+  clast_blq <- mean(c_24*stats::pnorm((log(c_24/lloq) + s^2/2)/s))
+  expect_equal(blq_row$tlast, 24)
+  expect_equal(
+    blq_row$bias_clast,
+    100*(clast_blq - mean_at(24))*blq_row$half_life_converged/log(2)/mean(c0/k)
+  )
+  expect_lt(blq_row$bias_clast, 0)
+})
+
+test_that("converged_estimate() ends the profile at the last positive mean and imputes zero at time 0 for oral dosing", {
+  k <- 0.2
+  times <- sampling_times$oral
+  # Monoexponential after the first sample, and the last mean zero (more than
+  # half of its samples BLQ)
+  means <- 10*exp(-k*times)
+  means[length(means)] <- 0
+  e <- converged_estimate(times, means, "oral")
+  expect_equal(e$tlast, 12)
+  expect_equal(e$clast, 10*exp(-k*12))
+  expect_equal(e$lambda.z, k)
+  all_times <- c(0, times[-length(times)])
+  conc <- c(0, means[-length(means)])
+  trapezoid <- sum(diff(all_times)*(utils::head(conc, -1) + utils::tail(conc, -1))/2)
+  expect_equal(e$auclast, trapezoid)
+  expect_equal(e$aucinf, trapezoid + e$clast/k)
+})
+
+test_that("population_blq_mean() sets a time to zero only when more than half of its samples are BLQ", {
+  # One animal with lloq 1 is BLQ with probability above one half when its
+  # concentration is below exp(sigma^2/2)
+  threshold <- exp(model$sigma^2/2)
+  conc <- matrix(c(0.995, 1.005)*threshold, nrow = 1)
+  ret <- population_blq_mean(conc, lloq = 1)
+  expect_equal(ret[1], 0)
+  expect_gt(ret[2], 0)
+})
