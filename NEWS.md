@@ -1117,6 +1117,17 @@ the generated intervals:
 
 ## Bug fixes
 
+* `aucint.inf.obs`, `aucint.inf.pred`, `aumcint.inf.obs`, and
+  `aumcint.inf.pred` estimate an unmeasured concentration at the start of the
+  interval the same way wherever the interval ends.  When that concentration is
+  the trough before the dose that starts the interval, it is extrapolated from
+  the profile before the dose with the half-life.  Before, that happened only
+  when the interval ended after Tlast; an interval ending at or before Tlast
+  extrapolated it as zero, so with doses at 0 and 12 hours and no sample at 12,
+  the area from 12 to 24 was smaller than the area from 12 to infinity minus
+  the area after 24.  Such an interval now uses the half-life, says so in
+  `PPANMETH`, and is excluded with it (@billdenney).
+
 * `ctrough`, `cstart`, and the AUMC over an interval (`aumcint.last`,
   `aumcint.all`, `aumcint.inf.obs`, `aumcint.inf.pred`, and the `aumcivint.*`
   parameters built on them) are correct for an interval that does not start at
