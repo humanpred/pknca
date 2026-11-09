@@ -355,6 +355,7 @@ secondary_unit_sides <- function(param) {
   switch(
     get.interval.cols()[[param]]$FUN,
     pk.calc.clr = list(own = "ae", ref = "auc"),
+    pk.calc.clr.dn = list(own = c("ae", "dose"), ref = "auc"),
     pk.calc.ratio = list(own = "test", ref = "reference"),
     pk.calc.f = list(own = c("auc2", "dose2"), ref = c("auc1", "dose1")),
     NULL
