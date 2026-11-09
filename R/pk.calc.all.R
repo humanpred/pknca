@@ -143,7 +143,9 @@ pk_nca_run_splitdata <- function(splitdata, data, data_calc, verbose) {
       ),
       .f = pk.nca.intervals,
       options = data$options,
-      impute = data$impute,
+      # A PKNCAdata object without an impute setting has no whole-dataset
+      # imputation
+      impute = data$impute %||% NA_character_,
       verbose = verbose,
       .progress = data$options$progress
     )
@@ -958,15 +960,30 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   has_sparse_conc <- !is.null(conc.sparse)
   sparse_impute_changed <- FALSE
 
-  if (!all(is.na(impute_method))) {
-    impute_funs <- PKNCA_impute_fun_list(impute_method)
-    stopifnot(length(impute_funs) == 1)
+  # A method string with no method names in it (like "") is no imputation
+  impute_funs <- PKNCA_impute_fun_list(impute_method)
+  stopifnot(length(impute_funs) == 1)
+  if (!all(is.na(impute_funs[[1]]))) {
     impute_data <-
       impute_conc_time(
         impute_funs=impute_funs[[1]], conc=conc, time=time,
         start=interval$start[1], end=interval$end[1],
         conc.group=conc.group, time.group=time.group, options=options
       )
+    # The volume and collection duration follow their observations (by time)
+    # through imputation, which may add or drop observations.  An added
+    # observation was not collected, so it has a volume of 0 (adding nothing to
+    # the amount excreted or the volume collected) and no duration (so it has
+    # no excretion rate):  the excretion parameters are those of the collected
+    # samples.
+    idx_orig <- match(impute_data$time, time)
+    if (!is.null(volume)) {
+      volume <- volume[idx_orig]
+      volume[is.na(idx_orig)] <- 0
+    }
+    if (!is.null(duration.conc)) {
+      duration.conc <- duration.conc[idx_orig]
+    }
     conc <- impute_data$conc
     time <- impute_data$time
     if (has_sparse_conc) {
@@ -1065,37 +1082,40 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   # Every data source a calculation function can name, under the name that
   # add.interval.col() uses for it.  A source that was not given is NULL, which
   # leaves the argument off the call so that the function's own default
-  # applies.  The interval's own times start at zero, so `time` and `time.dose`
-  # are realigned to the start of the interval; the group times keep the
-  # group's scale.
+  # applies.  Every time, including `start` and `end`, is relative to the start
+  # of the interval (so `start` is 0):  calculation functions compare times from
+  # different sources (ctrough compares `time` to `end`; aucint compares
+  # `time.group` to `start`), and AUMC weights by the time since the start of
+  # the interval.
+  interval_start <- interval$start[1]
   source_map <-
     list(
       conc=conc,
-      time=time - interval$start[1],
+      time=time - interval_start,
       volume=volume,
       duration.conc=duration.conc,
       dose=dose,
-      time.dose=time.dose - interval$start[1],
+      time.dose=time.dose - interval_start,
       duration.dose=duration.dose,
       route=route,
       conc.group=conc.group,
-      time.group=time.group,
+      time.group=if (!is.null(time.group)) time.group - interval_start,
       volume.group=volume.group,
       duration.conc.group=duration.conc.group,
       dose.group=dose.group,
-      time.dose.group=time.dose.group,
+      time.dose.group=if (!is.null(time.dose.group)) time.dose.group - interval_start,
       duration.dose.group=duration.dose.group,
       route.group=route.group,
       # The pooled individual samples and their subject identifiers are given
       # only for sparse PK
       conc.sparse=conc.sparse,
-      time.sparse=if (has_sparse_conc) time.sparse - interval$start[1] else NULL,
+      time.sparse=if (has_sparse_conc) time.sparse - interval_start,
       conc.sparse.group=conc.sparse.group,
-      time.sparse.group=time.sparse.group,
+      time.sparse.group=if (!is.null(time.sparse.group)) time.sparse.group - interval_start,
       subject=subject,
       lloq=lloq,
-      start=interval[["start"]],
-      end=interval[["end"]],
+      start=interval[["start"]] - interval_start,
+      end=interval[["end"]] - interval_start,
       options=options
     )
   # Do the calculations
