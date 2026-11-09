@@ -840,11 +840,8 @@ pknca_unit_conversion <- function(result, units, allow_partial_missing_units = F
     for (col in setdiff(grep("_ref$", names(units), value = TRUE), names(ret))) {
       units <- units[is.na(units[[col]]), setdiff(names(units), col), drop = FALSE]
     }
-    ret <-
-      dplyr::left_join(
-        ret, units,
-        by=intersect(names(ret), names(units))
-      )
+    # The units table that PKNCAdata() builds holds group values as character
+    ret <- left_join_by_value(ret, units, by = intersect(names(ret), names(units)))
     mask_missing_units <- is.na(ret$PPORRESU)
     if (any(mask_missing_units)) {
       msg_missing <-
