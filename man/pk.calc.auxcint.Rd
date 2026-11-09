@@ -264,8 +264,12 @@ not estimable and the interval is finite, \code{AUCall} is used instead.}
 }
 
 When the interval ends at or before Tlast, no extrapolation happens and
-\code{lambda.z} is not used at all.  The extrapolation that was used is reported
-in the method (\code{PPANMETH}) column.
+\code{lambda.z} is not used at all, with one exception:  a concentration at \code{start}
+that is estimated from the profile before a dose (the trough before the dose
+that starts the interval, when it was not measured) is past the Tlast of that
+profile, so \code{AUCinf} extrapolates it with \code{lambda.z} wherever the interval
+ends.  The extrapolation that was used is reported in the method (\code{PPANMETH})
+column.
 }
 
 \seealso{

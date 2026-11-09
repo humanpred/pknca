@@ -1135,6 +1135,41 @@ the generated intervals:
   change.  The joined group column is a factor with the levels of both sides
   (@billdenney).
 
+* `interp.extrap.conc.dose()` warns only about the times requested in
+  `time.out`.  It warned about every dose and measurement in the timeline that
+  could not be interpolated, so a later IV bolus without a concentration after
+  it gave "Cannot interpolate immediately after an IV bolus without a
+  concentration next" even when only an earlier time was requested, and every
+  `aucint` over an IV multiple-dose interval ending at the next dose gave that
+  warning.  The count in the warning is now the number of requested times
+  (@billdenney).
+
+* `aucint.inf.obs`, `aucint.inf.pred`, `aumcint.inf.obs`, and
+  `aumcint.inf.pred` estimate an unmeasured concentration at the start of the
+  interval the same way wherever the interval ends.  When that concentration is
+  the trough before the dose that starts the interval, it is extrapolated from
+  the profile before the dose with the half-life.  Before, that happened only
+  when the interval ended after Tlast; an interval ending at or before Tlast
+  extrapolated it as zero, so with doses at 0 and 12 hours and no sample at 12,
+  the area from 12 to 24 was smaller than the area from 12 to infinity minus
+  the area after 24.  Such an interval now uses the half-life, says so in
+  `PPANMETH`, and is excluded with it (@billdenney).
+
+* `ctrough`, `cstart`, and the AUMC over an interval (`aumcint.last`,
+  `aumcint.all`, `aumcint.inf.obs`, `aumcint.inf.pred`, and the `aumcivint.*`
+  parameters built on them) are correct for an interval that does not start at
+  time 0.  The calculation functions were given the times relative to the start
+  of the interval but `start` and `end` (and the group times used by `aucint`
+  and `aumcint`) on the original scale.  With intervals of 0 to 12 and 12 to 24,
+  `ctrough` for the second interval was `NA` instead of the concentration at
+  24, `cstart` was the concentration at 24 instead of at 12, and `aumcint.last`
+  weighted by the time since 0 instead of since 12 (544 instead of the 154 that
+  `aumclast` gives).  Every time given to a calculation function, including
+  `start`, `end`, `time.group`, and `time.dose.group`, is now relative to the
+  start of the interval, so `start` is 0 and `end` is the interval duration.  A
+  parameter registered with `add.interval.col()` that uses `start` or `end` as
+  a time on the original scale needs the same change (@billdenney).
+
 * Running an NCA no longer changes what `get.interval.cols()` returns
   (@billdenney).
 
@@ -1344,6 +1379,29 @@ the generated intervals:
   `getS3method()` evaluated in the calling namespace.  Nearly every PKNCA
   function name has a dot in it, so loading the package failed with `could not
   find function "getS3method"`.  `getS3method` is now imported.
+
+* `PKNCAdata(impute = NA)` and `PKNCAdata(impute = NULL)` now mean the same as
+  the default:  the `"impute"` column of the intervals when there is one, else
+  no imputation.  Before, `impute = NA` stored no imputation setting and
+  `pk.nca()` then stopped with "Assertion on 'impute' failed: Must be of type
+  'atomic scalar', not 'NULL'", and `impute = NULL` stopped in `PKNCAdata()`.
+  An imputation string with no method in it (`""`, `" "`, or `","`, as the
+  `impute` argument or in an imputation column) is now no imputation; before,
+  `pk.nca()` stopped with `could not find function "NA"`.  A separator before
+  the first method (`" start_conc0"`) no longer makes an empty method name that
+  is not found (@billdenney).
+
+* Urine and feces parameters (`ae`, `fe`, `clr.last`, `clr.obs`, `clr.pred`,
+  `volpk`, `ermax`, `ertmax`, `ertlst`, `erlst`, `erint`) are now right when
+  imputation adds or drops an observation.  Before, the volumes and collection
+  durations stayed with the original observations while the concentrations
+  gained or lost one, so R recycled them against the wrong samples with only a
+  "longer object length" warning:  `impute = "start_conc0"` on a urine profile
+  without a sample at the interval start gave an `ae` of 440 instead of 300.
+  The volume and duration now follow their observations, and an observation
+  added by imputation counts as a collection of no volume with no excretion
+  rate, so the excretion parameters are those of the collected samples
+  (@billdenney).
 
 ## Other changes
 
