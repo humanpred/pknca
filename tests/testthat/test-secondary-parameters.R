@@ -1126,6 +1126,86 @@ test_that("interval_add_secondary() creates one reference per test interval", {
   expect_equal(intervals_linked$clr.last_ref, c("ref1", "ref2", NA, NA))
 })
 
+# Automatically generated intervals have one row per subject and dosing
+# interval, so `reference = data.frame(start = 0, end = 12)` matches one row per
+# subject; each subject's later interval must take its own subject's reference,
+# since the calculation reads the group values of the row it points at.
+#   linear auclast, subject 1:  0-12 = (0+10)/2*2 + (10+2)/2*10 = 70
+#                               12-24 = (2+12)/2*2 + (12+4)/2*10 = 94
+#   subject 2:                  0-12 = (0+20)/2*2 + (20+2)/2*10 = 130
+test_that("interval_add_secondary() links generated per-subject intervals to their own subject", {
+  d_conc_md <-
+    data.frame(
+      subject = rep(1:2, each = 5),
+      time = rep(c(0, 2, 12, 14, 24), 2),
+      conc = c(0, 10, 2, 12, 4, 0, 20, 2, 12, 4)
+    )
+  d_dose_md <- data.frame(subject = rep(1:2, each = 2), time = rep(c(0, 12), 2), dose = 1)
+  o_data_md <-
+    PKNCAdata(
+      PKNCAconc(d_conc_md, conc~time|subject), PKNCAdose(d_dose_md, dose~time|subject),
+      options = list(auc.method = "linear")
+    )
+  # The generated intervals are a tibble without an `interval_id` column
+  expect_s3_class(o_data_md$intervals, "tbl_df")
+  expect_false("interval_id" %in% names(o_data_md$intervals))
+  expect_no_warning(
+    o_data_linked <-
+      interval_add_secondary(
+        o_data_md, param = "ratio.auclast", reference = data.frame(start = 0, end = 12)
+      )
+  )
+  expect_equal(o_data_linked$intervals$subject, c(1L, 1L, 2L, 2L))
+  expect_equal(o_data_linked$intervals$start, c(0, 12, 0, 12))
+  expect_equal(o_data_linked$intervals$interval_id, c("ref1", NA, "ref2", NA))
+  expect_equal(o_data_linked$intervals$ratio.auclast_ref, c(NA, "ref1", NA, "ref2"))
+  expect_equal(o_data_linked$intervals$ratio.auclast, c(FALSE, TRUE, FALSE, TRUE))
+  d_res <- suppressWarnings(as.data.frame(pk.nca(o_data_linked)))
+  d_ratio <- d_res[d_res$PPTESTCD %in% "ratio.auclast", ]
+  expect_equal(d_ratio$subject, 1:2)
+  expect_equal(d_ratio$PPORRES, c(94/70, 94/130))
+})
+
+# A group column named in `ref_vary` may differ between the interval and its
+# reference, so it does not take part in choosing among the reference rows:  in
+# this crossover subject 1 received the reference in period 1 and subject 2 in
+# period 2, and each test profile takes its own subject's reference.
+test_that("interval_add_secondary() picks the subject's own reference across varying groups", {
+  d_conc_xo <-
+    data.frame(
+      subject = rep(1:2, each = 6),
+      period = rep(rep(1:2, each = 3), 2),
+      treatment = c(rep(c("ref", "test"), each = 3), rep(c("test", "ref"), each = 3)),
+      time = 0:2,
+      conc = c(0, 10, 5, 0, 6, 3, 0, 9, 4, 0, 20, 8)
+    )
+  d_dose_xo <- unique(d_conc_xo[, c("subject", "period", "treatment")])
+  d_dose_xo$time <- 0
+  d_dose_xo$dose <- 1
+  o_data_xo <-
+    PKNCAdata(
+      PKNCAconc(d_conc_xo, conc~time|treatment+period+subject),
+      PKNCAdose(d_dose_xo, dose~time|treatment+period+subject),
+      intervals =
+        data.frame(
+          subject = c(1, 1, 2, 2), period = c(1, 2, 1, 2),
+          treatment = c("ref", "test", "test", "ref"),
+          start = 0, end = Inf, cmax = TRUE
+        )
+    )
+  o_data_linked <-
+    interval_add_secondary(
+      o_data_xo, param = "ratio.cmax", reference = data.frame(treatment = "ref"),
+      ref_vary = "period"
+    )
+  expect_equal(o_data_linked$intervals$interval_id, c("ref1", NA, NA, "ref2"))
+  expect_equal(o_data_linked$intervals$ratio.cmax_ref, c(NA, "ref1", "ref2", NA))
+  d_res <- as.data.frame(pk.nca(o_data_linked))
+  d_ratio <- d_res[d_res$PPTESTCD %in% "ratio.cmax", ]
+  expect_equal(d_ratio$subject, c(1, 2))
+  expect_equal(d_ratio$PPORRES, c(6/10, 9/20))
+})
+
 # A created reference row is a new interval:  it carries the columns of the
 # intervals it was built from but none of their bookkeeping
 test_that("a created reference interval takes no identifier or imputation of its own", {
@@ -3321,4 +3401,159 @@ test_that("an empty data-level ref_vary is the same as none", {
   expect_null(o_data$ref_vary)
   printed <- utils::capture.output(print(o_data))
   expect_false(any(grepl(pattern = "ref_vary", x = printed, fixed = TRUE)))
+})
+
+test_that("interval_add_secondary() rejects arguments it does not take", {
+  expect_error(
+    interval_add_secondary(
+      intervals_sec_bare, param = "clr.last", reference = data.frame(PCSPEC = "plasma"),
+      start = 0
+    ),
+    class = "pknca_error_unknown_argument",
+    regexp = "interval_add_secondary\\(\\): start\\..*target_groups"
+  )
+  o_data_bare <- PKNCAdata(o_conc_sec, intervals = intervals_sec_bare)
+  expect_error(
+    interval_add_secondary(
+      o_data_bare, param = "clr.last", reference = data.frame(PCSPEC = "plasma"),
+      refid = "plasma"
+    ),
+    class = "pknca_error_unknown_argument",
+    regexp = "^Unknown argument\\(s\\) to interval_add_secondary\\(\\): refid\\.$"
+  )
+})
+
+# A subject with two plasma profiles (treatments A and B, with different doses)
+# and a urine collection after treatment B, so that every secondary parameter
+# has a reference to link to:  renal clearance takes the urine collection's
+# amount and a plasma AUC, and bioavailability and the ratios compare the two
+# plasma profiles.
+d_conc_all_sec <-
+  data.frame(
+    subject = 1,
+    treatment = c(rep("A", 7), rep(c("B", "B"), times = c(7, 3))),
+    PCSPEC = c(rep("plasma", 14), rep("urine", 3)),
+    time = c(rep(c(0, 1, 2, 4, 8, 12, 24), 2), 0, 12, 24),
+    conc = c(0, 8, 10, 7, 4, 2.5, 0.8, 0, 12, 15, 10, 6, 3.5, 1.2, 0, 2, 1),
+    vol = c(rep(NA, 14), 0, 100, 150)
+  )
+d_dose_all_sec <- data.frame(subject = 1, treatment = c("A", "B"), time = 0, dose = c(50, 100))
+o_conc_all_sec <- PKNCAconc(d_conc_all_sec, conc~time|treatment+PCSPEC+subject, volume = "vol")
+o_dose_all_sec <- PKNCAdose(d_dose_all_sec, dose~time|treatment+subject)
+
+test_that("every secondary parameter is calculated when linked to a reference interval", {
+  for (current_param in secondary_parameter_names()) {
+    info <- secondary_param_info(current_param)
+    own_spec <-
+      if (pknca_parameter_table(current_param)$sample_type %in% "interval") "urine" else "plasma"
+    intervals <- data.frame(treatment = c("A", "B"), PCSPEC = c("plasma", own_spec), start = 0, end = 24)
+    intervals$interval_id <- c("ref", NA)
+    intervals[[current_param]] <- c(FALSE, TRUE)
+    intervals[[paste0(current_param, "_ref")]] <- c(NA, "ref")
+    # The warnings are for the groups this parameter does not use and for the
+    # reference row, which requests nothing until it is linked
+    d_res <-
+      suppressWarnings(as.data.frame(pk.nca(PKNCAdata(o_conc_all_sec, o_dose_all_sec, intervals = intervals))))
+    value <- d_res$PPORRES[d_res$PPTESTCD == current_param]
+    expect_length(value, 1)
+    expect_true(is.finite(value), label = current_param)
+    # The value is the calculation function applied to the parameter values of
+    # the requesting and the reference intervals
+    own_values <- d_res[d_res$treatment == "B" & d_res$PCSPEC == own_spec, ]
+    ref_values <- d_res[d_res$treatment == "A" & d_res$PCSPEC == "plasma", ]
+    args <-
+      c(
+        lapply(info$own_args, function(x) own_values$PPORRES[own_values$PPTESTCD == x]),
+        lapply(info$ref_args, function(x) ref_values$PPORRES[ref_values$PPTESTCD == x])
+      )
+    expect_equal(value, do.call(info$fun, args), label = current_param)
+  }
+})
+
+test_that("dose-normalized renal clearance is renal clearance divided by the dose", {
+  for (current_base in c("clr.last", "clr.obs", "clr.pred")) {
+    current_dn <- paste0(current_base, ".dn")
+    intervals <-
+      data.frame(
+        treatment = "B", PCSPEC = c("plasma", "urine"), start = 0, end = 24,
+        interval_id = c("p", NA)
+      )
+    intervals[[current_base]] <- c(FALSE, TRUE)
+    intervals[[paste0(current_base, "_ref")]] <- c(NA, "p")
+    intervals[[current_dn]] <- c(FALSE, TRUE)
+    # The dose-normalized parameter names its own reference
+    intervals[[paste0(current_dn, "_ref")]] <- c(NA, "p")
+    # The warnings are for the treatment A profile, which is not used, and for
+    # the reference row, which requests nothing until it is linked
+    d_res <-
+      suppressWarnings(as.data.frame(pk.nca(PKNCAdata(o_conc_all_sec, o_dose_all_sec, intervals = intervals))))
+    value_base <- d_res$PPORRES[d_res$PPTESTCD == current_base]
+    expect_true(is.finite(value_base))
+    expect_equal(d_res$PPORRES[d_res$PPTESTCD == current_dn], value_base / 100)
+    expect_equal(d_res$PCSPEC_ref[d_res$PPTESTCD == current_dn], "plasma")
+  }
+  # Requested alone, the reference is found automatically
+  o_data_auto <-
+    PKNCAdata(
+      o_conc_all_sec, o_dose_all_sec,
+      intervals = data.frame(treatment = "B", PCSPEC = "urine", start = 0, end = 24, clr.last.dn = TRUE)
+    )
+  expect_message(
+    d_res <- suppressWarnings(as.data.frame(pk.nca(o_data_auto))),
+    class = "pknca_message_secondary_ref_created"
+  )
+  # ae = 2*100 + 1*150 = 350, over the auclast of the plasma profile of
+  # treatment B, over its dose of 100
+  o_data_auclast <-
+    PKNCAdata(
+      o_conc_all_sec, o_dose_all_sec,
+      intervals = data.frame(treatment = "B", PCSPEC = "plasma", start = 0, end = 24, auclast = TRUE)
+    )
+  auclast_b <- suppressWarnings(as.data.frame(pk.nca(o_data_auclast)))$PPORRES
+  expect_equal(d_res$PPORRES[d_res$PPTESTCD == "clr.last.dn"], 350 / auclast_b / 100)
+})
+
+test_that("every dose-normalized parameter is registered consistently with its base", {
+  all_intervals <- get.interval.cols()
+  tbl <- pknca_parameter_table()
+  dn_params <- tbl$parameter[tbl$dose_normalized]
+  expect_true(length(dn_params) > 0)
+  for (current_dn in dn_params) {
+    base <- sub("\\.dn$", "", current_dn)
+    expect_true(base %in% names(all_intervals), label = current_dn)
+    spec <- all_intervals[[current_dn]]
+    base_secondary <- isTRUE(all_intervals[[base]]$selection$secondary)
+    if (base_secondary) {
+      # The same inputs and reference as the base, and the dose from totdose
+      expect_equal(spec$formalsmap, c(all_intervals[[base]]$formalsmap, list(dose = "totdose")), label = current_dn)
+      expect_true(isTRUE(spec$selection$secondary), label = current_dn)
+    } else {
+      expect_equal(spec$FUN, "pk.calc.dn", label = current_dn)
+      expect_equal(spec$formalsmap, list(parameter = base), label = current_dn)
+    }
+  }
+  # Every secondary parameter takes only NCA parameter values as inputs
+  for (current_param in secondary_parameter_names()) {
+    expect_no_error(secondary_param_info(current_param))
+  }
+})
+
+test_that("dose-normalized renal clearance takes the AUC units of its reference group", {
+  d_conc_u <- d_conc_sec
+  d_conc_u$conc_units <- ifelse(d_conc_u$PCSPEC %in% "plasma", "ng/mL", "mg/L")
+  o_conc_u <-
+    PKNCAconc(
+      d_conc_u, conc~time|PCSPEC+subject, volume = "vol",
+      concu = "conc_units", timeu = "hr", amountu = "mg"
+    )
+  o_dose_u <- PKNCAdose(data.frame(subject = 1, time = 0, dose = 50), dose~time|subject, doseu = "mg")
+  intervals <- intervals_sec
+  intervals$clr.last.dn <- c(FALSE, TRUE)
+  intervals$clr.last.dn_ref <- c(NA, "plasma024")
+  d_res <-
+    as.data.frame(pk.nca(
+      PKNCAdata(o_conc_u, o_dose_u, intervals = intervals, options = list(auc.method = "linear"))
+    ))
+  expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "clr.last.dn"], 350/144/50)
+  expect_equal(d_res$PPORRESU[d_res$PPTESTCD %in% "clr.last.dn"], "(mg/mg)/(hr*ng/mL)")
 })

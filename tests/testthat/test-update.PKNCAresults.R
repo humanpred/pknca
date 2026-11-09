@@ -211,3 +211,81 @@ test_that("update() without changes in any group keeps the results as-is (issue 
   expect_identical(o_nca_update$result, o_nca$result)
   expect_identical(o_nca_update$data$conc$data, o_data_new$conc$data)
 })
+
+test_that("update() works when the concentration data drop unused factor levels (nlme groupedData)", {
+  # datasets::Theoph is an nlme groupedData whose `[` method drops unused
+  # levels of the ordered factor Subject, so the changed subject's
+  # concentrations have one level while the dose data have all twelve
+  d_conc <- datasets::Theoph[, c("Subject", "Time", "conc")]
+  d_dose <- as.data.frame(datasets::Theoph)[datasets::Theoph$Time == 0, c("Subject", "Time", "Dose")]
+  o_dose <- PKNCAdose(d_dose, Dose~Time|Subject)
+  manual_int <- data.frame(start = 0, end = Inf, auclast = TRUE, cmax = TRUE)
+  o_nca <- pk.nca(PKNCAdata(PKNCAconc(d_conc, conc~Time|Subject), o_dose, intervals = manual_int))
+  o_data_new <-
+    PKNCAdata(
+      PKNCAconc(subset(d_conc, !(Subject == "1" & Time > 20)), conc~Time|Subject),
+      o_dose,
+      intervals = manual_int
+    )
+  o_nca_update <- update(o_nca, data = o_data_new)
+  o_nca_full <- pk.nca(o_data_new)
+  expect_identical(
+    sort_update_results(as.data.frame(o_nca_update)),
+    sort_update_results(as.data.frame(o_nca_full))
+  )
+  df_update <- as.data.frame(o_nca_update)
+  expect_true(is.ordered(df_update$Subject))
+  expect_identical(levels(df_update$Subject), levels(datasets::Theoph$Subject))
+  # Only subject 1 changed; its AUClast now ends at 12.12 hr instead of 24.37 hr
+  expect_false(
+    identical(
+      df_update$PPORRES[df_update$Subject == "1" & df_update$PPTESTCD == "auclast"],
+      as.data.frame(o_nca)$PPORRES[as.data.frame(o_nca)$Subject == "1" & as.data.frame(o_nca)$PPTESTCD == "auclast"]
+    )
+  )
+})
+
+test_that("unify_factor_join_keys gives factor keys one set of levels", {
+  ord <- function(x, levels) factor(x, levels = levels, ordered = TRUE)
+  # One side's levels are a subset of the other's:  the larger set, in its order
+  ret <-
+    unify_factor_join_keys(
+      x = data.frame(g = ord("a", "a")),
+      y = data.frame(g = ord(c("a", "b"), c("b", "a"))),
+      by = "g"
+    )
+  expect_identical(ret$x$g, ord("a", c("b", "a")))
+  expect_identical(ret$y$g, ord(c("a", "b"), c("b", "a")))
+  # Neither is a subset:  the union, levels of x first
+  ret <-
+    unify_factor_join_keys(
+      x = data.frame(g = ord("a", c("c", "a"))),
+      y = data.frame(g = ord("b", c("a", "b"))),
+      by = "g"
+    )
+  expect_identical(ret$x$g, ord("a", c("c", "a", "b")))
+  expect_identical(ret$y$g, ord("b", c("c", "a", "b")))
+  # Ordered and unordered with the same levels take the class of x
+  ret <-
+    unify_factor_join_keys(
+      x = data.frame(g = factor("a")),
+      y = data.frame(g = ord("a", "a")),
+      by = "g"
+    )
+  expect_identical(ret$y$g, factor("a"))
+  # Columns that are not factors on both sides, or not in `by`, are unchanged
+  x <- data.frame(g = ord("a", "a"), h = ord("a", "a"), i = 1L)
+  y <- data.frame(g = "a", h = ord("a", c("a", "b")), i = 1)
+  expect_identical(unify_factor_join_keys(x, y, by = c("g", "i")), list(x = x, y = y))
+  # No key columns
+  expect_identical(unify_factor_join_keys(x, y, by = character()), list(x = x, y = y))
+  # The joins that error on differing ordered levels work
+  expect_equal(
+    join_unify_factor_keys(
+      data.frame(g = ord("a", "a"), v = 1),
+      data.frame(g = ord(c("a", "b"), c("a", "b")), w = 2:3),
+      by = "g", join_fun = dplyr::full_join
+    ),
+    data.frame(g = ord(c("a", "b"), c("a", "b")), v = c(1, NA), w = 2:3)
+  )
+})

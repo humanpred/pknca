@@ -58,8 +58,9 @@ the regulator, and \code{heteroscedastic}.}
 sequence, and period.  When \code{NULL} they are taken from the \code{PKNCAresults}
 object or detected from common column names.  \code{sequence} may be absent.}
 
-\item{design}{An optional \code{\link[=be_design]{be_design()}} object; computed from the data when
-\code{NULL}.}
+\item{design}{An optional \code{\link[=be_design]{be_design()}} object.  When \code{NULL}, the design is
+classified from the rows of each endpoint, and the endpoints must all have
+the same design.}
 
 \item{covariates}{An optional character vector of column names added to
 every model as additive fixed effects (numeric columns as linear terms,
@@ -96,9 +97,10 @@ columns described in \code{\link[=be_assess]{be_assess()}}).
 \description{
 \code{be_fit_models()} runs the single bioequivalence calculation path and returns
 the regulatory pass/fail table.  It coordinates the stages in order:
-\code{\link[=be_dataset]{be_dataset()}} to prepare the data, \code{\link[=be_design]{be_design()}} to classify the design and
-choose the model, \code{\link[=be_fit_model_single]{be_fit_model_single()}} to fit, \code{\link[=be_extract_param]{be_extract_param()}} to
-extract the parameters, and \code{\link[=be_table]{be_table()}} to apply the regulatory decision.
+\code{\link[=be_dataset]{be_dataset()}} to prepare the data, \code{\link[=be_design]{be_design()}} to classify the design
+(from the rows of each endpoint) and choose the model,
+\code{\link[=be_fit_model_single]{be_fit_model_single()}} to fit, \code{\link[=be_extract_param]{be_extract_param()}} to extract the
+parameters, and \code{\link[=be_table]{be_table()}} to apply the regulatory decision.
 \code{\link[=be_assess]{be_assess()}} and \code{\link[=be_compare]{be_compare()}} are thin verbs over it.
 }
 \seealso{

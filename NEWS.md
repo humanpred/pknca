@@ -612,6 +612,19 @@ the generated intervals:
   sequence, so no model drops such rows while the subject count includes them.
   (@billdenney)
 
+* `be_assess()`, `be_compare()`, and `be_fit_models()` classify the design from
+  the rows of each endpoint, so long data with several `PPTESTCD` values give
+  the design of one endpoint:  a 2x2 crossover with Cmax and AUC rows is
+  `"2x2x2"`, where reference scaling is not feasible, and a parallel study with
+  two endpoints is `"parallel"` and uses the fixed-effects ANOVA.  Endpoints
+  with different designs stop with `pknca_error_be_design_endpoints_differ`.
+  `be_design()` and `be_within_var()` stop with
+  `pknca_error_be_design_duplicate_period` and
+  `pknca_error_be_within_var_duplicate_period` when a subject has more than one
+  row in a period, which is what the rows of several endpoints look like.  A
+  covariate missing only in rows of an endpoint that is not assessed is not an
+  error.  (@billdenney)
+
 * The expanding-limits frameworks of `be_assess()` widen only the endpoints
   their guidances allow (@billdenney).  The EMA and the GCC widen Cmax and keep
   AUC at 80.00-125.00%; Health Canada widens AUC and judges Cmax by its point
@@ -1119,6 +1132,73 @@ the generated intervals:
 * The deprecated `sparse_auclast` and `sparse_auc_se` are now in the
   `"uncommon"` tier of `pknca_parameter_table()`, like the other deprecated
   sparse parameter names, rather than `"common"`.
+* The dose-normalized renal clearances (`clr.last.dn`, `clr.obs.dn`, and
+  `clr.pred.dn`) can now be calculated.  Before, every request stopped with
+  "The secondary parameter 'clr.last.dn' has arguments not covered by
+  formalsmap (dose)".  Like renal clearance, they are secondary parameters:
+  they take the amount excreted from the urine interval, the AUC from a
+  reference plasma interval (given with `clr.last.dn_ref` or found
+  automatically), and the dose from the urine interval's `totdose`, and their
+  units are composed from both groups' units (@billdenney).
+
+* Preferred units (`concu_pref`, `doseu_pref`, and the others) with unit
+  columns whose units differ between groups no longer stop `PKNCAdata()` with
+  "arguments imply differing number of rows: 1, 0" when some groups are
+  already in the preferred units.  Those groups now report their own units with
+  a conversion factor of 1, and the others are converted (@billdenney).
+
+* `pk.nca()` with units that differ between groups (for example, a subject
+  without a dose, or a unit column) no longer stops with "Can't join ... due
+  to incompatible types" when a group column is integer, numeric, or a date:
+  the units table holds group values as character, and the results are now
+  matched to it by value.  This includes the `<group>_ref` columns of
+  secondary parameters.  A factor group column also stays a factor in the
+  results where it used to become character (@billdenney).
+
+* Group columns that are ordered factors with different levels in the
+  concentration data, the dose data, the intervals, or a normalization table
+  now join by value.  Before, `PKNCAdata()` with units, `pk.nca()`,
+  date-time intervals, `as.data.frame(filter_requested = TRUE)`, and
+  `normalize()` stopped with "Can't join ... due to incompatible types".  The
+  most common case was `update()` on results from `datasets::Theoph` (an nlme
+  `groupedData`, whose subsetting drops unused levels), which failed for every
+  change.  The joined group column is a factor with the levels of both sides
+  (@billdenney).
+
+* `interp.extrap.conc.dose()` warns only about the times requested in
+  `time.out`.  It warned about every dose and measurement in the timeline that
+  could not be interpolated, so a later IV bolus without a concentration after
+  it gave "Cannot interpolate immediately after an IV bolus without a
+  concentration next" even when only an earlier time was requested, and every
+  `aucint` over an IV multiple-dose interval ending at the next dose gave that
+  warning.  The count in the warning is now the number of requested times
+  (@billdenney).
+
+* `aucint.inf.obs`, `aucint.inf.pred`, `aumcint.inf.obs`, and
+  `aumcint.inf.pred` estimate an unmeasured concentration at the start of the
+  interval the same way wherever the interval ends.  When that concentration is
+  the trough before the dose that starts the interval, it is extrapolated from
+  the profile before the dose with the half-life.  Before, that happened only
+  when the interval ended after Tlast; an interval ending at or before Tlast
+  extrapolated it as zero, so with doses at 0 and 12 hours and no sample at 12,
+  the area from 12 to 24 was smaller than the area from 12 to infinity minus
+  the area after 24.  Such an interval now uses the half-life, says so in
+  `PPANMETH`, and is excluded with it (@billdenney).
+
+* `ctrough`, `cstart`, and the AUMC over an interval (`aumcint.last`,
+  `aumcint.all`, `aumcint.inf.obs`, `aumcint.inf.pred`, and the `aumcivint.*`
+  parameters built on them) are correct for an interval that does not start at
+  time 0.  The calculation functions were given the times relative to the start
+  of the interval but `start` and `end` (and the group times used by `aucint`
+  and `aumcint`) on the original scale.  With intervals of 0 to 12 and 12 to 24,
+  `ctrough` for the second interval was `NA` instead of the concentration at
+  24, `cstart` was the concentration at 24 instead of at 12, and `aumcint.last`
+  weighted by the time since 0 instead of since 12 (544 instead of the 154 that
+  `aumclast` gives).  Every time given to a calculation function, including
+  `start`, `end`, `time.group`, and `time.dose.group`, is now relative to the
+  start of the interval, so `start` is 0 and `end` is the interval duration.  A
+  parameter registered with `add.interval.col()` that uses `start` or `end` as
+  a time on the original scale needs the same change (@billdenney).
 
 * Running an NCA no longer changes what `get.interval.cols()` returns
   (@billdenney).
@@ -1332,6 +1412,54 @@ the generated intervals:
   `getS3method()` evaluated in the calling namespace.  Nearly every PKNCA
   function name has a dot in it, so loading the package failed with `could not
   find function "getS3method"`.  `getS3method` is now imported.
+
+* `interval_add_secondary()` works on automatically generated intervals, which
+  have one row per subject.  A `reference` such as
+  `data.frame(start = 0, end = 12)` matched one row per subject, and the helper
+  stopped with `pknca_error_secondary_ref_ambiguous_spec` because it chose
+  among those rows by their times alone; each interval now takes the reference
+  row of its own group (its own subject), ignoring the group columns named in
+  `reference` or `ref_vary`.  The helper also no longer warns about the
+  unknown `interval_id` column of tibble intervals.  (@billdenney)
+* `PKNCAdata(impute = NA)` and `PKNCAdata(impute = NULL)` now mean the same as
+  the default:  the `"impute"` column of the intervals when there is one, else
+  no imputation.  Before, `impute = NA` stored no imputation setting and
+  `pk.nca()` then stopped with "Assertion on 'impute' failed: Must be of type
+  'atomic scalar', not 'NULL'", and `impute = NULL` stopped in `PKNCAdata()`.
+  An imputation string with no method in it (`""`, `" "`, or `","`, as the
+  `impute` argument or in an imputation column) is now no imputation; before,
+  `pk.nca()` stopped with `could not find function "NA"`.  A separator before
+  the first method (`" start_conc0"`) no longer makes an empty method name that
+  is not found (@billdenney).
+
+* Urine and feces parameters (`ae`, `fe`, `clr.last`, `clr.obs`, `clr.pred`,
+  `volpk`, `ermax`, `ertmax`, `ertlst`, `erlst`, `erint`) are now right when
+  imputation adds or drops an observation.  Before, the volumes and collection
+  durations stayed with the original observations while the concentrations
+  gained or lost one, so R recycled them against the wrong samples with only a
+  "longer object length" warning:  `impute = "start_conc0"` on a urine profile
+  without a sample at the interval start gave an `ae` of 440 instead of 300.
+  The volume and duration now follow their observations, and an observation
+  added by imputation counts as a collection of no volume with no excretion
+  rate, so the excretion parameters are those of the collected samples
+  (@billdenney).
+
+* `interval_add_param()`, `interval_remove_param()`, `interval_add_impute()`,
+  `interval_remove_impute()`, and `interval_add_secondary()` now stop with
+  `pknca_error_unknown_argument` for an argument they do not take.  Before, such
+  an argument was silently dropped, so
+  `interval_add_param(intervals, "auclast", start = 0, end = 12)` added
+  `auclast` to every interval.  Select intervals by their times with
+  `target_groups = data.frame(start = 0, end = 12)`, which the error message
+  suggests.  (@billdenney)
+
+* Every warning raised while `PKNCAdata()` generates a group's intervals now
+  starts with the group (`"subject=1: "`), as the dose regimen warnings already
+  did.  `pknca_warning_no_tau_for_intervals` (no dosing interval could be found
+  from the dose times), `pknca_warning_no_dose_times_for_group` (a group with
+  concentrations but no doses), and `pknca_warning_multiple_dose_routes` did
+  not say which group they were about, and each is now given once per
+  group.  (@billdenney)
 
 ## Other changes
 
