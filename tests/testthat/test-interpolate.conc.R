@@ -1058,3 +1058,45 @@ test_that("interp.extrap.conc.dose", {
     info="Outputs are in the same order as inputs (reverse sorted time.out)"
   )
 })
+
+test_that("interp.extrap.conc.dose warns only about the requested times", {
+  conc <- c(9, 8, 6, 4, 2.8)
+  time <- c(0.5, 1, 2, 4, 6)
+  # The IV bolus at 12 has no concentration after it, but only time 0 (before
+  # the first dose) is requested
+  expect_no_warning(
+    v_before <-
+      interp.extrap.conc.dose(
+        conc = conc, time = time, time.dose = c(0, 12),
+        route.dose = "intravascular", duration.dose = 0, time.out = 0
+      )
+  )
+  expect_equal(v_before, structure(0, Method = "Before all events"))
+  # Requesting the time immediately after that bolus still warns
+  expect_warning(
+    v_after <-
+      interp.extrap.conc.dose(
+        conc = conc, time = time, time.dose = c(0, 12),
+        route.dose = "intravascular", duration.dose = 0,
+        time.out = 12, out.after = TRUE
+      ),
+    regexp = "Cannot interpolate immediately after an IV bolus without a concentration next.: 1 data points",
+    fixed = TRUE,
+    class = "pknca_warning_interp_extrap_conc_dose"
+  )
+  expect_equal(
+    v_after,
+    structure(NA_real_, Method = "Immediately after an IV bolus without a concentration next")
+  )
+  # The count is of the requested times
+  expect_warning(
+    interp.extrap.conc.dose(
+      conc = conc, time = time, time.dose = c(0, 12),
+      route.dose = "intravascular", duration.dose = 0,
+      time.out = c(13, 14), out.after = TRUE
+    ),
+    regexp = "Cannot interpolate after an IV bolus without a concentration next.: 2 data points",
+    fixed = TRUE,
+    class = "pknca_warning_interp_extrap_conc_dose"
+  )
+})

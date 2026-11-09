@@ -2401,3 +2401,91 @@ test_that("volume and collection duration follow the observations through imputa
     c(ae = 260, volpk = 6, ermax = 25, ertlst = 15, erlst = 10)
   )
 })
+
+test_that("ctrough, cstart, and aumcint use the interval's own times for an interval not starting at zero", {
+  d_conc <- data.frame(
+    time = c(0, 1, 2, 4, 8, 12, 13, 14, 16, 20, 24),
+    conc = c(0, 5, 4, 3, 2, 1, 5.5, 4.5, 3.2, 2.1, 1.1)
+  )
+  d_dose <- data.frame(time = c(0, 12), dose = 1)
+  intervals <-
+    data.frame(
+      start = c(0, 12), end = c(12, 24),
+      ctrough = TRUE, cstart = TRUE, auclast = TRUE, aumclast = TRUE,
+      aucint.last = TRUE, aumcint.last = TRUE, cav.int.last = TRUE
+    )
+  o_data <- PKNCAdata(PKNCAconc(d_conc, conc ~ time), PKNCAdose(d_dose, dose ~ time), intervals = intervals)
+  result <- as.data.frame(pk.nca(o_data))
+  get_value <- function(start, testcd) {
+    result$PPORRES[result$start == start & result$PPTESTCD == testcd]
+  }
+  # The concentrations at the start and end of each interval
+  expect_equal(get_value(0, "cstart"), 0)
+  expect_equal(get_value(0, "ctrough"), 1)
+  expect_equal(get_value(12, "cstart"), 1)
+  expect_equal(get_value(12, "ctrough"), 1.1)
+  # AUMC uses the time since the start of the interval, whether integrated over
+  # the interval's own data (aumclast) or over the group's (aumcint.last)
+  aumc_second <- as.numeric(pk.calc.aumc(conc = d_conc$conc[6:11], time = d_conc$time[6:11] - 12))
+  expect_equal(get_value(12, "aumclast"), aumc_second)
+  expect_equal(get_value(12, "aumcint.last"), aumc_second)
+  expect_equal(get_value(0, "aumcint.last"), get_value(0, "aumclast"))
+  # AUC and Cav do not depend on where time zero is
+  auc_second <- as.numeric(pk.calc.auc(conc = d_conc$conc[6:11], time = d_conc$time[6:11] - 12))
+  expect_equal(get_value(12, "aucint.last"), auc_second)
+  expect_equal(get_value(12, "cav.int.last"), auc_second / 12)
+})
+
+test_that("aumcint.inf.obs matches aumcinf.obs for an interval starting at a later dose", {
+  d_conc <- data.frame(
+    time = c(0, 1, 2, 4, 8, 12, 13, 14, 16, 20, 24),
+    conc = c(0, 5, 4, 3, 2, 1, 5.5, 4.5, 3.2, 2.1, 1.1)
+  )
+  d_dose <- data.frame(time = c(0, 12), dose = 1)
+  intervals <- data.frame(start = 12, end = Inf, aumcinf.obs = TRUE, aumcint.inf.obs = TRUE)
+  o_data <- PKNCAdata(PKNCAconc(d_conc, conc ~ time), PKNCAdose(d_dose, dose ~ time), intervals = intervals)
+  result <- as.data.frame(pk.nca(o_data))
+  expect_equal(
+    result$PPORRES[result$PPTESTCD == "aumcint.inf.obs"],
+    result$PPORRES[result$PPTESTCD == "aumcinf.obs"]
+  )
+})
+
+test_that("every time given to a calculation function is relative to the interval start", {
+  fn_name <- "pknca_test_time_scale_fn_"
+  received <- new.env(parent = emptyenv())
+  assign(
+    fn_name,
+    function(conc, time, time.dose, time.group, time.dose.group, start, end) {
+      received$args <-
+        list(
+          time = time, time.dose = time.dose, time.group = time.group,
+          time.dose.group = time.dose.group, start = start, end = end
+        )
+      1
+    },
+    envir = .GlobalEnv
+  )
+  local_interval_cols()
+  on.exit(rm(list = fn_name, envir = .GlobalEnv), add = TRUE)
+  add.interval.col(
+    "pknca_test_time_scale_col_",
+    FUN = fn_name,
+    unit_type = "conc",
+    pretty_name = "Test: time scale",
+    desc = "Test of the time scale"
+  )
+  d_conc <- data.frame(time = c(0, 2, 12, 14, 24), conc = c(0, 5, 1, 5, 1))
+  d_dose <- data.frame(time = c(0, 12), dose = 1)
+  intervals <- data.frame(start = 12, end = 24, pknca_test_time_scale_col_ = TRUE)
+  o_data <- PKNCAdata(PKNCAconc(d_conc, conc ~ time), PKNCAdose(d_dose, dose ~ time), intervals = intervals)
+  suppressMessages(pk.nca(o_data))
+  expect_equal(
+    received$args,
+    list(
+      time = c(0, 2, 12), time.dose = 0,
+      time.group = c(-12, -10, 0, 2, 12), time.dose.group = c(-12, 0),
+      start = 0, end = 12
+    )
+  )
+})

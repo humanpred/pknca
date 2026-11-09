@@ -1082,37 +1082,40 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   # Every data source a calculation function can name, under the name that
   # add.interval.col() uses for it.  A source that was not given is NULL, which
   # leaves the argument off the call so that the function's own default
-  # applies.  The interval's own times start at zero, so `time` and `time.dose`
-  # are realigned to the start of the interval; the group times keep the
-  # group's scale.
+  # applies.  Every time, including `start` and `end`, is relative to the start
+  # of the interval (so `start` is 0):  calculation functions compare times from
+  # different sources (ctrough compares `time` to `end`; aucint compares
+  # `time.group` to `start`), and AUMC weights by the time since the start of
+  # the interval.
+  interval_start <- interval$start[1]
   source_map <-
     list(
       conc=conc,
-      time=time - interval$start[1],
+      time=time - interval_start,
       volume=volume,
       duration.conc=duration.conc,
       dose=dose,
-      time.dose=time.dose - interval$start[1],
+      time.dose=time.dose - interval_start,
       duration.dose=duration.dose,
       route=route,
       conc.group=conc.group,
-      time.group=time.group,
+      time.group=if (!is.null(time.group)) time.group - interval_start,
       volume.group=volume.group,
       duration.conc.group=duration.conc.group,
       dose.group=dose.group,
-      time.dose.group=time.dose.group,
+      time.dose.group=if (!is.null(time.dose.group)) time.dose.group - interval_start,
       duration.dose.group=duration.dose.group,
       route.group=route.group,
       # The pooled individual samples and their subject identifiers are given
       # only for sparse PK
       conc.sparse=conc.sparse,
-      time.sparse=if (has_sparse_conc) time.sparse - interval$start[1] else NULL,
+      time.sparse=if (has_sparse_conc) time.sparse - interval_start,
       conc.sparse.group=conc.sparse.group,
-      time.sparse.group=time.sparse.group,
+      time.sparse.group=if (!is.null(time.sparse.group)) time.sparse.group - interval_start,
       subject=subject,
       lloq=lloq,
-      start=interval[["start"]],
-      end=interval[["end"]],
+      start=interval[["start"]] - interval_start,
+      end=interval[["end"]] - interval_start,
       options=options
     )
   # Do the calculations
