@@ -250,28 +250,89 @@ test_that("be_assess classifies a parallel design with several endpoints as para
   expect_equal(res, be_assess(d, "treatment", "R", "auclast"))
 })
 
-test_that("be_assess stops when the endpoints have different designs", {
+test_that("a missing endpoint value does not change the design", {
   skip_if_not_installed("lme4")
   skip_if_not_installed("lmerTest")
   skip_if_not_installed("emmeans")
-  # Cmax only in period 1: a parallel comparison beside the auclast crossover.
-  d_cmax <- make_be_df(seed = 124, endpoint = "cmax")
-  d <- rbind(make_be_df(endpoint = "auclast"), d_cmax[d_cmax$period == 1, ])
-  expect_error(
-    be_assess(d, reference_col = "form", reference_value = "R",
-              endpoints = c("auclast", "cmax"), regulator = "ABE"),
-    regexp = paste(
-      "auclast: 2x2x2 of R/T, reference not replicated, test not replicated, repeated measures;",
-      "cmax: parallel of R/T, reference not replicated, test not replicated, one measurement per subject"
-    ),
-    fixed = TRUE,
-    class = "pknca_error_be_design_endpoints_differ"
+  # A full replicate where aucinf.obs could not be calculated for most
+  # administrations (for example, lambda.z was not estimable).
+  full <- generate_be_replicate(24, 20240501, "full")
+  d_inf <- be_replicate_long(full, endpoint = "aucinf.obs")
+  set.seed(5)
+  d_inf$PPORRES[sample(nrow(d_inf), 55)] <- NA
+  d <- rbind(be_replicate_long(full, endpoint = "auclast"), d_inf)
+  res <- be_assess(d, "treatment", "R", c("auclast", "aucinf.obs"), regulator = "ABE")
+  expect_identical(res$design, c("full_replicate", "full_replicate"))
+  expect_identical(res$endpoint, c("auclast", "aucinf.obs"))
+  expect_equal(
+    as.data.frame(res)[2, ],
+    as.data.frame(be_assess(d_inf, "treatment", "R", "aucinf.obs", regulator = "ABE")),
+    ignore_attr = TRUE
   )
-  # Only the requested endpoints are classified.
+
+  # A 2x2 crossover where Cmax is missing for every subject in period 2 is
+  # still a 2x2 crossover; Cmax alone cannot be fit by the crossover model.
+  d_cmax <- make_be_df(seed = 124, endpoint = "cmax")
+  d_cmax$PPORRES[d_cmax$period == 2] <- NA
+  d2 <- rbind(make_be_df(endpoint = "auclast"), d_cmax)
   expect_identical(
-    attr(be_assess(d, reference_col = "form", reference_value = "R",
-                   endpoints = "auclast", regulator = "ABE"), "design"),
+    be_assess(d2, reference_col = "form", reference_value = "R",
+              endpoints = "auclast", regulator = "ABE")$design,
     "2x2x2"
+  )
+  expect_error(
+    be_assess(d2, reference_col = "form", reference_value = "R",
+              endpoints = c("auclast", "cmax"), regulator = "ABE"),
+    regexp = "Endpoint cmax has one value per subject, so model_type = 'lmer', which needs repeated measures, cannot be fit",
+    fixed = TRUE,
+    class = "pknca_error_be_endpoint_not_repeated"
+  )
+})
+
+test_that("be_assess stops when an endpoint has two values for a subject and period", {
+  # Two intervals of the results give auclast twice for subject 1, period 1.
+  d <- make_be_df()
+  d_dup <- rbind(d, d[1, ])
+  expect_error(
+    be_assess(d_dup, reference_col = "form", reference_value = "R", endpoints = "auclast"),
+    regexp = "Subject(s) 1 for auclast have more than one value in a period; the results may hold several intervals for an endpoint. Filter them to one interval per endpoint before the bioequivalence assessment.",
+    fixed = TRUE,
+    class = "pknca_error_be_dataset_duplicate_period"
+  )
+  # Rows of an endpoint that is not assessed do not matter.
+  d_other <- d[1, ]
+  d_other$PPTESTCD <- "cmax"
+  expect_s3_class(
+    be_dataset(rbind(d, d_other, d_other), reference_col = "form", reference_value = "R", endpoints = "auclast"),
+    "be_dataset"
+  )
+})
+
+test_that("be_assess stops when endpoints disagree on a subject's treatment in a period", {
+  d_cmax <- make_be_df(endpoint = "cmax")
+  d_cmax$form[1] <- setdiff(c("R", "T"), d_cmax$form[1])
+  d <- rbind(make_be_df(endpoint = "auclast"), d_cmax)
+  expect_error(
+    be_assess(d, reference_col = "form", reference_value = "R", endpoints = c("auclast", "cmax")),
+    regexp = "Subject(s) 1 have a period whose treatment or sequence differs between endpoints.",
+    fixed = TRUE,
+    class = "pknca_error_be_dataset_design_conflict"
+  )
+})
+
+test_that("be_compare raises the design errors of the data once", {
+  d <- make_be_df()
+  expect_error(
+    be_compare(rbind(d, d[1, ]), reference_col = "form", reference_value = "R",
+               endpoints = "auclast", regulators = c("ABE", "EMA")),
+    class = "pknca_error_be_dataset_duplicate_period"
+  )
+  d_cmax <- make_be_df(endpoint = "cmax")
+  d_cmax$form[1] <- setdiff(c("R", "T"), d_cmax$form[1])
+  expect_error(
+    be_compare(rbind(d, d_cmax), reference_col = "form", reference_value = "R",
+               endpoints = c("auclast", "cmax"), regulators = c("ABE", "EMA")),
+    class = "pknca_error_be_dataset_design_conflict"
   )
 })
 

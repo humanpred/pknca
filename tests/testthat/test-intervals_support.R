@@ -114,6 +114,13 @@ describe("add_impute_method", {
   it("returns the empty vector unchanged", {
     expect_equal(add_impute_method(character(), "mnew"), character())
   })
+
+  it("ignores separators before the first method and after the last", {
+    expect_equal(add_impute_method(" start_conc0", "start_predose"), "start_conc0,start_predose")
+    expect_equal(add_impute_method(" start_conc0", "start_conc0"), "start_conc0")
+    expect_equal(add_impute_method(", m0 ,", "mnew", after = 0), "mnew,m0")
+    expect_equal(add_impute_method(" , ", "mnew"), "mnew")
+  })
 })
 
 describe("remove_impute_method", {
@@ -130,6 +137,11 @@ describe("remove_impute_method", {
 
   it("leaves a specification without the method alone", {
     expect_equal(remove_impute_method("m1", "m0"), "m1")
+  })
+
+  it("ignores separators before the first method and after the last", {
+    expect_equal(remove_impute_method(" start_conc0", "start_predose"), "start_conc0")
+    expect_equal(remove_impute_method(" start_conc0,", "start_conc0"), NA_character_)
   })
 
   it("returns the empty vector unchanged", {
