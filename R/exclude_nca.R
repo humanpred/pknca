@@ -384,9 +384,9 @@ exclude_nca_tmax_early <- function(tmax_early = 0) {
 }
 pknca_register_exclude_rule(
   name = "exclude_nca_tmax_early",
-  description = "Exclude based on implausibly early Tmax (often used for extravascular dosing with a Tmax value of 0)",
+  description = "Exclude based on implausibly early Tmax (a Tmax below tmax_early; the default of 0 excludes only a negative Tmax, so use exclude_nca_tmax_0() to exclude a Tmax of 0 as well)",
   arguments =
-    c(tmax_early = "The time for Tmax which is considered too early to be a valid NCA result")
+    c(tmax_early = "The time for Tmax which is considered too early to be a valid NCA result; a Tmax below it is excluded (a Tmax equal to it is not)")
 )
 
 #' @eval pknca_rd_exclude_rule("exclude_nca_tmax_0")
@@ -412,7 +412,7 @@ exclude_nca_tmax_0 <- function() {
 }
 pknca_register_exclude_rule(
   name = "exclude_nca_tmax_0",
-  description = "Exclude based on implausibly early Tmax (special case for tmax_early = 0)"
+  description = "Exclude based on a Tmax of 0 or less (unlike exclude_nca_tmax_early() with its default of 0, which excludes only a Tmax below 0)"
 )
 
 

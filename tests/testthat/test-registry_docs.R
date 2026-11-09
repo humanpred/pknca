@@ -9,7 +9,7 @@ test_that("pknca_rd_exclude_rule writes the registered descriptions as roxygen2 
   # A rule without arguments has only its description
   expect_equal(
     pknca_rd_exclude_rule("exclude_nca_tmax_0"),
-    "@describeIn exclude_nca Exclude based on implausibly early Tmax (special case for tmax_early = 0)"
+    "@describeIn exclude_nca Exclude based on a Tmax of 0 or less (unlike exclude_nca_tmax_early() with its default of 0, which excludes only a Tmax below 0)"
   )
   # A rule with its own page has its description as the title
   by_param <- pknca_rd_exclude_rule("exclude_nca_by_param", describe_in = NULL)
@@ -54,7 +54,7 @@ test_that("the registry tables are markdown tables with one row per entry", {
     "| [exclude_nca_span.ratio()] | Exclude based on the half-life span ratio | `min.span.ratio` |"
   )
   # A rule with no options used, and a rule that needs its arguments
-  expect_true("| [exclude_nca_tmax_0()] | Exclude based on implausibly early Tmax (special case for tmax_early = 0) | (none) |" %in% rules_table)
+  expect_true("| [exclude_nca_tmax_0()] | Exclude based on a Tmax of 0 or less (unlike exclude_nca_tmax_early() with its default of 0, which excludes only a Tmax below 0) | (none) |" %in% rules_table)
   expect_true(any(startsWith(rules_table, "| [exclude_nca_by_param()] | Exclude based on NCA parameter thresholds | (set by its arguments) |")))
   methods_table <- pknca_rd_impute_methods_table()
   expect_equal(methods_table[1:4], c("@section Methods:", "", "| Method | Description |", "| --- | --- |"))

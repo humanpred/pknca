@@ -132,6 +132,27 @@ test_that("exclude_nca_tmax_early", {
   )
 })
 
+test_that("the default exclude_nca_tmax_early() excludes only a negative Tmax; exclude_nca_tmax_0() also excludes a Tmax of 0", {
+  # The registered descriptions of the two rules say this
+  results <-
+    data.frame(
+      PPTESTCD = c("tmax", "auclast"),
+      PPORRES = c(0, 5),
+      stringsAsFactors = FALSE
+    )
+  expect_equal(exclude_nca_tmax_early()(results), c(NA_character_, NA_character_))
+  expect_equal(
+    exclude_nca_tmax_0()(results),
+    rep("tmax <= 0 (likely missed dose, insufficient PK samples, or PK sample swap)", 2)
+  )
+  negative <- results
+  negative$PPORRES[1] <- -1
+  expect_equal(
+    exclude_nca_tmax_early()(negative),
+    rep("tmax < 0 (likely missed dose, insufficient PK samples, or PK sample swap)", 2)
+  )
+})
+
 test_that("exclude_nca_by_param works as expected", {
   # Define the input
   my_conc <- PKNCAconc(data.frame(conc=c(1.1^(3:0), 1.1), time=0:4, subject=1), conc~time|subject)

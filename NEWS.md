@@ -1335,6 +1335,12 @@ the generated intervals:
 
 ## Other changes
 
+* The help of `exclude_nca_tmax_early()` no longer says it is often used for
+  extravascular dosing with a Tmax of 0:  its default `tmax_early = 0` excludes
+  only a Tmax below 0.  The help of `exclude_nca_tmax_0()`, which excludes a
+  Tmax of 0 or less, no longer calls it a special case of
+  `exclude_nca_tmax_early(tmax_early = 0)`.
+
 * The sparse AUC vignette and the help of `var_sparse_auc()` and
   `sparse_bootstrap()` cite Wolfsegger and Jaki's estimators for serial
   sacrifice, batch, and complete designs and Barnett et al.'s comparison of
