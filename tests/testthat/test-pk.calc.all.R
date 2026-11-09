@@ -1827,6 +1827,67 @@ test_that("a calculation function returning names without values errors instead 
   )
 })
 
+test_that("a calculation function returning several values under one name errors instead of adding rows", {
+  # A one-column, multi-row data.frame and a vector each pair one name with
+  # two values.
+  returns <-
+    list(
+      df_rows = function(conc, time) data.frame(a = c(1, 2)),
+      vector = function(conc, time) c(1, 2)
+    )
+  local_interval_cols()
+  withr::defer(rm(list = paste0("pknca_test_multirow_", names(returns), "_"), envir = .GlobalEnv))
+  o_conc <- PKNCAconc(data.frame(conc = c(1, 2, 3), time = c(0, 1, 2)), conc~time)
+  o_dose <- PKNCAdose(data.frame(dose = 1, time = 0), dose~time)
+  for (nm in names(returns)) {
+    fn_name <- paste0("pknca_test_multirow_", nm, "_")
+    col_name <- paste0(fn_name, "col_")
+    assign(fn_name, returns[[nm]], envir = .GlobalEnv)
+    add.interval.col(
+      col_name,
+      FUN = fn_name,
+      unit_type = "conc",
+      pretty_name = "Test: multi-row result",
+      desc = "Shape check for a multi-row result"
+    )
+    intervals <- data.frame(start = 0, end = 24, col = TRUE)
+    names(intervals)[3] <- col_name
+    expect_error(
+      pk.nca(PKNCAdata(o_conc, o_dose, intervals = intervals)),
+      regexp = paste0(fn_name, "' returned 1 result name\\(s\\) and 2 value\\(s\\); it must return one value per name"),
+      class = "pknca_error_interval_calculation",
+      info = nm
+    )
+  }
+})
+
+test_that("a calculation function returning one value per column of a one-row data.frame is accepted", {
+  fn_name <- "pknca_test_one_row_result_"
+  assign(
+    fn_name,
+    function(conc, time) data.frame(pknca_test_one_row_a_ = 1, pknca_test_one_row_b_ = 2),
+    envir = .GlobalEnv
+  )
+  local_interval_cols()
+  withr::defer(rm(list = fn_name, envir = .GlobalEnv))
+  add.interval.col(
+    "pknca_test_one_row_result_col_",
+    FUN = fn_name,
+    unit_type = "conc",
+    pretty_name = "Test: one-row result",
+    desc = "One-row data.frame result"
+  )
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(data.frame(conc = c(1, 2, 3), time = c(0, 1, 2)), conc~time),
+      PKNCAdose(data.frame(dose = 1, time = 0), dose~time),
+      intervals = data.frame(start = 0, end = 24, pknca_test_one_row_result_col_ = TRUE)
+    )
+  result <- as.data.frame(pk.nca(o_data))
+  expect_equal(result$PPTESTCD, c("pknca_test_one_row_a_", "pknca_test_one_row_b_"))
+  expect_equal(result$PPORRES, c(1, 2))
+})
+
 # The tau that mrt.md.obs used, solved back from its equation
 pk_nca_tau_used <- function(o_conc, o_dose, intervals) {
   res <- as.data.frame(pk.nca(PKNCAdata(o_conc, o_dose, intervals = intervals)))

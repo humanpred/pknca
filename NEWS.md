@@ -1299,6 +1299,9 @@ the generated intervals:
   or with more than one row) now stops with an error naming the function and
   both lengths.  Previously a zero-row return was an obscure error, and a
   multiple-row return silently reported values under the wrong parameter names.
+  This includes a one-column data.frame with several rows and a vector with
+  several values, which each gave one result row per value under the one
+  parameter name instead of stopping.
 
 * `pknca_units_table()` no longer errors when every preferred unit equals its
   original unit.  (@billdenney)
