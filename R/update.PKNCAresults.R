@@ -170,6 +170,36 @@ semi_join_by_value <- function(x, y, by) {
   join_rows_by_value(x, y, by = by, join_fun = dplyr::semi_join)
 }
 
+#' `dplyr::left_join()` matching key columns by their values as text
+#'
+#' The units table that `PKNCAdata()` builds holds group values as character,
+#' while the results keep the types of the source data.  dplyr will not join an
+#' integer, numeric, or date column to a character one, and joining a factor to
+#' a character column makes the joined column character.  The keys are matched
+#' as character, and the returned rows keep the key columns of `x` as they
+#' were.
+#'
+#' @inheritParams join_rows_by_value
+#' @returns The rows of `dplyr::left_join(x, y, by = by)`, with the key columns
+#'   of `x` unchanged
+#' @noRd
+left_join_by_value <- function(x, y, by) {
+  rowid_col <- paste0(max(c(names(x), names(y))), "X")
+  tracking <- x
+  y_text <- y
+  for (nm in by) {
+    tracking[[nm]] <- as.character(tracking[[nm]])
+    y_text[[nm]] <- as.character(y_text[[nm]])
+  }
+  tracking[[rowid_col]] <- seq_len(nrow(x))
+  ret <- dplyr::left_join(tracking, y_text, by = by)
+  for (nm in by) {
+    ret[[nm]] <- x[[nm]][ret[[rowid_col]]]
+  }
+  ret[[rowid_col]] <- NULL
+  ret
+}
+
 # remove the original data.frames from the source data to enable comparison for
 # updates
 strip_source_data <- function(data) {
