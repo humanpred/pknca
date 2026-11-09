@@ -646,3 +646,42 @@ test_that("left_join_by_value matches keys of different types by value", {
     data.frame(g = c(2L, 2L), v = c(1L, 1L), w = c("a", "b"))
   )
 })
+
+test_that("Preferred units with unit columns convert the groups that need it and keep the others", {
+  skip_if_not_installed("units")
+  d_conc <-
+    data.frame(
+      analyte = rep(c("parent", "metabolite"), each = 3), subject = 1,
+      time = rep(c(0, 12, 24), 2), conc = c(4, 10, 2, 8000, 20000, 4000),
+      cu = rep(c("mg/L", "ng/mL"), each = 3), tu = "hr"
+    )
+  o_conc <- PKNCAconc(d_conc, conc~time|analyte + subject, concu = "cu", timeu = "tu", concu_pref = "mg/L")
+  o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = 24, cmax = TRUE))
+  units_cmax <- o_data$units[o_data$units$PPTESTCD == "cmax", ]
+  expect_equal(units_cmax$analyte, c("parent", "metabolite"))
+  expect_equal(units_cmax$PPORRESU, c("mg/L", "ng/mL"))
+  # The parent is already in the preferred units
+  expect_equal(units_cmax$PPSTRESU, c("mg/L", "mg/L"))
+  expect_equal(units_cmax$conversion_factor, c(1, 0.001))
+  df_nca <- as.data.frame(pk.nca(o_data))
+  expect_equal(df_nca$analyte, c("metabolite", "parent"))
+  expect_equal(df_nca$PPORRES, c(20000, 10))
+  expect_equal(df_nca$PPSTRES, c(20, 10))
+  expect_equal(df_nca$PPSTRESU, c("mg/L", "mg/L"))
+
+  # The same with a dose unit column and preferred dose units
+  d_conc_dose <- data.frame(treatment = rep(c("A", "B"), each = 3), time = rep(c(0, 12, 24), 2), conc = c(4, 10, 2, 4, 10, 2))
+  d_dose <- data.frame(treatment = c("A", "B"), time = 0, dose = c(1, 1000), du = c("mg", "ug"))
+  o_data_dose <-
+    PKNCAdata(
+      PKNCAconc(d_conc_dose, conc~time|treatment, concu = "mg/L", timeu = "hr"),
+      PKNCAdose(d_dose, dose~time|treatment, doseu = "du", doseu_pref = "mg"),
+      intervals = data.frame(start = 0, end = 24, cmax.dn = TRUE)
+    )
+  units_cmax_dn <- o_data_dose$units[o_data_dose$units$PPTESTCD == "cmax.dn" & is.na(o_data_dose$units$treatment_ref), ]
+  expect_equal(units_cmax_dn$PPORRESU, c("(mg/L)/mg", "(mg/L)/ug"))
+  expect_equal(units_cmax_dn$PPSTRESU, c("(mg/L)/mg", "(mg/L)/mg"))
+  expect_equal(units_cmax_dn$conversion_factor, c(1, 1000))
+  df_nca_dose <- as.data.frame(pk.nca(o_data_dose))
+  expect_equal(df_nca_dose$PPSTRES[df_nca_dose$PPTESTCD == "cmax.dn"], c(10, 10))
+})
