@@ -218,9 +218,10 @@ the generated intervals:
 * The single-dose interval now carries `start_predose_conc0` imputation, and a
   dosing interval carries `start_cmin` or `start_predose`.  **AUC values change
   when no sample sits at the start of the interval**, because the concentration
-  at the start is now imputed rather than the AUC starting at the first sample.
-  For a profile sampled at 0.25, 1, 2, 4, 8, and 24 hours after a dose at time
-  0, AUClast used to be integrated from 0.25 hours and is now integrated from 0
+  at the start is now imputed rather than the AUC being unavailable.  For a
+  profile sampled at 0.25, 1, 2, 4, 8, and 24 hours after a dose at time 0,
+  AUClast and AUCinf.obs used to be `NA`, excluded with "Requesting an AUC range
+  starting (0) before the first measurement", and are now integrated from 0
   hours with a concentration of 0 imputed there.
 * The default set of parameters gains `tlag`, `count_conc`, `aucpext.obs`, and
   `cl.obs`.  Parameters that were already calculated are unchanged.
