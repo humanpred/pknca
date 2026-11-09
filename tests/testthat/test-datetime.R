@@ -984,3 +984,33 @@ test_that("pknca_difftime_to_unit converts to hours without the units package", 
 test_that("pknca_difftime_to_unit is exported", {
   expect_true("pknca_difftime_to_unit" %in% getNamespaceExports("PKNCA"))
 })
+
+test_that("Date-time references join ordered factor groups whose levels differ", {
+  ord <- function(x, levels) factor(x, levels = levels, ordered = TRUE)
+  t0 <- as.POSIXct("2024-03-01 08:00:00", tz = "UTC")
+  d_conc <-
+    data.frame(
+      subject = ord(rep(c("a", "b"), each = 4), c("b", "a")),
+      time = t0 + rep(c(0, 1, 2, 4), 2) * 3600 + rep(c(0, 1800), each = 4),
+      conc = c(0, 4, 2, 1, 0, 3, 2, 1)
+    )
+  d_dose <- data.frame(subject = ord(c("a", "b"), c("c", "b", "a")), time = t0 + c(0, 1800), dose = 10)
+  intervals <-
+    data.frame(
+      subject = ord(c("a", "b"), c("a", "b", "d")),
+      start = t0 + c(0, 1800), end = t0 + c(2, 4) * 3600 + c(0, 1800),
+      cmax = TRUE
+    )
+  o_data <- PKNCAdata(PKNCAconc(d_conc, conc~time|subject), PKNCAdose(d_dose, dose~time|subject), intervals = intervals)
+  expect_equal(converted(o_data)$intervals$start, c(0, 0))
+  expect_equal(converted(o_data)$intervals$end, c(2, 4))
+  expect_equal(as.data.frame(pk.nca(o_data))$PPORRES, c(4, 3))
+  # The first-concentration reference of a subject without a dose
+  o_data_one_dose <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time|subject),
+      PKNCAdose(d_dose[1, ], dose~time|subject),
+      intervals = intervals
+    )
+  expect_equal(converted(o_data_one_dose)$intervals$end, c(2, 4))
+})
