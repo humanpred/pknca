@@ -1287,3 +1287,14 @@ test_that("aucint.inf.* do not use the half-life for an interpolated start befor
   expect_equal(attr(auc, "method")[3], "Extrapolation: none")
   expect_equal(attr(auc, "exclude"), "DO NOT EXCLUDE")
 })
+
+test_that("aucint over an IV multiple-dose interval ending at the next dose does not warn", {
+  conc <- c(9, 8, 6, 4, 2.8)
+  time <- c(0.5, 1, 2, 4, 6)
+  expect_no_warning(
+    pk.calc.aucint.last(
+      conc = conc, time = time, start = 0, end = 12,
+      time.dose = c(0, 12), route = "intravascular", duration.dose = 0
+    )
+  )
+})
