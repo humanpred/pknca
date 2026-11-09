@@ -171,11 +171,11 @@ and the values should be one of the following:
 \item{For the current group:}
 \describe{
 \item{"conc.group"}{Concentration measurements for the current group.}
-\item{"time.group"}{Times associated with concentration measurements for the current group (values start at 0 at the beginning of the current interval).}
+\item{"time.group"}{Times associated with concentration measurements for the current group (relative to the start of the current interval, so times before it are negative).}
 \item{"volume.group"}{Volume associated with concentration measurements for the current interval (typically applies for excretion parameters like urine).}
 \item{"duration.conc.group"}{Durations assocuated with concentration measurements for the current group.}
 \item{"dose.group"}{Dose amounts assocuated with the current group.}
-\item{"time.dose.group"}{Time of dose start associated with the current group (values start at 0 at the beginning of the current interval).}
+\item{"time.dose.group"}{Time of dose start associated with the current group (relative to the start of the current interval, so times before it are negative).}
 \item{"duration.dose.group"}{Duration of dose (typically infusion duration) for doses in the current group.}
 \item{"route.group"}{Route of dosing for the current group.}
 }
@@ -185,7 +185,7 @@ these is only calculable with a sparse \code{PKNCAconc}):}
 \item{"conc.sparse"}{The pooled individual concentration measurements for the current interval ("conc" is the arithmetic-mean profile built from them).}
 \item{"time.sparse"}{Times associated with the pooled individual concentration measurements for the current interval (values start at 0 at the beginning of the current interval).}
 \item{"conc.sparse.group"}{The pooled individual concentration measurements for the current group.}
-\item{"time.sparse.group"}{Times associated with the pooled individual concentration measurements for the current group (values start at 0 at the beginning of the current interval).}
+\item{"time.sparse.group"}{Times associated with the pooled individual concentration measurements for the current group (relative to the start of the current interval, so times before it are negative).}
 \item{"subject"}{Subject identifiers for the pooled individual concentration measurements for the current interval.}
 }
 \item{Constants:}
