@@ -388,6 +388,8 @@ PKNCA_impute_fun_list <- function(x) {
     x <- rep(NA_character_, length(x))
   }
   ret <- strsplit(x = x, split = "[, ]+", perl = TRUE)
+  # A separator at the start splits off an empty name before the first method
+  ret <- lapply(X = ret, FUN = function(v) v[nzchar(v)])
   mask_none <- vapply(X = ret, FUN = length, FUN.VALUE = 1L) == 0
   ret[mask_none] <- NA_character_
   ret <- lapply(X = ret, FUN = PKNCA_impute_fun_list_paste)

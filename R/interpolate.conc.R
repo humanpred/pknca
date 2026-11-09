@@ -442,14 +442,18 @@ interp.extrap.conc.dose <- function(conc, time,
       do.call(interp.extrap.conc.dose.select[[nm]]$select, list(x=data_all))
     if (any(mask)) {
       if ("warning" %in% names(interp.extrap.conc.dose.select[[nm]])) {
-        rlang::warn(
-          sprintf(
-            "%s: %d data points",
-            interp.extrap.conc.dose.select[[nm]]$warning,
-            sum(mask)
-          ),
-          class = "pknca_warning_interp_extrap_conc_dose"
-        )
+        # The timeline also has rows for the measurements and doses, and only
+        # the requested times are reported
+        if (any(mask & data_all$out)) {
+          rlang::warn(
+            sprintf(
+              "%s: %d data points",
+              interp.extrap.conc.dose.select[[nm]]$warning,
+              sum(mask & data_all$out)
+            ),
+            class = "pknca_warning_interp_extrap_conc_dose"
+          )
+        }
         data_all$method[mask] <- nm
       } else {
         for (current_idx in which(mask)) {
