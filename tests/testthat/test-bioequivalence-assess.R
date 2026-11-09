@@ -131,7 +131,48 @@ test_that("be_design errors on an unknown reference value", {
   )
 })
 
+test_that("be_design needs one row per subject and period", {
+  # The long data of two endpoints give each subject two rows per period, which
+  # would otherwise read as a replicated reference and test.
+  d <- generate_be_replicate(16, 3, "2x2")
+  expect_error(
+    be_design(rbind(d, d), "subject", "sequence", "period", "treatment", "R"),
+    regexp = "Subject(s) 1, 2, 3, 4, 5 have more than one row in a period",
+    fixed = TRUE,
+    class = "pknca_error_be_design_duplicate_period"
+  )
+  par <- data.frame(subject = 1:8, period = 1L, treatment = rep(c("R", "T"), each = 4))
+  expect_error(
+    be_design(rbind(par, par), "subject", NA, "period", "treatment", "R"),
+    class = "pknca_error_be_design_duplicate_period"
+  )
+  # A missing period is one period: one row per subject is still parallel.
+  par$period <- NA
+  expect_identical(be_design(par, "subject", NA, "period", "treatment", "R")$design, "parallel")
+  par2 <- rbind(par, par[1, ])
+  expect_error(
+    be_design(par2, "subject", NA, "period", "treatment", "R"),
+    regexp = "Subject(s) 1 have",
+    fixed = TRUE,
+    class = "pknca_error_be_design_duplicate_period"
+  )
+})
+
 # be_within_var -------------------------------------------------------------
+
+test_that("be_within_var needs one row per subject and period", {
+  # Two endpoints of a 2x2 crossover would otherwise give a "replicated"
+  # reference and a within-subject variance between the endpoints.
+  d <- generate_be_replicate(16, 3, "2x2")
+  expect_error(
+    be_within_var(rbind(d, d), "PK", "subject", "period", "treatment", "R"),
+    class = "pknca_error_be_within_var_duplicate_period"
+  )
+  expect_error(
+    be_within_var(rbind(d, d), "PK", "subject", "period", "treatment", "R", model_type = "isc"),
+    class = "pknca_error_be_within_var_duplicate_period"
+  )
+})
 
 test_that("be_within_var (anova) matches the ANOVA within-subject variances", {
   # Pinned to the reference implementation's CV.calc on the high-variability

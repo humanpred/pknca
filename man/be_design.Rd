@@ -7,8 +7,8 @@
 be_design(data, subject, sequence, period, treatment, reference_value)
 }
 \arguments{
-\item{data}{A long data.frame with one row per concentration-derived
-observation (subject, period, treatment).}
+\item{data}{A long data.frame with one row per subject and period for a
+single endpoint (filter long NCA results to one \code{PPTESTCD} first).}
 
 \item{subject, sequence, period, treatment}{Column names (length-1 character)
 identifying the subject, randomization sequence, period, and treatment.

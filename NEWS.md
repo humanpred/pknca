@@ -613,6 +613,19 @@ the generated intervals:
   sequence, so no model drops such rows while the subject count includes them.
   (@billdenney)
 
+* `be_assess()`, `be_compare()`, and `be_fit_models()` classify the design from
+  the rows of each endpoint, so long data with several `PPTESTCD` values give
+  the design of one endpoint:  a 2x2 crossover with Cmax and AUC rows is
+  `"2x2x2"`, where reference scaling is not feasible, and a parallel study with
+  two endpoints is `"parallel"` and uses the fixed-effects ANOVA.  Endpoints
+  with different designs stop with `pknca_error_be_design_endpoints_differ`.
+  `be_design()` and `be_within_var()` stop with
+  `pknca_error_be_design_duplicate_period` and
+  `pknca_error_be_within_var_duplicate_period` when a subject has more than one
+  row in a period, which is what the rows of several endpoints look like.  A
+  covariate missing only in rows of an endpoint that is not assessed is not an
+  error.  (@billdenney)
+
 * The expanding-limits frameworks of `be_assess()` widen only the endpoints
   their guidances allow (@billdenney).  The EMA and the GCC widen Cmax and keep
   AUC at 80.00-125.00%; Health Canada widens AUC and judges Cmax by its point
