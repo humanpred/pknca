@@ -5,6 +5,10 @@ test_that("normalize.data.frame works for basic normalization", {
   expect_equal(res$PPORRES, c(5, 5))
   expect_equal(res$PPORRESU, c("(ng/mL)/kg", "(ng/mL)/kg"))
   expect_equal(res$PPTESTCD, c("cmax.wn", "cmax.wn"))
+  # Only the normalized rows are returned, as a data.frame
+  expect_s3_class(res, "data.frame")
+  expect_false(inherits(res, "PKNCAresults"))
+  expect_equal(nrow(res), 2)
 })
 
 
@@ -23,6 +27,10 @@ test_that("normalize.PKNCAresults appends normalized parameters", {
   skip_if_not_installed("units")
   norm_table <- data.frame(ID = 1:2, normalization = 2, unit = "kg")
   res <- normalize(o_nca, norm_table, parameters = "cmax", suffix = ".wn")
+  # A PKNCAresults object goes in, and one comes out with the original rows kept
+  expect_s3_class(res, "PKNCAresults")
+  expect_equal(nrow(res$result), 2 * nrow(o_nca$result))
+  expect_equal(res$result[seq_len(nrow(o_nca$result)), ], o_nca$result)
   expect_true(any(res$result$PPTESTCD == "cmax.wn"))
   expect_equal(
     res$result$PPORRES[res$result$PPTESTCD == "cmax.wn"],
@@ -107,6 +115,7 @@ test_that("normalize_by_col errors when object is not PKNCAresults", {
 test_that("normalize_by_col normalizes by a numeric column in PKNCAconc data", {
   skip_if_not_installed("units")
   res <- normalize_by_col(o_nca, col = "weight", unit = "kg", parameters = "cmax", suffix = ".wn")
+  expect_s3_class(res, "PKNCAresults")
   
   cmax_rows <- res$result[res$result$PPTESTCD == "cmax", ]
   wn_rows   <- res$result[res$result$PPTESTCD == "cmax.wn", ]

@@ -16,7 +16,11 @@ normalize(object, norm_table, parameters, suffix)
 \item{suffix}{character value to add for the normalized parameter names}
 }
 \value{
-A data.frame with normalized parameters
+For a data.frame, a data.frame with one row for each row of the
+requested \code{parameters}, with the normalized values and units and the
+parameter names (\code{PPTESTCD}) extended with \code{suffix}; the original rows are
+not included.  For a PKNCAresults object, the PKNCAresults object with
+those rows added to its results (the original rows are kept).
 }
 \description{
 Normalize parameters in a PKNCAresults object or data.frame

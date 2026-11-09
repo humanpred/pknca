@@ -18,7 +18,8 @@ normalize_by_col(object, col, unit, parameters, suffix)
 \item{suffix}{Suffix to add to the normalized parameter code names}
 }
 \value{
-A data.frame with normalized parameters
+The PKNCAresults object \code{object} with the normalized rows added to
+its results (see \code{\link[=normalize]{normalize()}}); the original rows are kept.
 }
 \description{
 Normalize PKNCA results by a column of the concentration data

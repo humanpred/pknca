@@ -1335,6 +1335,11 @@ the generated intervals:
 
 ## Other changes
 
+* The help of `normalize()` and `normalize_by_col()` says what they return:  for
+  a data.frame, only the normalized rows; for a PKNCAresults object (the only
+  input of `normalize_by_col()`), the PKNCAresults object with the normalized
+  rows added.  The help said both returned a data.frame.
+
 * The help of `get.parameter.deps()` no longer says that `recursive = TRUE`
   mixes parameter names with raw inputs.  It returns only the leaf inputs (data
   such as `"conc"`, `"time"`, and `"dose"`, and other function arguments such
