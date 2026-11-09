@@ -1346,6 +1346,14 @@ the generated intervals:
   Only that pipeline uses the PK and BLOQ packages; the vignette reads its
   stored results, so they are not package dependencies (@billdenney)
 
+* `vignette("v24-sparse-auc-to-infinity")` shows what the sparse half-life and
+  AUC to infinity converge to with infinitely many animals, with sampling to
+  24, 48, and 72 hours:  the half-life of the mean profile lengthens with the
+  sampling duration, and the bias of the AUC to infinity is split into the
+  linear trapezoidal AUC to the last time, the mean there, and the
+  extrapolation.  BLQ samples counted as zero lower the last mean and steepen
+  the fitted slope, which account for most of the bias they add (@billdenney)
+
 * The variance of a sparse AUC or AUMC and its degrees of freedom are
   calculated much faster for serial sacrifice, batch, and complete designs
   (for example, about 260 ms down to 5 ms with 100 animals at each of nine

@@ -170,3 +170,22 @@ run_known_answer_tests <- function(test_files) {
   }
   TRUE
 }
+
+# `known_answers` is the result of the known-answer tests, which include this
+# study's, so the file is not written unless they pass
+output_converged <- function(results, settings, known_answers) {
+  stopifnot(isTRUE(known_answers))
+  results <- results[order(results$compartments, results$route != "oral", results$elimination, results$blq != "none", results$duration), ]
+  rownames(results) <- NULL
+  c(
+    list(
+      summary = results[, setdiff(names(results), "branch_seconds")],
+      durations = converged_durations,
+      extra_times = converged_extra_times,
+      n_animals = settings$n_converged_animals,
+      seed_base = settings$seed_base_converged
+    ),
+    run_versions(),
+    list(run_minutes = compute_minutes(results, "scenario"))
+  )
+}

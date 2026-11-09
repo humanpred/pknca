@@ -134,6 +134,15 @@ mapped_tobit_profile <-
     )
   )
 
+# The serial-sacrifice scenarios without BLQ samples, as for the large-sample
+# check
+mapped_converged <-
+  tar_map(
+    values = values_large_n,
+    names = "scenario",
+    tar_target(results_converged, run_converged_study(scenario_row(scenarios, scenario), settings))
+  )
+
 mapped_large_n <-
   tar_map(
     values = values_large_n,
@@ -168,6 +177,7 @@ list(
   mapped_profile,
   mapped_tobit_profile,
   mapped_large_n,
+  mapped_converged,
   tar_combine(results_se_all, mapped_scenarios[["results_se"]], command = bind_results(!!!.x)),
   tar_combine(results_bootstrap_all, mapped_scenarios[["results_bootstrap"]], command = bind_results(!!!.x)),
   tar_combine(results_mean_type_all, mapped_scenarios[["results_mean_type"]], command = bind_results(!!!.x)),
@@ -181,6 +191,7 @@ list(
   tar_combine(results_boott_profile_all, mapped_profile[["results_boott_profile"]], command = bind_results(!!!.x)),
   tar_combine(results_blq_all, mapped_blq[["results_blq"]], command = bind_results(!!!.x)),
   tar_combine(results_large_n_all, mapped_large_n[["results_large_n"]], command = bind_results(!!!.x)),
+  tar_combine(results_converged_all, mapped_converged[["results_converged"]], command = bind_results(!!!.x)),
   # The summaries the vignette reads, written to vignettes/
   tar_target(output_se_list, output_se(results_se_all, scenarios_truth, truth, settings)),
   tar_target(output_bootstrap_list, output_bootstrap(results_bootstrap_all, scenarios_truth, settings)),
@@ -194,11 +205,17 @@ list(
     )
   ),
   tar_target(output_blq_list, output_blq(results_blq_all, scenarios_truth, settings)),
+  tar_target(output_converged_list, output_converged(results_converged_all, settings, known_answers)),
   tar_target(rds_se, write_vignette_rds(output_se_list, "v24-sparse-auc-to-infinity-simulation.rds", settings$output_dir), format = "file"),
   tar_target(rds_bootstrap, write_vignette_rds(output_bootstrap_list, "v24-sparse-auc-to-infinity-bootstrap.rds", settings$output_dir), format = "file"),
   tar_target(rds_mean_type, write_vignette_rds(output_mean_type_list, "v24-sparse-auc-to-infinity-mean-type.rds", settings$output_dir), format = "file"),
   tar_target(rds_profile, write_vignette_rds(output_profile_list, "v24-sparse-auc-to-infinity-bootstrap-n.rds", settings$output_dir), format = "file"),
   tar_target(rds_tobit, write_vignette_rds(output_tobit_list, "v24-sparse-auc-to-infinity-tobit.rds", settings$output_dir), format = "file"),
   tar_target(rds_comparisons, write_vignette_rds(output_comparisons_list, "v24-sparse-auc-to-infinity-comparisons.rds", settings$output_dir), format = "file"),
-  tar_target(rds_blq, write_vignette_rds(output_blq_list, "v24-sparse-auc-to-infinity-blq.rds", settings$output_dir), format = "file")
+  tar_target(rds_blq, write_vignette_rds(output_blq_list, "v24-sparse-auc-to-infinity-blq.rds", settings$output_dir), format = "file"),
+  tar_target(
+    rds_converged,
+    write_vignette_rds(output_converged_list, "v24-sparse-auc-to-infinity-converged.rds", settings$output_dir),
+    format = "file"
+  )
 )

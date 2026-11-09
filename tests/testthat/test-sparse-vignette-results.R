@@ -113,6 +113,17 @@ sparse_vignette_results <- list(
         )
       )
     )
+  ),
+  "v24-sparse-auc-to-infinity-converged.rds" = list(
+    fields = c("summary", "extra_times", "n_animals", "pknca_version", "r_version", "run_date"),
+    summaries = list(
+      summary = c(
+        "compartments", "route", "elimination", "blq", "duration", "tlast", "half_life_typical",
+        "half_life_local", "half_life_effective", "half_life_converged", "percent_extrapolated",
+        "bias_trapezoid", "bias_clast", "bias_lambda_z", "bias_total"
+      )
+    ),
+    values = list(summary = list(blq = c("moderate", "none"), duration = c(24, 48, 72)))
   )
 )
 

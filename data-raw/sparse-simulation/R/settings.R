@@ -54,6 +54,11 @@ simulation_settings <- function() {
     # sets per scenario, and animals per time
     n_large_replicates = setting_integer("SIM_LARGE_REPLICATES", 20),
     large_n_per_time = setting_integer("SIM_LARGE_N_PER_TIME", 2000),
+    # What the estimates converge to:  the virtual animals of each population
+    # mean curve, drawn with the seed base plus the scenario number (clear of
+    # the truth seeds, which are the other bases plus 1 to 8)
+    n_converged_animals = setting_integer("SIM_CONVERGED_ANIMALS", 10000),
+    seed_base_converged = 20261100,
     # Where the result files go:  the vignette's directory, unless a trial run
     # sets another
     output_dir = Sys.getenv("SIM_OUTPUT_DIR", file.path("..", "..", "vignettes")),

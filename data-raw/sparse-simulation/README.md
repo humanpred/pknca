@@ -23,8 +23,9 @@ cannot run the simulations, so the vignette only reads the stored summaries.
 | `R/wolfsegger_jaki_2005.R` | The estimator of Wolfsegger and Jaki (2005), written from the paper |
 | `R/study_comparisons.R` | PKNCA against the PK package and Wolfsegger and Jaki (2005), with PKNCA's bootstrap-t |
 | `R/study_blq.R` | The BLQ treatments of Barnett et al. (2021) from the BLOQ package |
+| `R/study_converged.R` | What the sparse estimates converge to with infinitely many animals |
 | `R/outputs.R` | The contents of each result file, and the runner of the known-answer tests |
-| `tests/testthat/` | Known-answer tests of the 2005 estimator (a literal transcription of the paper's equations) and of the coverage summary |
+| `tests/testthat/` | Known-answer tests of the 2005 estimator (a literal transcription of the paper's equations), of the coverage summary, and of the converged estimates |
 | `_targets/` | The pipeline's store (not in git) |
 
 ## Running it
@@ -78,6 +79,7 @@ of parallel workers (default: one fewer than the cores).
 | `SIM_BLQ_REPLICATES` | 1000 | Data sets per BLQ scenario, BLOQ comparison |
 | `SIM_LARGE_REPLICATES` | 20 | Data sets per scenario, large-sample bias of the 2005 estimator |
 | `SIM_LARGE_N_PER_TIME` | 2000 | Animals per time for that check |
+| `SIM_CONVERGED_ANIMALS` | 10000 | Virtual animals of each population mean curve, converged estimates |
 | `SIM_OUTPUT_DIR` | `../../vignettes` | Where the result files are written |
 
 A trial run of every study takes a few minutes.  Give it its own output
@@ -90,6 +92,7 @@ SIM_OUTPUT_DIR=/tmp/sparse-trial SIM_LARGE_REPLICATES=2 SIM_LARGE_N_PER_TIME=50 
   SIM_PROFILE_REPLICATES=2 SIM_TOBIT_SE_REPLICATES=2 SIM_TOBIT_PROFILE_REPLICATES=2 \
   SIM_MEAN_TYPE_REPLICATES=3 SIM_MEAN_TYPE_VIRTUAL=200 SIM_COMPARISON_REPLICATES=4 \
   SIM_PK_NSAMPLE=50 SIM_WJ_NSAMPLE=50 SIM_BLQ_REPLICATES=3 SIM_BOOTT_PROFILE_REPLICATES=2 \
+  SIM_CONVERGED_ANIMALS=200 \
   Rscript -e "targets::tar_make()"
 ```
 
@@ -97,8 +100,9 @@ The targets store (`_targets/`) is shared, so a trial run's targets replace the
 full run's; use `targets::tar_config_set(store = "_targets_trial")` (or a
 copy of this directory) to keep both.
 
-The known-answer tests run as the target `known_answers`, and the comparisons'
-result file is not written unless they pass.  To run them alone:
+The known-answer tests run as the target `known_answers`, and the result files
+of the comparisons and of the converged estimates are not written unless they
+pass.  To run them alone:
 
 ```r
 testthat::test_dir("tests/testthat", load_package = "none")
@@ -117,6 +121,9 @@ timings:
 | PKNCA's bootstrap-t over animals per time (`results_boott_profile_*`) | 7 |
 | BLQ treatments (`results_blq_*`) | 0.7 |
 | Data sets and truth | 0.6 |
+
+The converged estimates (`v24-sparse-auc-to-infinity-converged.rds`) took 6
+core-minutes.
 
 The five earlier studies took 17 hours on 16 cores when last run (the sum of
 the `run_minutes` recorded in their result files, about 270 core-hours); the

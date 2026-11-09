@@ -67,6 +67,8 @@ mt_range <- function(column, ..., digits = 0) {
 # 2005, and PKNCA's bootstrap-t) and with the BLOQ package's BLQ treatments
 comparisons <- readRDS("v24-sparse-auc-to-infinity-comparisons.rds")
 blq <- readRDS("v24-sparse-auc-to-infinity-blq.rds")
+# What the sparse estimates converge to with infinitely many animals
+converged <- readRDS("v24-sparse-auc-to-infinity-converged.rds")
 # The range, or the one value, of a column of any summary over the rows
 # matching `...` (column = value), as text
 summary_range <- function(summary, column, ..., digits = 0) {
@@ -81,6 +83,18 @@ summary_value <- function(summary, column, ..., digits = 1) {
 }
 cmp_range <- function(column, ..., digits = 0) summary_range(comparisons$summary, column, ..., digits = digits)
 blq_range <- function(column, ..., digits = 0) summary_range(blq$summary, column, ..., digits = digits)
+conv_range <- function(column, ..., digits = 1) summary_range(converged$summary, column, ..., digits = digits)
+conv_value <- function(column, ..., digits = 1) summary_value(converged$summary, column, ..., digits = digits)
+# The percentage of the bias that BLQ samples add to the converged AUC to
+# infinity that comes from the mean at tlast and the fitted lambda.z, for each
+# route, elimination, and model (sampling to 24 hours)
+blq_bias_share <- function(summary) {
+  key <- c("compartments", "route", "elimination")
+  r <- summary[summary$duration == 24, ]
+  m <- merge(r[r$blq == "moderate", ], r[r$blq == "none", ], by = key, suffixes = c("", "_none"))
+  added <- m$bias_total - m$bias_total_none
+  100*((m$bias_clast - m$bias_clast_none) + (m$bias_lambda_z - m$bias_lambda_z_none))/added
+}
 # The AUC to infinity in the serial-sacrifice comparisons
 serial_range <- function(column, interval, n_per_time, ..., digits = 1) {
   cmp_range(column, interval = interval, design = "serial", parameter = "auc", n_per_time = n_per_time, ..., digits = digits)
@@ -156,7 +170,12 @@ For sparse sampling, where each animal gives one or a few samples:
   and too short when the profile was cut short by BLQ samples or a two-compartment
   distribution (down to
   `r min(round(sim_rows(mean_type$summary, list(mean_type = "arithmetic", parameter = "half.life"))$bias_typical))`%).
-  Sample long enough to see at least three terminal half-lives.
+  The mean of animals with different elimination rates declines ever more
+  slowly, so the half-life of the mean profile lengthens with the sampling
+  duration.  Sample long enough to see at least three terminal half-lives,
+  with no long gaps between the late times:  longer sampling reduces the part
+  of the AUC that is extrapolated, but the sparse AUC uses the linear
+  trapezoidal rule, which overestimates the area over long gaps.
 * **Cmax of the mean profile reads high with few animals per time.**  Taking
   the maximum of noisy means near a broad peak overestimated Cmax by up to
   `r max(round(sim_rows(mean_type$summary, list(mean_type = "arithmetic", parameter = "cmax", route = "oral"))$bias_natural))`%.
@@ -1016,6 +1035,53 @@ Median bias (% of the truth):
 show_blq("median_bias", "median_bias", 1)
 ```
 
+## Results:  what the estimates converge to
+
+With infinitely many animals, the sparse estimates have no variance but can
+still be biased.  For the serial-sacrifice scenarios, the population mean
+concentration at each sampling time was calculated from
+`r format(converged$n_animals, big.mark = ",")` virtual animals, and the
+sparse estimate was calculated from those means as from a data set's, with
+sampling to 24 hours (as above) and extended to 48 and 72 hours (adding samples
+at `r paste(converged$extra_times, collapse = ", ")` hours, up to the last time).
+With BLQ samples (the scenarios' LLOQ, sampling to 24 hours), the population
+mean counts BLQ samples as zero and is zero at a time with more than half of
+its samples BLQ, as `sparse_mean()` does.  The fitted half-life is compared
+with the typical animal's terminal half-life, the local half-life of the
+population mean curve at $t_{last}$ ($\log 2$ divided by minus its log slope
+there), and the effective half-life that would extrapolate the true area after
+$t_{last}$ exactly.  The bias of the AUC to infinity (% of the truth) is split
+into three parts that sum to it:  the AUC to $t_{last}$ (the linear trapezoidal
+rule, with the back-extrapolated $C_0$ after an IV bolus), the mean at
+$t_{last}$, and the extrapolation with the fitted $\lambda_z$.  "Extrap." is
+the true percentage of the AUC after $t_{last}$.
+
+```{r simulation-converged, echo = FALSE}
+show_converged <- function() {
+  r <- converged$summary
+  knitr::kable(
+    data.frame(
+      Model = paste0(r$compartments, "-cmt"),
+      Route = ifelse(r$route == "iv", "IV bolus", "oral"),
+      Elimination = r$elimination,
+      BLQ = r$blq,
+      `Last time (hr)` = r$tlast,
+      `HL typical` = round(r$half_life_typical, 1),
+      `HL fitted` = round(r$half_life_converged, 1),
+      `HL local` = round(r$half_life_local, 1),
+      `HL effective` = round(r$half_life_effective, 1),
+      `Extrap. (%)` = round(r$percent_extrapolated, 1),
+      `Bias AUClast` = round(r$bias_trapezoid, 1),
+      `Bias Clast` = round(r$bias_clast, 1),
+      `Bias lambda.z` = round(r$bias_lambda_z, 1),
+      `Bias total` = round(r$bias_total, 1),
+      check.names = FALSE
+    ),
+    row.names = FALSE
+  )
+}
+show_converged()
+```
 
 ## Findings
 
@@ -1150,6 +1216,45 @@ bias that BLQ samples add does not come from $\lambda_z$, and a better fit of
 $\lambda_z$ does not remove it:  it comes from the late means, where BLQ
 samples count as zero, and from the mean profile ending earlier, when more
 than half of a time's samples are BLQ.
+
+**What the estimates converge to.**  With infinitely many animals, the AUC to
+infinity of the profile's scenario (two compartments, oral, slow elimination)
+was biased by
+`r conv_value("bias_total", compartments = 2, route = "oral", elimination = "slow", blq = "none", duration = 24)`%
+without and
+`r conv_value("bias_total", compartments = 2, route = "oral", elimination = "slow", blq = "moderate", duration = 24)`%
+with BLQ samples, against
+`r profile_value("median_bias", 100, "none", "yuan", "auc")`% and
+`r profile_value("median_bias", 100, "moderate", "yuan", "auc")`% simulated
+with 100 animals per time:  the bias with many animals is the estimator's.
+Without BLQ samples, the fitted half-life was longer than the typical animal's
+terminal half-life but shorter than the local half-life of the mean curve at
+$t_{last}$, because the fit spans several times while the mean of animals with
+different elimination rates declines ever more slowly; the effective half-life
+of the tail was longer still.  So the extrapolation underestimated the area
+after $t_{last}$, a bias of
+`r conv_range("bias_lambda_z", blq = "none", duration = 24)`% of the AUC with
+sampling to 24 hours.  Sampling longer shrank that part (to
+`r conv_range("bias_lambda_z", blq = "none", duration = 72, digits = 2)`% with
+sampling to 72 hours) as less of the AUC was extrapolated, but the total bias
+did not shrink:  the linear trapezoidal rule overestimated the area more over
+the long gaps of the extended designs (24 to 48 and 48 to 72 hours), and the
+AUC to infinity was biased high by
+`r conv_range("bias_total", blq = "none", duration = 72)`% with sampling to 72
+hours, against `r conv_range("bias_total", blq = "none", duration = 24)`% with
+sampling to 24 hours.  The fitted half-life also moved further from the
+typical animal's with longer sampling (for that scenario,
+`r conv_value("half_life_converged", compartments = 2, route = "oral", elimination = "slow", blq = "none", duration = 24)`,
+`r conv_value("half_life_converged", compartments = 2, route = "oral", elimination = "slow", blq = "none", duration = 48)`,
+and
+`r conv_value("half_life_converged", compartments = 2, route = "oral", elimination = "slow", blq = "none", duration = 72)`
+hours to 24, 48, and 72 hours, against
+`r conv_value("half_life_typical", compartments = 2, route = "oral", elimination = "slow", blq = "none", duration = 24)`
+hours), so the half-life of the mean profile is a property of the design as
+much as of the drug.  With BLQ samples, counting them as zero lowered the mean
+at $t_{last}$ and steepened the fitted slope; these two parts made up
+`r paste(round(range(blq_bias_share(converged$summary))), collapse = " to ")`%
+of the bias that BLQ samples added.
 
 **Published estimators with three or four animals per time.**  Without BLQ
 samples, no interval was best everywhere.  With three animals per time, the
@@ -1547,8 +1652,11 @@ is a first-order approximation, which is least accurate when $\lambda_z$ is
 imprecise, as for the AUMC with slow elimination; and the arithmetic mean
 profile of animals with different elimination rates is not monoexponential, so
 the extrapolation $C_{last}/\lambda_z$ is itself biased for the population mean
-curve, which is part of why the AUMC to infinity is underestimated.  Where the
-extrapolated area is large, sampling longer remains the better remedy.
+curve (a bias of `r conv_range("bias_lambda_z", blq = "none", duration = 24)`%
+of the AUC with infinitely many animals and sampling to 24 hours), which is part of
+why the AUMC to infinity is underestimated.  Where the
+extrapolated area is large, sampling longer, with no long gaps between the
+late times, remains the better remedy.
 
 ## Extensions beyond the published methods
 
