@@ -6,9 +6,10 @@
 #' @inheritParams PKNCA.choose.option
 #' @param data.conc Concentration data as a `PKNCAconc` object or a data frame
 #' @param data.dose Dosing data as a `PKNCAdose` object (see details)
-#' @param impute Methods for imputation.  `NA` for to search for the column
-#'   named "impute" in the intervals or no imputation if that column does not
-#'   exist, a comma-or space-separated list of names, or the name of a column in
+#' @param impute Methods for imputation.  `NA` (or `NULL`) to search for the
+#'   column named "impute" in the intervals or no imputation if that column does
+#'   not exist, a comma-or space-separated list of names (`""` for no
+#'   imputation), or the name of a column in
 #'   the `intervals` data.frame (any column name works, not only `"impute"`, and
 #'   the column must be character).  [get_impute_method()] gives the exact rule.
 #'   See `vignette("v08-data-imputation", package="PKNCA")` for more details.
@@ -350,13 +351,16 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
       pknca_warn_single_dose_aucs_unit(o_conc = ret$conc, options = options)
     }
   }
+  # A logical NA and NULL are the default:  the "impute" column of the
+  # intervals when there is one, else no imputation.
+  if (is.null(impute) || identical(impute, NA)) {
+    impute <- NA_character_
+  }
+  checkmate::assert_character(impute, len = 1)
   # The intervals check allows the column that the imputation setting names, so
   # it sees the setting; the setting itself is stored after the units
   ret_with_impute <- ret
-  if (!identical(NA, impute)) {
-    checkmate::assert_character(impute, len = 1)
-    ret_with_impute$impute <- impute
-  }
+  ret_with_impute$impute <- impute
   # Date-time interval bounds are checked here and converted by pk.nca()
   ret$intervals <- set_intervals(data = ret_with_impute, intervals = intervals)$intervals
   ret$intervals <- check.interval.specification(ret$intervals, impute = impute)
@@ -385,10 +389,8 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
     ret$units <- units
   }
 
-  # Insert the imputation methods, if applicable
-  if (!identical(NA, impute)) {
-    ret$impute <- ret_with_impute$impute
-  }
+  # Insert the imputation methods
+  ret$impute <- impute
 
   ret
 }

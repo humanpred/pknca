@@ -238,7 +238,7 @@ parameter_classification <- function() {
       dose_normalized =
         vapply(
           all_intervals,
-          function(x) identical(x$FUN, "pk.calc.dn"),
+          function(x) isTRUE(x$FUN %in% c("pk.calc.dn", pknca_secondary_dn_fun)),
           TRUE
         )
     )
