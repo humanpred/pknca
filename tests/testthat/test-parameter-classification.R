@@ -93,10 +93,22 @@ test_that("the common tier is exactly the reviewed set", {
       # Intravenous
       "c0", "ceoi",
       # Excreta
-      "ae", "fe", "clr.obs", "volpk",
-      # Sparse
-      "sparse_auclast", "sparse_auc_se"
+      "ae", "fe", "clr.obs", "volpk"
     ))
+  )
+})
+
+test_that("every deprecated parameter is in the uncommon tier", {
+  # A deprecated name must not appear in a default report, so a new deprecated
+  # name cannot be registered as common.
+  tbl <- pknca_parameter_table()
+  deprecated <- names(deprecated_sparse_parameters)
+  expect_gt(length(deprecated), 0)
+  expect_true(all(deprecated %in% tbl$parameter))
+  expect_equal(
+    tbl$tier[match(deprecated, tbl$parameter)],
+    rep("uncommon", length(deprecated)),
+    info = paste(deprecated, collapse = ", ")
   )
 })
 

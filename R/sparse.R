@@ -841,8 +841,7 @@ add.interval.col(
   pptestcd_cdisc="AUCLST",
   pptest_cdisc="AUC to Last Nonzero Conc",
   formula="$AUC_{\\text{sparse}} = \\sum_k \\frac{\\bar{C}_k + \\bar{C}_{k+1}}{2} \\Delta t_k$",
-  formula_note="Linear trapezoidal using population mean concentrations",
-  tier = "common")
+  formula_note="Linear trapezoidal using population mean concentrations")
 
 add.interval.col(
   "sparse_auc_se",
@@ -853,14 +852,12 @@ add.interval.col(
   desc="SE of sparse AUC to last conc above LOQ",
   depends="sparse_auclast",
   # No CDISC PKPARMCD code exists for the standard error of a PK parameter
-  # (real submissions carry this in SUPPPP, not as its own PP record); kept
-  # as a sponsor-defined code despite the "common" tier -- see the
-  # pknca_cdisc_codes() gap list.
+  # (real submissions carry this in SUPPPP, not as its own PP record), so this
+  # is a sponsor-defined code.
   pptestcd_cdisc="SPARSEAS",
   pptest_cdisc="Sparse AUClast standard error",
   formula="$SE(AUC_{\\text{sparse}}) = \\sqrt{\\sum_{i,j} w_i w_j \\hat{\\sigma}_{ij} / n}$",
-  formula_note="Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001)",
-  tier = "common")
+  formula_note="Variance from weighted covariance across subjects (Nedelman and Jia 1998, Holder 2001)")
 
 add.interval.col(
   "sparse_auc_df",

@@ -1,11 +1,10 @@
 # A few common-tier parameters have no CDISC PKPARMCD equivalent at all (a
-# sample count, a standard error, and a clearance based on an interval AUC
-# extrapolated to infinity -- CDISC assigns no PP parameter code to any of
-# those concepts).  See the comments at their add.interval.col()
-# registrations.  Listed here explicitly so a *new* common-tier parameter
+# sample count and a clearance based on an interval AUC extrapolated to
+# infinity -- CDISC assigns no PP parameter code to either concept).  See the
+# comments at their add.interval.col() registrations.  Listed here explicitly so a *new* common-tier parameter
 # without a valid CT mapping fails the test below instead of being silently
 # accepted.
-known_cdisc_gap_common <- c("count_conc", "sparse_auc_se", "cl.int.inf.obs")
+known_cdisc_gap_common <- c("count_conc", "cl.int.inf.obs")
 
 test_that("common-tier CDISC codes are valid PKPARMCD codes with matching decode text", {
   skip_if_not_installed("cdiscdata")

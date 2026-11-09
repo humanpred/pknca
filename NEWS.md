@@ -423,9 +423,8 @@ the generated intervals:
     `sparse`; anything else is an error.
   * Every `"common"` tier parameter has a `pptestcd_cdisc` that is a real
     CDISC PKPARMCD code and a `pptest_cdisc` matching its decode text exactly,
-    except three that have no CDISC PP parameter code at all (`count_conc`,
-    `sparse_auc_se`, `cl.int.inf.obs`; see their `add.interval.col()`
-    registrations).  CDISC has one "AUC from T1 to T2" code regardless of the
+    except two that have no CDISC PP parameter code at all (`count_conc` and
+    `cl.int.inf.obs`; see their `add.interval.col()` registrations).  CDISC has one "AUC from T1 to T2" code regardless of the
     extrapolation basis, and no code for a sparsely estimated AUClast, so those
     parameters share a code and `PPANMETH` records the method.  Every
     registered `pptestcd_cdisc` is at most 8 characters and `pptest_cdisc` at
@@ -1116,6 +1115,11 @@ the generated intervals:
   inputs such as `conc`, `time`, and `dose`.
 
 ## Bug fixes
+
+* The deprecated `sparse_auclast` and `sparse_auc_se` are now in the
+  `"uncommon"` tier of `pknca_parameter_table()`, like the other deprecated
+  sparse parameter names, rather than `"common"`.  `pknca_interval_table()`
+  with its default `tier = "common"` no longer selects them.
 
 * Running an NCA no longer changes what `get.interval.cols()` returns
   (@billdenney).
