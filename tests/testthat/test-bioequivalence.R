@@ -211,6 +211,70 @@ test_that("be_fit_models is the engine and matches be_assess values", {
   expect_equal(as.data.frame(res), tbl)
 })
 
+test_that("be_assess classifies the design from each endpoint's rows", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("lmerTest")
+  skip_if_not_installed("emmeans")
+  # Two endpoints of a 2x2 crossover: each subject has two rows per period in
+  # the long data, but each endpoint has one.
+  d <- rbind(make_be_df(endpoint = "auclast"), make_be_df(seed = 124, endpoint = "cmax"))
+  res <- be_assess(d, reference_col = "form", reference_value = "R",
+                   endpoints = "auclast", regulator = "ABE")
+  expect_identical(attr(res, "design"), "2x2x2")
+  expect_identical(res$design, "2x2x2")
+  expect_equal(
+    res,
+    be_assess(d[d$PPTESTCD == "auclast", ], reference_col = "form", reference_value = "R",
+              endpoints = "auclast", regulator = "ABE")
+  )
+  both <- be_assess(d, reference_col = "form", reference_value = "R",
+                    endpoints = c("auclast", "cmax"), regulator = "ABE")
+  expect_identical(both$design, c("2x2x2", "2x2x2"))
+  # The reference is not replicated, so reference scaling is infeasible.
+  expect_error(
+    be_assess(d, reference_col = "form", reference_value = "R",
+              endpoints = "auclast", regulator = "EMA"),
+    class = "pknca_error_be_infeasible_design"
+  )
+})
+
+test_that("be_assess classifies a parallel design with several endpoints as parallel", {
+  skip_if_not_installed("emmeans")
+  d <- generate_be_parallel(effect = c(R = 0, T = log(1.10)), sd = c(R = 0.20, T = 0.30))
+  d_cmax <- d
+  d_cmax$PPTESTCD <- "cmax"
+  d_cmax$PPORRESU <- "ng/mL"
+  res <- be_assess(rbind(d, d_cmax), "treatment", "R", "auclast")
+  expect_identical(attr(res, "design"), "parallel")
+  expect_identical(res$model_type, "anova")
+  expect_equal(res, be_assess(d, "treatment", "R", "auclast"))
+})
+
+test_that("be_assess stops when the endpoints have different designs", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("lmerTest")
+  skip_if_not_installed("emmeans")
+  # Cmax only in period 1: a parallel comparison beside the auclast crossover.
+  d_cmax <- make_be_df(seed = 124, endpoint = "cmax")
+  d <- rbind(make_be_df(endpoint = "auclast"), d_cmax[d_cmax$period == 1, ])
+  expect_error(
+    be_assess(d, reference_col = "form", reference_value = "R",
+              endpoints = c("auclast", "cmax"), regulator = "ABE"),
+    regexp = paste(
+      "auclast: 2x2x2 of R/T, reference not replicated, test not replicated, repeated measures;",
+      "cmax: parallel of R/T, reference not replicated, test not replicated, one measurement per subject"
+    ),
+    fixed = TRUE,
+    class = "pknca_error_be_design_endpoints_differ"
+  )
+  # Only the requested endpoints are classified.
+  expect_identical(
+    attr(be_assess(d, reference_col = "form", reference_value = "R",
+                   endpoints = "auclast", regulator = "ABE"), "design"),
+    "2x2x2"
+  )
+})
+
 test_that("be_assess confidence interval widens with smaller alpha", {
   skip_if_not_installed("lme4")
   skip_if_not_installed("lmerTest")
@@ -346,6 +410,14 @@ test_that("be_dataset validates covariates", {
   # a missing covariate on a row that is dropped (missing value) is not an error
   d$PPORRES[3] <- NA
   expect_s3_class(be_dataset(d, "treatment", "R", "auclast", covariates = "WT"), "be_dataset")
+  # nor is one on a row of an endpoint that is not analyzed
+  d_cmax <- generate_be_parallel()
+  d_cmax$PPTESTCD <- "cmax"
+  d_cmax$WT[5] <- NA
+  expect_s3_class(
+    be_dataset(rbind(generate_be_parallel(), d_cmax), "treatment", "R", "auclast", covariates = "WT"),
+    "be_dataset"
+  )
 })
 
 test_that("a covariate with a single value is an error", {
