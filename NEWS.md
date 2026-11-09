@@ -1118,9 +1118,9 @@ the generated intervals:
 ## Bug fixes
 
 * The dose-normalized renal clearances (`clr.last.dn`, `clr.obs.dn`, and
-  `clr.pred.dn`) can now be calculated.  Before, every request stopped with
-  "The secondary parameter 'clr.last.dn' has arguments not covered by
-  formalsmap (dose)".  Like renal clearance, they are secondary parameters:
+  `clr.pred.dn`) can now be calculated.  Before, every request stopped with an
+  error that the secondary parameter (such as `clr.last.dn`) "has arguments
+  not covered by formalsmap (dose)".  Like renal clearance, they are secondary parameters:
   they take the amount excreted from the urine interval, the AUC from a
   reference plasma interval (given with `clr.last.dn_ref` or found
   automatically), and the dose from the urine interval's `totdose`, and their
