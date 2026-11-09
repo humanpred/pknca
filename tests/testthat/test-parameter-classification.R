@@ -98,7 +98,7 @@ test_that("the common tier is exactly the reviewed set", {
   )
 })
 
-test_that("every deprecated parameter is in the uncommon tier", {
+test_that("every deprecated sparse parameter is in the uncommon tier", {
   # A deprecated name must not appear in a default report, so a new deprecated
   # name cannot be registered as common.
   tbl <- pknca_parameter_table()
