@@ -970,6 +970,20 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
         start=interval$start[1], end=interval$end[1],
         conc.group=conc.group, time.group=time.group, options=options
       )
+    # The volume and collection duration follow their observations (by time)
+    # through imputation, which may add or drop observations.  An added
+    # observation was not collected, so it has a volume of 0 (adding nothing to
+    # the amount excreted or the volume collected) and no duration (so it has
+    # no excretion rate):  the excretion parameters are those of the collected
+    # samples.
+    idx_orig <- match(impute_data$time, time)
+    if (!is.null(volume)) {
+      volume <- volume[idx_orig]
+      volume[is.na(idx_orig)] <- 0
+    }
+    if (!is.null(duration.conc)) {
+      duration.conc <- duration.conc[idx_orig]
+    }
     conc <- impute_data$conc
     time <- impute_data$time
     if (has_sparse_conc) {

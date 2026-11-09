@@ -1338,6 +1338,18 @@ the generated intervals:
   the first method (`" start_conc0"`) no longer makes an empty method name that
   is not found (@billdenney).
 
+* Urine and feces parameters (`ae`, `fe`, `clr.last`, `clr.obs`, `clr.pred`,
+  `volpk`, `ermax`, `ertmax`, `ertlst`, `erlst`, `erint`) are now right when
+  imputation adds or drops an observation.  Before, the volumes and collection
+  durations stayed with the original observations while the concentrations
+  gained or lost one, so R recycled them against the wrong samples with only a
+  "longer object length" warning:  `impute = "start_conc0"` on a urine profile
+  without a sample at the interval start gave an `ae` of 440 instead of 300.
+  The volume and duration now follow their observations, and an observation
+  added by imputation counts as a collection of no volume with no excretion
+  rate, so the excretion parameters are those of the collected samples
+  (@billdenney).
+
 ## Other changes
 
 * The sparse AUC vignette and the help of `var_sparse_auc()` and

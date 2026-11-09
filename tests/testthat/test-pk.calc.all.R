@@ -2335,3 +2335,69 @@ test_that("pk.nca() reads a PKNCAdata object without an impute setting as no imp
     as.data.frame(pk.nca(o_data))$PPORRES
   )
 })
+
+test_that("volume and collection duration follow the observations through imputation", {
+  # Urine collections starting at 2, 6, 12, and 18 hours; none starts at the
+  # dose.  The plasma profile gives the AUC for renal clearance.
+  d_conc <-
+    data.frame(
+      subject = 1,
+      PCSPEC = rep(c("plasma", "urine"), times = c(3, 4)),
+      time = c(0, 12, 24, 2, 6, 12, 18),
+      duration = c(0, 0, 0, 4, 6, 6, 6),
+      conc = c(0, 6, 2, 100, 50, 20, 10),
+      vol = c(NA, NA, NA, 1, 2, 3, 4)
+    )
+  o_conc <- PKNCAconc(d_conc, conc~time|PCSPEC+subject, volume = "vol", duration = "duration")
+  o_dose <- PKNCAdose(data.frame(subject = 1, time = 0, dose = 1000), dose~time|subject)
+  urine_params <- c("ae", "fe", "volpk", "ermax", "ertmax", "ertlst", "erlst", "erint", "clr.last")
+  intervals <-
+    data.frame(
+      PCSPEC = c("plasma", "urine"),
+      start = 0, end = 24,
+      interval_id = c("plasma024", NA),
+      auclast = c(TRUE, FALSE),
+      clr.last_ref = c(NA, "plasma024")
+    )
+  intervals[urine_params] <- rep(list(c(FALSE, TRUE)), length(urine_params))
+  # start_conc0 adds a concentration of 0 at time 0 to the urine.  It has no
+  # collection, so it adds nothing to the amount or the volume and has no
+  # excretion rate:  the results are those of the four collections.
+  expect_no_warning(
+    res <-
+      as.data.frame(pk.nca(PKNCAdata(
+        o_conc, o_dose, intervals = intervals, impute = "start_conc0",
+        options = list(auc.method = "linear")
+      )))
+  )
+  res_urine <- res[res$PCSPEC == "urine", ]
+  expected <-
+    c(
+      ae = 100 + 100 + 60 + 40, fe = 300/1000, volpk = 10,
+      # The excretion rates are 25, 50/3, 10, and 20/3 at the midpoints 4, 9,
+      # 15, and 21
+      ermax = 25, ertmax = 4, ertlst = 21, erlst = 40/6,
+      erint = 300/24,
+      # auclast = (0+6)/2*12 + (6+2)/2*12 = 84
+      clr.last = 300/84
+    )
+  expect_equal(
+    setNames(res_urine$PPORRES, res_urine$PPTESTCD)[names(expected)],
+    expected
+  )
+  expect_equal(res_urine$exclude, rep(NA_character_, nrow(res_urine)))
+
+  # end_conc_drop drops the collection that starts at the end of the interval,
+  # with its volume and duration
+  o_conc_urine <-
+    PKNCAconc(d_conc[d_conc$PCSPEC == "urine", ], conc~time|subject, volume = "vol", duration = "duration")
+  intervals_drop <- data.frame(start = 0, end = 18)
+  intervals_drop[c("ae", "volpk", "ermax", "ertlst", "erlst")] <- TRUE
+  expect_no_warning(
+    res_drop <- as.data.frame(pk.nca(PKNCAdata(o_conc_urine, o_dose, intervals = intervals_drop, impute = "end_conc_drop")))
+  )
+  expect_equal(
+    setNames(res_drop$PPORRES, res_drop$PPTESTCD)[c("ae", "volpk", "ermax", "ertlst", "erlst")],
+    c(ae = 260, volpk = 6, ermax = 25, ertlst = 15, erlst = 10)
+  )
+})
