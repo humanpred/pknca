@@ -614,13 +614,20 @@ the generated intervals:
   (@billdenney)
 
 * `be_assess()`, `be_compare()`, and `be_fit_models()` classify the design from
-  the rows of each endpoint, so long data with several `PPTESTCD` values give
-  the design of one endpoint:  a 2x2 crossover with Cmax and AUC rows is
-  `"2x2x2"`, where reference scaling is not feasible, and a parallel study with
-  two endpoints is `"parallel"` and uses the fixed-effects ANOVA.  Endpoints
-  with different designs stop with `pknca_error_be_design_endpoints_differ`.
-  `be_design()` and `be_within_var()` stop with
-  `pknca_error_be_design_duplicate_period` and
+  the subjects, periods, and treatments of the requested endpoints, one row per
+  subject and period, so long data with several `PPTESTCD` values give the
+  study design:  a 2x2 crossover with Cmax and AUC rows is `"2x2x2"`, where
+  reference scaling is not feasible, and a parallel study with two endpoints is
+  `"parallel"` and uses the fixed-effects ANOVA.  An administration whose value
+  is missing (an `aucinf.obs` without an estimable lambda.z) still counts, so
+  missing values do not change the design.  `be_dataset()` stops with
+  `pknca_error_be_dataset_duplicate_period` when an endpoint has more than one
+  value for a subject and period (results with several intervals), and with
+  `pknca_error_be_dataset_design_conflict` when endpoints disagree on a
+  subject's treatment or sequence in a period; `be_compare()` raises both once.
+  An endpoint left with one value per subject stops a mixed model with
+  `pknca_error_be_endpoint_not_repeated`.  `be_design()` and `be_within_var()`
+  stop with `pknca_error_be_design_duplicate_period` and
   `pknca_error_be_within_var_duplicate_period` when a subject has more than one
   row in a period, which is what the rows of several endpoints look like.  A
   covariate missing only in rows of an endpoint that is not assessed is not an
