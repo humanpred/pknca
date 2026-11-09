@@ -1134,8 +1134,8 @@ the generated intervals:
 * Group columns that are ordered factors with different levels in the
   concentration data, the dose data, the intervals, or a normalization table
   now join by value.  Before, `PKNCAdata()` with units, `pk.nca()`,
-  date-time intervals, `as.data.frame(filter_requested = TRUE)`, and
-  `normalize()` stopped with "Can't join ... due to incompatible types".  The
+  date-time intervals, `as.data.frame(filter_requested = TRUE)`,
+  `summary()` by group, and `normalize()` stopped with "Can't join ... due to incompatible types".  The
   most common case was `update()` on results from `datasets::Theoph` (an nlme
   `groupedData`, whose subsetting drops unused levels), which failed for every
   change.  The joined group column is a factor with the levels of both sides
@@ -1395,7 +1395,9 @@ the generated intervals:
   `impute` argument or in an imputation column) is now no imputation; before,
   `pk.nca()` stopped with `could not find function "NA"`.  A separator before
   the first method (`" start_conc0"`) no longer makes an empty method name that
-  is not found (@billdenney).
+  is not found, and `interval_add_impute()` and `interval_remove_impute()` no
+  longer leave an empty name in the result (`",start_conc0,start_predose"`)
+  (@billdenney).
 
 * Urine and feces parameters (`ae`, `fe`, `clr.last`, `clr.obs`, `clr.pred`,
   `volpk`, `ermax`, `ertmax`, `ertlst`, `erlst`, `erint`) are now right when
