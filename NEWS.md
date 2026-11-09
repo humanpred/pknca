@@ -1422,6 +1422,7 @@ the generated intervals:
   row of its own group (its own subject), ignoring the group columns named in
   `reference` or `ref_vary`.  The helper also no longer warns about the
   unknown `interval_id` column of tibble intervals.  (@billdenney)
+
 * `PKNCAdata(impute = NA)` and `PKNCAdata(impute = NULL)` now mean the same as
   the default:  the `"impute"` column of the intervals when there is one, else
   no imputation.  Before, `impute = NA` stored no imputation setting and
