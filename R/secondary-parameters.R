@@ -1444,7 +1444,7 @@ interval_next_ref_names <- function(used, n, prefix = "ref") {
 # for a factor.  An absent or unfilled (all-NA logical) column takes character
 # identifiers, and is created here so the caller can assign into it.
 interval_new_ids <- function(intervals, n, prefix = "ref") {
-  existing <- intervals$interval_id
+  existing <- intervals[["interval_id"]]
   if (is.null(existing) || (is.logical(existing) && all(is.na(existing)))) {
     intervals$interval_id <- NA_character_
     existing <- character(0)
@@ -1484,7 +1484,7 @@ interval_assign_ref_ids <- function(intervals, ref_groups, ref_id, prefix = "ref
   need_new <- rep(FALSE, length(ref_groups))
   for (i in seq_along(ref_groups)) {
     current <-
-      if (is.null(intervals$interval_id)) {
+      if (is.null(intervals[["interval_id"]])) {
         NULL
       } else {
         stats::na.omit(intervals$interval_id[ref_groups[[i]]])
@@ -1511,8 +1511,8 @@ interval_assign_ref_ids <- function(intervals, ref_groups, ref_id, prefix = "ref
     }
   }
   if (!is.null(ref_id) &&
-      (is.null(intervals$interval_id) ||
-       (is.logical(intervals$interval_id) && all(is.na(intervals$interval_id))))) {
+      (is.null(intervals[["interval_id"]]) ||
+       (is.logical(intervals[["interval_id"]]) && all(is.na(intervals[["interval_id"]]))))) {
     intervals$interval_id <- ref_id[rep(NA_integer_, nrow(intervals))]
   }
   if (any(need_new)) {
@@ -1543,34 +1543,54 @@ interval_reference_groups <- function(intervals, ref_rows) {
 }
 
 # Which of the reference intervals a test row uses.  One reference serves every
-# test row; several are told apart by matching the test row's own times, or by
-# a single reference covering them (a created reference can be wider than its
-# test interval when it spans whole collections).
-interval_pick_reference <- function(intervals, row, ref_groups, param) {
+# test row.  Several are first narrowed to those sharing the test row's values
+# in `match_cols` (the group columns that `reference` does not name and that may
+# not vary), so per-subject intervals each take their own subject's reference;
+# the engine reads the group values of the reference row it is pointed at.
+# When none shares them, all are candidates.  The candidates are then told
+# apart by matching the test row's own times, or by a single reference covering
+# them (a created reference can be wider than its test interval when it spans
+# whole collections).
+interval_pick_reference <- function(intervals, row, ref_groups, param,
+                                    match_cols = character(0)) {
   if (length(ref_groups) == 1) {
     return(1L)
   }
+  candidates <- seq_along(ref_groups)
+  if (length(match_cols) > 0) {
+    first_rows <- vapply(X = ref_groups, FUN = `[`, 1L, FUN.VALUE = 1L)
+    same_group <-
+      which(interval_match_groups(
+        intervals[first_rows, match_cols, drop = FALSE],
+        intervals[row, match_cols, drop = FALSE]
+      ))
+    if (length(same_group) == 1) {
+      return(same_group)
+    } else if (length(same_group) > 1) {
+      candidates <- same_group
+    }
+  }
   same_time <-
-    which(vapply(
-      X = ref_groups,
+    candidates[vapply(
+      X = ref_groups[candidates],
       FUN = function(rows) {
         (intervals$start[rows[1]] %in% intervals$start[row]) &&
           (intervals$end[rows[1]] %in% intervals$end[row])
       },
       FUN.VALUE = TRUE
-    ))
+    )]
   if (length(same_time) == 1) {
     return(same_time)
   }
   covering <-
-    which(vapply(
-      X = ref_groups,
+    candidates[vapply(
+      X = ref_groups[candidates],
       FUN = function(rows) {
         (intervals$start[rows[1]] <= intervals$start[row]) &&
           (intervals$end[rows[1]] >= intervals$end[row])
       },
       FUN.VALUE = TRUE
-    ))
+    )]
   if (length(covering) == 1) {
     return(covering)
   }
@@ -1866,7 +1886,21 @@ interval_edit_secondary <- function(intervals, param, reference, target_groups, 
   ref_col <- paste0(param, "_ref")
   used_groups <- integer(0)
   for (row in test_rows) {
-    current_group <- interval_pick_reference(intervals, row, ref_groups, param)
+    row_ref_vary <-
+      if (is.null(ref_vary)) {
+        interval_ref_vary(intervals, row, param, default = ref_vary_default)
+      } else {
+        ref_vary
+      }
+    current_group <-
+      interval_pick_reference(
+        intervals, row, ref_groups, param,
+        match_cols =
+          setdiff(
+            interval_describe_cols(intervals),
+            c("start", "end", names(reference), row_ref_vary)
+          )
+      )
     current_id <- assigned$ids[[current_group]]
     current_pointer <- intervals[[ref_col]][row]
     if (!is.na(current_pointer) &&
@@ -2041,6 +2075,7 @@ interval_add_secondary <- function(data, param, reference = NULL,
 interval_add_secondary.data.frame <- function(data, param, reference = NULL,
                                               target_groups = NULL, ref_id = NULL,
                                               ref_vary = NULL, ...) {
+  assert_interval_edit_dots("interval_add_secondary", ...)
   interval_edit_secondary(
     data, param = param, reference = reference, target_groups = target_groups,
     ref_id = ref_id, ref_vary = ref_vary
@@ -2051,6 +2086,7 @@ interval_add_secondary.data.frame <- function(data, param, reference = NULL,
 interval_add_secondary.PKNCAdata <- function(data, param, reference = NULL,
                                              target_groups = NULL, ref_id = NULL,
                                              ref_vary = NULL, ...) {
+  assert_interval_edit_dots("interval_add_secondary", ...)
   conc <- as_PKNCAconc(data)
   assert_ref_vary(assert_ref_vary_arg(ref_vary), conc)
   data$intervals <-

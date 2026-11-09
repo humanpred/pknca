@@ -455,7 +455,10 @@ pknca_interval_times_to_numeric <- function(intervals, data, warn = TRUE) {
   join_groups <- intersect(names(intervals), ref_groups)
   ret <-
     if (length(join_groups) > 0) {
-      dplyr::inner_join(intervals, ref_table, by = join_groups, relationship = "many-to-many")
+      join_unify_factor_keys(
+        intervals, ref_table,
+        by = join_groups, join_fun = dplyr::inner_join, relationship = "many-to-many"
+      )
     } else {
       dplyr::cross_join(intervals, ref_table)
     }
@@ -556,9 +559,9 @@ assert_interval_times_datetime <- function(intervals, data) {
     reference_groups <- unique(time_reference[, join_groups, drop = FALSE])
     reference_groups[[matched_col]] <- TRUE
     matched <-
-      !is.na(dplyr::left_join(
+      !is.na(join_unify_factor_keys(
         intervals[, join_groups, drop = FALSE], reference_groups,
-        by = join_groups
+        by = join_groups, join_fun = dplyr::left_join
       )[[matched_col]])
     if (!all(matched)) {
       rlang::abort(
@@ -827,9 +830,9 @@ pknca_datetime_match_reference <- function(groups_data, time_reference) {
     # reference gives NA.
     time_reference$time_reference[rep(1L, nrow(groups_data))]
   } else {
-    dplyr::left_join(
+    join_unify_factor_keys(
       groups_data, time_reference,
-      by = names(groups_data),
+      by = names(groups_data), join_fun = dplyr::left_join,
       relationship = "many-to-one"
     )$time_reference
   }
