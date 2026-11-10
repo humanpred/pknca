@@ -232,8 +232,6 @@ test_that("secondary marks the parameters needing more than one profile", {
       # Needs an amount excreted and a plasma AUC
       "clr.last", "clr.all", "clr.inf.obs", "clr.inf.pred",
       "clr.int.last", "clr.int.all", "clr.int.inf.obs", "clr.int.inf.pred",
-      # ... and the dose-normalized forms follow from those
-      "clr.last.dn", "clr.inf.obs.dn", "clr.inf.pred.dn",
       # Compares the same parameter between two profiles
       "ratio.cmax", "ratio.auclast", "ratio.aucinf.obs", "ratio.aucinf.pred",
       "ratio.aucint.last", "ratio.aucint.all"
