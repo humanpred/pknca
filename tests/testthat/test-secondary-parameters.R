@@ -3572,3 +3572,4 @@ test_that("dose-normalized renal clearance takes the AUC units of its reference 
   expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "clr.last.dn"], 350/144/50)
   expect_equal(d_res$PPORRESU[d_res$PPTESTCD %in% "clr.last.dn"], "(mg/mg)/(hr*ng/mL)")
 })
+

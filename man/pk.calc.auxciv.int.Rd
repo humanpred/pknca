@@ -91,6 +91,8 @@ time is taken to be measured before the dose, as for
 An interval that starts at an IV infusion has nothing to back-extrapolate,
 so the AUXCint is returned unchanged; an interval that does not start at an
 IV dose gives \code{NA}.
+
+Like the AUMCint, the AUMC is weighted by the time since \code{start}.
 }
 \section{Functions}{
 \itemize{
