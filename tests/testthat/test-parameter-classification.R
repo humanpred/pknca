@@ -83,17 +83,17 @@ test_that("the common tier is exactly the reviewed set", {
     sort(tbl$parameter[tbl$tier == "common"]),
     sort(c(
       # Concentrations and times
-      "cmax", "tmax", "ctrough", "tlag", "count_conc",
+      "cmax", "tmax", "ctrough", "tlag", "count.conc",
       # Exposure
-      "auclast", "aucint.last", "aucinf.obs", "aucint.inf.obs", "aucpext.obs",
+      "auclast", "aucint.last", "aucinf.obs", "aucint.inf.obs", "aucpext.inf.obs",
       # Terminal phase
       "half.life",
       # Disposition
-      "cl.obs", "cl.int.inf.obs",
+      "cl.inf.obs", "cl.int.inf.obs",
       # Intravenous
       "c0", "ceoi",
       # Excreta
-      "ae", "fe", "clr.obs", "volpk"
+      "ae", "fe", "clr.inf.obs", "volpk"
     ))
   )
 })
@@ -169,12 +169,12 @@ test_that("anything needing a dose duration is intravenous", {
 test_that("the multiple-dose family is the closure of the declared seeds", {
   tbl <- pknca_parameter_table()
   expect_equal(
-    sort(tbl$parameter[tbl$dosing == "multiple,steady_state"]),
+    sort(setdiff(tbl$parameter[tbl$dosing == "multiple,steady_state"], names(deprecated_renamed_parameters))),
     sort(c(
       "ctrough", "ctrough.dn", "ptr", "deg.fluc", "swing",
       "aucabove.trough.all",
-      "mrt.md.obs", "mrt.md.pred", "vss.md.obs", "vss.md.pred",
-      "mrt.ivmd.obs", "mrt.ivmd.pred", "vss.ivmd.obs", "vss.ivmd.pred"
+      "mrt.md.inf.obs", "mrt.md.inf.pred", "vss.md.inf.obs", "vss.md.inf.pred",
+      "mrt.ivmd.inf.obs", "mrt.ivmd.inf.pred", "vss.ivmd.inf.obs", "vss.ivmd.inf.pred"
     ))
   )
 })
@@ -246,15 +246,16 @@ test_that("a parameter calculated from a sparse parameter is sparse", {
 test_that("secondary marks the parameters needing more than one profile", {
   tbl <- pknca_parameter_table()
   expect_equal(
-    sort(tbl$parameter[tbl$secondary]),
+    sort(setdiff(tbl$parameter[tbl$secondary], names(deprecated_renamed_parameters))),
     sort(c(
       # Compares two administrations, on each AUC basis
-      "f.obs", "f.pred", "f.last", "f.int.last", "f.int.all",
-      "f.int.obs", "f.int.pred",
+      "f.inf.obs", "f.inf.pred", "f.last", "f.all", "f.int.last", "f.int.all",
+      "f.int.inf.obs", "f.int.inf.pred",
       # Needs an amount excreted and a plasma AUC
-      "clr.last", "clr.obs", "clr.pred",
+      "clr.last", "clr.all", "clr.inf.obs", "clr.inf.pred",
+      "clr.int.last", "clr.int.all", "clr.int.inf.obs", "clr.int.inf.pred",
       # ... and the dose-normalized forms follow from those
-      "clr.last.dn", "clr.obs.dn", "clr.pred.dn",
+      "clr.last.dn", "clr.inf.obs.dn", "clr.inf.pred.dn",
       # Compares the same parameter between two profiles
       "ratio.cmax", "ratio.auclast", "ratio.aucinf.obs", "ratio.aucinf.pred",
       "ratio.aucint.last", "ratio.aucint.all"
@@ -274,16 +275,16 @@ test_that("back-extrapolation to c0 is bolus-only", {
   all_iv <- "iv_bolus,iv_infusion,iv_continuous_infusion"
   expect_equal(pknca_parameter_table("c0")$route, "iv_bolus")
   expect_equal(pknca_parameter_table("aucivinf.obs")$route, "iv_bolus")
-  expect_equal(pknca_parameter_table("cl.iv.obs")$route, "iv_bolus")
-  expect_equal(pknca_parameter_table("vz.iv.obs")$route, "iv_bolus")
+  expect_equal(pknca_parameter_table("cl.iv.inf.obs")$route, "iv_bolus")
+  expect_equal(pknca_parameter_table("vz.iv.inf.obs")$route, "iv_bolus")
   # ... but a dose duration makes a parameter infusion-capable, and it still
   # applies to a bolus because the duration is then zero
-  expect_equal(pknca_parameter_table("mrt.iv.obs")$route, all_iv)
-  expect_equal(pknca_parameter_table("vss.iv.obs")$route, all_iv)
+  expect_equal(pknca_parameter_table("mrt.iv.inf.obs")$route, all_iv)
+  expect_equal(pknca_parameter_table("vss.iv.inf.obs")$route, all_iv)
   expect_equal(pknca_parameter_table("mrt.ivint.all")$route, all_iv)
 })
 
-test_that("the bolus-only set is exactly what c0 reaches without a dose duration", {
+test_that("the bolus-only set is exactly what back-extrapolation reaches without a dose duration", {
   classification <- PKNCA:::parameter_classification()
   bolus_only <-
     names(classification$route)[
@@ -292,9 +293,14 @@ test_that("the bolus-only set is exactly what c0 reaches without a dose duration
   specs <- PKNCA:::set_requires_inputs(names(classification$route))
   needs_duration <-
     names(specs)[vapply(specs, function(x) isTRUE(x$requires_dose_dur), TRUE)]
-  from_c0 <- intersect(get.parameter.deps("c0"), names(classification$route))
-  expect_equal(sort(bolus_only), sort(setdiff(from_c0, needs_duration)))
-  expect_length(bolus_only, 43L)
+  # The c0 parameter, and the IV interval AUCs and AUMCs that back-extrapolate
+  # C0 of the dose that starts the interval themselves
+  seeds <- c("c0", "aucivint.last", "aucivint.all", "aucivint.inf.obs", "aucivint.inf.pred",
+             "aumcivint.last", "aumcivint.all", "aumcivint.inf.obs", "aumcivint.inf.pred")
+  from_back_extrapolation <-
+    intersect(unique(unlist(lapply(seeds, get.parameter.deps))), names(classification$route))
+  expect_equal(sort(bolus_only), sort(setdiff(from_back_extrapolation, needs_duration)))
+  expect_length(setdiff(bolus_only, names(deprecated_renamed_parameters)), 57L)
 })
 
 test_that("tlag is extravascular", {
@@ -421,8 +427,8 @@ test_that("registering a parameter invalidates the cached classification", {
 # pknca_parameter_table() -------------------------------------------------
 
 test_that("pknca_parameter_table() describes the requested parameters", {
-  ret <- pknca_parameter_table(c("cmax", "cl.obs"))
-  expect_equal(ret$parameter, c("cmax", "cl.obs"))
+  ret <- pknca_parameter_table(c("cmax", "cl.inf.obs"))
+  expect_equal(ret$parameter, c("cmax", "cl.inf.obs"))
   expect_equal(ret$concept, c("peak_conc", "clearance"))
   expect_equal(
     names(ret),

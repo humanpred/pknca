@@ -2060,7 +2060,7 @@ interval_edit_secondary <- function(intervals, param, reference, target_groups, 
 #'   data.frame(treatment = c("iv", "oral"), start = 0, end = Inf, aucinf.obs = TRUE)
 #' interval_add_secondary(
 #'   intervals_crossover,
-#'   param = "f.obs",
+#'   param = "f.inf.obs",
 #'   reference = data.frame(treatment = "iv"),
 #'   ref_vary = "period"
 #' )

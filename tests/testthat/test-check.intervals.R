@@ -167,8 +167,8 @@ test_that("get.parameter.deps", {
     fixed=TRUE
   )
   expect_equal(
-    get.parameter.deps("kel.obs"),
-    "kel.obs",
+    setdiff(get.parameter.deps("kel.inf.obs"), names(deprecated_renamed_parameters)),
+    "kel.inf.obs",
     info="Parameters that have nothing that depend on them return themselves only."
   )
   expect_equal(
@@ -182,8 +182,8 @@ test_that("get.parameter.deps", {
     info="Special columns that are not actually parameters have no dependencies (including themselves)."
   )
   expect_equal(
-    get.parameter.deps("cl.obs"),
-    c("cl.obs", "vss.iv.obs", "vss.obs", "vz.obs"),
+    setdiff(get.parameter.deps("cl.inf.obs"), names(deprecated_renamed_parameters)),
+    c("cl.inf.obs", "vss.inf.obs", "vss.iv.inf.obs", "vz.inf.obs"),
     info="Parameters with dependencies return them."
   )
 })
@@ -245,9 +245,9 @@ test_that("get.parameter.deps(recursive=TRUE) reaches the inputs a parameter is 
   expect_true("conc" %in% get.parameter.deps("cmax", recursive = TRUE))
   expect_false("time" %in% get.parameter.deps("cmax", recursive = TRUE))
   expect_true(all(c("conc", "time") %in% get.parameter.deps("tmax", recursive = TRUE)))
-  # cl.obs needs the dose amount; vz.obs needs it only through cl.obs
-  expect_true("dose" %in% get.parameter.deps("cl.obs", recursive = TRUE))
-  expect_true("dose" %in% get.parameter.deps("vz.obs", recursive = TRUE))
+  # cl.inf.obs needs the dose amount; vz.inf.obs needs it only through cl.inf.obs
+  expect_true("dose" %in% get.parameter.deps("cl.inf.obs", recursive = TRUE))
+  expect_true("dose" %in% get.parameter.deps("vz.inf.obs", recursive = TRUE))
   # The default direction is unchanged: parameters calculated from cmax
   expect_true("cmax.dn" %in% get.parameter.deps("cmax"))
   expect_false("cmax.dn" %in% get.parameter.deps("cmax", recursive = TRUE))
@@ -266,10 +266,10 @@ test_that("dose amount, time, and duration are required separately (#538)", {
     unlist(set_requires_inputs("ceoi")[["ceoi"]][c("requires_dose_amt", "requires_dose_time", "requires_dose_dur")]),
     c(requires_dose_amt = FALSE, requires_dose_time = FALSE, requires_dose_dur = TRUE)
   )
-  expect_true(set_requires_inputs("cl.obs")[["cl.obs"]]$requires_dose_amt)
+  expect_true(set_requires_inputs("cl.inf.obs")[["cl.inf.obs"]]$requires_dose_amt)
   # pk.calc.half.life() uses the dose timing when present but does not need
   # it, so neither it nor anything downstream of it is reported
-  for (param in c("half.life", "lambda.z", "aucinf.obs", "mrt.obs", "span.ratio")) {
+  for (param in c("half.life", "lambda.z", "aucinf.obs", "mrt.inf.obs", "span.ratio")) {
     expect_false(any(unlist(set_requires_inputs(param)[[param]][
       c("requires_dose_amt", "requires_dose_time", "requires_dose_dur")
     ])), info = param)
@@ -284,8 +284,8 @@ test_that("every derived dose requirement matches what pk.nca() can calculate (#
   o_conc <- PKNCAconc(d_conc, conc~time|subject)
   o_dose <- PKNCAdose(d_dose, dose~time|subject)
   check_params <-
-    c("cmax", "tmax", "auclast", "aucinf.obs", "half.life", "mrt.last", "cav",
-      "cl.last", "cl.obs", "vz.obs", "vss.obs", "cmax.dn", "auclast.dn", "totdose")
+    c("cmax", "tmax", "auclast", "aucinf.obs", "half.life", "mrt.last", "cav.last",
+      "cl.last", "cl.inf.obs", "vz.inf.obs", "vss.inf.obs", "cmax.dn", "auclast.dn", "totdose")
   ivl <- data.frame(start = 0, end = Inf)
   for (param in check_params) ivl[[param]] <- TRUE
   res_with <-
@@ -352,7 +352,7 @@ test_that("volume is required only by the parameters that use it (#194)", {
   # clr.last and fe reach volume only through ae
   expect_true(set_requires_inputs("clr.last")[["clr.last"]]$requires_volume)
   expect_true(set_requires_inputs("fe")[["fe"]]$requires_volume)
-  for (param in c("cmax", "tmax", "auclast", "half.life", "cl.obs", "totdose")) {
+  for (param in c("cmax", "tmax", "auclast", "half.life", "cl.inf.obs", "totdose")) {
     expect_false(set_requires_inputs(param)[[param]]$requires_volume, info = param)
   }
 })
@@ -362,7 +362,7 @@ test_that("the collection duration is required only by the parameters that use i
     expect_true(set_requires_inputs(param)[[param]]$requires_conc_dur, info = param)
   }
   # ae and volpk use the volume without needing the collection duration
-  for (param in c("ae", "volpk", "cmax", "tmax", "auclast", "half.life", "cl.obs")) {
+  for (param in c("ae", "volpk", "cmax", "tmax", "auclast", "half.life", "cl.inf.obs")) {
     expect_false(set_requires_inputs(param)[[param]]$requires_conc_dur, info = param)
   }
 })
@@ -415,12 +415,12 @@ test_that("absent_dose_inputs and absent_conc_inputs report what was not given (
 })
 
 test_that("uncalculable_without selects on the inputs it is given (#194)", {
-  ivl <- data.frame(start = 0, end = Inf, ae = TRUE, cmax = TRUE, c0 = TRUE, cl.obs = TRUE)
+  ivl <- data.frame(start = 0, end = Inf, ae = TRUE, cmax = TRUE, c0 = TRUE, cl.inf.obs = TRUE)
   expect_equal(uncalculable_without(ivl, "volume"), "ae")
   expect_equal(uncalculable_without(ivl, "conc_dur"), character(0))
-  expect_equal(uncalculable_without(ivl, "dose_amt"), "cl.obs")
+  expect_equal(uncalculable_without(ivl, "dose_amt"), "cl.inf.obs")
   expect_equal(uncalculable_without(ivl, "dose_time"), "c0")
-  expect_equal(uncalculable_without(ivl, c("volume", "dose_amt")), c("ae", "cl.obs"))
+  expect_equal(uncalculable_without(ivl, c("volume", "dose_amt")), c("ae", "cl.inf.obs"))
   # Nothing absent, requested as FALSE, and nothing requested at all
   expect_equal(uncalculable_without(ivl, character(0)), character(0))
   expect_equal(

@@ -1,6 +1,6 @@
 test_that("exclude_nca", {
   my_conc <- PKNCAconc(data.frame(conc=c(1.1^(3:0), 1.1), time=0:4, subject=1), conc~time|subject)
-  my_data <- PKNCAdata(my_conc, intervals=data.frame(start=0, end=Inf, aucinf.obs=TRUE, aucpext.obs=TRUE))
+  my_data <- PKNCAdata(my_conc, intervals=data.frame(start=0, end=Inf, aucinf.obs=TRUE, aucpext.inf.obs=TRUE))
   suppressMessages(
     my_result <- pk.nca(my_data)
   )
@@ -62,7 +62,7 @@ test_that("exclude_nca", {
 
 test_that("exclude_nca_max.aucinf.pext", {
   my_conc <- PKNCAconc(data.frame(conc=c(1.1^(3:0), 1.1), time=0:4, subject=1), conc~time|subject)
-  my_data <- PKNCAdata(my_conc, intervals=data.frame(start=0, end=Inf, aucpext.pred=TRUE, aucpext.obs=TRUE))
+  my_data <- PKNCAdata(my_conc, intervals=data.frame(start=0, end=Inf, aucpext.inf.pred=TRUE, aucpext.inf.obs=TRUE))
   suppressMessages(
     my_result <- pk.nca(my_data)
   )
@@ -84,7 +84,7 @@ test_that("exclude_nca_max.aucinf.pext", {
 
 test_that("exclude_nca_count_conc_measured", {
   my_conc <- PKNCAconc(data.frame(conc=c(1.1^(c(3:0, -Inf)), 1.1), time=0:5, subject = 1), conc~time|subject)
-  my_data <- PKNCAdata(my_conc, intervals=data.frame(start=0, end=Inf, aucinf.obs=TRUE, aucpext.obs=TRUE, count_conc_measured = TRUE))
+  my_data <- PKNCAdata(my_conc, intervals=data.frame(start=0, end=Inf, aucinf.obs=TRUE, aucpext.inf.obs=TRUE, count.conc.measured = TRUE))
   suppressMessages(
     my_result <- pk.nca(my_data)
   )
@@ -100,7 +100,7 @@ test_that("exclude_nca_count_conc_measured", {
   my_result_exclude10 <- exclude(my_result, FUN = exclude_nca_count_conc_measured(min_count = 10))
   expect_equal(
     as.data.frame(my_result_exclude10)$exclude,
-    c("count_conc_measured < 10", rep(NA_character_, 14), rep("count_conc_measured < 10", 2))
+    c("count.conc.measured < 10", rep(NA_character_, 14), rep("count.conc.measured < 10", 2))
   )
 })
 
