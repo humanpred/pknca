@@ -1557,12 +1557,16 @@ test_that("the bioavailability basis variants use their own AUC", {
       info = current_param
     )
   }
-  o_data_basis <-
-    PKNCAdata(
-      o_conc_cross, o_dose_cross, intervals = intervals_basis,
-      options = list(auc.method = "linear")
-    )
-  d_res <- as.data.frame(pk.nca(o_data_basis))
+  # Every basis in one interval mixes bases on purpose
+  expect_warning(
+    o_data_basis <-
+      PKNCAdata(
+        o_conc_cross, o_dose_cross, intervals = intervals_basis,
+        options = list(auc.method = "linear")
+      ),
+    class = "pknca_warning_interval_inconsistent_parameters"
+  )
+  expect_warning(d_res <- as.data.frame(pk.nca(o_data_basis)), class = "pknca_warning_interval_inconsistent_parameters")
   value_of <- function(param, trt) {
     d_res$PPORRES[d_res$PPTESTCD %in% param & d_res$treatment %in% trt]
   }
@@ -1595,12 +1599,16 @@ test_that("every ratio parameter divides its own basis", {
         reference = data.frame(treatment = "ref")
       )
   }
-  o_data_ratio <-
-    PKNCAdata(
-      o_conc_cross, o_dose_cross, intervals = intervals_ratio,
-      options = list(auc.method = "linear")
-    )
-  d_res <- as.data.frame(pk.nca(o_data_ratio))
+  # Every basis in one interval mixes bases on purpose
+  expect_warning(
+    o_data_ratio <-
+      PKNCAdata(
+        o_conc_cross, o_dose_cross, intervals = intervals_ratio,
+        options = list(auc.method = "linear")
+      ),
+    class = "pknca_warning_interval_inconsistent_parameters"
+  )
+  expect_warning(d_res <- as.data.frame(pk.nca(o_data_ratio)), class = "pknca_warning_interval_inconsistent_parameters")
   value_of <- function(param, trt) {
     d_res$PPORRES[d_res$PPTESTCD %in% param & d_res$treatment %in% trt]
   }
@@ -2773,12 +2781,16 @@ test_that("ref_vary takes a crossover's reference from another period", {
       )
     expect_equal(intervals_f[[paste0(current_param, "_ref_vary")]], c(NA, "period"))
   }
-  o_data <-
-    PKNCAdata(
-      o_conc_period, o_dose_period, intervals = intervals_f,
-      options = list(auc.method = "linear")
-    )
-  res <- pk.nca(o_data)
+  # f.obs and f.pred in one interval mix AUCinf,obs and AUCinf,pred on purpose
+  expect_warning(
+    o_data <-
+      PKNCAdata(
+        o_conc_period, o_dose_period, intervals = intervals_f,
+        options = list(auc.method = "linear")
+      ),
+    class = "pknca_warning_interval_inconsistent_parameters"
+  )
+  expect_warning(res <- pk.nca(o_data), class = "pknca_warning_interval_inconsistent_parameters")
   d_res <- as.data.frame(res)
   # The hand-computed inputs
   expect_equal(period_values(d_res[d_res$treatment %in% "iv", ], "auclast"), c(50.25, 100.5))
