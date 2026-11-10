@@ -484,10 +484,11 @@ test_that("aucint.inf.pred works when the interval ends at infinity (#620)", {
       start = 0.5, end = Inf,
       clast.obs = clast_obs, lambda.z = lambda_z
     )
-  tlast <- 3
+  # The AUMC weights by the time since the start of the interval
+  tlast_since_start <- 3 - 0.5
   expect_equal(
     as.numeric(aumc_obs) - as.numeric(aumc_pred),
-    (clast_obs - clast_pred) * tlast / lambda_z + (clast_obs - clast_pred) / lambda_z^2
+    (clast_obs - clast_pred) * tlast_since_start / lambda_z + (clast_obs - clast_pred) / lambda_z^2
   )
 })
 
@@ -1261,12 +1262,15 @@ test_that("aucint.inf.* estimate the concentration at start the same way whereve
     expect_equal(attr(auc_24, "method")[3], "Extrapolation: half-life", info = fun)
     expect_null(attr(auc_24, "exclude"), info = fun)
   }
-  # The same holds for AUMC
+  # The same holds for AUMC.  Each AUMC is weighted by the time since the start
+  # of its own interval, so the part after 20 is shifted back to 12.
   args <- list(conc = conc, time = time, time.dose = c(0, 12), lambda.z = lambda_z, clast.obs = 1.1)
+  auc_20_inf <- do.call(pk.calc.aucint.inf.obs, c(args, list(start = 20, end = Inf)))
   expect_equal(
     as.numeric(do.call(pk.calc.aumcint.inf.obs, c(args, list(start = 12, end = Inf)))),
     as.numeric(do.call(pk.calc.aumcint.inf.obs, c(args, list(start = 12, end = 20)))) +
-      as.numeric(do.call(pk.calc.aumcint.inf.obs, c(args, list(start = 20, end = Inf))))
+      as.numeric(do.call(pk.calc.aumcint.inf.obs, c(args, list(start = 20, end = Inf)))) +
+      (20 - 12) * as.numeric(auc_20_inf)
   )
 })
 
@@ -1286,4 +1290,35 @@ test_that("aucint.inf.* do not use the half-life for an interpolated start befor
   )
   expect_equal(attr(auc, "method")[3], "Extrapolation: none")
   expect_equal(attr(auc, "exclude"), "DO NOT EXCLUDE")
+})
+
+test_that("the AUMC over an interval is weighted by the time since its start", {
+  conc <- c(0, 5, 4, 3, 2, 1, 5.5, 4.5, 3.2, 2.1, 1.1)
+  time <- c(0, 1, 2, 4, 8, 12, 13, 14, 16, 20, 24)
+  # The second dosing interval alone, with time measured from its start
+  aumc_second <- as.numeric(pk.calc.aumc(conc = conc[6:11], time = time[6:11] - 12))
+  expect_equal(
+    as.numeric(pk.calc.aumcint.last(conc = conc, time = time, start = 12, end = 24)),
+    aumc_second
+  )
+  # The same profile with every time shifted gives the same AUMC
+  expect_equal(
+    as.numeric(pk.calc.aumcint.last(conc = conc, time = time + 100, start = 112, end = 124)),
+    aumc_second
+  )
+  # Extrapolation to infinity takes Tlast from the start of the interval too
+  lambda.z <- 0.1
+  expect_equal(
+    as.numeric(
+      pk.calc.aumcint.inf.obs(
+        conc = conc, time = time, start = 12, end = Inf, lambda.z = lambda.z, clast.obs = 1.1
+      )
+    ),
+    as.numeric(pk.calc.aumc(conc = conc[6:11], time = time[6:11] - 12, lambda.z = lambda.z, auc.type = "AUCinf"))
+  )
+  # The AUC does not depend on the time origin
+  expect_equal(
+    as.numeric(pk.calc.aucint.last(conc = conc, time = time, start = 12, end = 24)),
+    as.numeric(pk.calc.auc(conc = conc[6:11], time = time[6:11] - 12))
+  )
 })

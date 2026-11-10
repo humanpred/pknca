@@ -131,7 +131,7 @@ automatically generates the units for each NCA parameter.
 ```{r create-units-auto}
 d_units_auto <- pknca_units_table(concu="ng/mL", doseu="mg", amountu="mg", timeu="hr")
 # Show a selection of the units generated
-d_units_auto[d_units_auto$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "vd.obs"), ]
+d_units_auto[d_units_auto$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.inf.obs", "vd.obs"), ]
 ```
 
 As you see above, the default units table has a column for the `PPTESTCD`
@@ -159,7 +159,7 @@ d_units_clean <-
       )
   )
 # Show a selection of the units generated
-d_units_clean[d_units_clean$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "vd.obs", "fe"), ]
+d_units_clean[d_units_clean$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.inf.obs", "vd.obs", "fe"), ]
 ```
 
 Now, the units are much cleaner to look at.
@@ -178,7 +178,7 @@ d_units_clean_manual <-
       )
   )
 # Show a selection of the units generated
-d_units_clean_manual[d_units_clean_manual$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "vd.obs"), ]
+d_units_clean_manual[d_units_clean_manual$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.inf.obs", "vd.obs"), ]
 ```
 
 # What happens when units are missing for some parameters?
