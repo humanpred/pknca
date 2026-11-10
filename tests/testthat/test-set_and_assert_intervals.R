@@ -107,7 +107,7 @@ test_that("set_intervals fails when not using PKNCAdata", {
 test_that("assert_intervals allows a tau column for multiple-dose parameters", {
   o_conc <- PKNCAconc(as.data.frame(datasets::Theoph), conc~Time|Subject)
   o_data <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = 1, cmax = TRUE))
-  intervals <- data.frame(start = 0, end = 24, tau = 24, mrt.md.obs = TRUE)
+  intervals <- data.frame(start = 0, end = 24, tau = 24, mrt.md.inf.obs = TRUE)
 
   expect_equal(assert_intervals(intervals = intervals, data = o_data), expected = intervals)
 })
@@ -123,7 +123,7 @@ test_that("assert_intervals points a renamed parameter at its new name", {
       ),
       class = "pknca_error_invalid_interval_columns"
     )
-  expect_match(conditionMessage(err), "'f' is now named 'f.obs'", fixed = TRUE)
+  expect_match(conditionMessage(err), "'f' is now named 'f.inf.obs'", fixed = TRUE)
 })
 
 test_that("assert_intervals refuses a sparse-only parameter for dense data", {

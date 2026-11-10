@@ -131,9 +131,9 @@ to the parent analyte.  The same data.frame with a \code{parameter} column
 applies each row only to the secondary parameter it names, and the columns
 a parameter's rows leave \code{NA} do not apply to it, so one table can steer
 renal clearance by \code{PCSPEC} and a metabolite ratio by \code{PCTEST}:
-\code{group_ref = data.frame(parameter = c("clr.obs", "ratio.aucinf.obs"), PCSPEC = c("PLASMA", NA), PCTEST = c(NA, "midazolam"))}.  A named list of
+\code{group_ref = data.frame(parameter = c("clr.inf.obs", "ratio.aucinf.obs"), PCSPEC = c("PLASMA", NA), PCTEST = c(NA, "midazolam"))}.  A named list of
 data.frames, one per parameter, says the same thing:
-\code{group_ref = list(clr.obs = data.frame(PCSPEC = "PLASMA"), ratio.aucinf.obs = data.frame(PCTEST = "midazolam"))}.
+\code{group_ref = list(clr.inf.obs = data.frame(PCSPEC = "PLASMA"), ratio.aucinf.obs = data.frame(PCTEST = "midazolam"))}.
 }
 \section{Date-time input}{
 
