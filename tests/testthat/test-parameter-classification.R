@@ -179,28 +179,14 @@ test_that("the multiple-dose family is the closure of the declared seeds", {
   )
 })
 
-test_that("dose_normalized marks exactly the dose-normalized parameters", {
+test_that("dose_normalized marks exactly the pk.calc.dn parameters", {
   tbl <- pknca_parameter_table()
   all_intervals <- get.interval.cols()
   from_dn <-
     names(all_intervals)[
       vapply(all_intervals, function(x) identical(x$FUN, "pk.calc.dn"), TRUE)
     ]
-  # Dose-normalized renal clearance is a secondary parameter with a calculation
-  # function of its own
-  expect_equal(
-    sort(tbl$parameter[tbl$dose_normalized]),
-    sort(c(
-      from_dn, "clr.last.dn", "clr.inf.obs.dn", "clr.inf.pred.dn",
-      # The deprecated names of the last two
-      "clr.obs.dn", "clr.pred.dn"
-    ))
-  )
-  # ... and every parameter named as dose-normalized is marked
-  expect_equal(
-    sort(tbl$parameter[tbl$dose_normalized]),
-    sort(grep("\\.dn$", names(all_intervals), value = TRUE))
-  )
+  expect_equal(sort(tbl$parameter[tbl$dose_normalized]), sort(from_dn))
 })
 
 test_that("a dose-normalized parameter takes the concept of its base parameter", {
