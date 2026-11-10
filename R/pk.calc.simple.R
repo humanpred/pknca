@@ -2213,6 +2213,11 @@ add.interval.col(
 
 #' Determine the trough (end of interval) concentration
 #'
+#' @details `time` and `end` (or `start`) must be on the same time scale.
+#'   [pk.nca()] gives `time` relative to the start of the interval, so it gives
+#'   these functions the bounds of the interval on that scale (the `time.end`
+#'   and `time.start` sources of [add.interval.col()]).
+#'
 #' @inheritParams assert_conc_time
 #' @inheritParams assert_intervaltime_single
 #' @returns The concentration when `time == end`.  If none match, then `NA`
