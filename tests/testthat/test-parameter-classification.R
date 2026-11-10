@@ -13,6 +13,32 @@ test_that("every PKNCA parameter resolves to a concept in the vocabulary", {
   )
 })
 
+test_that("every interval column except start and end has exactly one classification row", {
+  # The table is the registry's parameter list in registry order, so a
+  # parameter can never be calculable yet unknown to interval selection.
+  expect_equal(
+    pknca_parameter_table()$parameter,
+    setdiff(names(get.interval.cols()), c("start", "end"))
+  )
+})
+
+test_that("a parameter registered at run time has a classification row at once", {
+  local_interval_cols()
+  add.interval.col(
+    "pknca_test_new_col_",
+    FUN = NA,
+    values = c(FALSE, TRUE),
+    unit_type = "unitless",
+    pretty_name = "Test: new parameter",
+    desc = "Coverage test for a new parameter row"
+  )
+  row <- pknca_parameter_table("pknca_test_new_col_")
+  expect_equal(row$parameter, "pknca_test_new_col_")
+  expect_equal(row$tier, "uncommon")
+  # Without a concept it is listed as unclassifiable, not dropped
+  expect_equal(pknca_check_parameter_classification()$parameter, "pknca_test_new_col_")
+})
+
 test_that("a registry restored by assignment does not leave a stale classification", {
   # Restoring a saved registry bypasses add.interval.col()'s cache
   # invalidation, so the classification must notice the parameter set changed

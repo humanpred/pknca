@@ -130,6 +130,8 @@ assert_intervals <- function(intervals, data) {
   requested <- interval_requested_params(intervals, expand = FALSE)
   warn_deprecated_sparse_parameters(requested)
   warn_deprecated_renamed_parameters(requested)
+  # Parameters that no single context gives together
+  warn_inconsistent_interval_parameters(intervals)
 
   # A standard error or degrees of freedom that only a sparse estimator produces
   # would silently give nothing with dense data, so say so instead.  The
