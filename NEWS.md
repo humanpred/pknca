@@ -1214,8 +1214,8 @@ the generated intervals:
 
 ## Bug fixes
 
-* The dose-normalized renal clearances (`clr.last.dn`, `clr.obs.dn`, and
-  `clr.pred.dn`) can now be calculated.  Before, every request stopped with an
+* The dose-normalized renal clearances (`clr.last.dn`, `clr.inf.obs.dn`, and
+  `clr.inf.pred.dn`) can now be calculated.  Before, every request stopped with an
   error that the secondary parameter (such as `clr.last.dn`) "has arguments
   not covered by formalsmap (dose)".  Like renal clearance, they are secondary parameters:
   they take the amount excreted from the urine interval, the AUC from a
@@ -1529,16 +1529,16 @@ the generated intervals:
   longer leave an empty name in the result (`",start_conc0,start_predose"`)
   (@billdenney).
 
-* Urine and feces parameters (`ae`, `fe`, `clr.last`, `clr.obs`, `clr.pred`,
-  `volpk`, `ermax`, `ertmax`, `ertlst`, `erlst`, `erint`) are now right when
-  imputation adds or drops an observation.  Before, the volumes and collection
-  durations stayed with the original observations while the concentrations
-  gained or lost one, so R recycled them against the wrong samples with only a
-  "longer object length" warning:  `impute = "start_conc0"` on a urine profile
-  without a sample at the interval start gave an `ae` of 440 instead of 300.
-  The volume and duration now follow their observations, and an observation
-  added by imputation counts as a collection of no volume with no excretion
-  rate, so the excretion parameters are those of the collected samples
+* Urine and feces parameters (`ae`, `fe`, `clr.last`, `clr.inf.obs`,
+  `clr.inf.pred`, `volpk`, `ermax`, `ertmax`, `ertlst`, `erlst`, `erint`) are
+  now right when imputation adds or drops an observation.  Before, the volumes
+  and collection durations stayed with the original observations while the
+  concentrations gained or lost one, so R recycled them against the wrong
+  samples with only a "longer object length" warning:  `impute = "start_conc0"`
+  on a urine profile without a sample at the interval start gave an `ae` of 440
+  instead of 300.  The volume and duration now follow their observations, and an
+  observation added by imputation counts as a collection of no volume with no
+  excretion rate, so the excretion parameters are those of the collected samples
   (@billdenney).
 
 * `interval_add_param()`, `interval_remove_param()`, `interval_add_impute()`,
