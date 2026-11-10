@@ -1065,40 +1065,41 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   # Every data source a calculation function can name, under the name that
   # add.interval.col() uses for it.  A source that was not given is NULL, which
   # leaves the argument off the call so that the function's own default
-  # applies.  Every time, including `start` and `end`, is relative to the start
-  # of the interval (so `start` is 0):  calculation functions compare times from
-  # different sources (ctrough compares `time` to `end`; aucint compares
-  # `time.group` to `start`), and AUMC weights by the time since the start of
-  # the interval.
-  interval_start <- interval$start[1]
+  # applies.  The interval's own times (`time`, `time.dose`, and `time.sparse`)
+  # are relative to the start of the interval; `start`, `end`, and the group
+  # times keep the original scale.  `time.start` and `time.end` are the
+  # interval's bounds on the scale of `time`, for a function that compares the
+  # interval's own times to its bounds (ctrough and cstart).
   source_map <-
     list(
       conc=conc,
-      time=time - interval_start,
+      time=time - interval$start[1],
       volume=volume,
       duration.conc=duration.conc,
       dose=dose,
-      time.dose=time.dose - interval_start,
+      time.dose=time.dose - interval$start[1],
       duration.dose=duration.dose,
       route=route,
       conc.group=conc.group,
-      time.group=if (!is.null(time.group)) time.group - interval_start,
+      time.group=time.group,
       volume.group=volume.group,
       duration.conc.group=duration.conc.group,
       dose.group=dose.group,
-      time.dose.group=if (!is.null(time.dose.group)) time.dose.group - interval_start,
+      time.dose.group=time.dose.group,
       duration.dose.group=duration.dose.group,
       route.group=route.group,
       # The pooled individual samples and their subject identifiers are given
       # only for sparse PK
       conc.sparse=conc.sparse,
-      time.sparse=if (has_sparse_conc) time.sparse - interval_start,
+      time.sparse=if (has_sparse_conc) time.sparse - interval$start[1] else NULL,
       conc.sparse.group=conc.sparse.group,
-      time.sparse.group=if (!is.null(time.sparse.group)) time.sparse.group - interval_start,
+      time.sparse.group=time.sparse.group,
       subject=subject,
       lloq=lloq,
-      start=interval[["start"]] - interval_start,
-      end=interval[["end"]] - interval_start,
+      start=interval[["start"]],
+      end=interval[["end"]],
+      time.start=interval[["start"]] - interval$start[1],
+      time.end=interval[["end"]] - interval$start[1],
       options=options
     )
   # Do the calculations

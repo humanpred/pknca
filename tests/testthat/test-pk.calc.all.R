@@ -2335,16 +2335,17 @@ test_that("aumcint.inf.obs matches aumcinf.obs for an interval starting at a lat
   )
 })
 
-test_that("every time given to a calculation function is relative to the interval start", {
+test_that("calculation functions get the interval's own times relative to its start and the rest on the original scale", {
   fn_name <- "pknca_test_time_scale_fn_"
   received <- new.env(parent = emptyenv())
   assign(
     fn_name,
-    function(conc, time, time.dose, time.group, time.dose.group, start, end) {
+    function(conc, time, time.dose, time.group, time.dose.group, start, end, time.start, time.end) {
       received$args <-
         list(
           time = time, time.dose = time.dose, time.group = time.group,
-          time.dose.group = time.dose.group, start = start, end = end
+          time.dose.group = time.dose.group, start = start, end = end,
+          time.start = time.start, time.end = time.end
         )
       1
     },
@@ -2368,8 +2369,9 @@ test_that("every time given to a calculation function is relative to the interva
     received$args,
     list(
       time = c(0, 2, 12), time.dose = 0,
-      time.group = c(-12, -10, 0, 2, 12), time.dose.group = c(-12, 0),
-      start = 0, end = 12
+      time.group = c(0, 2, 12, 14, 24), time.dose.group = c(0, 12),
+      start = 12, end = 24,
+      time.start = 0, time.end = 12
     )
   )
 })

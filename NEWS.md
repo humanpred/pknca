@@ -1120,17 +1120,17 @@ the generated intervals:
 * `ctrough`, `cstart`, and the AUMC over an interval (`aumcint.last`,
   `aumcint.all`, `aumcint.inf.obs`, `aumcint.inf.pred`, and the `aumcivint.*`
   parameters built on them) are correct for an interval that does not start at
-  time 0.  The calculation functions were given the times relative to the start
-  of the interval but `start` and `end` (and the group times used by `aucint`
-  and `aumcint`) on the original scale.  With intervals of 0 to 12 and 12 to 24,
-  `ctrough` for the second interval was `NA` instead of the concentration at
-  24, `cstart` was the concentration at 24 instead of at 12, and `aumcint.last`
-  weighted by the time since 0 instead of since 12 (544 instead of the 154 that
-  `aumclast` gives).  Every time given to a calculation function, including
-  `start`, `end`, `time.group`, and `time.dose.group`, is now relative to the
-  start of the interval, so `start` is 0 and `end` is the interval duration.  A
-  parameter registered with `add.interval.col()` that uses `start` or `end` as
-  a time on the original scale needs the same change (@billdenney).
+  time 0.  With intervals of 0 to 12 and 12 to 24, `ctrough` for the second
+  interval was `NA` instead of the concentration at 24, `cstart` was the
+  concentration at 24 instead of at 12, and `aumcint.last` weighted by the time
+  since 0 instead of since 12 (544 instead of the 154 that `aumclast` gives).
+  `ctrough` and `cstart` compared the interval's times, which are relative to
+  the start of the interval, with `start` and `end`, which are on the original
+  time scale; they now use the new `time.start` and `time.end` data sources (the
+  interval's bounds on the scale of `time`, which a parameter registered with
+  `add.interval.col()` can use too).  `pk.calc.auxcint()` and `pk.calc.aumcint()`
+  now weight the AUMC by the time since `start`; the AUC is unchanged
+  (@billdenney).
 
 * Running an NCA no longer changes what `get.interval.cols()` returns
   (@billdenney).

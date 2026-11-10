@@ -39,6 +39,13 @@
 #' `lambda.z` is not used at all.  The extrapolation that was used is reported
 #' in the method (`PPANMETH`) column.
 #'
+#' # The time origin of the AUMC
+#'
+#' The AUMC is weighted by the time since `start`, as the AUMC of an interval
+#' is when [pk.nca()] calculates it from the interval's own data (`aumclast`):
+#' for an interval starting at a dose, that is the time since the dose.  The
+#' AUC does not depend on the time origin.
+#'
 #' @inheritParams pk.calc.auxc
 #' @inheritParams assert_intervaltime_single
 #' @inheritParams assert_lambdaz
@@ -311,10 +318,12 @@ pk.calc.auxcint <- function(conc, time,
   if (lambda_z_used && length(extrap_times) > 0) {
     interval_method[which(time_interp %in% extrap_times) - 1] <- "log"
   }
+  # Times are measured from the start of the interval, which weights the AUMC
+  # by the time since the start (the AUC does not depend on it)
   ret <-
     auc_integrate(
-      conc = conc_interp, time = time_interp,
-      clast = clast, tlast = tlast, lambda.z = lambda.z,
+      conc = conc_interp, time = time_interp - interval[1],
+      clast = clast, tlast = tlast - interval[1], lambda.z = lambda.z,
       interval_method = interval_method,
       fun_linear = fun_linear,
       fun_log = fun_log,
