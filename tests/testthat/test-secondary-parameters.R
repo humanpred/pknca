@@ -3484,7 +3484,7 @@ test_that("every secondary parameter is calculated when linked to a reference in
 })
 
 test_that("dose-normalized renal clearance is renal clearance divided by the dose", {
-  for (current_base in c("clr.last", "clr.obs", "clr.pred")) {
+  for (current_base in c("clr.last", "clr.inf.obs", "clr.inf.pred")) {
     current_dn <- paste0(current_base, ".dn")
     intervals <-
       data.frame(
