@@ -3432,7 +3432,9 @@ test_that("every dose-normalized parameter is registered consistently with its b
   dn_params <- tbl$parameter[tbl$dose_normalized]
   expect_true(length(dn_params) > 0)
   for (current_dn in dn_params) {
-    base <- sub("\\.dn$", "", current_dn)
+    # A deprecated name is registered as its replacement is
+    replacement <- unname(deprecated_renamed_parameters[current_dn])
+    base <- sub("\\.dn$", "", if (is.na(replacement)) current_dn else replacement)
     expect_true(base %in% names(all_intervals), label = current_dn)
     spec <- all_intervals[[current_dn]]
     base_secondary <- isTRUE(all_intervals[[base]]$selection$secondary)
