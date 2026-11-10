@@ -2661,6 +2661,23 @@ test_that("ctrough, cstart, and aumcint use the interval's own times for an inte
   expect_equal(get_value(12, "cav.int.last"), auc_second / 12)
 })
 
+test_that("ctrough and cstart match the interval bounds exactly for a non-integer start, and are NA without a sample there", {
+  d_conc <- data.frame(time = c(0, 1, 2, 4, 8, 12) + 0.3, conc = c(1, 5, 4, 3, 2, 1.5))
+  d_dose <- data.frame(time = 0.3, dose = 1)
+  intervals <-
+    data.frame(start = c(0.3, 1.3), end = c(12.3, 11), ctrough = TRUE, cstart = TRUE)
+  o_data <- PKNCAdata(PKNCAconc(d_conc, conc ~ time), PKNCAdose(d_dose, dose ~ time), intervals = intervals)
+  result <- as.data.frame(suppressWarnings(pk.nca(o_data)))
+  get_value <- function(start, testcd) {
+    result$PPORRES[result$start == start & result$PPTESTCD == testcd]
+  }
+  expect_equal(get_value(0.3, "cstart"), 1)
+  expect_equal(get_value(0.3, "ctrough"), 1.5)
+  expect_equal(get_value(1.3, "cstart"), 5)
+  # No sample at 11
+  expect_equal(get_value(1.3, "ctrough"), NA_real_)
+})
+
 test_that("aumcint.inf.obs matches aumcinf.obs for an interval starting at a later dose", {
   d_conc <- data.frame(
     time = c(0, 1, 2, 4, 8, 12, 13, 14, 16, 20, 24),
