@@ -25,7 +25,7 @@ concentration above it is counted (see the "Imputed concentrations"
 section).
 }
 \description{
-\code{count_conc} and \code{count_conc_measured} are typically used for quality control
+\code{count.conc} and \code{count.conc.measured} are typically used for quality control
 on the data to ensure that there are a sufficient number of non-missing
 samples for a calculation and to ensure that data are consistent between
 individuals.
@@ -41,9 +41,9 @@ interval
 
 
 Both counts are taken after imputation, and neither distinguishes an imputed
-concentration from a measured one.  \code{count_conc} counts every non-missing
+concentration from a measured one.  \code{count.conc} counts every non-missing
 concentration, so any imputation that adds a point increases it.
-\code{count_conc_measured} counts concentrations above the limit of
+\code{count.conc.measured} counts concentrations above the limit of
 quantification, so whether an imputed point is counted depends on its value
 rather than on its being imputed:  the zero added by
 \code{\link[=PKNCA_impute_method_start_conc0]{PKNCA_impute_method_start_conc0()}} is not counted, while the concentration

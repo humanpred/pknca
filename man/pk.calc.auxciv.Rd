@@ -149,10 +149,12 @@ administration
 \seealso{
 Other AUC calculations:
 \code{\link[=pk.calc.auxc]{pk.calc.auxc()}},
-\code{\link[=pk.calc.auxcint]{pk.calc.auxcint()}}
+\code{\link[=pk.calc.auxcint]{pk.calc.auxcint()}},
+\code{\link[=pk.calc.auxciv.int]{pk.calc.auxciv.int()}}
 
 Other AUMC calculations:
-\code{\link[=pk.calc.auxcint]{pk.calc.auxcint()}}
+\code{\link[=pk.calc.auxcint]{pk.calc.auxcint()}},
+\code{\link[=pk.calc.auxciv.int]{pk.calc.auxciv.int()}}
 }
 \concept{AUC calculations}
 \concept{AUMC calculations}
