@@ -178,7 +178,11 @@ test_that("dose_normalized marks exactly the dose-normalized parameters", {
   # function of its own
   expect_equal(
     sort(tbl$parameter[tbl$dose_normalized]),
-    sort(c(from_dn, "clr.last.dn", "clr.obs.dn", "clr.pred.dn"))
+    sort(c(
+      from_dn, "clr.last.dn", "clr.inf.obs.dn", "clr.inf.pred.dn",
+      # The deprecated names of the last two
+      "clr.obs.dn", "clr.pred.dn"
+    ))
   )
   # ... and every parameter named as dose-normalized is marked
   expect_equal(
