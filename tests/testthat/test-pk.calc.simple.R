@@ -425,14 +425,22 @@ test_that("every cav variant is its AUC divided by the interval duration", {
   d_dose <- data.frame(dose = 25, time = 0)
   intervals <- data.frame(start = 0, end = 8)
   intervals[, c(cav_params, unique(auc_of))] <- TRUE
-  o_data <-
-    PKNCAdata(
-      PKNCAconc(d_conc, conc ~ time),
-      PKNCAdose(d_dose, dose ~ time, route = "intravascular"),
-      intervals = intervals,
-      impute = "start_conc0"
-    )
-  results <- as.data.frame(pk.nca(o_data))
+  # One interval holding every variant mixes single-dose and interval AUCs
+  expect_warning(
+    o_data <-
+      PKNCAdata(
+        PKNCAconc(d_conc, conc ~ time),
+        PKNCAdose(d_dose, dose ~ time, route = "intravascular"),
+        intervals = intervals,
+        impute = "start_conc0"
+      ),
+    class = "pknca_warning_interval_inconsistent_parameters"
+  )
+  expect_warning(
+    o_nca <- pk.nca(o_data),
+    class = "pknca_warning_interval_inconsistent_parameters"
+  )
+  results <- as.data.frame(o_nca)
   value <- stats::setNames(results$PPORRES, results$PPTESTCD)
   for (p in cav_params) {
     expect_true(is.finite(value[[p]]), info = p)
