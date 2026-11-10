@@ -352,6 +352,103 @@ the generated intervals:
 
 ## New features
 
+* Cav is available for every AUC that covers only the interval, as `cav.last`
+  (from `auclast`), `cav.all` (from `aucall`) and, for IV bolus dosing, `cav.iv.last`, `cav.iv.all`,
+  `cav.ivint.last`, `cav.ivint.all`, `cav.ivint.inf.obs`, and
+  `cav.ivint.inf.pred` (from the `auciv*` AUCs), alongside the `cav.int.*`
+  variants.  Each is its AUC divided by the
+  interval duration.  There is no Cav from AUCinf,obs or AUCinf,pred, which
+  include the area after the interval.  New `aucivint.inf.obs` and
+  `aucivint.inf.pred` complete the IV interval AUCs (`aucint.inf.obs` and
+  `aucint.inf.pred` with C0 back-extrapolated, as `aucivint.last` and
+  `aucivint.all` are).  The new parameters are in the `"uncommon"` tier, so
+  `pknca_interval_table()` offers the ones matching the interval's AUC basis
+  when `tier = "all"` or when `include` names them or their concept.  CDISC
+  PKPARMCD has no codes for them, so they carry sponsor-defined PPTESTCD codes
+  (`CAVGALL`, `CAVGIVL`, `CAVGIVA`, `CAVGIVIL`, `CAVGIVIA`, `CAVGIVIO`,
+  `CAVGIVIP`, `AUCIVIIO`, `AUCIVIIP`) (@billdenney).
+
+* `cav` and `cav.dn` are deprecated in favor of `cav.last` and `cav.last.dn`,
+  whose names say which AUC they are calculated from.  They still calculate the
+  same values, but requesting them gives the classed warning
+  `pknca_warning_deprecated_parameter` (once per session), and
+  `pknca_interval_table()` no longer offers them.  `deg.fluc` is now calculated
+  from `cav.last` (@billdenney).
+
+* Parameter names follow one pattern:  the suffix names the AUC the parameter
+  is calculated from, as the AUC names do, and words are separated by dots.
+  The old names are deprecated; they still calculate the same values, but
+  requesting them gives the classed warning
+  `pknca_warning_deprecated_parameter` (once per session for each set of
+  names), and `pknca_interval_table()` no longer offers them (@billdenney):
+  * Parameters calculated from AUCinf say so with `.inf`:  `cl.obs` is now
+    `cl.inf.obs`, and likewise for `cl`, `kel`, `mrt`, `vz`, `vss`, and
+    `thalf.eff` (with their `.iv` forms), `mrt.md`, `vss.md`, `mrt.ivmd`,
+    `vss.ivmd`, `f`, `f.int`, `clr` (with `clr.*.dn`), and `aucpext`
+    (`aucpext.obs` is now `aucpext.inf.obs`).
+  * The percent back-extrapolated separates its AUC with a dot:
+    `aucivpbextlast` is now `aucivpbext.last`, and likewise for `all`,
+    `inf.obs`, `inf.pred`, `int.last`, and `int.all`.
+  * Underscores become dots:  `count_conc` is now `count.conc`,
+    `count_conc_measured` is `count.conc.measured`, `time_above` is
+    `time.above`, `tobit_residual` and `adj_tobit_residual` are
+    `tobit.residual` and `adj.tobit.residual`, and `lambda.z.n.points_blq` is
+    `lambda.z.n.points.blq`.  The `_se` and `_df` suffixes of the sparse
+    estimates, which name a statistic of the parameter rather than the
+    parameter, are unchanged, as is the `conc_above` interval column, which is
+    an argument rather than a parameter.  The columns that
+    `pk.calc.half.life()` and `fit_half_life_tobit()` return are renamed the
+    same way (`tobit.residual`, `adj.tobit.residual`, and
+    `lambda.z.n.points.blq`).
+  * Requesting an old name gives its value under the old name, and the
+    exclusion rules (`exclude_nca_max.aucinf.pext()`,
+    `exclude_nca_count_conc_measured()`, and any rule built with
+    `exclude_nca_by_param()`) read a parameter requested by its old name.
+    `pknca_parameter_table()` and `pknca_units_table()` still list the old
+    names.
+
+* Families that had some AUC variants now have all of them, in the
+  `"uncommon"` tier (@billdenney):  `aumcivint.inf.obs` and
+  `aumcivint.inf.pred`; `cl`, `kel`, `mrt`, `vss`, and `vz` from the IV
+  interval AUCs extrapolated to infinity (`cl.ivint.inf.obs`,
+  `cl.ivint.inf.pred`, and so on); the effective half-life on every AUC
+  (`thalf.eff.all`, `thalf.eff.int.*`, `thalf.eff.iv.all`, and
+  `thalf.eff.ivint.*`); bioavailability from AUCall (`f.all`); and renal
+  clearance from AUCall and the interval AUCs (`clr.all` and `clr.int.*`).
+  They carry the sponsor-defined PPTESTCD codes `AUMIVIIO`, `AUMIVIIP`,
+  `CLWO`, `CLWP`, `KELWO`, `KELWP`, `MRTWO`, `MRTWP`, `VSSWO`, `VSSWP`,
+  `VZWO`, `VZWP`, `EFFAHL`, `EFFILHL`, `EFFIAHL`, `EFFIOHL`, `EFFIPHL`,
+  `EFFIVAHL`, `EFFWLHL`, `EFFWAHL`, `EFFWOHL`, and `EFFWPHL`, and the new
+  bioavailability and renal clearance variants share the CDISC codes of their
+  families (`FAB` and `RENALCL`).
+
+* An interval specification whose parameters are not calculated on one basis
+  now gives one classed warning, `pknca_warning_interval_inconsistent_parameters`,
+  from `PKNCAdata()`, `set_intervals()`, and `pk.nca()` (one warning for the
+  whole specification, listing each problem with the number of intervals it
+  affects).  Each parameter calculated from AUCs is placed on the AUC bases
+  that `pknca_interval_table()` builds intervals on (single-dose or interval
+  AUCs, AUClast or AUCall, AUCinf,obs or AUCinf,pred), and parameters that no
+  basis holds together are reported:  `aucint.all` with `cav.last`, `cl.last` with
+  `vz.all`, and `cl.inf.obs` with `vz.inf.pred`, for example.  Secondary parameters
+  (`f.*`, `ratio.*`) and renal clearance (`clr.*`), which name their AUC with
+  `pknca_ref()`, are judged by the AUC they reference.  A parameter that needs a
+  finite interval end (an average concentration, or a parameter that applies
+  only to repeated dosing) requested for an interval that ends at infinity is
+  reported too.  The AUCs, AUMCs, and percent extrapolated are not judged
+  against each other, nor against the other parameters on AUCinf,obs or
+  AUCinf,pred, because reporting them both ways is common; a parameter
+  calculated from no AUC, or that applies only to repeated dosing (whose
+  definitions combine bases, as in `pknca_interval_table()`), is not judged;
+  and routes and sample types are not judged, because one interval commonly
+  covers both arms of a crossover or plasma and urine (@billdenney).
+* `pknca_interval_table()` has a new `auc_type` argument (`"last"`, the
+  default, or `"all"`) to build an interval on AUCall (`aucall` or
+  `aucint.all` and the parameters calculated from it), and an interval that
+  ends at infinity no longer gets parameters that need a finite end (an
+  average concentration, which would be zero, or a parameter that applies only
+  to repeated dosing); asking for one of them with `include` gives the classed
+  warning `pknca_warning_interval_include_finite_end` (@billdenney).
 * `PKNCAconc()` has a new `frac_unbound` argument: a value or the name of a
   column, greater than 0 and at most 1, with `NA` where fraction unbound does
   not apply (for example, urine).  When it is given, `pk.nca()` calculates the
@@ -1173,17 +1270,32 @@ the generated intervals:
 * `ctrough`, `cstart`, and the AUMC over an interval (`aumcint.last`,
   `aumcint.all`, `aumcint.inf.obs`, `aumcint.inf.pred`, and the `aumcivint.*`
   parameters built on them) are correct for an interval that does not start at
-  time 0.  The calculation functions were given the times relative to the start
-  of the interval but `start` and `end` (and the group times used by `aucint`
-  and `aumcint`) on the original scale.  With intervals of 0 to 12 and 12 to 24,
-  `ctrough` for the second interval was `NA` instead of the concentration at
-  24, `cstart` was the concentration at 24 instead of at 12, and `aumcint.last`
-  weighted by the time since 0 instead of since 12 (544 instead of the 154 that
-  `aumclast` gives).  Every time given to a calculation function, including
-  `start`, `end`, `time.group`, and `time.dose.group`, is now relative to the
-  start of the interval, so `start` is 0 and `end` is the interval duration.  A
-  parameter registered with `add.interval.col()` that uses `start` or `end` as
-  a time on the original scale needs the same change (@billdenney).
+  time 0.  With intervals of 0 to 12 and 12 to 24, `ctrough` for the second
+  interval was `NA` instead of the concentration at 24, `cstart` was the
+  concentration at 24 instead of at 12, and `aumcint.last` weighted by the time
+  since 0 instead of since 12 (544 instead of the 154 that `aumclast` gives).
+  `ctrough` and `cstart` compared the interval's times, which are relative to
+  the start of the interval, with `start` and `end`, which are on the original
+  time scale; they now use the new `time.start` and `time.end` data sources (the
+  interval's bounds on the scale of `time`, which a parameter registered with
+  `add.interval.col()` can use too).  `pk.calc.auxcint()` and `pk.calc.aumcint()`
+  now weight the AUMC by the time since `start`; the AUC is unchanged
+  (@billdenney).
+
+* The IV interval AUCs and AUMCs (`aucivint.last`, `aucivint.all`,
+  `aumcivint.last`, `aumcivint.all`, and the new `aucivint.inf.obs` and
+  `aucivint.inf.pred`) are calculated by the new `pk.calc.auciv.int()` and
+  `pk.calc.aumciv.int()`.  They back-extrapolate C0 of the IV bolus that starts
+  the interval from the concentrations after it, and replace the first segment
+  of the AUCint (which starts from the trough before the dose) with the one
+  starting from that C0.  Before, they used the `c0` parameter and assumed the
+  interval started from a zero concentration, so an interval starting at a
+  later dose took the predose trough as C0 and gave the AUCint unchanged.  An
+  interval that starts at an IV infusion has nothing to back-extrapolate and
+  gives the AUCint (before, an infusion starting at time 0 was
+  back-extrapolated as if it were a bolus, so its IV interval AUC and the MRT,
+  Vss, and Kel from it change), and an interval that does not start at an IV
+  dose gives `NA` with the reason (@billdenney).
 
 * Running an NCA no longer changes what `get.interval.cols()` returns
   (@billdenney).

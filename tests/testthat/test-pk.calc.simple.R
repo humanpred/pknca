@@ -413,6 +413,77 @@ test_that("pk.calc.cav", {
                info="If end == start, return NA_real_")
 })
 
+test_that("every cav variant is its AUC divided by the interval duration", {
+  # Every registered cav variant (other than the dose-normalized and deprecated
+  # ones), so that a new variant is checked without editing this test
+  all_cols <- get.interval.cols()
+  not_dn <- grep("[.]dn$", names(all_cols), value = TRUE, invert = TRUE)
+  cav_params <- setdiff(grep("^cav", not_dn, value = TRUE), names(deprecated_renamed_parameters))
+  expect_true(length(cav_params) >= 12)
+  auc_of <- vapply(lapply(all_cols[cav_params], `[[`, "formalsmap"), `[[`, "", "auc")
+  d_conc <- as.data.frame(datasets::Indometh)[datasets::Indometh$Subject == 1, ]
+  d_dose <- data.frame(dose = 25, time = 0)
+  intervals <- data.frame(start = 0, end = 8)
+  intervals[, c(cav_params, unique(auc_of))] <- TRUE
+  # One interval holding every variant mixes single-dose and interval AUCs
+  expect_warning(
+    o_data <-
+      PKNCAdata(
+        PKNCAconc(d_conc, conc ~ time),
+        PKNCAdose(d_dose, dose ~ time, route = "intravascular"),
+        intervals = intervals,
+        impute = "start_conc0"
+      ),
+    class = "pknca_warning_interval_inconsistent_parameters"
+  )
+  expect_warning(
+    o_nca <- pk.nca(o_data),
+    class = "pknca_warning_interval_inconsistent_parameters"
+  )
+  results <- as.data.frame(o_nca)
+  value <- stats::setNames(results$PPORRES, results$PPTESTCD)
+  for (p in cav_params) {
+    expect_true(is.finite(value[[p]]), info = p)
+    expect_equal(value[[p]], value[[auc_of[[p]]]] / 8, info = p)
+  }
+})
+
+test_that("cav is deprecated in favor of cav.last, which gives the same value", {
+  # Every deprecated name points at a registered replacement that is not
+  # itself deprecated
+  expect_equal(deprecated_renamed_parameters[c("cav", "cav.dn")], c(cav = "cav.last", cav.dn = "cav.last.dn"))
+  expect_true(all(deprecated_renamed_parameters %in% names(get.interval.cols())))
+  expect_true(all(names(deprecated_renamed_parameters) %in% names(get.interval.cols())))
+
+  d_conc <- data.frame(conc = c(0, 2, 4, 3, 1), time = c(0, 1, 2, 4, 8))
+  o_conc <- PKNCAconc(d_conc, conc ~ time)
+  o_dose <- PKNCAdose(data.frame(dose = 10, time = 0), dose ~ time)
+  rlang::reset_warning_verbosity("pknca_deprecated_renamed_cav")
+  expect_warning(
+    o_data <-
+      PKNCAdata(
+        o_conc, o_dose,
+        intervals = data.frame(start = 0, end = 8, cav = TRUE, cav.last = TRUE)
+      ),
+    regexp = "deprecated and will be an error in the next minor release.*cav -> cav[.]last",
+    class = "pknca_warning_deprecated_parameter"
+  )
+  r <- as.data.frame(pk.nca(o_data))
+  value <- stats::setNames(r$PPORRES, r$PPTESTCD)
+  expect_equal(value[["cav.last"]], value[["auclast"]] / 8)
+  expect_equal(value[["cav"]], value[["cav.last"]])
+
+  # The new names are silent
+  expect_no_warning(
+    PKNCAdata(o_conc, o_dose, intervals = data.frame(start = 0, end = 8, cav.last = TRUE, cav.last.dn = TRUE)),
+    class = "pknca_warning_deprecated_parameter"
+  )
+  # No context offers a deprecated name
+  it <- pknca_interval_table(start = 0, end = 24, dosing = "single", route = "extravascular", tier = "all")
+  expect_false(any(unlist(it[intersect(names(deprecated_renamed_parameters), names(it))])))
+  expect_true(any(it$cav.last))
+})
+
 test_that("pk.calc.ctrough", {
   expect_equal(pk.calc.ctrough(1:5, 0:4, 0), 1,
                info="Found and it's the first time")
@@ -572,9 +643,9 @@ test_that("zero-length input gives NA rather than zero (issue 601)", {
   )
 })
 
-test_that("count_conc and count_conc_measured count imputed concentrations by value", {
+test_that("count.conc and count.conc.measured count imputed concentrations by value", {
   # Documented in the "Imputed concentrations" section:  neither count knows
-  # whether a concentration was imputed, so count_conc_measured includes an
+  # whether a concentration was imputed, so count.conc.measured includes an
   # imputed concentration that is above the limit of quantification and
   # excludes an imputed zero
   d_conc <-
@@ -586,18 +657,18 @@ test_that("count_conc and count_conc_measured count imputed concentrations by va
   o_conc <- PKNCAconc(d_conc, conc ~ time | subject)
   o_dose <- PKNCAdose(data.frame(subject = 1, dose = 100, time = 0), dose ~ time | subject)
   intervals <-
-    data.frame(start = 0, end = 24, count_conc = TRUE, count_conc_measured = TRUE)
+    data.frame(start = 0, end = 24, count.conc = TRUE, count.conc.measured = TRUE)
   counts <- function(impute) {
     o_data <- suppressMessages(PKNCAdata(o_conc, o_dose, intervals = intervals, impute = impute))
     res <- as.data.frame(suppressMessages(suppressWarnings(pk.nca(o_data))))
     c(
-      conc = res$PPORRES[res$PPTESTCD == "count_conc"],
-      measured = res$PPORRES[res$PPTESTCD == "count_conc_measured"]
+      conc = res$PPORRES[res$PPTESTCD == "count.conc"],
+      measured = res$PPORRES[res$PPTESTCD == "count.conc.measured"]
     )
   }
   # Six samples are in the 0-24 interval; the predose sample at -0.5 is not
   expect_equal(counts(NA_character_), c(conc = 6, measured = 6))
-  # A zero is added:  counted by count_conc, not by count_conc_measured
+  # A zero is added:  counted by count.conc, not by count.conc.measured
   expect_equal(counts("start_conc0"), c(conc = 7, measured = 6))
   # A measured concentration is carried to the start time:  counted by both
   expect_equal(counts("start_predose"), c(conc = 7, measured = 7))
