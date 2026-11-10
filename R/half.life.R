@@ -27,7 +27,7 @@
 #'
 #' For `hl_method = "tobit"`, BLQ observations are retained and treated as
 #' left-censored.  The best window is the one minimizing
-#' `tobit_residual * n ^ tobit_n_points_penalty` (default: raw `tobit_residual`)
+#' `tobit.residual * n ^ tobit_n_points_penalty` (default: raw `tobit.residual`)
 #' among windows with `lambda.z > 0`, at least `min.hl.points` and at most
 #' `max.hl.points` above-LLOQ points, and a first point no earlier than
 #' `min.hl.start.time`.  On ties the largest window (most total points) is
@@ -120,10 +120,10 @@
 #'
 #'   Additional columns for `hl_method = "tobit"`:
 #'  \describe{
-#'   \item{lambda.z.n.points_blq}{number of BLQ points included in the fit}
-#'   \item{tobit_residual}{estimated residual standard deviation from the
+#'   \item{lambda.z.n.points.blq}{number of BLQ points included in the fit}
+#'   \item{tobit.residual}{estimated residual standard deviation from the
 #'     Tobit fit (on the log-concentration scale)}
-#'   \item{adj_tobit_residual}{adjusted Tobit residual (analogous to
+#'   \item{adj.tobit.residual}{adjusted Tobit residual (analogous to
 #'     adjusted r-squared; penalizes smaller windows)}
 #'  }
 #' @references
@@ -296,18 +296,18 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
       lambda.z.time.first   = NA_real_,
       lambda.z.time.last    = NA_real_,
       lambda.z.n.points     = NA_integer_,
-      lambda.z.n.points_blq = NA_integer_,
+      lambda.z.n.points.blq = NA_integer_,
       clast.pred            = NA_real_,
       half.life             = NA_real_,
       span.ratio            = NA_real_,
-      tobit_residual        = NA_real_,
-      adj_tobit_residual    = NA_real_
+      tobit.residual        = NA_real_,
+      adj.tobit.residual    = NA_real_
     )
     ret_replacements <- c(
       "lambda.z", "lambda.z.time.first", "lambda.z.time.last",
-      "lambda.z.n.points", "lambda.z.n.points_blq",
+      "lambda.z.n.points", "lambda.z.n.points.blq",
       "clast.pred", "half.life", "span.ratio",
-      "tobit_residual", "adj_tobit_residual"
+      "tobit.residual", "adj.tobit.residual"
     )
   }
 
@@ -497,9 +497,9 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
       }
       all_tobit <- do.call(rbind, tobit_fits)
 
-      # Selection criterion: tobit_residual * n_points ^ penalty
+      # Selection criterion: tobit.residual * n_points ^ penalty
       selection_criterion <-
-        all_tobit$tobit_residual *
+        all_tobit$tobit.residual *
         (all_tobit$lambda.z.n.points ^ tobit_n_points_penalty)
       valid <- !is.na(all_tobit$lambda.z) & all_tobit$lambda.z > 0
       if (any(valid)) {
@@ -635,8 +635,8 @@ fit_half_life_tobit_LL <- function(par, log_conc, time, mask_blq, log_lloq) {
 #' @param optim_control A list of control parameters passed to [stats::optim()].
 #' @return A data.frame with one row and columns named `"lambda.z"`,
 #'   `"clast.pred"`, `"lambda.z.time.first"`, `"lambda.z.time.last"`,
-#'   `"lambda.z.n.points"`, `"lambda.z.n.points_blq"`, `"half.life"`,
-#'   `"span.ratio"`, `"tobit_residual"`, and `"adj_tobit_residual"`.
+#'   `"lambda.z.n.points"`, `"lambda.z.n.points.blq"`, `"half.life"`,
+#'   `"span.ratio"`, `"tobit.residual"`, and `"adj.tobit.residual"`.
 #'   Returns `NA` for all columns if [stats::optim()] does not converge,
 #'   and emits a warning.
 #' @seealso [pk.calc.half.life()], `fit_half_life_tobit_LL()`
@@ -648,11 +648,11 @@ fit_half_life_tobit <- function(data, tlast, optim_control = list()) {
     lambda.z.time.first = min(data$time, na.rm = TRUE),
     lambda.z.time.last = max(data$time, na.rm = TRUE),
     lambda.z.n.points = nrow(data),
-    lambda.z.n.points_blq = sum(data$mask_blq),
+    lambda.z.n.points.blq = sum(data$mask_blq),
     half.life = NA_real_,
     span.ratio = NA_real_,
-    tobit_residual = NA_real_,
-    adj_tobit_residual = NA_real_
+    tobit.residual = NA_real_,
+    adj.tobit.residual = NA_real_
   )
   # Guard: need at least 2 above-LLOQ points for initial parameter estimation
   if (length(above_lloq_log_conc) < 2) {
@@ -701,12 +701,12 @@ fit_half_life_tobit <- function(data, tlast, optim_control = list()) {
     )
     return(na_ret)
   }
-  tobit_residual <- exp(fit$par[["log_resid_error"]])
-  # adj_tobit_residual uses only points at or before tlast (analogous to adj.r.squared)
+  tobit.residual <- exp(fit$par[["log_resid_error"]])
+  # adj.tobit.residual uses only points at or before tlast (analogous to adj.r.squared)
   n_before_tlast <- sum(as.numeric(data$time) <= as.numeric(tlast))
-  adj_tobit_residual <-
+  adj.tobit.residual <-
     if (n_before_tlast > 2) {
-      tobit_residual * (n_before_tlast - 2) / (n_before_tlast - 1)
+      tobit.residual * (n_before_tlast - 2) / (n_before_tlast - 1)
     } else {
       NA_real_
     }
@@ -719,10 +719,10 @@ fit_half_life_tobit <- function(data, tlast, optim_control = list()) {
     lambda.z.time.first = min(data$time, na.rm = TRUE),
     lambda.z.time.last = max(data$time, na.rm = TRUE),
     lambda.z.n.points = nrow(data),
-    lambda.z.n.points_blq = sum(data$mask_blq),
+    lambda.z.n.points.blq = sum(data$mask_blq),
     half.life = log(2) / lambda_z,
-    tobit_residual = tobit_residual,
-    adj_tobit_residual = adj_tobit_residual
+    tobit.residual = tobit.residual,
+    adj.tobit.residual = adj.tobit.residual
   )
   # span.ratio uses only above-LLOQ time range (same as reference implementation)
   ret$span.ratio <- diff(range(as.numeric(above_lloq_times))) / ret$half.life
@@ -892,7 +892,7 @@ PKNCA.set.summary(
   point=business.geomean,
   spread=business.geocv
 )
-add.interval.col("tobit_residual",
+add.interval.col("tobit.residual",
                  FUN=NA,
                  values=c(FALSE, TRUE),
                  unit_type="unitless",
@@ -904,12 +904,12 @@ add.interval.col("tobit_residual",
                  pptestcd_cdisc="TOBITRSD",
                  pptest_cdisc="Tobit residual SD")
 PKNCA.set.summary(
-  name="tobit_residual",
+  name="tobit.residual",
   description="arithmetic mean and standard deviation",
   point=business.mean,
   spread=business.sd
 )
-add.interval.col("adj_tobit_residual",
+add.interval.col("adj.tobit.residual",
                  FUN=NA,
                  values=c(FALSE, TRUE),
                  unit_type="unitless",
@@ -919,12 +919,12 @@ add.interval.col("adj_tobit_residual",
                  pptestcd_cdisc="ATOBITRD",
                  pptest_cdisc="Adjusted Tobit residual SD")
 PKNCA.set.summary(
-  name="adj_tobit_residual",
+  name="adj.tobit.residual",
   description="arithmetic mean and standard deviation",
   point=business.mean,
   spread=business.sd
 )
-add.interval.col("lambda.z.n.points_blq",
+add.interval.col("lambda.z.n.points.blq",
                  FUN=NA,
                  values=c(FALSE, TRUE),
                  unit_type="count",
@@ -934,7 +934,7 @@ add.interval.col("lambda.z.n.points_blq",
                  pptestcd_cdisc="LAMZNBLQ",
                  pptest_cdisc="Number of BLQ Points for Lambda z")
 PKNCA.set.summary(
-  name="lambda.z.n.points_blq",
+  name="lambda.z.n.points.blq",
   description="median and range",
   point=business.median,
   spread=business.range
