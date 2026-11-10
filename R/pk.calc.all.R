@@ -592,12 +592,15 @@ impute_obs_values <- function(time, volume, duration.conc, include_half.life,
 # `time`, and those columns) with the result of one imputation step (`after`,
 # with `conc` and `time`).  An observation is identified by its time:  one whose
 # time is in `after` keeps its values, and one the step added takes the `fill`
-# value of each column.  A step that keeps the number of observations but
-# changes their times modified them in place, so the values stay in order.  A
+# value of each column.  A step that keeps the number of observations and the
+# position of every observation whose time it kept modified them in place
+# (changing a concentration or a time), so the values stay in order; that also
+# covers repeated times, which identify no single observation.  Otherwise, a
 # step that both adds and drops observations cannot say whether it moved an
-# observation to a new time or replaced it, so the observation at the new time
-# is an added one; that is said with a warning when a value of a dropped
-# observation differs from the value an added one gets.
+# observation to a new time or dropped one and added another, so the
+# observation at the new time is an added one; that is said with a warning
+# when a value of a dropped observation differs from the value an added one
+# gets.
 impute_align_obs <- function(before, after, fill, method) {
   value_cols <- setdiff(names(before), c("conc", "time"))
   ret <- data.frame(conc = after$conc, time = after$time)
@@ -605,7 +608,10 @@ impute_align_obs <- function(before, after, fill, method) {
     return(ret)
   }
   idx <- match(after$time, before$time)
-  if (anyNA(idx) && nrow(after) == nrow(before)) {
+  in_place <-
+    nrow(after) == nrow(before) &&
+    (identical(after$time, before$time) || all(idx == seq_along(idx), na.rm = TRUE))
+  if (in_place) {
     idx <- seq_len(nrow(after))
   } else if (anyNA(idx)) {
     dropped <- before[setdiff(seq_len(nrow(before)), idx), , drop = FALSE]
@@ -617,11 +623,12 @@ impute_align_obs <- function(before, after, fill, method) {
       rlang::warn(
         sprintf(
           paste(
-            "Imputation with %s both added and dropped observations, so the %s",
-            "of the dropped observations (at times %s) do not carry to the added",
-            "ones (at times %s).  An observation is identified by its time; a method",
-            "that changes the time of an observation should keep the number of",
-            "observations."
+            "Imputation with %s both added and dropped observations, so the values",
+            "of %s of the dropped observations (at times %s) are not carried to the",
+            "added observations (at times %s).  An observation is identified by its",
+            "time, so an observation moved to a new time cannot be told apart from",
+            "one dropped and another added; a method that changes the time of an",
+            "observation should keep the number of observations."
           ),
           method, paste(lost, collapse = ", "),
           paste(dropped$time, collapse = ", "),
