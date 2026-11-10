@@ -352,6 +352,29 @@ the generated intervals:
 
 ## New features
 
+* Cav is available for every AUC that covers only the interval, as `cav.last`
+  (from `auclast`), `cav.all` (from `aucall`) and, for IV bolus dosing, `cav.iv.last`, `cav.iv.all`,
+  `cav.ivint.last`, `cav.ivint.all`, `cav.ivint.inf.obs`, and
+  `cav.ivint.inf.pred` (from the `auciv*` AUCs), alongside the `cav.int.*`
+  variants.  Each is its AUC divided by the
+  interval duration.  There is no Cav from AUCinf,obs or AUCinf,pred, which
+  include the area after the interval.  New `aucivint.inf.obs` and
+  `aucivint.inf.pred` complete the IV interval AUCs (`aucint.inf.obs` and
+  `aucint.inf.pred` with C0 back-extrapolated, as `aucivint.last` and
+  `aucivint.all` are).  The new parameters are in the `"uncommon"` tier, so
+  `pknca_interval_table()` offers the ones matching the interval's AUC basis
+  when `tier = "all"` or when `include` names them or their concept.  CDISC
+  PKPARMCD has no codes for them, so they carry sponsor-defined PPTESTCD codes
+  (`CAVGALL`, `CAVGIVL`, `CAVGIVA`, `CAVGIVIL`, `CAVGIVIA`, `CAVGIVIO`,
+  `CAVGIVIP`, `AUCIVIIO`, `AUCIVIIP`) (@billdenney).
+
+* `cav` and `cav.dn` are deprecated in favor of `cav.last` and `cav.last.dn`,
+  whose names say which AUC they are calculated from.  They still calculate the
+  same values, but requesting them gives the classed warning
+  `pknca_warning_deprecated_parameter` (once per session), and
+  `pknca_interval_table()` no longer offers them.  `deg.fluc` is now calculated
+  from `cav.last` (@billdenney).
+
 * An interval specification whose parameters are not calculated on one basis
   now gives one classed warning, `pknca_warning_interval_inconsistent_parameters`,
   from `PKNCAdata()`, `set_intervals()`, and `pk.nca()` (one warning for the
@@ -359,7 +382,7 @@ the generated intervals:
   affects).  Each parameter calculated from AUCs is placed on the AUC bases
   that `pknca_interval_table()` builds intervals on (single-dose or interval
   AUCs, AUClast or AUCall, AUCinf,obs or AUCinf,pred), and parameters that no
-  basis holds together are reported:  `aucint.all` with `cav`, `cl.last` with
+  basis holds together are reported:  `aucint.all` with `cav.last`, `cl.last` with
   `vz.all`, and `cl.obs` with `vz.pred`, for example.  Secondary parameters
   (`f.*`, `ratio.*`) and renal clearance (`clr.*`), which name their AUC with
   `pknca_ref()`, are judged by the AUC they reference.  A parameter that needs a
@@ -1143,6 +1166,21 @@ the generated intervals:
   inputs such as `conc`, `time`, and `dose`.
 
 ## Bug fixes
+
+* The IV interval AUCs and AUMCs (`aucivint.last`, `aucivint.all`,
+  `aumcivint.last`, `aumcivint.all`, and the new `aucivint.inf.obs` and
+  `aucivint.inf.pred`) are calculated by the new `pk.calc.auciv.int()` and
+  `pk.calc.aumciv.int()`.  They back-extrapolate C0 of the IV bolus that starts
+  the interval from the concentrations after it, and replace the first segment
+  of the AUCint (which starts from the trough before the dose) with the one
+  starting from that C0.  Before, they used the `c0` parameter and assumed the
+  interval started from a zero concentration, so an interval starting at a
+  later dose took the predose trough as C0 and gave the AUCint unchanged.  An
+  interval that starts at an IV infusion has nothing to back-extrapolate and
+  gives the AUCint (before, an infusion starting at time 0 was
+  back-extrapolated as if it were a bolus, so its IV interval AUC and the MRT,
+  Vss, and Kel from it change), and an interval that does not start at an IV
+  dose gives `NA` with the reason (@billdenney).
 
 * Running an NCA no longer changes what `get.interval.cols()` returns
   (@billdenney).

@@ -8,10 +8,10 @@
 # calculated from is in that basis (as pknca_interval_table() chooses them; the
 # percent extrapolated is calculated from AUClast and AUCinf, for example), and
 # two parameters are consistent when one basis holds both.  So `aucint.all` (a
-# repeated-dose basis with AUCall) and `cav` (calculated from AUClast) are not,
-# nor are `cl.obs` (AUCinf,obs) and `vz.pred` (AUCinf,pred).  The multiple-dose
-# mean residence time is calculated from the single-dose AUCs, so it is
-# consistent with them.
+# repeated-dose basis with AUCall) and `cav.last` (calculated from AUClast) are
+# not, nor are `cl.obs` (AUCinf,obs) and `vz.pred` (AUCinf,pred).  The
+# multiple-dose mean residence time is calculated from the single-dose AUCs, so
+# it is consistent with them.
 #
 # The AUCs and AUMCs, and their percent extrapolated (the AUC reports), are not
 # judged against each other, because reporting AUClast with AUCall, or

@@ -284,7 +284,7 @@ test_that("every derived dose requirement matches what pk.nca() can calculate (#
   o_conc <- PKNCAconc(d_conc, conc~time|subject)
   o_dose <- PKNCAdose(d_dose, dose~time|subject)
   check_params <-
-    c("cmax", "tmax", "auclast", "aucinf.obs", "half.life", "mrt.last", "cav",
+    c("cmax", "tmax", "auclast", "aucinf.obs", "half.life", "mrt.last", "cav.last",
       "cl.last", "cl.obs", "vz.obs", "vss.obs", "cmax.dn", "auclast.dn", "totdose")
   ivl <- data.frame(start = 0, end = Inf)
   for (param in check_params) ivl[[param]] <- TRUE

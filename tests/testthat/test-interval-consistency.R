@@ -13,9 +13,9 @@ inconsistency_message <- function(intervals) {
 
 test_that("a parameter from a single-dose AUC with an interval AUC warns", {
   expect_warning(
-    warn_inconsistent_interval_parameters(data.frame(start = 0, end = 24, aucint.all = TRUE, cav = TRUE)),
+    warn_inconsistent_interval_parameters(data.frame(start = 0, end = 24, aucint.all = TRUE, cav.last = TRUE)),
     regexp = paste0(
-      "aucint.all with cav [(]single-dose AUCs [(]AUClast, AUCall, AUCinf[)] mixed with interval AUCs [(]AUCint[)]; ",
+      "aucint.all with cav.last [(]single-dose AUCs [(]AUClast, AUCall, AUCinf[)] mixed with interval AUCs [(]AUCint[)]; ",
       "AUClast mixed with AUCall[)] [(]1 interval[)]"
     ),
     class = "pknca_warning_interval_inconsistent_parameters"
@@ -79,8 +79,8 @@ test_that("parameters from AUClast and AUCall warn", {
 
 test_that("a parameter that needs a finite end warns at an infinite end", {
   expect_match(
-    inconsistency_message(data.frame(start = 0, end = Inf, cav = TRUE)),
-    "cav (a parameter that needs a finite interval end)",
+    inconsistency_message(data.frame(start = 0, end = Inf, cav.last = TRUE)),
+    "cav.last (a parameter that needs a finite interval end)",
     fixed = TRUE
   )
   expect_match(
@@ -89,7 +89,7 @@ test_that("a parameter that needs a finite end warns at an infinite end", {
     fixed = TRUE
   )
   # The same parameters with a finite end are consistent
-  expect_true(is.na(inconsistency_message(data.frame(start = 0, end = 24, cav = TRUE))))
+  expect_true(is.na(inconsistency_message(data.frame(start = 0, end = 24, cav.last = TRUE))))
   expect_true(is.na(inconsistency_message(data.frame(start = 0, end = 24, deg.fluc = TRUE))))
 })
 
@@ -112,10 +112,10 @@ test_that("consistent specifications do not warn", {
       )
     )
   )
-  # A parameter with its own inputs:  deg.fluc is calculated from cav
+  # A parameter with its own inputs:  deg.fluc is calculated from cav.last
   expect_no_warning(
     warn_inconsistent_interval_parameters(
-      data.frame(start = 0, end = 24, deg.fluc = TRUE, cav = TRUE, cmax = TRUE, cmin = TRUE)
+      data.frame(start = 0, end = 24, deg.fluc = TRUE, cav.last = TRUE, cmax = TRUE, cmin = TRUE)
     )
   )
   # Multiple-dose MRT and Vss combine the AUCint over the interval with the
@@ -146,7 +146,7 @@ test_that("consistent specifications do not warn", {
   for (with_auc in list(
     c("cmax", "tmax", "auclast", "ctrough"),
     c("auclast", "ptr", "swing"),
-    c("cmax", "tmax", "auclast", "cav", "ctrough"),
+    c("cmax", "tmax", "auclast", "cav.last", "ctrough"),
     c("cmax", "ctrough", "cl.obs"),
     c("cmax", "ctrough", "half.life", "aucinf.obs")
   )) {
@@ -157,10 +157,10 @@ test_that("consistent specifications do not warn", {
 })
 
 test_that("a parameter and its own inputs are judged by the same AUCs", {
-  # deg.fluc is calculated from cav, so both are judged against aucint.last
+  # deg.fluc is calculated from cav.last, so both are judged against aucint.last
   expect_match(
-    inconsistency_message(data.frame(start = 0, end = 24, aucint.last = TRUE, cav = TRUE, deg.fluc = TRUE)),
-    "aucint.last with cav (single-dose AUCs (AUClast, AUCall, AUCinf) mixed with interval AUCs (AUCint))",
+    inconsistency_message(data.frame(start = 0, end = 24, aucint.last = TRUE, cav.last = TRUE, deg.fluc = TRUE)),
+    "aucint.last with cav.last (single-dose AUCs (AUClast, AUCall, AUCinf) mixed with interval AUCs (AUCint))",
     fixed = TRUE
   )
   # Every pair is reported:  vz.obs is calculated from cl.obs, and both are
@@ -269,11 +269,11 @@ test_that("PKNCAdata() and pk.nca() each warn once for the whole specification",
 
 test_that("the consistent sets follow the registry", {
   sets <- interval_consistent_sets()
-  expect_true(all(c("auclast", "cl.obs", "cav", "f.obs", "aucpext.obs") %in% sets$judged))
+  expect_true(all(c("auclast", "cl.obs", "cav.last", "f.obs", "aucpext.obs") %in% sets$judged))
   # A parameter calculated from no AUC, and one that applies only to repeated
   # dosing, is not judged
   expect_false(any(c("cmax", "ctrough", "sparse_auclast", "deg.fluc", "mrt.md.obs") %in% sets$judged))
-  expect_true(all(c("cav", "ctrough", "deg.fluc") %in% sets$finite_only))
+  expect_true(all(c("cav.last", "ctrough", "deg.fluc") %in% sets$finite_only))
   # A new registration drops the cache, and the next call includes the new
   # parameter wherever its dependencies go
   original <- get("interval.cols", envir = PKNCA:::.PKNCAEnv)

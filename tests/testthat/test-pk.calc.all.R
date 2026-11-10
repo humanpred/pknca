@@ -155,9 +155,9 @@ test_that("pk.nca", {
   myconc <- PKNCAconc(tmpconc, conc~time|treatment+ID)
   mydose <- PKNCAdose(tmpdose, dose~time|treatment+ID)
   mydata <- PKNCAdata(myconc, mydose,
-                      intervals=data.frame(start=0, end=24, cmax=TRUE, cav=TRUE))
+                      intervals=data.frame(start=0, end=24, cmax=TRUE, cav.last=TRUE))
   myresult <- pk.nca(mydata)
-  expect_equal(subset(myresult$result, PPTESTCD %in% "cav")$PPORRES,
+  expect_equal(subset(myresult$result, PPTESTCD %in% "cav.last")$PPORRES,
                c(0.5642, 0.5846), tolerance=0.0001,
                info="PK intervals work with passing in start and end as parameters")
 
@@ -1431,7 +1431,8 @@ test_that("pk.nca can be run for each parameter independently (#473)", {
     function(p) isTRUE(all_interval_cols[[p]]$sparse) || (p %in% needs_sparse),
     all_params
   )
-  dense_params <- setdiff(all_params, sparse_params)
+  # The deprecated names calculate what their replacements do, and warn
+  dense_params <- setdiff(all_params, c(sparse_params, names(deprecated_renamed_parameters)))
   
   # ── Intervals ─────────────────────────────────────────────────────────────
   intervals_dense  <- data.frame(start = c(0, 25), end = c(25, Inf))

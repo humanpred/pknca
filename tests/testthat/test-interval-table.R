@@ -329,6 +329,8 @@ test_that("every parameter is reachable from some context, or documented as not"
   expect_equal(
     unreachable,
     sort(c(
+      # Deprecated names duplicate the parameters that replaced them
+      names(deprecated_renamed_parameters),
       # Secondary parameters need inputs from more than one profile, which one
       # interval cannot supply.  Derived from the classification so that a newly
       # registered secondary parameter does not need this list edited.

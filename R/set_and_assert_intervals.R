@@ -127,7 +127,9 @@ assert_intervals <- function(intervals, data) {
 
   # Name only what the specification itself asks for, not the dependencies it
   # drags in, so that the user is told about the columns they wrote
-  warn_deprecated_sparse_parameters(interval_requested_params(intervals, expand = FALSE))
+  requested <- interval_requested_params(intervals, expand = FALSE)
+  warn_deprecated_sparse_parameters(requested)
+  warn_deprecated_renamed_parameters(requested)
   # Parameters that no single context gives together
   warn_inconsistent_interval_parameters(intervals)
 
