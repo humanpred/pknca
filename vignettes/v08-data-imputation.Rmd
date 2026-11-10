@@ -181,10 +181,14 @@ Values given per observation (the urine volume and collection duration,
 their observation through imputation, and an observation is identified by its
 time.  So a function that adds or drops observations must keep the times of the
 others, and a function that changes times must keep the number of observations
-(the values then stay in order).  An observation the function adds has a
-collection volume of 0, no collection duration, is neither included in nor
-excluded from the half-life, and has the profile's `lloq` when that is
-constant.
+and their order (the values then stay in order).  A function that both adds and
+drops observations in one step cannot be told apart from one that moved an
+observation, so the observation at the new time is treated as added, with a
+warning (`pknca_warning_impute_obs_values_dropped`) when a value of a dropped
+observation is lost; split such a function into two imputation methods instead.
+An observation the function adds has a collection volume of 0, no collection
+duration, is neither included in nor excluded from the half-life, and has the
+profile's `lloq` when that is constant (and a missing `lloq` when it varies).
 
 Imputation functions receive `time`, `start`, `end`, and `time.group` on the
 original time scale of the data.  NCA calculation functions receive `start`,
