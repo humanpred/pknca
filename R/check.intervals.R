@@ -671,7 +671,7 @@ parameter_source_inputs <- function(x, all_intervals = get.interval.cols(),
 #' @details The two directions answer different questions.  The default
 #'   answers "what becomes invalid if `x` changes?".  `recursive = TRUE`
 #'   answers "what does `x` need?".  Its result is the leaf inputs only, not
-#'   the intermediate parameters on the way to them (`cl.obs` gives `"dose"`
+#'   the intermediate parameters on the way to them (`cl.inf.obs` gives `"dose"`
 #'   and the inputs of the half-life, not `"half.life"` or `"aucinf.obs"`).
 #'   The leaves are the data the calculation reads (`"conc"`, `"time"`,
 #'   `"dose"`, `"time.dose"`, `"duration.dose"`, and so on) and the other

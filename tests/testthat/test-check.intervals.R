@@ -263,11 +263,11 @@ test_that("get.parameter.deps(recursive=TRUE) gives leaf inputs and never a para
   expect_equal(get.parameter.deps("auclast", recursive = TRUE), c("conc", "options", "time"))
   # Nothing is calculated for the interval bounds
   expect_equal(get.parameter.deps("start", recursive = TRUE), character(0))
-  # cl.obs goes through the half-life and the AUC to infinity, and neither
+  # cl.inf.obs goes through the half-life and the AUC to infinity, and neither
   # intermediate parameter is in the result
-  cl_deps <- get.parameter.deps("cl.obs", recursive = TRUE)
+  cl_deps <- get.parameter.deps("cl.inf.obs", recursive = TRUE)
   expect_true(all(c("conc", "time", "dose", "options", "check", "manually.selected.points") %in% cl_deps))
-  expect_false(any(c("half.life", "kel.obs", "aucinf.obs", "auclast") %in% cl_deps))
+  expect_false(any(c("half.life", "kel.inf.obs", "aucinf.obs", "auclast") %in% cl_deps))
   # Enumerate the registry so that a parameter added later is held to it
   for (param in names(get.interval.cols())) {
     deps <- get.parameter.deps(param, recursive = TRUE)
