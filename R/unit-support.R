@@ -108,8 +108,7 @@ pknca_units_table.default <- function(concu, doseu, amountu, timeu,
       pknca_units_table_conc_time(concu=concu, timeu=timeu),
       pknca_units_table_time_amount(timeu=timeu, amountu=amountu),
       pknca_units_table_conc_time_dose(concu=concu, timeu=timeu, doseu=doseu),
-      pknca_units_table_conc_time_amount(concu=concu, timeu=timeu, amountu=amountu),
-      pknca_units_table_conc_time_amount_dose(concu=concu, timeu=timeu, amountu=amountu, doseu=doseu)
+      pknca_units_table_conc_time_amount(concu=concu, timeu=timeu, amountu=amountu)
     )
 
   # Generate preferred units and merge them into `conversions`
@@ -733,19 +732,6 @@ pknca_units_table_time_amount <- function(timeu, amountu) {
   data.frame(
     PPORRESU = time_amount,
     PPTESTCD = pknca_find_units_param(unit_type = "amount_time")
-  )
-}
-
-pknca_units_table_conc_time_amount_dose <- function(concu, timeu, amountu, doseu) {
-  if (useless(concu) || useless(timeu) || useless(amountu) || useless(doseu)) {
-    renal_clearance_dosenorm <- NA_character_
-  } else {
-    renal_clearance_dosenorm <- sprintf("(%s/(%s*%s))/%s", pknca_units_add_paren(amountu), timeu, concu, pknca_units_add_paren(doseu))
-  }
-  data.frame(
-    # Renal clearance, dose-normalized
-    PPORRESU=renal_clearance_dosenorm,
-    PPTESTCD=pknca_find_units_param(unit_type="renal_clearance_dosenorm")
   )
 }
 
