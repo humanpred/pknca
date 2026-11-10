@@ -157,7 +157,7 @@ intervals_crossover <-
   data.frame(treatment = c("iv", "oral"), start = 0, end = Inf, aucinf.obs = TRUE)
 interval_add_secondary(
   intervals_crossover,
-  param = "f.obs",
+  param = "f.inf.obs",
   reference = data.frame(treatment = "iv"),
   ref_vary = "period"
 )
