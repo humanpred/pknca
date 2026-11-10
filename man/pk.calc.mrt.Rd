@@ -50,7 +50,7 @@ linear kinetics), the equation becomes the same as the single-dose MRT.
 
 These are the parameters to use when PK are nonlinear.  With linear PK,
 MRT and Vss can be measured from a single dose and the single-dose
-parameters (\code{mrt.obs}, \code{vss.obs}, and similar) describe steady state as
+parameters (\code{mrt.inf.obs}, \code{vss.inf.obs}, and similar) describe steady state as
 well.  When PK are nonlinear they do not, so MRT and Vss have to be
 measured over a steady-state dosing interval, which is what these
 parameters do.  The ratio \code{aumctau/auctau} on its own (\code{mrt.last} over a
