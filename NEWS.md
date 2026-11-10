@@ -385,8 +385,8 @@ the generated intervals:
   * Parameters calculated from AUCinf say so with `.inf`:  `cl.obs` is now
     `cl.inf.obs`, and likewise for `cl`, `kel`, `mrt`, `vz`, `vss`, and
     `thalf.eff` (with their `.iv` forms), `mrt.md`, `vss.md`, `mrt.ivmd`,
-    `vss.ivmd`, `f`, `f.int`, `clr` (with `clr.*.dn`), and `aucpext`
-    (`aucpext.obs` is now `aucpext.inf.obs`).
+    `vss.ivmd`, `f`, `f.int`, `clr`, and `aucpext` (`aucpext.obs` is now
+    `aucpext.inf.obs`).
   * The percent back-extrapolated separates its AUC with a dot:
     `aucivpbextlast` is now `aucivpbext.last`, and likewise for `all`,
     `inf.obs`, `inf.pred`, `int.last`, and `int.all`.
@@ -1093,10 +1093,8 @@ the generated intervals:
   supplies the concentration at time 0 and the AU(M)C is calculated from it
   (#352).
 
-* New excretion parameters: `volpk` ("Sum of Urine Vol", the total urine
-  volume for an interval) and
-  dose-normalized renal clearance parameters: `clr.last.dn`, `clr.obs.dn`,
-  `clr.pred.dn` (#433)
+* New excretion parameter: `volpk` ("Sum of Urine Vol", the total urine
+  volume for an interval) (#433)
 
 * New excretion rate parameters: `ermax` (maximum excretion rate), `ertmax`
   (collection midpoint of the maximum excretion rate), and `ertlst`
