@@ -442,6 +442,143 @@ test_that("half life inclusion and exclusion", {
   expect_false(identical(myresult$result, myresult_incl$result))
 })
 
+test_that("include_half.life, exclude_half.life, and lloq stay aligned when imputation adds an observation", {
+  # No sample at the dose time, so impute = "start_conc0" adds one
+  d_conc <- data.frame(
+    time = c(0.5, 1, 2, 4, 8, 12, 16, 24, 36, 48),
+    conc = c(4.68, 5.46, 5.21, 3.98, 2.42, 1.69, 1.32, 0.95, 0.62, 0.42)
+  )
+  d_conc$include_hl <- ifelse(d_conc$time >= 24, TRUE, NA)
+  d_conc$exclude_hl <- d_conc$time == 48
+  d_conc$lloq <- 0.5
+  o_dose <- PKNCAdose(data.frame(time = 0, dose = 100), dose~time)
+  d_interval <-
+    data.frame(
+      start = 0, end = Inf,
+      half.life = TRUE, lambda.z.time.first = TRUE, lambda.z.n.points = TRUE
+    )
+  get_hl <- function(o_conc, impute, options = list()) {
+    o_data <- PKNCAdata(o_conc, o_dose, intervals = d_interval, impute = impute, options = options)
+    suppressMessages(o_nca <- pk.nca(o_data))
+    as.data.frame(o_nca, out_format = "wide")
+  }
+  hl_cols <- c("half.life", "lambda.z.time.first", "lambda.z.n.points")
+
+  o_conc_incl <- PKNCAconc(d_conc, conc~time, include_half.life = "include_hl")
+  res_incl_impute <- get_hl(o_conc_incl, impute = "start_conc0")
+  expect_equal(res_incl_impute$lambda.z.time.first, 24)
+  expect_equal(res_incl_impute$lambda.z.n.points, 3)
+  expect_equal(
+    res_incl_impute[, hl_cols],
+    get_hl(o_conc_incl, impute = NA_character_)[, hl_cols]
+  )
+
+  o_conc_excl <- PKNCAconc(d_conc, conc~time, exclude_half.life = "exclude_hl")
+  expect_equal(
+    get_hl(o_conc_excl, impute = "start_conc0")[, hl_cols],
+    get_hl(o_conc_excl, impute = NA_character_)[, hl_cols]
+  )
+
+  # The 48 h sample is below the per-observation lloq for the Tobit fit
+  o_conc_lloq <- PKNCAconc(d_conc, conc~time, lloq = "lloq")
+  expect_equal(
+    get_hl(o_conc_lloq, impute = "start_conc0", options = list(hl_method = "tobit"))[, hl_cols],
+    get_hl(o_conc_lloq, impute = NA_character_, options = list(hl_method = "tobit"))[, hl_cols]
+  )
+
+  # An imputation chain that adds one observation and drops another
+  d_interval <-
+    data.frame(
+      start = 0, end = 48,
+      half.life = TRUE, lambda.z.time.first = TRUE, lambda.z.n.points = TRUE
+    )
+  d_conc_chain <- d_conc
+  d_conc_chain$include_hl <- ifelse(d_conc_chain$time %in% c(16, 24, 36), TRUE, NA)
+  o_conc_chain <- PKNCAconc(d_conc_chain, conc~time, include_half.life = "include_hl")
+  res_chain <- get_hl(o_conc_chain, impute = "start_conc0,end_conc_drop")
+  expect_equal(res_chain$lambda.z.time.first, 16)
+  expect_equal(res_chain$lambda.z.n.points, 3)
+})
+
+test_that("include_half.life stays with its observation when imputation changes times in place", {
+  # A user-defined imputation method that rounds times to the nominal time
+  user_method <- function(conc, time, ..., options = list()) {
+    data.frame(conc = conc, time = round(time, 1))
+  }
+  assign("PKNCA_impute_method_round_time", user_method, envir = globalenv())
+  withr::defer(rm("PKNCA_impute_method_round_time", envir = globalenv()))
+
+  d_conc <- data.frame(
+    time = c(0, 0.5, 1, 2, 4, 8, 12, 16, 24, 36, 48) + 0.02,
+    conc = c(0, 4.68, 5.46, 5.21, 3.98, 2.42, 1.69, 1.32, 0.95, 0.62, 0.42)
+  )
+  d_conc$include_hl <- ifelse(d_conc$time >= 12, TRUE, NA)
+  o_conc <- PKNCAconc(d_conc, conc~time, include_half.life = "include_hl")
+  o_dose <- PKNCAdose(data.frame(time = 0, dose = 100), dose~time)
+  d_interval <-
+    data.frame(
+      start = 0, end = Inf,
+      half.life = TRUE, lambda.z.time.first = TRUE, lambda.z.n.points = TRUE
+    )
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = d_interval, impute = "round_time")
+  suppressMessages(o_nca <- pk.nca(o_data))
+  res <- as.data.frame(o_nca, out_format = "wide")
+  expect_equal(res$lambda.z.time.first, 12)
+  expect_equal(res$lambda.z.n.points, 5)
+})
+
+test_that("per-observation values give an error when imputation changes both the observations and their times", {
+  # A user-defined imputation method that rounds times and adds a zero at the
+  # interval start
+  user_method <- function(conc, time, start, ..., options = list()) {
+    data.frame(conc = c(0, conc), time = c(start, round(time, 1)))
+  }
+  assign("PKNCA_impute_method_round_time_start0", user_method, envir = globalenv())
+  withr::defer(rm("PKNCA_impute_method_round_time_start0", envir = globalenv()))
+
+  d_conc <- data.frame(
+    time = c(0.5, 1, 2, 4, 8, 12, 16, 24, 36, 48) + 0.02,
+    conc = c(4.68, 5.46, 5.21, 3.98, 2.42, 1.69, 1.32, 0.95, 0.62, 0.42)
+  )
+  d_conc$include_hl <- ifelse(d_conc$time >= 12, TRUE, NA)
+  o_dose <- PKNCAdose(data.frame(time = 0, dose = 100), dose~time)
+  d_interval <- data.frame(start = 0, end = Inf, half.life = TRUE)
+
+  o_conc_incl <- PKNCAconc(d_conc, conc~time, include_half.life = "include_hl")
+  o_data_incl <- PKNCAdata(o_conc_incl, o_dose, intervals = d_interval, impute = "round_time_start0")
+  expect_error(
+    suppressMessages(pk.nca(o_data_incl)),
+    class = "pknca_error_impute_obs_index"
+  )
+
+  # Without per-observation values, there is nothing to match
+  o_conc <- PKNCAconc(d_conc, conc~time)
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = d_interval, impute = "round_time_start0")
+  expect_no_error(suppressMessages(pk.nca(o_data)))
+
+  # The values are only needed when the half-life uses them
+  o_data_auc <-
+    PKNCAdata(
+      o_conc_incl, o_dose,
+      intervals = data.frame(start = 0, end = Inf, cmax = TRUE, auclast = TRUE),
+      impute = "round_time_start0"
+    )
+  expect_no_error(suppressMessages(pk.nca(o_data_auc)))
+  d_conc$lloq <- seq(0.1, 1, length.out = nrow(d_conc))
+  o_conc_lloq <- PKNCAconc(d_conc, conc~time, lloq = "lloq")
+  o_data_lloq <- PKNCAdata(o_conc_lloq, o_dose, intervals = d_interval, impute = "round_time_start0")
+  expect_no_error(suppressMessages(pk.nca(o_data_lloq)))
+  o_data_tobit <-
+    PKNCAdata(
+      o_conc_lloq, o_dose, intervals = d_interval, impute = "round_time_start0",
+      options = list(hl_method = "tobit")
+    )
+  expect_error(
+    suppressMessages(pk.nca(o_data_tobit)),
+    class = "pknca_error_impute_obs_index"
+  )
+})
+
 test_that("include_half.life and exclude_half.life work with NAs treated as missing for all NA and as FALSE for partial NA (#372)", {
   # Partial NA include_hl is used
   d_conc_incl <- data.frame(conc = c(1, 0.6, 0.3, 0.25, 0.15, 0.1), time = 0:5, include_hl = c(FALSE, NA, TRUE, TRUE, TRUE, TRUE))
@@ -1099,14 +1236,15 @@ test_that("remap_sparse_sources points only the dense concentration sources at t
 
 test_that("impute_conc_time applies each imputation function in order", {
   # start_conc0 inserts a zero at the interval start; end_conc_drop then removes
-  # the measurement at the interval end
+  # the measurement at the interval end.  "obs_index" follows the original
+  # observations (NA for the inserted one).
   expect_equal(
     impute_conc_time(
       impute_funs = c("PKNCA_impute_method_start_conc0", "PKNCA_impute_method_end_conc_drop"),
       conc = c(1, 2, 3), time = c(1, 2, 4), start = 0, end = 4,
       conc.group = c(1, 2, 3), time.group = c(1, 2, 4), options = list()
     ),
-    data.frame(conc = c(0, 1, 2), time = c(0, 1, 2)),
+    structure(data.frame(conc = c(0, 1, 2), time = c(0, 1, 2)), obs_index = c(NA, 1L, 2L)),
     ignore_attr = "row.names"
   )
   # An empty chain returns the input unchanged
@@ -1116,7 +1254,7 @@ test_that("impute_conc_time applies each imputation function in order", {
       conc = c(1, 2), time = c(1, 2), start = 0, end = 4,
       conc.group = c(1, 2), time.group = c(1, 2), options = list()
     ),
-    data.frame(conc = c(1, 2), time = c(1, 2))
+    structure(data.frame(conc = c(1, 2), time = c(1, 2)), obs_index = 1:2)
   )
 })
 
