@@ -442,8 +442,8 @@ intervals_f <-
     interval_id = c("refprofile", NA),
     aucinf.obs = TRUE,
     totdose = TRUE,
-    f.obs = c(FALSE, TRUE),
-    f.obs_ref = c(NA, "refprofile")
+    f.inf.obs = c(FALSE, TRUE),
+    f.inf.obs_ref = c(NA, "refprofile")
   )
 o_data_f <-
   PKNCAdata(
@@ -452,7 +452,7 @@ o_data_f <-
     intervals = intervals_f
   )
 d_f <- as.data.frame(pk.nca(o_data_f))
-kable(d_f[d_f$PPTESTCD %in% c("totdose", "aucinf.obs", "f.obs"), ])
+kable(d_f[d_f$PPTESTCD %in% c("totdose", "aucinf.obs", "f.inf.obs"), ])
 ```
 
 The result is the ratio of the dose-normalized exposures:
@@ -470,7 +470,7 @@ the answer and is not recoverable from the number:
 
 ```{r bioavailability-bases}
 f_params <-
-  c("f.obs", "f.pred", "f.last", "f.int.obs", "f.int.pred",
+  c("f.inf.obs", "f.inf.pred", "f.last", "f.int.inf.obs", "f.int.inf.pred",
     "f.int.last", "f.int.all")
 kable(
   data.frame(
@@ -521,11 +521,11 @@ d_dose_period <-
 intervals_period <-
   interval_add_secondary(
     data.frame(treatment = c("iv", "oral"), start = 0, end = Inf, aucinf.obs = TRUE),
-    param = "f.obs",
+    param = "f.inf.obs",
     reference = data.frame(treatment = "iv"),
     ref_vary = "period"
   )
-kable(intervals_period[, c("treatment", "interval_id", "f.obs", "f.obs_ref", "f.obs_ref_vary")])
+kable(intervals_period[, c("treatment", "interval_id", "f.inf.obs", "f.inf.obs_ref", "f.inf.obs_ref_vary")])
 o_data_period <-
   PKNCAdata(
     PKNCAconc(d_conc_period, conc~time|treatment+period+subject),
@@ -535,7 +535,7 @@ o_data_period <-
 d_period <- as.data.frame(pk.nca(o_data_period))
 kable(
   d_period[
-    d_period$PPTESTCD %in% "f.obs",
+    d_period$PPTESTCD %in% "f.inf.obs",
     c("subject", "period", "treatment", "PPORRES", "period_ref", "PPANMETH")
   ]
 )
@@ -578,8 +578,8 @@ intervals_x <-
     interval_id = c("plasma06", NA),
     aucinf.obs = c(TRUE, FALSE),
     ae = c(FALSE, TRUE),
-    clr.obs = c(FALSE, TRUE),
-    clr.obs_ref = c(NA, "plasma06")
+    clr.inf.obs = c(FALSE, TRUE),
+    clr.inf.obs_ref = c(NA, "plasma06")
   )
 o_data_x <-
   PKNCAdata(
@@ -590,7 +590,7 @@ o_data_x <-
 d_x <- as.data.frame(pk.nca(o_data_x))
 kable(
   d_x[
-    d_x$PPTESTCD %in% c("half.life", "aucinf.obs", "ae", "clr.obs"),
+    d_x$PPTESTCD %in% c("half.life", "aucinf.obs", "ae", "clr.inf.obs"),
     c("PCSPEC", "PPTESTCD", "PPORRES", "exclude")
   ]
 )
@@ -708,7 +708,7 @@ o_data_fu <-
     intervals = intervals_f
   )
 d_fu <- as.data.frame(pk.nca(o_data_fu))
-kable(d_fu[d_fu$PPTESTCD %in% "f.obs", c("treatment", "treatment_ref", "PPORRES", "PPORRESU")])
+kable(d_fu[d_fu$PPTESTCD %in% "f.inf.obs", c("treatment", "treatment_ref", "PPORRES", "PPORRESU")])
 ```
 
 The number is the same one `pk.calc.f()` has always computed;  the units are now
@@ -745,7 +745,7 @@ support a link.
 * Sparse concentration data (`PKNCAconc(sparse = TRUE)`) with any secondary
   parameter requested is an error.  Supporting it is planned.
 * The reference for an absolute bioavailability is not yet derived from the
-  route of administration; give it with `group_ref`, a `f.obs_ref` pointer, or
+  route of administration; give it with `group_ref`, a `f.inf.obs_ref` pointer, or
   `interval_add_secondary()`.
 * The CDISC `PPTESTCD` of a ratio does not yet depend on what the ratio compares
   (accumulation against metabolite ratio).

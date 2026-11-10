@@ -505,7 +505,7 @@ pair_r_squared_factors <- function(x, name) {
       return(paste(
         "The penalty exponent applied to the number of points when selecting the best",
         "Tobit regression half-life fit.  The selection criterion is",
-        "tobit_residual * n_points ^ tobit_n_points_penalty, and the window",
+        "tobit.residual * n_points ^ tobit_n_points_penalty, and the window",
         "minimizing this criterion is selected.  A value of 0 (the default)",
         "uses the raw Tobit residual with no point-count penalty."))
     if (default)

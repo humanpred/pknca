@@ -18,7 +18,7 @@ test_that("sparse-derived parameters are each registered exactly once", {
   expect_equal(anyDuplicated(names(cols)), 0L)
   # Pin the registry size so that a lost or accumulating registration is
   # caught; update the value when a parameter is added or removed.
-  expect_length(cols, 237)
+  expect_length(cols, 330)
 })
 
 test_that("add.interval.col", {
@@ -582,8 +582,10 @@ test_that("every parameter's pretty name and description follow the naming rules
   expect_equal(names(pretty)[grepl(pattern = "lambda", x = pretty_without_math, ignore.case = TRUE)], character())
   desc_without_name <- gsub(pattern = "lambda.z", replacement = "", x = desc, fixed = TRUE)
   expect_equal(names(desc)[grepl(pattern = "lambda", x = desc_without_name, ignore.case = TRUE)], character())
-  # Each pretty name tells its parameter apart in a summary
-  expect_equal(names(pretty)[duplicated(pretty) | duplicated(pretty, fromLast = TRUE)], character())
+  # Each pretty name tells its parameter apart in a summary (a deprecated name
+  # shares the pretty name of its replacement)
+  current <- pretty[setdiff(names(pretty), names(deprecated_renamed_parameters))]
+  expect_equal(names(current)[duplicated(current) | duplicated(current, fromLast = TRUE)], character())
   # One space between words, no trailing period, and descriptions short enough
   # for SDTM
   expect_equal(names(pretty)[grepl(pattern = "  ", x = pretty, fixed = TRUE)], character())

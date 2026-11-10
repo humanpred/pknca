@@ -230,7 +230,7 @@ test_that("Use preferred units (#197)", {
       concu = "ng/mL", doseu = "mg/kg", timeu = "hr", amountu = "mg",
       amountu_pref = "kg"
     )
-  expect_equal(prep$conversion_factor[prep$PPTESTCD == "clr.obs"], 1e-6)
+  expect_equal(prep$conversion_factor[prep$PPTESTCD == "clr.inf.obs"], 1e-6)
 
   # conversions can override the preferred units parameter
   prep <-
@@ -328,17 +328,17 @@ test_that("pknca_unit_conversion", {
   o_dose <- PKNCAdose(d_conc[d_conc$Time == 0, ], Dose~Time|Subject)
   # Do not give dose units
   d_units <- pknca_units_table(concu = "mg/L", timeu = "hr")
-  d_interval <- data.frame(start = 0, end = Inf, cmax = TRUE, cl.obs = TRUE)
+  d_interval <- data.frame(start = 0, end = Inf, cmax = TRUE, cl.inf.obs = TRUE)
   o_data <- PKNCAdata(o_conc, o_dose, intervals = d_interval, units = d_units)
   expect_error(
     pk.nca(o_data),
-    regexp = "Units are provided for some but not all parameters; missing for: cl.obs\nThis error can be converted to a warning using `PKNCA.options(allow_partial_missing_units = TRUE)`",
+    regexp = "Units are provided for some but not all parameters; missing for: cl.inf.obs\nThis error can be converted to a warning using `PKNCA.options(allow_partial_missing_units = TRUE)`",
     fixed = TRUE
   )
   o_data_warn <- PKNCAdata(o_conc, o_dose, intervals = d_interval, units = d_units, options = list(allow_partial_missing_units = TRUE))
   expect_warning(
     pk.nca(o_data_warn),
-    regexp = "Units are provided for some but not all parameters; missing for: cl.obs",
+    regexp = "Units are provided for some but not all parameters; missing for: cl.inf.obs",
     fixed = TRUE
   )
 })
