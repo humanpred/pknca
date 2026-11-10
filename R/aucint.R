@@ -45,10 +45,12 @@
 #'
 #' # The time origin of the AUMC
 #'
-#' The AUMC is weighted by the time since `start`, as the AUMC of an interval
-#' is when [pk.nca()] calculates it from the interval's own data (`aumclast`):
-#' for an interval starting at a dose, that is the time since the dose.  The
-#' AUC does not depend on the time origin.
+#' The AUMC is weighted by the time since `start`, which is what `aumclast`
+#' gives for the interval's own data in [pk.nca()] (where times are relative to
+#' the start of the interval).  The AUC does not depend on the time origin.
+#' [pk.calc.aumc()] weights by the times as given, so with an `interval` that
+#' does not start at time 0 it differs from the AUMC over the same interval
+#' here.
 #'
 #' @inheritParams pk.calc.auxc
 #' @inheritParams assert_intervaltime_single
