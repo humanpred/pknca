@@ -87,6 +87,7 @@ given.  The result is a data.frame suitable for the <code>intervals</code> argum
 <span>  impute <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  preset <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  clast_type <span class="op">=</span> <span class="st">"obs"</span>,</span>
+<span>  auc_type <span class="op">=</span> <span class="st">"last"</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -154,6 +155,13 @@ both is an error.</p></dd>
 (<code>"obs"</code>) or predicted (<code>"pred"</code>) last concentration?</p></dd>
 
 
+<dt id="arg-auc-type">auc_type<a class="anchor" aria-label="anchor" href="#arg-auc-type"></a></dt>
+<dd><p>Is the AUC over the observations the AUC to the last
+measurable concentration (<code>"last"</code>, giving <code>auclast</code> or <code>aucint.last</code> and
+what follows from it) or AUCall (<code>"all"</code>, giving <code>aucall</code> or
+<code>aucint.all</code>)?</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Columns to add to every row, typically the groups the interval
 applies to.</p></dd>
@@ -177,6 +185,10 @@ uses AUClast and the extrapolation to infinity, and a repeated dose uses
 the AUCint family, which interpolates at both interval boundaries.  The
 clearance, volume, and mean residence time that follow from that AUC are
 chosen to match.</p>
+<p>An interval that ends at infinity gets no parameter that needs a finite
+end:  no average concentration (which would be zero) or anything
+calculated from one, and no parameter that applies only to repeated
+dosing.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

@@ -524,21 +524,21 @@ summary(pk.nca(o_data_manual_intervals))
 o_conc <- PKNCAconc(conc~Time|Treatment+Subject, data=d_conc)
 o_dose <- PKNCAdose(Dose~dose_time|Treatment+Subject, data=d_dose)
 o_data_auto_intervals <- PKNCAdata(o_conc, o_dose)
-o_data_auto_intervals$intervals$aucint.inf.obs <- TRUE
+o_data_auto_intervals$intervals$aucall <- TRUE
 summary(pk.nca(o_data_auto_intervals))
 ```
 
-    ##  start end Treatment N     auclast        cmax               tmax
-    ##      0 Inf  Low dose 7 94.5 [22.8] 8.30 [15.2] 1.12 [0.630, 2.02]
-    ##      0 Inf High dose 5  105 [23.1] 9.16 [19.4] 3.48 [0.980, 3.55]
-    ##                  tlag        count_conc   half.life aucinf.obs aucint.inf.obs
-    ##  0.000 [0.000, 0.000] 11.0 [11.0, 11.0] 8.50 [2.67] 111 [31.6]     111 [31.6]
-    ##  0.000 [0.000, 0.000] 11.0 [11.0, 11.0] 7.73 [1.08] 120 [26.2]     120 [26.2]
-    ##  aucpext.obs        cl.obs
-    ##  14.6 [7.82] 0.0370 [34.1]
-    ##  12.8 [4.08] 0.0440 [20.5]
+    ##  start end Treatment N     auclast      aucall        cmax               tmax
+    ##      0 Inf  Low dose 7 94.5 [22.8] 94.5 [22.8] 8.30 [15.2] 1.12 [0.630, 2.02]
+    ##      0 Inf High dose 5  105 [23.1]  105 [23.1] 9.16 [19.4] 3.48 [0.980, 3.55]
+    ##                  tlag        count_conc   half.life aucinf.obs aucpext.obs
+    ##  0.000 [0.000, 0.000] 11.0 [11.0, 11.0] 8.50 [2.67] 111 [31.6] 14.6 [7.82]
+    ##  0.000 [0.000, 0.000] 11.0 [11.0, 11.0] 7.73 [1.08] 120 [26.2] 12.8 [4.08]
+    ##         cl.obs
+    ##  0.0370 [34.1]
+    ##  0.0440 [20.5]
     ## 
-    ## Caption: auclast, cmax, aucinf.obs, aucint.inf.obs, cl.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count_conc: median and range; half.life, aucpext.obs: arithmetic mean and standard deviation; N: number of subjects
+    ## Caption: auclast, aucall, cmax, aucinf.obs, cl.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count_conc: median and range; half.life, aucpext.obs: arithmetic mean and standard deviation; N: number of subjects
 
 ### AUC considerations with PKNCA (1/3)
 

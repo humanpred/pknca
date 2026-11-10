@@ -758,14 +758,14 @@ summary(o_nca_update)
 Only the participants whose concentration data changed are recalculated;
 results for all other participants are carried over unchanged.
 
-Now, assume that instead of calculating `auclast` from time 0 to 24, we
-want to calculate `aucint.inf.obs`. We can change the intervals to
-create a new `PKNCAdata` object:
+Now, assume that instead of calculating `auclast`, we want to calculate
+`aucall`. We can change the intervals to create a new `PKNCAdata`
+object:
 
 ``` r
 
 d_intervals <- o_data$intervals
-d_intervals$aucint.inf.obs <- d_intervals$auclast
+d_intervals$aucall <- d_intervals$auclast
 d_intervals$auclast <- FALSE
 o_data_update <- PKNCAdata(o_conc, o_dose, intervals = d_intervals)
 ```
@@ -785,11 +785,9 @@ o_nca_update <- update(o_nca, o_data_update)
 summary(o_nca_update)
 ```
 
-    ##  start end  N        cmax               tmax                 tlag
-    ##      0 Inf 12 8.65 [17.0] 1.14 [0.630, 3.55] 0.000 [0.000, 0.000]
-    ##         count_conc   half.life aucinf.obs aucint.inf.obs aucpext.obs
-    ##  11.0 [11.0, 11.0] 8.18 [2.12] 115 [28.4]     115 [28.4] 13.8 [6.34]
-    ##         cl.obs
-    ##  0.0398 [29.4]
+    ##  start end  N      aucall        cmax               tmax                 tlag
+    ##      0 Inf 12 98.7 [22.5] 8.65 [17.0] 1.14 [0.630, 3.55] 0.000 [0.000, 0.000]
+    ##         count_conc   half.life aucinf.obs aucpext.obs        cl.obs
+    ##  11.0 [11.0, 11.0] 8.18 [2.12] 115 [28.4] 13.8 [6.34] 0.0398 [29.4]
     ## 
-    ## Caption: cmax, aucinf.obs, aucint.inf.obs, cl.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count_conc: median and range; half.life, aucpext.obs: arithmetic mean and standard deviation; N: number of subjects
+    ## Caption: aucall, cmax, aucinf.obs, cl.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count_conc: median and range; half.life, aucpext.obs: arithmetic mean and standard deviation; N: number of subjects

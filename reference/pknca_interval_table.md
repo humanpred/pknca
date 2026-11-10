@@ -22,6 +22,7 @@ pknca_interval_table(
   impute = NULL,
   preset = NULL,
   clast_type = "obs",
+  auc_type = "last",
   ...
 )
 ```
@@ -93,6 +94,12 @@ pknca_interval_table(
   Should the extrapolation to infinity use the observed (`"obs"`) or
   predicted (`"pred"`) last concentration?
 
+- auc_type:
+
+  Is the AUC over the observations the AUC to the last measurable
+  concentration (`"last"`, giving `auclast` or `aucint.last` and what
+  follows from it) or AUCall (`"all"`, giving `aucall` or `aucint.all`)?
+
 - ...:
 
   Columns to add to every row, typically the groups the interval applies
@@ -117,6 +124,11 @@ uses AUClast and the extrapolation to infinity, and a repeated dose uses
 the AUCint family, which interpolates at both interval boundaries. The
 clearance, volume, and mean residence time that follow from that AUC are
 chosen to match.
+
+An interval that ends at infinity gets no parameter that needs a finite
+end: no average concentration (which would be zero) or anything
+calculated from one, and no parameter that applies only to repeated
+dosing.
 
 ## See also
 
