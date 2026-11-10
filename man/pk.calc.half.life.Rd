@@ -144,10 +144,10 @@ half-life points}
 
 Additional columns for \code{hl_method = "tobit"}:
 \describe{
-\item{lambda.z.n.points_blq}{number of BLQ points included in the fit}
-\item{tobit_residual}{estimated residual standard deviation from the
+\item{lambda.z.n.points.blq}{number of BLQ points included in the fit}
+\item{tobit.residual}{estimated residual standard deviation from the
 Tobit fit (on the log-concentration scale)}
-\item{adj_tobit_residual}{adjusted Tobit residual (analogous to
+\item{adj.tobit.residual}{adjusted Tobit residual (analogous to
 adjusted r-squared; penalizes smaller windows)}
 }
 }
@@ -180,7 +180,7 @@ the best r-squared (within \code{r.squared.factor})}
 
 For \code{hl_method = "tobit"}, BLQ observations are retained and treated as
 left-censored.  The best window is the one minimizing
-\code{tobit_residual * n ^ tobit_n_points_penalty} (default: raw \code{tobit_residual})
+\code{tobit.residual * n ^ tobit_n_points_penalty} (default: raw \code{tobit.residual})
 among windows with \code{lambda.z > 0}, at least \code{min.hl.points} and at most
 \code{max.hl.points} above-LLOQ points, and a first point no earlier than
 \code{min.hl.start.time}.  On ties the largest window (most total points) is
