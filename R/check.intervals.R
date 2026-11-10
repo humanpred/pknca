@@ -555,7 +555,6 @@ absent_conc_inputs <- function(o_conc) {
 pknca_source_inputs <- c(
   "conc", "time", "volume", "duration.conc", "dose", "time.dose", "duration.dose",
   "route", "subject", "options", "lloq", "interval", "start", "end",
-  "time.start", "time.end",
   paste0(
     c("conc", "time", "volume", "duration.conc", "dose", "time.dose", "duration.dose", "route"),
     ".group"
