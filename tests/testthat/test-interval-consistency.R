@@ -60,13 +60,33 @@ test_that("a parameter that takes an AUC through pknca_ref() is judged by that A
     "cl.inf.pred with clr.inf.obs (AUCinf,obs mixed with AUCinf,pred)",
     fixed = TRUE
   )
+  expect_true(is.na(inconsistency_message(data.frame(start = 0, end = Inf, clr.last = TRUE, clr.inf.obs = TRUE, cl.inf.obs = TRUE))))
+  expect_equal(parameter_basis_aucs()[["clr.inf.obs"]], "aucinf.obs")
+  # No registered parameter is calculated from renal clearance, so one is
+  # registered here
+  original <- get("interval.cols", envir = PKNCA:::.PKNCAEnv)
+  on.exit({
+    assign("interval.cols", original, envir = PKNCA:::.PKNCAEnv)
+    for (cache_name in c("parameter_classification", "auc_basis_families", "interval.cols_derived", "interval_consistent_sets")) {
+      if (exists(cache_name, envir = PKNCA:::.PKNCAEnv)) rm(list = cache_name, envir = PKNCA:::.PKNCAEnv)
+    }
+  })
+  add.interval.col(
+    "clr.last.test.consistency",
+    FUN = "identity",
+    values = c(FALSE, TRUE),
+    unit_type = "renal_clearance",
+    pretty_name = "Test from renal clearance",
+    desc = "Test parameter calculated from clr.last",
+    depends = "clr.last",
+    formalsmap = list(x = "clr.last")
+  )
+  expect_equal(parameter_basis_aucs()[["clr.last.test.consistency"]], "auclast")
   expect_match(
-    inconsistency_message(data.frame(start = 0, end = 24, clr.last.dn = TRUE, vz.all = TRUE)),
-    "clr.last.dn with vz.all (AUClast mixed with AUCall)",
+    inconsistency_message(data.frame(start = 0, end = 24, clr.last.test.consistency = TRUE, vz.all = TRUE)),
+    "clr.last.test.consistency with vz.all (AUClast mixed with AUCall)",
     fixed = TRUE
   )
-  expect_true(is.na(inconsistency_message(data.frame(start = 0, end = Inf, clr.last = TRUE, clr.inf.obs = TRUE, cl.inf.obs = TRUE))))
-  expect_equal(parameter_basis_aucs()[["clr.inf.obs.dn"]], "aucinf.obs")
 })
 
 test_that("parameters from AUClast and AUCall warn", {
