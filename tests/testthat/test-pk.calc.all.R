@@ -527,9 +527,10 @@ test_that("include_half.life stays with its observation when imputation changes 
   expect_equal(res$lambda.z.n.points, 5)
 })
 
-test_that("per-observation values give an error when imputation changes both the observations and their times", {
+test_that("per-observation values of observations whose time changes while others are added are dropped with a warning", {
   # A user-defined imputation method that rounds times and adds a zero at the
-  # interval start
+  # interval start:  an observation is identified by its time, so every rounded
+  # observation is a new one
   user_method <- function(conc, time, start, ..., options = list()) {
     data.frame(conc = c(0, conc), time = c(start, round(time, 1)))
   }
@@ -542,40 +543,34 @@ test_that("per-observation values give an error when imputation changes both the
   )
   d_conc$include_hl <- ifelse(d_conc$time >= 12, TRUE, NA)
   o_dose <- PKNCAdose(data.frame(time = 0, dose = 100), dose~time)
-  d_interval <- data.frame(start = 0, end = Inf, half.life = TRUE)
+  d_interval <- data.frame(start = 0, end = Inf, half.life = TRUE, lambda.z.n.points = TRUE)
+  get_hl <- function(o_conc) {
+    o_data <- PKNCAdata(o_conc, o_dose, intervals = d_interval, impute = "round_time_start0")
+    as.data.frame(suppressMessages(pk.nca(o_data)), out_format = "wide")
+  }
 
-  o_conc_incl <- PKNCAconc(d_conc, conc~time, include_half.life = "include_hl")
-  o_data_incl <- PKNCAdata(o_conc_incl, o_dose, intervals = d_interval, impute = "round_time_start0")
-  expect_error(
-    suppressMessages(pk.nca(o_data_incl)),
-    class = "pknca_error_impute_obs_index"
-  )
-
-  # Without per-observation values, there is nothing to match
+  # Without per-observation values, there is nothing to drop
   o_conc <- PKNCAconc(d_conc, conc~time)
-  o_data <- PKNCAdata(o_conc, o_dose, intervals = d_interval, impute = "round_time_start0")
-  expect_no_error(suppressMessages(pk.nca(o_data)))
+  expect_no_warning(res_auto <- get_hl(o_conc))
 
-  # The values are only needed when the half-life uses them
-  o_data_auc <-
-    PKNCAdata(
-      o_conc_incl, o_dose,
-      intervals = data.frame(start = 0, end = Inf, cmax = TRUE, auclast = TRUE),
-      impute = "round_time_start0"
-    )
-  expect_no_error(suppressMessages(pk.nca(o_data_auc)))
+  # The inclusion flags are dropped, so the half-life points are chosen
+  # automatically
+  o_conc_incl <- PKNCAconc(d_conc, conc~time, include_half.life = "include_hl")
+  expect_warning(
+    res_incl <- get_hl(o_conc_incl),
+    regexp = "the include_half.life of the dropped observations",
+    class = "pknca_warning_impute_obs_values_dropped"
+  )
+  expect_equal(res_incl$half.life, res_auto$half.life)
+  expect_equal(res_incl$lambda.z.n.points, res_auto$lambda.z.n.points)
+
+  # A varying lloq is dropped the same way
   d_conc$lloq <- seq(0.1, 1, length.out = nrow(d_conc))
   o_conc_lloq <- PKNCAconc(d_conc, conc~time, lloq = "lloq")
-  o_data_lloq <- PKNCAdata(o_conc_lloq, o_dose, intervals = d_interval, impute = "round_time_start0")
-  expect_no_error(suppressMessages(pk.nca(o_data_lloq)))
-  o_data_tobit <-
-    PKNCAdata(
-      o_conc_lloq, o_dose, intervals = d_interval, impute = "round_time_start0",
-      options = list(hl_method = "tobit")
-    )
-  expect_error(
-    suppressMessages(pk.nca(o_data_tobit)),
-    class = "pknca_error_impute_obs_index"
+  expect_warning(
+    get_hl(o_conc_lloq),
+    regexp = "the lloq of the dropped observations",
+    class = "pknca_warning_impute_obs_values_dropped"
   )
 })
 
@@ -1236,15 +1231,14 @@ test_that("remap_sparse_sources points only the dense concentration sources at t
 
 test_that("impute_conc_time applies each imputation function in order", {
   # start_conc0 inserts a zero at the interval start; end_conc_drop then removes
-  # the measurement at the interval end.  "obs_index" follows the original
-  # observations (NA for the inserted one).
+  # the measurement at the interval end
   expect_equal(
     impute_conc_time(
       impute_funs = c("PKNCA_impute_method_start_conc0", "PKNCA_impute_method_end_conc_drop"),
       conc = c(1, 2, 3), time = c(1, 2, 4), start = 0, end = 4,
       conc.group = c(1, 2, 3), time.group = c(1, 2, 4), options = list()
     ),
-    structure(data.frame(conc = c(0, 1, 2), time = c(0, 1, 2)), obs_index = c(NA, 1L, 2L)),
+    data.frame(conc = c(0, 1, 2), time = c(0, 1, 2)),
     ignore_attr = "row.names"
   )
   # An empty chain returns the input unchanged
@@ -1254,7 +1248,88 @@ test_that("impute_conc_time applies each imputation function in order", {
       conc = c(1, 2), time = c(1, 2), start = 0, end = 4,
       conc.group = c(1, 2), time.group = c(1, 2), options = list()
     ),
-    structure(data.frame(conc = c(1, 2), time = c(1, 2)), obs_index = 1:2)
+    data.frame(conc = c(1, 2), time = c(1, 2))
+  )
+})
+
+test_that("impute_conc_time carries every per-observation value with its observation", {
+  obs <-
+    impute_obs_values(
+      time = c(1, 2, 4), volume = c(10, 20, 30), duration.conc = c(1, 1, 2),
+      include_half.life = c(NA, TRUE, TRUE), exclude_half.life = NULL, lloq = c(0.1, 0.2, 0.3)
+    )
+  # The added observation at 0 takes the fill values, and the one at 4 is
+  # dropped with its values
+  expect_equal(
+    impute_conc_time(
+      impute_funs = c("PKNCA_impute_method_start_conc0", "PKNCA_impute_method_end_conc_drop"),
+      conc = c(1, 2, 3), time = c(1, 2, 4), start = 0, end = 4,
+      conc.group = c(1, 2, 3), time.group = c(1, 2, 4), options = list(),
+      obs_values = obs$values, obs_fill = obs$fill
+    ),
+    data.frame(
+      conc = c(0, 1, 2), time = c(0, 1, 2),
+      volume = c(0, 10, 20), duration.conc = c(NA, 1, 1),
+      include_half.life = c(NA, NA, TRUE), lloq = c(NA, 0.1, 0.2)
+    ),
+    ignore_attr = "row.names"
+  )
+})
+
+test_that("impute_obs_values keeps only the per-observation values, with the value an added observation gets", {
+  # A constant lloq is the added observation's lloq; one lloq for the whole
+  # profile is not per observation
+  expect_equal(
+    impute_obs_values(
+      time = c(1, 2), volume = NULL, duration.conc = NULL,
+      include_half.life = NULL, exclude_half.life = c(FALSE, TRUE), lloq = c(0.5, 0.5)
+    ),
+    list(
+      values = data.frame(exclude_half.life = c(FALSE, TRUE), lloq = c(0.5, 0.5)),
+      fill = list(exclude_half.life = NA, lloq = 0.5)
+    )
+  )
+  expect_equal(
+    impute_obs_values(
+      time = c(1, 2), volume = NULL, duration.conc = NULL,
+      include_half.life = NULL, exclude_half.life = NULL, lloq = 0.5
+    ),
+    list(values = NULL, fill = list())
+  )
+})
+
+test_that("impute_align_obs follows observations by time, or in order when a step changes times in place", {
+  before <- data.frame(conc = c(1, 2, 3), time = c(1, 2, 4), volume = c(10, 20, 30))
+  fill <- list(volume = 0)
+  # Times changed in place
+  expect_equal(
+    impute_align_obs(
+      before = before, after = data.frame(conc = c(1, 2, 3), time = c(1.1, 2.1, 4.1)),
+      fill = fill, method = "m"
+    ),
+    data.frame(conc = c(1, 2, 3), time = c(1.1, 2.1, 4.1), volume = c(10, 20, 30))
+  )
+  # Added and dropped in one step:  the observation at the new time is added,
+  # and the dropped one's volume is said to be dropped
+  expect_warning(
+    ret <-
+      impute_align_obs(
+        before = before, after = data.frame(conc = c(0, 1), time = c(0, 1)),
+        fill = fill, method = "m"
+      ),
+    regexp = "Imputation with m both added and dropped observations, so the volume of the dropped observations (at times 2, 4) do not carry to the added ones (at times 0)",
+    fixed = TRUE,
+    class = "pknca_warning_impute_obs_values_dropped"
+  )
+  expect_equal(ret, data.frame(conc = c(0, 1), time = c(0, 1), volume = c(0, 10)))
+  # No warning when the dropped observation has the added one's value (a flag
+  # that is FALSE is the same as one that is NA)
+  expect_no_warning(
+    impute_align_obs(
+      before = data.frame(conc = c(1, 2), time = c(1, 2), include_half.life = c(TRUE, FALSE)),
+      after = data.frame(conc = c(0, 1, 5), time = c(0, 1, 5)),
+      fill = list(include_half.life = NA), method = "m"
+    )
   )
 })
 
