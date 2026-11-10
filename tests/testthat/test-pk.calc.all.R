@@ -485,6 +485,16 @@ test_that("include_half.life, exclude_half.life, and lloq stay aligned when impu
     get_hl(o_conc_lloq, impute = "start_conc0", options = list(hl_method = "tobit"))[, hl_cols],
     get_hl(o_conc_lloq, impute = NA_character_, options = list(hl_method = "tobit"))[, hl_cols]
   )
+  # An lloq that varies by observation stays with its observation:  shifted by
+  # one, the 36 h sample would take the 48 h lloq and be below it
+  d_conc_vary <- d_conc
+  d_conc_vary$lloq <- ifelse(d_conc_vary$time == 48, 0.65, 0.1)
+  o_conc_vary <- PKNCAconc(d_conc_vary, conc~time, lloq = "lloq")
+  res_vary <- get_hl(o_conc_vary, impute = "start_conc0", options = list(hl_method = "tobit"))
+  expect_equal(
+    res_vary[, hl_cols],
+    get_hl(o_conc_vary, impute = NA_character_, options = list(hl_method = "tobit"))[, hl_cols]
+  )
 
   # An imputation chain that adds one observation and drops another
   d_interval <-
@@ -558,7 +568,7 @@ test_that("per-observation values of observations whose time changes while other
   o_conc_incl <- PKNCAconc(d_conc, conc~time, include_half.life = "include_hl")
   expect_warning(
     res_incl <- get_hl(o_conc_incl),
-    regexp = "the include_half.life of the dropped observations",
+    regexp = "of include_half.life of the dropped observations",
     class = "pknca_warning_impute_obs_values_dropped"
   )
   expect_equal(res_incl$half.life, res_auto$half.life)
@@ -569,7 +579,7 @@ test_that("per-observation values of observations whose time changes while other
   o_conc_lloq <- PKNCAconc(d_conc, conc~time, lloq = "lloq")
   expect_warning(
     get_hl(o_conc_lloq),
-    regexp = "the lloq of the dropped observations",
+    regexp = "of lloq of the dropped observations",
     class = "pknca_warning_impute_obs_values_dropped"
   )
 })
@@ -1317,11 +1327,58 @@ test_that("impute_align_obs follows observations by time, or in order when a ste
         before = before, after = data.frame(conc = c(0, 1), time = c(0, 1)),
         fill = fill, method = "m"
       ),
-    regexp = "Imputation with m both added and dropped observations, so the volume of the dropped observations (at times 2, 4) do not carry to the added ones (at times 0)",
+    regexp = "Imputation with m both added and dropped observations, so the values of volume of the dropped observations (at times 2, 4) are not carried to the added observations (at times 0)",
     fixed = TRUE,
     class = "pknca_warning_impute_obs_values_dropped"
   )
   expect_equal(ret, data.frame(conc = c(0, 1), time = c(0, 1), volume = c(0, 10)))
+  # Adding one observation and dropping another keeps the number of
+  # observations, but the observation that kept its time moved, so it is not
+  # an in-place change
+  expect_warning(
+    ret <-
+      impute_align_obs(
+        before = before, after = data.frame(conc = c(0, 1, 2), time = c(0, 1, 2)),
+        fill = fill, method = "m"
+      ),
+    class = "pknca_warning_impute_obs_values_dropped"
+  )
+  expect_equal(ret, data.frame(conc = c(0, 1, 2), time = c(0, 1, 2), volume = c(0, 10, 20)))
+  # Some times changed in place, and the others kept their positions
+  expect_equal(
+    impute_align_obs(
+      before = before, after = data.frame(conc = c(1, 2, 3), time = c(1, 2.1, 4)),
+      fill = fill, method = "m"
+    ),
+    data.frame(conc = c(1, 2, 3), time = c(1, 2.1, 4), volume = c(10, 20, 30))
+  )
+  # Repeated times identify no single observation, so a step that keeps them
+  # keeps the values in order
+  expect_equal(
+    impute_align_obs(
+      before = data.frame(conc = c(1, 2, 3), time = c(0, 0, 1), volume = c(10, 20, 30)),
+      after = data.frame(conc = c(0, 0, 3), time = c(0, 0, 1)),
+      fill = fill, method = "m"
+    ),
+    data.frame(conc = c(0, 0, 3), time = c(0, 0, 1), volume = c(10, 20, 30))
+  )
+  # A numeric value that is missing in a dropped observation differs from a
+  # fill of 0, and one equal to the fill does not
+  expect_warning(
+    impute_align_obs(
+      before = data.frame(conc = c(1, 2), time = c(1, 2), volume = c(10, NA)),
+      after = data.frame(conc = c(0, 1, 5), time = c(0, 1, 5)),
+      fill = fill, method = "m"
+    ),
+    class = "pknca_warning_impute_obs_values_dropped"
+  )
+  expect_no_warning(
+    impute_align_obs(
+      before = data.frame(conc = c(1, 2), time = c(1, 2), volume = c(10, 0)),
+      after = data.frame(conc = c(0, 1, 5), time = c(0, 1, 5)),
+      fill = fill, method = "m"
+    )
+  )
   # No warning when the dropped observation has the added one's value (a flag
   # that is FALSE is the same as one that is NA)
   expect_no_warning(
@@ -2617,6 +2674,32 @@ test_that("volume and collection duration follow the observations through imputa
     setNames(res_drop$PPORRES, res_drop$PPTESTCD)[c("ae", "volpk", "ermax", "ertlst", "erlst")],
     c(ae = 260, volpk = 6, ermax = 25, ertlst = 15, erlst = 10)
   )
+})
+
+test_that("volume follows the observations when start_predose shifts a predose sample to the start", {
+  # A predose collection at -0.5 is shifted to the start of the interval as a
+  # new observation, which was not collected in the interval:  the amount and
+  # volume are those of the four collections in it
+  d_urine <-
+    data.frame(
+      time = c(-0.5, 2, 6, 12, 18),
+      duration = c(0.5, 4, 6, 6, 6),
+      conc = c(1, 100, 50, 20, 10),
+      vol = c(5, 1, 2, 3, 4)
+    )
+  o_conc <- PKNCAconc(d_urine, conc~time, volume = "vol", duration = "duration")
+  o_dose <- PKNCAdose(data.frame(time = 0, dose = 1000), dose~time)
+  intervals <- data.frame(start = 0, end = 24, ae = TRUE, volpk = TRUE, ermax = TRUE)
+  for (impute in c("start_predose", "start_predose,start_conc0")) {
+    expect_no_warning(
+      res <- as.data.frame(pk.nca(PKNCAdata(o_conc, o_dose, intervals = intervals, impute = impute)))
+    )
+    expect_equal(
+      setNames(res$PPORRES, res$PPTESTCD)[c("ae", "volpk", "ermax")],
+      c(ae = 300, volpk = 10, ermax = 25),
+      info = impute
+    )
+  }
 })
 
 test_that("ctrough, cstart, and aumcint use the interval's own times for an interval not starting at zero", {
