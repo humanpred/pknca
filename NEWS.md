@@ -1519,11 +1519,15 @@ the generated intervals:
   rate (so the excretion parameters `ae`, `fe`, `clr.*`, `volpk`, `ermax`,
   `ertmax`, `ertlst`, `erlst`, and `erint` are those of the collected
   samples), is neither included in nor excluded from the half-life, and has
-  the profile's `lloq` when that is constant.  An observation is identified by
-  its time, and an imputation step that keeps the number of observations
-  modifies them in place; a user-defined imputation method that both adds or
-  drops observations and changes the time of another gives the classed warning
-  `pknca_warning_impute_obs_values_dropped` when values are lost that way
+  the profile's `lloq` when that is constant (and a missing `lloq` when it
+  varies).  An observation is identified by its time.  An imputation step that
+  keeps the number of observations, and the position of each one whose time it
+  kept, modifies them in place (so a user-defined method may change times that
+  way).  A step that both adds and drops observations cannot be told apart from
+  one that moved an observation to a new time, so the observation at the new
+  time is an added one, and the classed warning
+  `pknca_warning_impute_obs_values_dropped` says when a value of a dropped
+  observation is lost that way; PKNCA's own methods never do both in one step
   (@roninsightrx, @billdenney).
 
 ## Other changes
