@@ -64,13 +64,7 @@ test_that("a parameter that takes an AUC through pknca_ref() is judged by that A
   expect_equal(parameter_basis_aucs()[["clr.inf.obs"]], "aucinf.obs")
   # No registered parameter is calculated from renal clearance, so one is
   # registered here
-  original <- get("interval.cols", envir = PKNCA:::.PKNCAEnv)
-  on.exit({
-    assign("interval.cols", original, envir = PKNCA:::.PKNCAEnv)
-    for (cache_name in c("parameter_classification", "auc_basis_families", "interval.cols_derived", "interval_consistent_sets")) {
-      if (exists(cache_name, envir = PKNCA:::.PKNCAEnv)) rm(list = cache_name, envir = PKNCA:::.PKNCAEnv)
-    }
-  })
+  local_interval_cols()
   add.interval.col(
     "clr.last.test.consistency",
     FUN = "identity",

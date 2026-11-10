@@ -1829,12 +1829,6 @@ Differences from the section-6.4 text above; trust the code over the sketches:
   (`own side / ref side`, each side itself a quotient for `f.*`); any other
   secondary parameter keeps the single-sided row of its own group, as the
   "holes found in review" section anticipated.
-* **`clr.last.dn`, `clr.obs.dn`, and `clr.pred.dn` get no composed row.**  They
-  are secondary only because they depend on `clr.*`, they carry no
-  `pknca_ref()` argument, and `secondary_param_info()` rejects them outright
-  (`pk.calc.dn`'s `dose` is not a parameter result), so no result row for them
-  can exist for a composed row to describe.  Calculating them across a link is
-  §8 work, not units work.
 * **A pair whose two sides compose to the same unit string keeps today's row.**
   A `ratio.*` or `f.*` within one unit set would otherwise read
   `(ng/mL)/(ng/mL)` where `fraction` is exact and already right; a `clr.*`
