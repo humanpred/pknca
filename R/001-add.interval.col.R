@@ -653,7 +653,7 @@ add.interval.col <- function(name,
         "volume",
         "auc", "aumc",
         "auc_dosenorm", "aumc_dosenorm",
-        "clearance", "renal_clearance", "renal_clearance_dosenorm"
+        "clearance", "renal_clearance"
       )
     )
 
