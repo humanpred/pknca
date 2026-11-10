@@ -5,7 +5,7 @@
 # registrations.  Listed here explicitly so a *new* common-tier parameter
 # without a valid CT mapping fails the test below instead of being silently
 # accepted.
-known_cdisc_gap_common <- c("count_conc", "sparse_auc_se", "cl.int.inf.obs")
+known_cdisc_gap_common <- c("count.conc", "sparse_auc_se", "cl.int.inf.obs")
 
 test_that("common-tier CDISC codes are valid PKPARMCD codes with matching decode text", {
   skip_if_not_installed("cdiscdata")
@@ -45,10 +45,10 @@ test_that("common-tier CDISC codes are valid PKPARMCD codes with matching decode
 
 test_that("every registered CDISC PPTESTCD is <=8 characters and PPTEST is <=40 characters", {
   codes <- pknca_cdisc_codes()
-  # count_conc_measured is registered in R/exclude_nca.R, out of scope for
+  # count.conc.measured is registered in R/exclude_nca.R, out of scope for
   # this change; tracked as a known violation so a *different* new violation
   # still fails loud.
-  known_length_violation <- c("count_conc_measured")
+  known_length_violation <- c("count.conc.measured", "count_conc_measured")
   to_check <- codes[!(codes$parameter %in% known_length_violation), ]
 
   over_code <- to_check[nchar(to_check$pptestcd_cdisc) > 8, c("parameter", "variant", "pptestcd_cdisc")]
@@ -78,7 +78,7 @@ test_that("pknca_cdisc_codes() reflects the live registry", {
   expect_equal(cmax_row$pptestcd_cdisc, "CMAX")
 
   # A route-keyed parameter expands into one row per route.
-  cl_obs_rows <- codes[codes$parameter %in% "cl.obs", ]
+  cl_obs_rows <- codes[codes$parameter %in% "cl.inf.obs", ]
   expect_setequal(cl_obs_rows$variant, c("extravascular", "intravascular"))
   expect_setequal(cl_obs_rows$pptestcd_cdisc, c("CLFO", "CLO"))
 })

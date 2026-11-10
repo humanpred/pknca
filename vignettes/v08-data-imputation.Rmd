@@ -177,5 +177,6 @@ In addition to the above, the function may take named arguments of:
   have not been filtered for the interval.
 
 Imputation functions receive `time`, `start`, `end`, and `time.group` on the
-original time scale of the data, unlike NCA calculation functions, which receive
-times relative to the start of the interval.
+original time scale of the data.  NCA calculation functions receive `start`,
+`end`, and `time.group` on that scale too, but `time` relative to the start of
+the interval.

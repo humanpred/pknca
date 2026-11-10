@@ -1,4 +1,4 @@
-test_that("time_above expected errors", {
+test_that("time.above expected errors", {
   expect_error(
     pk.calc.time_above(conc=c(1, 1), time=c(1, 2), conc_above="X", method="linear"),
     regexp="Must be of type 'number'"
@@ -33,14 +33,14 @@ test_that("time_above expected errors", {
   )
 })
 
-test_that("time_above simple scenarios", {
+test_that("time.above simple scenarios", {
   expect_equal(
     pk.calc.time_above(conc=5, time=5, conc_above=5, method="linear"),
-    structure(NA_real_, exclude="Too few measured concentrations to assess time_above")
+    structure(NA_real_, exclude="Too few measured concentrations to assess time.above")
   )
 })
 
-test_that("time_above linear", {
+test_that("time.above linear", {
   expect_equal(
     pk.calc.time_above(conc=c(5, 5), time=1:2, conc_above=5, method="linear"),
     1,
@@ -72,7 +72,7 @@ test_that("time_above linear", {
   )
 })
 
-test_that("time_above with 'lin up/log down'", {
+test_that("time.above with 'lin up/log down'", {
   expect_equal(
     pk.calc.time_above(conc=c(6, 4, 5), time=1:3, conc_above=5, method='lin up/log down'),
     (log(6) - log(5))/(log(6) - log(4))
