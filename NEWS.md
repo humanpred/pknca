@@ -1259,9 +1259,10 @@ the generated intervals:
   `PPANMETH`, and is excluded with it (@billdenney).
 
 * `ctrough`, `cstart`, and the AUMC over an interval (`aumcint.last`,
-  `aumcint.all`, `aumcint.inf.obs`, `aumcint.inf.pred`, and the `aumcivint.*`
-  parameters built on them) are correct for an interval that does not start at
-  time 0.  With intervals of 0 to 12 and 12 to 24, `ctrough` for the second
+  `aumcint.all`, `aumcint.inf.obs`, `aumcint.inf.pred`, the `aumcivint.*`
+  parameters built on them, and the `mrt`, `vss`, `kel`, and `thalf.eff`
+  parameters calculated from those, such as `mrt.int.last` and
+  `mrt.ivint.last`) are correct for an interval that does not start at time 0.  With intervals of 0 to 12 and 12 to 24, `ctrough` for the second
   interval was `NA` instead of the concentration at 24, `cstart` was the
   concentration at 24 instead of at 12, and `aumcint.last` weighted by the time
   since 0 instead of since 12 (544 instead of the 154 that `aumclast` gives).
@@ -1520,17 +1521,25 @@ the generated intervals:
   longer leave an empty name in the result (`",start_conc0,start_predose"`)
   (@billdenney).
 
-* Urine and feces parameters (`ae`, `fe`, `clr.last`, `clr.inf.obs`,
-  `clr.inf.pred`, `volpk`, `ermax`, `ertmax`, `ertlst`, `erlst`, `erint`) are
-  now right when imputation adds or drops an observation.  Before, the volumes
-  and collection durations stayed with the original observations while the
-  concentrations gained or lost one, so R recycled them against the wrong
-  samples with only a "longer object length" warning:  `impute = "start_conc0"`
-  on a urine profile without a sample at the interval start gave an `ae` of 440
-  instead of 300.  The volume and duration now follow their observations, and an
-  observation added by imputation counts as a collection of no volume with no
-  excretion rate, so the excretion parameters are those of the collected samples
-  (@billdenney).
+* Every value given per observation now follows its observation when
+  imputation adds or drops one:  the urine and feces volume and collection
+  duration, `include_half.life`, `exclude_half.life`, and a per-observation
+  `lloq`.  Before, they stayed in their original positions while the
+  concentrations gained or lost one, so each applied to the wrong sample:
+  `impute = "start_conc0"` without a sample at the interval start gave an `ae`
+  of 440 instead of 300 on a urine profile (with only a "longer object length"
+  warning), and made `include_half.life` and `exclude_half.life` select the
+  observation before the intended one (without a warning).  An observation
+  added by imputation counts as a collection of no volume with no excretion
+  rate (so the excretion parameters `ae`, `fe`, `clr.*`, `volpk`, `ermax`,
+  `ertmax`, `ertlst`, `erlst`, and `erint` are those of the collected
+  samples), is neither included in nor excluded from the half-life, and has
+  the profile's `lloq` when that is constant.  An observation is identified by
+  its time, and an imputation step that keeps the number of observations
+  modifies them in place; a user-defined imputation method that both adds or
+  drops observations and changes the time of another gives the classed warning
+  `pknca_warning_impute_obs_values_dropped` when values are lost that way
+  (@roninsightrx, @billdenney).
 
 ## Other changes
 
