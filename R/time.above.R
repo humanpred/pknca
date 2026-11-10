@@ -45,7 +45,7 @@ pk.calc.time_above <- function(conc, time,
   time2 <- data$time[-1]
   # Calculations
   if (nrow(data) < 2) {
-    ret <- structure(NA_real_, exclude="Too few measured concentrations to assess time_above")
+    ret <- structure(NA_real_, exclude="Too few measured concentrations to assess time.above")
   } else if (method %in% 'lin up/log down') {
     linear_up <- conc2 > conc1 | conc2 == conc1
     linear_down <- conc2 == 0
@@ -84,7 +84,7 @@ pk.calc.time_above <- function(conc, time,
 
 pknca_concept(pk.calc.time_above) <- "time_above_conc"
 # Add the column to the interval specification
-add.interval.col("time_above",
+add.interval.col("time.above",
                  FUN="pk.calc.time_above",
                  values=c(FALSE, TRUE),
                  unit_type="time",
@@ -95,7 +95,7 @@ add.interval.col("time_above",
                  formula="$T_{\\text{above}} = \\sum \\Delta t_{i: C_i \\geq C_{\\text{ref}}}$",
                  formula_note="Crossing times interpolated using the AUC method (linear or log-linear)")
 PKNCA.set.summary(
-  name="time_above",
+  name="time.above",
   description="arithmetic mean and standard deviation",
   point=business.mean,
   spread=business.sd
