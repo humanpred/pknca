@@ -706,7 +706,7 @@ add.interval.col <- function(name,
   # The classification and the values cached per parameter are derived from
   # the whole registry (what a parameter requires depends on everything
   # upstream of it), so any registration can change them.
-  for (cache_name in c("parameter_classification", "auc_basis_families", "interval.cols_derived")) {
+  for (cache_name in c("parameter_classification", "auc_basis_families", "interval.cols_derived", "interval_consistent_sets")) {
     if (exists(cache_name, envir=.PKNCAEnv)) {
       rm(list=cache_name, envir=.PKNCAEnv)
     }

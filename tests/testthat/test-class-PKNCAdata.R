@@ -164,22 +164,22 @@ test_that("print.PKNCAdata shows group_ref", {
     PKNCAdata(
       obj.conc,
       intervals = data.frame(start = 0, end = 24, aucinf.obs = TRUE),
-      group_ref = data.frame(parameter = "clr.obs", treatment = "Trt 1")
+      group_ref = data.frame(parameter = "clr.inf.obs", treatment = "Trt 1")
     )
   expect_output(
     print(obj.data.ref.param),
-    regexp = "(group_ref): clr.obs: treatment=Trt 1",
+    regexp = "(group_ref): clr.inf.obs: treatment=Trt 1",
     fixed = TRUE
   )
   obj.data.ref.list <-
     PKNCAdata(
       obj.conc,
       intervals = data.frame(start = 0, end = 24, aucinf.obs = TRUE),
-      group_ref = list(clr.obs = data.frame(treatment = "Trt 1"))
+      group_ref = list(clr.inf.obs = data.frame(treatment = "Trt 1"))
     )
   expect_output(
     print(obj.data.ref.list),
-    regexp = "(group_ref): clr.obs: treatment=Trt 1",
+    regexp = "(group_ref): clr.inf.obs: treatment=Trt 1",
     fixed = TRUE
   )
 })

@@ -280,10 +280,12 @@ AUC does not depend on the time origin.
 
 Other AUC calculations:
 \code{\link[=pk.calc.auxc]{pk.calc.auxc()}},
-\code{\link[=pk.calc.auxciv]{pk.calc.auxciv()}}
+\code{\link[=pk.calc.auxciv]{pk.calc.auxciv()}},
+\code{\link[=pk.calc.auxciv.int]{pk.calc.auxciv.int()}}
 
 Other AUMC calculations:
-\code{\link[=pk.calc.auxciv]{pk.calc.auxciv()}}
+\code{\link[=pk.calc.auxciv]{pk.calc.auxciv()}},
+\code{\link[=pk.calc.auxciv.int]{pk.calc.auxciv.int()}}
 }
 \concept{AUC calculations}
 \concept{AUMC calculations}

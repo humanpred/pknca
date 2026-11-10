@@ -570,10 +570,17 @@ pknca_source_inputs <- c(
 # the whole terminal-phase family as uncalculable whenever dosing is absent.
 # The AUCint family bounds its interpolation and extrapolation by the doses
 # around the interval when dosing is available and falls back to interpolating
-# across the whole profile when it is not (#539).
+# across the whole profile when it is not (#539).  The IV interval AUCs need the
+# dose times to find the bolus that starts the interval, but take the route and
+# duration only to tell a bolus from an infusion, so those do not make them
+# infusion parameters.
 pknca_optional_dose_args <-
   c(
     list(pk.calc.half.life = c("time.dose", "duration.dose")),
+    list(
+      pk.calc.auciv.int = c("route", "duration.dose"),
+      pk.calc.aumciv.int = c("route", "duration.dose")
+    ),
     stats::setNames(
       rep(list(c("time.dose", "route", "duration.dose")), 8),
       c(
