@@ -20,8 +20,8 @@ test_that("single dose, extravascular", {
   expect_equal(nrow(ret), 1L)
   expect_equal(
     params_of(ret),
-    sort(c("auclast", "aucinf.obs", "aucpext.obs", "cl.obs", "cmax", "tmax",
-           "count_conc", "half.life", "tlag"))
+    sort(c("auclast", "aucinf.obs", "aucpext.inf.obs", "cl.inf.obs", "cmax", "tmax",
+           "count.conc", "half.life", "tlag"))
   )
   expect_equal(ret$impute, "start_predose_conc0")
 })
@@ -33,8 +33,8 @@ test_that("single dose, IV bolus, splits c0 out of the imputation", {
   # unimputed data
   expect_equal(
     params_of(ret, 1),
-    sort(c("auclast", "aucinf.obs", "aucpext.obs", "cl.obs", "cmax", "tmax",
-           "count_conc", "half.life"))
+    sort(c("auclast", "aucinf.obs", "aucpext.inf.obs", "cl.inf.obs", "cmax", "tmax",
+           "count.conc", "half.life"))
   )
   expect_equal(params_of(ret, 2), "c0")
   expect_equal(ret$impute, c("start_predose_conc0", NA_character_))
@@ -59,10 +59,10 @@ test_that("steady state uses the interval AUCs and their clearance", {
   expect_equal(
     params_of(ret),
     sort(c("aucint.last", "aucint.inf.obs", "cl.int.inf.obs", "cmax", "tmax",
-           "ctrough", "count_conc", "half.life", "tlag"))
+           "ctrough", "count.conc", "half.life", "tlag"))
   )
   # Not the single-dose AUCs, which would need data past the last dose
-  expect_false(any(c("auclast", "aucinf.obs", "cl.obs") %in% params_of(ret)))
+  expect_false(any(c("auclast", "aucinf.obs", "cl.inf.obs") %in% params_of(ret)))
   expect_equal(ret$impute, "start_predose")
 })
 
@@ -93,7 +93,7 @@ test_that("a sparse design reports the same parameters as the dense one, imputin
     pknca_interval_table(0, 24, dosing = "single", route = "extravascular", sparse = FALSE)
   expect_equal(
     params_of(ret),
-    sort(c("aucinf.obs", "auclast", "aucpext.obs", "cl.obs", "cmax", "count_conc",
+    sort(c("aucinf.obs", "auclast", "aucpext.inf.obs", "cl.inf.obs", "cmax", "count.conc",
            "half.life", "tlag", "tmax"))
   )
   expect_equal(params_of(ret), params_of(dense))
@@ -201,8 +201,8 @@ test_that("excluding everything is an error", {
   expect_error(
     pknca_interval_table(
       0, 24, dosing = "single", route = "extravascular",
-      exclude = c("auclast", "aucinf.obs", "aucpext.obs", "cl.obs", "cmax",
-                  "tmax", "count_conc", "half.life", "tlag")
+      exclude = c("auclast", "aucinf.obs", "aucpext.inf.obs", "cl.inf.obs", "cmax",
+                  "tmax", "count.conc", "half.life", "tlag")
     ),
     class = "pknca_error_interval_no_parameters"
   )
@@ -244,10 +244,10 @@ test_that("start_cmin does not calculate the minimum from the imputed minimum", 
   expect_equal(ret$impute[row_of("aucint.last")], "start_cmin")
 })
 
-test_that("count_conc_measured is never calculated from imputed data", {
+test_that("count.conc.measured is never calculated from imputed data", {
   for (d in pknca_dosing()) {
     ret <- pknca_interval_table(0, 24, dosing = d, tier = "all")
-    row <- which(unlist(ret[, "count_conc_measured"]) %in% TRUE)
+    row <- which(unlist(ret[, "count.conc.measured"]) %in% TRUE)
     expect_true(is.na(ret$impute[row]), info = d)
   }
 })
@@ -298,48 +298,39 @@ test_that("every parameter is reachable from some context, or documented as not"
     for (r in pknca_routes()) {
       for (s in pknca_sample_types()) {
         for (sp in c(FALSE, TRUE)) {
-          ret <-
-            tryCatch(
-              pknca_interval_table(
-                0, 24, dosing = d, route = r, sample_type = s, sparse = sp,
-                tier = "all", clast_type = "obs"
-              ),
-              error = function(e) NULL
-            )
-          if (!is.null(ret)) emitted <- union(emitted, params_of_all(ret))
-          ret_pred <-
-            tryCatch(
-              pknca_interval_table(
-                0, 24, dosing = d, route = r, sample_type = s, sparse = sp,
-                tier = "all", clast_type = "pred"
-              ),
-              error = function(e) NULL
-            )
-          if (!is.null(ret_pred)) emitted <- union(emitted, params_of_all(ret_pred))
+          for (at in c("last", "all")) {
+            ret <-
+              tryCatch(
+                pknca_interval_table(
+                  0, 24, dosing = d, route = r, sample_type = s, sparse = sp,
+                  tier = "all", clast_type = "obs", auc_type = at
+                ),
+                error = function(e) NULL
+              )
+            if (!is.null(ret)) emitted <- union(emitted, params_of_all(ret))
+            ret_pred <-
+              tryCatch(
+                pknca_interval_table(
+                  0, 24, dosing = d, route = r, sample_type = s, sparse = sp,
+                  tier = "all", clast_type = "pred", auc_type = at
+                ),
+                error = function(e) NULL
+              )
+            if (!is.null(ret_pred)) emitted <- union(emitted, params_of_all(ret_pred))
+          }
         }
       }
     }
   }
   unreachable <- sort(setdiff(setdiff(names(get.interval.cols()), c("start", "end")), emitted))
   parameter_table <- pknca_parameter_table()
-  # Everything built on AUCall.  Whether AUCall differs from AUClast depends on
-  # whether there are values below the limit of quantification after the last
-  # measurable one, which is a property of the data rather than of the
-  # analysis, so no context chooses it.  It is still available by name through
-  # `include`.
+  # Every parameter is reachable from some context (AUCall through
+  # `auc_type = "all"`) except the ones below.
   expect_equal(
     unreachable,
-    sort(c(
-      "aucall", "aucall.dn", "aumcall", "aumcall.dn",
-      "aucint.all", "aumcint.all",
-      "aucivall", "aumcivall", "aucivpbextall",
-      "aucivint.all", "aumcivint.all", "aucivpbextint.all",
-      "cav.int.all",
-      "cl.all", "cl.int.all", "cl.iv.all", "cl.ivint.all",
-      "kel.all", "kel.int.all", "kel.iv.all", "kel.ivint.all",
-      "mrt.all", "mrt.int.all", "mrt.iv.all", "mrt.ivint.all",
-      "vss.all", "vss.int.all", "vss.iv.all", "vss.ivint.all",
-      "vz.all", "vz.int.all", "vz.iv.all", "vz.ivint.all",
+    sort(unique(c(
+      # Deprecated names duplicate the parameters that replaced them
+      names(deprecated_renamed_parameters),
       # Secondary parameters need inputs from more than one profile, which one
       # interval cannot supply.  Derived from the classification so that a newly
       # registered secondary parameter does not need this list edited.
@@ -348,7 +339,7 @@ test_that("every parameter is reachable from some context, or documented as not"
       # sparse estimator output without being asked for, so no context chooses
       # one.  Derived for the same reason.
       parameter_table$parameter[parameter_table$sparse]
-    ))
+    )))
   )
   # Asking for it by name works
   expect_true(
@@ -361,11 +352,11 @@ test_that("every parameter is reachable from some context, or documented as not"
 test_that("a secondary parameter is not chosen automatically", {
   for (tier in c("common", "all")) {
     expect_false(
-      "f.obs" %in% params_of_all(pknca_interval_table(0, 24, dosing = "single", tier = tier)),
+      "f.inf.obs" %in% params_of_all(pknca_interval_table(0, 24, dosing = "single", tier = tier)),
       info = tier
     )
     expect_false(
-      "clr.obs" %in%
+      "clr.inf.obs" %in%
         params_of_all(pknca_interval_table(
           0, 24, dosing = "single", sample_type = "interval", tier = tier
         )),
@@ -376,12 +367,12 @@ test_that("a secondary parameter is not chosen automatically", {
 
 test_that("a secondary parameter is still available by name", {
   expect_true(
-    "f.obs" %in% params_of_all(pknca_interval_table(0, 24, dosing = "single", include = "f.obs"))
+    "f.inf.obs" %in% params_of_all(pknca_interval_table(0, 24, dosing = "single", include = "f.inf.obs"))
   )
   expect_true(
-    "clr.obs" %in%
+    "clr.inf.obs" %in%
       params_of_all(pknca_interval_table(
-        0, 24, dosing = "single", sample_type = "interval", include = "clr.obs"
+        0, 24, dosing = "single", sample_type = "interval", include = "clr.inf.obs"
       ))
   )
 })
@@ -424,4 +415,40 @@ test_that("a parameter kept out of the imputation gives the unimputed answer", {
   generated <- pknca_interval_table(0, 24, dosing = "single", route = "iv_bolus")
   unimputed <- data.frame(start = 0, end = 24, c0 = TRUE)
   expect_equal(c0_from(generated), c0_from(unimputed))
+})
+
+test_that("auc_type chooses the AUClast or AUCall basis", {
+  last <- pknca_interval_table(0, 24, dosing = "single", tier = "all")
+  all <- pknca_interval_table(0, 24, dosing = "single", tier = "all", auc_type = "all")
+  requested <- params_of_all(last)
+  requested_all <- params_of_all(all)
+  expect_true(all(c("auclast", "cl.last") %in% requested))
+  expect_false(any(c("aucall", "cl.all") %in% requested))
+  expect_true(all(c("aucall", "cl.all") %in% requested_all))
+  expect_false(any(c("auclast", "cl.last") %in% requested_all))
+  repeated <- pknca_interval_table(0, 24, dosing = "multiple", tier = "all", auc_type = "all")
+  expect_true(all(c("aucint.all", "cl.int.all") %in% params_of_all(repeated)))
+  expect_error(pknca_interval_table(0, 24, auc_type = "inf"), regexp = "should be one of")
+})
+
+test_that("an interval ending at infinity gets no parameter that needs a finite end", {
+  finite <- params_of_all(pknca_interval_table(0, 24, dosing = "steady_state", tier = "all"))
+  infinite <- params_of_all(pknca_interval_table(0, Inf, dosing = "steady_state", tier = "all"))
+  expect_true(all(c("cav.int.last", "deg.fluc", "swing", "ptr") %in% finite))
+  expect_false(any(finite_interval_params() %in% infinite))
+  single_infinite <- params_of_all(pknca_interval_table(0, Inf, dosing = "single", tier = "all"))
+  expect_false("cav" %in% single_infinite)
+  expect_true("auclast" %in% single_infinite)
+})
+
+test_that("a parameter included by name but dropped at an infinite end is said to be dropped", {
+  expect_warning(
+    ret <- pknca_interval_table(0, Inf, include = c("cav", "ctrough")),
+    regexp = "need a finite interval end, so they are not given for an interval that ends at infinity: cav, ctrough",
+    class = "pknca_warning_interval_include_finite_end"
+  )
+  expect_false(any(unlist(ret[intersect(c("cav", "ctrough"), names(ret))])))
+  # The same request with a finite end gives them, silently
+  expect_no_warning(ret_finite <- pknca_interval_table(0, 24, include = c("cav", "ctrough")))
+  expect_true(any(ret_finite$cav) && any(ret_finite$ctrough))
 })
