@@ -633,9 +633,9 @@ test_that("fit_half_life_tobit recovers known parameters (all above-LLOQ)", {
   expect_equal(result$half.life, 1, tolerance = 0.01)
   expect_equal(result$lambda.z, log(2), tolerance = 0.01)
   expect_equal(result$lambda.z.n.points, 4L)
-  expect_equal(result$lambda.z.n.points_blq, 0L)
-  expect_false(is.na(result$tobit_residual))
-  expect_false(is.na(result$adj_tobit_residual))
+  expect_equal(result$lambda.z.n.points.blq, 0L)
+  expect_false(is.na(result$tobit.residual))
+  expect_false(is.na(result$adj.tobit.residual))
 })
 
 test_that("fit_half_life_tobit returns NA with warning on too few above-LLOQ points", {
@@ -701,8 +701,8 @@ test_that("pk.calc.half.life hl_method='tobit' matches log-linear when no BLQ", 
   expect_equal(result_tobit$half.life, result_ll$half.life, tolerance = 0.05)
   expect_equal(result_tobit$lambda.z, result_ll$lambda.z, tolerance = 0.05)
   # Tobit-specific columns present
-  expect_false(is.na(result_tobit$tobit_residual))
-  expect_false(is.na(result_tobit$lambda.z.n.points_blq))
+  expect_false(is.na(result_tobit$tobit.residual))
+  expect_false(is.na(result_tobit$lambda.z.n.points.blq))
   # Log-linear-specific columns absent from Tobit result
   expect_null(result_tobit$r.squared)
   expect_null(result_tobit$adj.r.squared)
@@ -731,7 +731,7 @@ test_that("pk.calc.half.life hl_method='tobit' includes BLQ points and improves 
     min.hl.points = 3
   )
   # Tobit should include BLQ points
-  expect_true(result_tobit$lambda.z.n.points_blq > 0)
+  expect_true(result_tobit$lambda.z.n.points.blq > 0)
   # Both should give a positive half-life
   expect_true(result_ll$half.life > 0)
   expect_true(result_tobit$half.life > 0)
@@ -750,8 +750,8 @@ test_that("pk.calc.half.life hl_method='tobit' lambda.z.n.points counts all (inc
   )
   # lambda.z.n.points should be >= 3 (includes BLQ points)
   expect_gte(result$lambda.z.n.points, 3L)
-  expect_gte(result$lambda.z.n.points_blq, 1L)
-  expect_equal(result$lambda.z.n.points_blq + (result$lambda.z.n.points - result$lambda.z.n.points_blq),
+  expect_gte(result$lambda.z.n.points.blq, 1L)
+  expect_equal(result$lambda.z.n.points.blq + (result$lambda.z.n.points - result$lambda.z.n.points.blq),
                result$lambda.z.n.points)
 })
 
@@ -785,7 +785,7 @@ test_that("pk.calc.half.life hl_method='tobit' manually.selected.points works", 
   )
   expect_false(is.na(result$half.life))
   expect_true(result$half.life > 0)
-  expect_equal(result$lambda.z.n.points_blq, 2L)
+  expect_equal(result$lambda.z.n.points.blq, 2L)
 })
 
 test_that("pk.calc.half.life hl_method='tobit' scalar lloq is broadcast correctly", {
@@ -817,7 +817,7 @@ test_that("pk.calc.half.life hl_method='tobit' global option is respected", {
         lloq = 0.01,
         allow.tmax.in.half.life = TRUE, min.hl.points = 3
       )
-      expect_false(is.na(result$tobit_residual))
+      expect_false(is.na(result$tobit.residual))
       expect_null(result$r.squared)
     }
   )
@@ -849,7 +849,7 @@ test_that("pk.nca() wires the PKNCAconc lloq through to the Tobit half-life", {
   expect_equal(res$PPORRES[res$PPTESTCD == "half.life"], direct$half.life)
   expect_equal(res$PPORRES[res$PPTESTCD == "lambda.z"], direct$lambda.z)
   # BLQ points were retained in the fit (the purpose of the Tobit method)
-  expect_equal(res$PPORRES[res$PPTESTCD == "lambda.z.n.points_blq"], 2)
+  expect_equal(res$PPORRES[res$PPTESTCD == "lambda.z.n.points.blq"], 2)
 })
 
 test_that("pk.nca() accepts a per-observation lloq column for the Tobit half-life", {
@@ -889,8 +889,8 @@ test_that("pk.calc.half.life log-linear result is unaffected by Tobit additions"
   expect_equal(result$half.life, 1)
   expect_false(is.na(result$r.squared))
   expect_false(is.na(result$adj.r.squared))
-  expect_null(result$tobit_residual)
-  expect_null(result$lambda.z.n.points_blq)
+  expect_null(result$tobit.residual)
+  expect_null(result$lambda.z.n.points.blq)
 })
 
 test_that("pk.calc.half.life drops explicit tmax/tlast when no concentration variability (#503)", {
@@ -962,7 +962,7 @@ test_that("pk.calc.half.life tobit tie-breaking prefers largest window", {
   # with more points.
   # lloq=Inf trick: a BLQ row with lloq=Inf contributes pnorm(Inf)=1 → log(1)=0
   # to the Tobit log-likelihood, so windows j=1 (row 1 included) and j=2
-  # (row 1 excluded) have IDENTICAL tobit_residual — a mathematically guaranteed
+  # (row 1 excluded) have IDENTICAL tobit.residual — a mathematically guaranteed
   # tie.  A real BLQ row at the end prevents smaller windows from overfitting.
   conc <- c(100, 0.53, 0.24, 0.13, 0.076, 0.001)
   time <- 0:5
@@ -978,7 +978,7 @@ test_that("pk.calc.half.life tobit tie-breaking prefers largest window", {
   )
   fit_j1 <- PKNCA:::fit_half_life_tobit(d,      tlast = 5)
   fit_j2 <- PKNCA:::fit_half_life_tobit(d[-1, ], tlast = 5)
-  expect_equal(fit_j1$tobit_residual, fit_j2$tobit_residual,
+  expect_equal(fit_j1$tobit.residual, fit_j2$tobit.residual,
                info = "lloq=Inf row contributes 0 to LL; residuals must be identical")
 
   # Tie-breaking must select window j=1 (6 rows) over j=2 (5 rows)
@@ -1595,7 +1595,7 @@ test_that("max.hl.points and min.hl.start.time apply to the Tobit method (#638)"
   from_2 <- do.call(pk.calc.half.life, c(list(conc = conc[time >= 2], time = time[time >= 2]), args))
   limited <- do.call(pk.calc.half.life, c(list(conc = conc, time = time, max.hl.points = 4), args))
   expect_equal(limited, from_2)
-  expect_lte(limited$lambda.z.n.points - limited$lambda.z.n.points_blq, 4)
+  expect_lte(limited$lambda.z.n.points - limited$lambda.z.n.points.blq, 4)
 
   later <- do.call(pk.calc.half.life, c(list(conc = conc, time = time, min.hl.start.time = 2), args))
   expect_equal(later, from_2)
