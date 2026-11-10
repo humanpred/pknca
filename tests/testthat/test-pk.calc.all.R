@@ -1892,8 +1892,6 @@ test_that("a calculation function returning one value per column of a one-row da
   expect_equal(result$PPORRES, c(1, 2))
 })
 
-# The tau that mrt.md.obs used, solved back from its equation
-
 # The tau that mrt.md.inf.obs used, solved back from its equation
 pk_nca_tau_used <- function(o_conc, o_dose, intervals) {
   res <- as.data.frame(pk.nca(PKNCAdata(o_conc, o_dose, intervals = intervals)))
