@@ -1260,3 +1260,40 @@ test_that("the AUMC over an interval is weighted by the time since its start", {
     as.numeric(pk.calc.auc(conc = conc[6:11], time = time[6:11] - 12))
   )
 })
+
+test_that("the AUMC over an interval is weighted from its start when the start and end are interpolated or extrapolated", {
+  conc <- c(0, 5, 4, 3, 2, 1, 5.5, 4.5, 3.2, 2.1, 1.1)
+  time <- c(0, 1, 2, 4, 8, 12, 13, 14, 16, 20, 24)
+  # Neither 10 nor 22 is a sample time, so both are interpolated (linearly,
+  # with the linear trapezoidal rule)
+  options <- list(auc.method = "linear")
+  conc_10 <- 2 + (1 - 2) * (10 - 8) / (12 - 8)
+  conc_22 <- 2.1 + (1.1 - 2.1) * (22 - 20) / (24 - 20)
+  time_within <- c(10, 12, 13, 14, 16, 20, 22)
+  conc_within <- c(conc_10, 1, 5.5, 4.5, 3.2, 2.1, conc_22)
+  expect_equal(
+    as.numeric(pk.calc.aumcint.last(conc = conc, time = time, start = 10, end = 22, options = options)),
+    as.numeric(pk.calc.aumc(conc = conc_within, time = time_within - 10, method = "linear"))
+  )
+  # The `interval` calling form is the same
+  expect_equal(
+    pk.calc.aumcint.last(conc = conc, time = time, interval = c(10, 22), options = options),
+    pk.calc.aumcint.last(conc = conc, time = time, start = 10, end = 22, options = options)
+  )
+  # An end after Tlast (24) is extrapolated with the half-life, and the
+  # extrapolated segment from 24 to 30 is the integral of
+  # (t - start) * clast * exp(-k * (t - 24))
+  k <- 0.15
+  start <- 12
+  a <- 24 - start
+  b <- 30 - start
+  tail_aumc <- 1.1 / k * (a - b * exp(-k * (b - a))) + 1.1 / k^2 * (1 - exp(-k * (b - a)))
+  expect_equal(
+    as.numeric(
+      pk.calc.aumcint.inf.obs(
+        conc = conc, time = time, start = start, end = 30, lambda.z = k, clast.obs = 1.1
+      )
+    ),
+    as.numeric(pk.calc.aumc(conc = conc[6:11], time = time[6:11] - start)) + tail_aumc
+  )
+})

@@ -269,10 +269,12 @@ in the method (\code{PPANMETH}) column.
 }
 
 \section{The time origin of the AUMC}{
-The AUMC is weighted by the time since \code{start}, as the AUMC of an interval
-is when \code{\link[=pk.nca]{pk.nca()}} calculates it from the interval's own data (\code{aumclast}):
-for an interval starting at a dose, that is the time since the dose.  The
-AUC does not depend on the time origin.
+The AUMC is weighted by the time since \code{start}, which is what \code{aumclast}
+gives for the interval's own data in \code{\link[=pk.nca]{pk.nca()}} (where times are relative to
+the start of the interval).  The AUC does not depend on the time origin.
+\code{\link[=pk.calc.aumc]{pk.calc.aumc()}} weights by the times as given, so with an \code{interval} that
+does not start at time 0 it differs from the AUMC over the same interval
+here.
 }
 
 \seealso{

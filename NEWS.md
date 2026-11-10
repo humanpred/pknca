@@ -1215,9 +1215,10 @@ the generated intervals:
 ## Bug fixes
 
 * `ctrough`, `cstart`, and the AUMC over an interval (`aumcint.last`,
-  `aumcint.all`, `aumcint.inf.obs`, `aumcint.inf.pred`, and the `aumcivint.*`
-  parameters built on them) are correct for an interval that does not start at
-  time 0.  With intervals of 0 to 12 and 12 to 24, `ctrough` for the second
+  `aumcint.all`, `aumcint.inf.obs`, `aumcint.inf.pred`, the `aumcivint.*`
+  parameters built on them, and the `mrt`, `vss`, `kel`, and `thalf.eff`
+  parameters calculated from those, such as `mrt.int.last` and
+  `mrt.ivint.last`) are correct for an interval that does not start at time 0.  With intervals of 0 to 12 and 12 to 24, `ctrough` for the second
   interval was `NA` instead of the concentration at 24, `cstart` was the
   concentration at 24 instead of at 12, and `aumcint.last` weighted by the time
   since 0 instead of since 12 (544 instead of the 154 that `aumclast` gives).
