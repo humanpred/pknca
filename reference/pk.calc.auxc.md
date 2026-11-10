@@ -189,7 +189,8 @@ Pharmaceutical Press, 2000. 164-7.
 
 Other AUC calculations:
 [`pk.calc.auxcint()`](https://humanpred.github.io/pknca/reference/pk.calc.auxcint.md),
-[`pk.calc.auxciv()`](https://humanpred.github.io/pknca/reference/pk.calc.auxciv.md)
+[`pk.calc.auxciv()`](https://humanpred.github.io/pknca/reference/pk.calc.auxciv.md),
+[`pk.calc.auxciv.int()`](https://humanpred.github.io/pknca/reference/pk.calc.auxciv.int.md)
 
 ## Examples
 

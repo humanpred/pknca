@@ -305,7 +305,9 @@ reported in the method (`PPANMETH`) column.
 
 Other AUC calculations:
 [`pk.calc.auxc()`](https://humanpred.github.io/pknca/reference/pk.calc.auxc.md),
-[`pk.calc.auxciv()`](https://humanpred.github.io/pknca/reference/pk.calc.auxciv.md)
+[`pk.calc.auxciv()`](https://humanpred.github.io/pknca/reference/pk.calc.auxciv.md),
+[`pk.calc.auxciv.int()`](https://humanpred.github.io/pknca/reference/pk.calc.auxciv.int.md)
 
 Other AUMC calculations:
-[`pk.calc.auxciv()`](https://humanpred.github.io/pknca/reference/pk.calc.auxciv.md)
+[`pk.calc.auxciv()`](https://humanpred.github.io/pknca/reference/pk.calc.auxciv.md),
+[`pk.calc.auxciv.int()`](https://humanpred.github.io/pknca/reference/pk.calc.auxciv.int.md)

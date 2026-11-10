@@ -457,6 +457,12 @@
   : Calculate AUXC (AUC or AUMC) for IV dosing with C0
   back-extrapolation
 
+- [`pk.calc.auxciv.int()`](https://humanpred.github.io/pknca/reference/pk.calc.auxciv.int.md)
+  [`pk.calc.auciv.int()`](https://humanpred.github.io/pknca/reference/pk.calc.auxciv.int.md)
+  [`pk.calc.aumciv.int()`](https://humanpred.github.io/pknca/reference/pk.calc.auxciv.int.md)
+  : Calculate AUXC (AUC or AUMC) over an interval for IV bolus dosing
+  with C0 back-extrapolation
+
 - [`pk.calc.c0()`](https://humanpred.github.io/pknca/reference/pk.calc.c0.md)
   [`pk.calc.c0.method.logslope()`](https://humanpred.github.io/pknca/reference/pk.calc.c0.md)
   [`pk.calc.c0.method.c0()`](https://humanpred.github.io/pknca/reference/pk.calc.c0.md)

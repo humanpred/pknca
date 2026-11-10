@@ -184,7 +184,9 @@ or, for the `aucint` family, already extrapolates back to time 0 with
 
 Other AUC calculations:
 [`pk.calc.auxc()`](https://humanpred.github.io/pknca/reference/pk.calc.auxc.md),
-[`pk.calc.auxcint()`](https://humanpred.github.io/pknca/reference/pk.calc.auxcint.md)
+[`pk.calc.auxcint()`](https://humanpred.github.io/pknca/reference/pk.calc.auxcint.md),
+[`pk.calc.auxciv.int()`](https://humanpred.github.io/pknca/reference/pk.calc.auxciv.int.md)
 
 Other AUMC calculations:
-[`pk.calc.auxcint()`](https://humanpred.github.io/pknca/reference/pk.calc.auxcint.md)
+[`pk.calc.auxcint()`](https://humanpred.github.io/pknca/reference/pk.calc.auxcint.md),
+[`pk.calc.auxciv.int()`](https://humanpred.github.io/pknca/reference/pk.calc.auxciv.int.md)

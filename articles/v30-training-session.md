@@ -839,7 +839,7 @@ as.data.frame(o_nca)
     ## 13     0   Inf span.ratio           2      ""                     NA     
     ## 14     0   Inf aucinf.obs           0.721  "AUC: lin up/log down" NA
 
-### How to select the correct parameters for calculations (aka, why are there 40 types of AUC in PKNCA?)
+### How to select the correct parameters for calculations (aka, why are there 42 types of AUC in PKNCA?)
 
 CDISC has one set of names, but they are not precise (e.g. AUCINT
 doesn’t tell the interpolation/extrapolation method).
@@ -1199,22 +1199,34 @@ o_data$intervals %>% select(-Subject) %>% unique() %>% as.data.frame()
     ## 1       FALSE       FALSE   FALSE      FALSE      FALSE       FALSE      FALSE
     ## 2       FALSE       FALSE   FALSE      FALSE      FALSE       FALSE      FALSE
     ## 3       FALSE       FALSE   FALSE      FALSE      FALSE        TRUE      FALSE
-    ##   aumcint.last aumcint.all    c0 cmax  cmin tmax  tmin tlast tfirst clast.obs
-    ## 1        FALSE       FALSE FALSE TRUE FALSE TRUE FALSE FALSE  FALSE     FALSE
-    ## 2        FALSE       FALSE FALSE TRUE FALSE TRUE FALSE FALSE  FALSE     FALSE
-    ## 3        FALSE       FALSE FALSE TRUE FALSE TRUE FALSE FALSE  FALSE     FALSE
-    ##   cl.last cl.all cl.int.all cl.int.last mrt.last mrt.all mrt.int.all
-    ## 1   FALSE  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE
-    ## 2   FALSE  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE
-    ## 3   FALSE  FALSE      FALSE       FALSE    FALSE   FALSE       FALSE
-    ##   mrt.int.last mrt.iv.last vss.last vss.iv.last vss.all vss.int.all
-    ## 1        FALSE       FALSE    FALSE       FALSE   FALSE       FALSE
-    ## 2        FALSE       FALSE    FALSE       FALSE   FALSE       FALSE
-    ## 3        FALSE       FALSE    FALSE       FALSE   FALSE       FALSE
-    ##   vss.int.last   cav cav.int.last cav.int.all ctrough cstart   ptr tlag
-    ## 1        FALSE FALSE        FALSE       FALSE   FALSE  FALSE FALSE TRUE
-    ## 2        FALSE FALSE        FALSE       FALSE   FALSE  FALSE FALSE TRUE
-    ## 3        FALSE FALSE        FALSE       FALSE    TRUE  FALSE FALSE TRUE
+    ##   aumcint.last aumcint.all aucivint.last aucivint.all aucivpbextint.last
+    ## 1        FALSE       FALSE         FALSE        FALSE              FALSE
+    ## 2        FALSE       FALSE         FALSE        FALSE              FALSE
+    ## 3        FALSE       FALSE         FALSE        FALSE              FALSE
+    ##   aucivpbextint.all aumcivint.last aumcivint.all    c0 cmax  cmin tmax  tmin
+    ## 1             FALSE          FALSE         FALSE FALSE TRUE FALSE TRUE FALSE
+    ## 2             FALSE          FALSE         FALSE FALSE TRUE FALSE TRUE FALSE
+    ## 3             FALSE          FALSE         FALSE FALSE TRUE FALSE TRUE FALSE
+    ##   tlast tfirst clast.obs cl.last cl.all cl.int.all cl.int.last cl.ivint.all
+    ## 1 FALSE  FALSE     FALSE   FALSE  FALSE      FALSE       FALSE        FALSE
+    ## 2 FALSE  FALSE     FALSE   FALSE  FALSE      FALSE       FALSE        FALSE
+    ## 3 FALSE  FALSE     FALSE   FALSE  FALSE      FALSE       FALSE        FALSE
+    ##   cl.ivint.last mrt.last mrt.all mrt.int.all mrt.int.last mrt.iv.last
+    ## 1         FALSE    FALSE   FALSE       FALSE        FALSE       FALSE
+    ## 2         FALSE    FALSE   FALSE       FALSE        FALSE       FALSE
+    ## 3         FALSE    FALSE   FALSE       FALSE        FALSE       FALSE
+    ##   mrt.ivint.all mrt.ivint.last vss.last vss.iv.last vss.all vss.int.all
+    ## 1         FALSE          FALSE    FALSE       FALSE   FALSE       FALSE
+    ## 2         FALSE          FALSE    FALSE       FALSE   FALSE       FALSE
+    ## 3         FALSE          FALSE    FALSE       FALSE   FALSE       FALSE
+    ##   vss.int.last vss.ivint.all vss.ivint.last   cav cav.last cav.int.last
+    ## 1        FALSE         FALSE          FALSE FALSE    FALSE        FALSE
+    ## 2        FALSE         FALSE          FALSE FALSE    FALSE        FALSE
+    ## 3        FALSE         FALSE          FALSE FALSE    FALSE        FALSE
+    ##   cav.int.all cav.all cav.ivint.last cav.ivint.all ctrough cstart   ptr tlag
+    ## 1       FALSE   FALSE          FALSE         FALSE   FALSE  FALSE FALSE TRUE
+    ## 2       FALSE   FALSE          FALSE         FALSE   FALSE  FALSE FALSE TRUE
+    ## 3       FALSE   FALSE          FALSE         FALSE    TRUE  FALSE FALSE TRUE
     ##   deg.fluc swing  ceoi aucabove.predose.all aucabove.trough.all count_conc
     ## 1    FALSE FALSE FALSE                FALSE               FALSE       TRUE
     ## 2    FALSE FALSE FALSE                FALSE               FALSE       TRUE
@@ -1235,122 +1247,118 @@ o_data$intervals %>% select(-Subject) %>% unique() %>% as.data.frame()
     ## 1          FALSE          FALSE      FALSE     FALSE        FALSE        FALSE
     ## 2          FALSE          FALSE      FALSE     FALSE        FALSE        FALSE
     ## 3          FALSE          FALSE      FALSE     FALSE        FALSE        FALSE
-    ##   aucivall aucivall_se aucivall_df aucivint.last aucivint.all aucivpbextlast
-    ## 1    FALSE       FALSE       FALSE         FALSE        FALSE          FALSE
-    ## 2    FALSE       FALSE       FALSE         FALSE        FALSE          FALSE
-    ## 3    FALSE       FALSE       FALSE         FALSE        FALSE          FALSE
-    ##   aucivpbextall aucivpbextint.last aucivpbextint.all aumcivlast aumcivlast_se
-    ## 1         FALSE              FALSE             FALSE      FALSE         FALSE
-    ## 2         FALSE              FALSE             FALSE      FALSE         FALSE
-    ## 3         FALSE              FALSE             FALSE      FALSE         FALSE
-    ##   aumcivlast_df aumcivall aumcivall_se aumcivall_df aumcivint.last
-    ## 1         FALSE     FALSE        FALSE        FALSE          FALSE
-    ## 2         FALSE     FALSE        FALSE        FALSE          FALSE
-    ## 3         FALSE     FALSE        FALSE        FALSE          FALSE
-    ##   aumcivint.all half.life r.squared adj.r.squared lambda.z.corrxy lambda.z
-    ## 1         FALSE      TRUE     FALSE         FALSE           FALSE    FALSE
-    ## 2         FALSE      TRUE     FALSE         FALSE           FALSE    FALSE
-    ## 3         FALSE      TRUE     FALSE         FALSE           FALSE    FALSE
-    ##   lambda.z.time.first lambda.z.time.last lambda.z.n.points clast.pred
-    ## 1               FALSE              FALSE             FALSE      FALSE
-    ## 2               FALSE              FALSE             FALSE      FALSE
-    ## 3               FALSE              FALSE             FALSE      FALSE
-    ##   span.ratio tobit_residual adj_tobit_residual lambda.z.n.points_blq
-    ## 1      FALSE          FALSE              FALSE                 FALSE
-    ## 2      FALSE          FALSE              FALSE                 FALSE
-    ## 3      FALSE          FALSE              FALSE                 FALSE
-    ##   thalf.eff.last thalf.eff.iv.last kel.last kel.iv.last kel.all kel.int.all
-    ## 1          FALSE             FALSE    FALSE       FALSE   FALSE       FALSE
-    ## 2          FALSE             FALSE    FALSE       FALSE   FALSE       FALSE
-    ## 3          FALSE             FALSE    FALSE       FALSE   FALSE       FALSE
-    ##   kel.int.last cl.iv.all cl.iv.last cl.ivint.all cl.ivint.last cl.sparse.last
-    ## 1        FALSE     FALSE      FALSE        FALSE         FALSE          FALSE
-    ## 2        FALSE     FALSE      FALSE        FALSE         FALSE          FALSE
-    ## 3        FALSE     FALSE      FALSE        FALSE         FALSE          FALSE
-    ##   f.last f.int.last f.int.all mrt.sparse.last mrt.iv.all mrt.ivint.all
-    ## 1  FALSE      FALSE     FALSE           FALSE      FALSE         FALSE
-    ## 2  FALSE      FALSE     FALSE           FALSE      FALSE         FALSE
-    ## 3  FALSE      FALSE     FALSE           FALSE      FALSE         FALSE
-    ##   mrt.ivint.last vz.all vz.int.all vz.int.last vz.iv.all vz.iv.last
-    ## 1          FALSE  FALSE      FALSE       FALSE     FALSE      FALSE
-    ## 2          FALSE  FALSE      FALSE       FALSE     FALSE      FALSE
-    ## 3          FALSE  FALSE      FALSE       FALSE     FALSE      FALSE
-    ##   vz.ivint.all vz.ivint.last vz.last vss.iv.all vss.ivint.all vss.ivint.last
-    ## 1        FALSE         FALSE   FALSE      FALSE         FALSE          FALSE
-    ## 2        FALSE         FALSE   FALSE      FALSE         FALSE          FALSE
-    ## 3        FALSE         FALSE   FALSE      FALSE         FALSE          FALSE
-    ##   vss.sparse.last aucinf.obs aucinf.obs_se aucinf.obs_df aucinf.pred
-    ## 1           FALSE       TRUE         FALSE         FALSE       FALSE
-    ## 2           FALSE       TRUE         FALSE         FALSE       FALSE
-    ## 3           FALSE      FALSE         FALSE         FALSE       FALSE
+    ##   aucivall aucivall_se aucivall_df aucivpbextlast aucivpbextall aumcivlast
+    ## 1    FALSE       FALSE       FALSE          FALSE         FALSE      FALSE
+    ## 2    FALSE       FALSE       FALSE          FALSE         FALSE      FALSE
+    ## 3    FALSE       FALSE       FALSE          FALSE         FALSE      FALSE
+    ##   aumcivlast_se aumcivlast_df aumcivall aumcivall_se aumcivall_df half.life
+    ## 1         FALSE         FALSE     FALSE        FALSE        FALSE      TRUE
+    ## 2         FALSE         FALSE     FALSE        FALSE        FALSE      TRUE
+    ## 3         FALSE         FALSE     FALSE        FALSE        FALSE      TRUE
+    ##   r.squared adj.r.squared lambda.z.corrxy lambda.z lambda.z.time.first
+    ## 1     FALSE         FALSE           FALSE    FALSE               FALSE
+    ## 2     FALSE         FALSE           FALSE    FALSE               FALSE
+    ## 3     FALSE         FALSE           FALSE    FALSE               FALSE
+    ##   lambda.z.time.last lambda.z.n.points clast.pred span.ratio tobit_residual
+    ## 1              FALSE             FALSE      FALSE      FALSE          FALSE
+    ## 2              FALSE             FALSE      FALSE      FALSE          FALSE
+    ## 3              FALSE             FALSE      FALSE      FALSE          FALSE
+    ##   adj_tobit_residual lambda.z.n.points_blq thalf.eff.last thalf.eff.iv.last
+    ## 1              FALSE                 FALSE          FALSE             FALSE
+    ## 2              FALSE                 FALSE          FALSE             FALSE
+    ## 3              FALSE                 FALSE          FALSE             FALSE
+    ##   kel.last kel.iv.last kel.all kel.int.all kel.int.last kel.ivint.all
+    ## 1    FALSE       FALSE   FALSE       FALSE        FALSE         FALSE
+    ## 2    FALSE       FALSE   FALSE       FALSE        FALSE         FALSE
+    ## 3    FALSE       FALSE   FALSE       FALSE        FALSE         FALSE
+    ##   kel.ivint.last cl.iv.all cl.iv.last cl.sparse.last f.last f.int.last
+    ## 1          FALSE     FALSE      FALSE          FALSE  FALSE      FALSE
+    ## 2          FALSE     FALSE      FALSE          FALSE  FALSE      FALSE
+    ## 3          FALSE     FALSE      FALSE          FALSE  FALSE      FALSE
+    ##   f.int.all mrt.sparse.last mrt.iv.all vz.all vz.int.all vz.int.last vz.iv.all
+    ## 1     FALSE           FALSE      FALSE  FALSE      FALSE       FALSE     FALSE
+    ## 2     FALSE           FALSE      FALSE  FALSE      FALSE       FALSE     FALSE
+    ## 3     FALSE           FALSE      FALSE  FALSE      FALSE       FALSE     FALSE
+    ##   vz.iv.last vz.ivint.all vz.ivint.last vz.last vss.iv.all vss.sparse.last
+    ## 1      FALSE        FALSE         FALSE   FALSE      FALSE           FALSE
+    ## 2      FALSE        FALSE         FALSE   FALSE      FALSE           FALSE
+    ## 3      FALSE        FALSE         FALSE   FALSE      FALSE           FALSE
+    ##   cav.iv.last cav.iv.all aucinf.obs aucinf.obs_se aucinf.obs_df aucinf.pred
+    ## 1       FALSE      FALSE       TRUE         FALSE         FALSE       FALSE
+    ## 2       FALSE      FALSE       TRUE         FALSE         FALSE       FALSE
+    ## 3       FALSE      FALSE      FALSE         FALSE         FALSE       FALSE
     ##   aumcinf.obs aumcinf.obs_se aumcinf.obs_df aumcinf.pred aucint.inf.obs
     ## 1       FALSE          FALSE          FALSE        FALSE          FALSE
     ## 2       FALSE          FALSE          FALSE        FALSE          FALSE
     ## 3       FALSE          FALSE          FALSE        FALSE           TRUE
-    ##   aucint.inf.pred aumcint.inf.obs aumcint.inf.pred aucivinf.obs aucivinf.obs_se
-    ## 1           FALSE           FALSE            FALSE        FALSE           FALSE
-    ## 2           FALSE           FALSE            FALSE        FALSE           FALSE
-    ## 3           FALSE           FALSE            FALSE        FALSE           FALSE
-    ##   aucivinf.obs_df aucivinf.pred aucivpbextinf.obs aucivpbextinf.pred
-    ## 1           FALSE         FALSE             FALSE              FALSE
-    ## 2           FALSE         FALSE             FALSE              FALSE
-    ## 3           FALSE         FALSE             FALSE              FALSE
-    ##   aumcivinf.obs aumcivinf.obs_se aumcivinf.obs_df aumcivinf.pred aucpext.obs
-    ## 1         FALSE            FALSE            FALSE          FALSE        TRUE
-    ## 2         FALSE            FALSE            FALSE          FALSE        TRUE
-    ## 3         FALSE            FALSE            FALSE          FALSE       FALSE
-    ##   aucpext.pred kel.iv.all kel.ivint.all kel.ivint.last kel.sparse.last cl.obs
-    ## 1        FALSE      FALSE         FALSE          FALSE           FALSE   TRUE
-    ## 2        FALSE      FALSE         FALSE          FALSE           FALSE   TRUE
-    ## 3        FALSE      FALSE         FALSE          FALSE           FALSE  FALSE
-    ##   cl.pred cl.int.inf.obs cl.int.inf.pred cl.iv.obs cl.iv.pred f.obs f.pred
-    ## 1   FALSE          FALSE           FALSE     FALSE      FALSE FALSE  FALSE
-    ## 2   FALSE          FALSE           FALSE     FALSE      FALSE FALSE  FALSE
-    ## 3   FALSE           TRUE           FALSE     FALSE      FALSE FALSE  FALSE
-    ##   f.int.obs f.int.pred mrt.obs mrt.pred mrt.int.inf.obs mrt.int.inf.pred
-    ## 1     FALSE      FALSE   FALSE    FALSE           FALSE            FALSE
-    ## 2     FALSE      FALSE   FALSE    FALSE           FALSE            FALSE
-    ## 3     FALSE      FALSE   FALSE    FALSE           FALSE            FALSE
-    ##   mrt.iv.obs mrt.iv.pred mrt.md.obs mrt.md.pred mrt.ivmd.obs mrt.ivmd.pred
-    ## 1      FALSE       FALSE      FALSE       FALSE        FALSE         FALSE
-    ## 2      FALSE       FALSE      FALSE       FALSE        FALSE         FALSE
-    ## 3      FALSE       FALSE      FALSE       FALSE        FALSE         FALSE
-    ##   vz.obs vz.pred vz.int.inf.obs vz.int.inf.pred vz.iv.obs vz.iv.pred
-    ## 1  FALSE   FALSE          FALSE           FALSE     FALSE      FALSE
-    ## 2  FALSE   FALSE          FALSE           FALSE     FALSE      FALSE
-    ## 3  FALSE   FALSE          FALSE           FALSE     FALSE      FALSE
-    ##   vz.sparse.last vss.obs vss.pred vss.iv.obs vss.iv.pred vss.md.obs vss.md.pred
-    ## 1          FALSE   FALSE    FALSE      FALSE       FALSE      FALSE       FALSE
-    ## 2          FALSE   FALSE    FALSE      FALSE       FALSE      FALSE       FALSE
-    ## 3          FALSE   FALSE    FALSE      FALSE       FALSE      FALSE       FALSE
-    ##   vss.ivmd.obs vss.ivmd.pred vss.int.inf.obs vss.int.inf.pred cav.int.inf.obs
-    ## 1        FALSE         FALSE           FALSE            FALSE           FALSE
-    ## 2        FALSE         FALSE           FALSE            FALSE           FALSE
-    ## 3        FALSE         FALSE           FALSE            FALSE           FALSE
-    ##   cav.int.inf.pred ratio.aucinf.obs ratio.aucinf.pred thalf.eff.obs
-    ## 1            FALSE            FALSE             FALSE         FALSE
-    ## 2            FALSE            FALSE             FALSE         FALSE
-    ## 3            FALSE            FALSE             FALSE         FALSE
-    ##   thalf.eff.pred thalf.eff.iv.obs thalf.eff.iv.pred kel.obs kel.pred kel.iv.obs
-    ## 1          FALSE            FALSE             FALSE   FALSE    FALSE      FALSE
-    ## 2          FALSE            FALSE             FALSE   FALSE    FALSE      FALSE
-    ## 3          FALSE            FALSE             FALSE   FALSE    FALSE      FALSE
-    ##   kel.iv.pred kel.int.inf.obs kel.int.inf.pred auclast.dn aucall.dn
-    ## 1       FALSE           FALSE            FALSE      FALSE     FALSE
-    ## 2       FALSE           FALSE            FALSE      FALSE     FALSE
-    ## 3       FALSE           FALSE            FALSE      FALSE     FALSE
-    ##   aucinf.obs.dn aucinf.pred.dn aumclast.dn aumcall.dn aumcinf.obs.dn
-    ## 1         FALSE          FALSE       FALSE      FALSE          FALSE
-    ## 2         FALSE          FALSE       FALSE      FALSE          FALSE
-    ## 3         FALSE          FALSE       FALSE      FALSE          FALSE
-    ##   aumcinf.pred.dn cmax.dn cmin.dn clast.obs.dn clast.pred.dn cav.dn ctrough.dn
-    ## 1           FALSE   FALSE   FALSE        FALSE         FALSE  FALSE      FALSE
-    ## 2           FALSE   FALSE   FALSE        FALSE         FALSE  FALSE      FALSE
-    ## 3           FALSE   FALSE   FALSE        FALSE         FALSE  FALSE      FALSE
-    ##   clr.last.dn clr.obs.dn clr.pred.dn Study_Part              impute
-    ## 1       FALSE      FALSE       FALSE     Single start_predose_conc0
-    ## 2       FALSE      FALSE       FALSE   Multiple start_predose_conc0
-    ## 3       FALSE      FALSE       FALSE   Multiple          start_cmin
+    ##   aucint.inf.pred aumcint.inf.obs aumcint.inf.pred aucivint.inf.obs
+    ## 1           FALSE           FALSE            FALSE            FALSE
+    ## 2           FALSE           FALSE            FALSE            FALSE
+    ## 3           FALSE           FALSE            FALSE            FALSE
+    ##   aucivint.inf.pred aucivinf.obs aucivinf.obs_se aucivinf.obs_df aucivinf.pred
+    ## 1             FALSE        FALSE           FALSE           FALSE         FALSE
+    ## 2             FALSE        FALSE           FALSE           FALSE         FALSE
+    ## 3             FALSE        FALSE           FALSE           FALSE         FALSE
+    ##   aucivpbextinf.obs aucivpbextinf.pred aumcivinf.obs aumcivinf.obs_se
+    ## 1             FALSE              FALSE         FALSE            FALSE
+    ## 2             FALSE              FALSE         FALSE            FALSE
+    ## 3             FALSE              FALSE         FALSE            FALSE
+    ##   aumcivinf.obs_df aumcivinf.pred aucpext.obs aucpext.pred kel.iv.all
+    ## 1            FALSE          FALSE        TRUE        FALSE      FALSE
+    ## 2            FALSE          FALSE        TRUE        FALSE      FALSE
+    ## 3            FALSE          FALSE       FALSE        FALSE      FALSE
+    ##   kel.sparse.last cl.obs cl.pred cl.int.inf.obs cl.int.inf.pred cl.iv.obs
+    ## 1           FALSE   TRUE   FALSE          FALSE           FALSE     FALSE
+    ## 2           FALSE   TRUE   FALSE          FALSE           FALSE     FALSE
+    ## 3           FALSE  FALSE   FALSE           TRUE           FALSE     FALSE
+    ##   cl.iv.pred f.obs f.pred f.int.obs f.int.pred mrt.obs mrt.pred mrt.int.inf.obs
+    ## 1      FALSE FALSE  FALSE     FALSE      FALSE   FALSE    FALSE           FALSE
+    ## 2      FALSE FALSE  FALSE     FALSE      FALSE   FALSE    FALSE           FALSE
+    ## 3      FALSE FALSE  FALSE     FALSE      FALSE   FALSE    FALSE           FALSE
+    ##   mrt.int.inf.pred mrt.iv.obs mrt.iv.pred mrt.md.obs mrt.md.pred mrt.ivmd.obs
+    ## 1            FALSE      FALSE       FALSE      FALSE       FALSE        FALSE
+    ## 2            FALSE      FALSE       FALSE      FALSE       FALSE        FALSE
+    ## 3            FALSE      FALSE       FALSE      FALSE       FALSE        FALSE
+    ##   mrt.ivmd.pred vz.obs vz.pred vz.int.inf.obs vz.int.inf.pred vz.iv.obs
+    ## 1         FALSE  FALSE   FALSE          FALSE           FALSE     FALSE
+    ## 2         FALSE  FALSE   FALSE          FALSE           FALSE     FALSE
+    ## 3         FALSE  FALSE   FALSE          FALSE           FALSE     FALSE
+    ##   vz.iv.pred vz.sparse.last vss.obs vss.pred vss.iv.obs vss.iv.pred vss.md.obs
+    ## 1      FALSE          FALSE   FALSE    FALSE      FALSE       FALSE      FALSE
+    ## 2      FALSE          FALSE   FALSE    FALSE      FALSE       FALSE      FALSE
+    ## 3      FALSE          FALSE   FALSE    FALSE      FALSE       FALSE      FALSE
+    ##   vss.md.pred vss.ivmd.obs vss.ivmd.pred vss.int.inf.obs vss.int.inf.pred
+    ## 1       FALSE        FALSE         FALSE           FALSE            FALSE
+    ## 2       FALSE        FALSE         FALSE           FALSE            FALSE
+    ## 3       FALSE        FALSE         FALSE           FALSE            FALSE
+    ##   cav.int.inf.obs cav.int.inf.pred cav.ivint.inf.obs cav.ivint.inf.pred
+    ## 1           FALSE            FALSE             FALSE              FALSE
+    ## 2           FALSE            FALSE             FALSE              FALSE
+    ## 3           FALSE            FALSE             FALSE              FALSE
+    ##   ratio.aucinf.obs ratio.aucinf.pred thalf.eff.obs thalf.eff.pred
+    ## 1            FALSE             FALSE         FALSE          FALSE
+    ## 2            FALSE             FALSE         FALSE          FALSE
+    ## 3            FALSE             FALSE         FALSE          FALSE
+    ##   thalf.eff.iv.obs thalf.eff.iv.pred kel.obs kel.pred kel.iv.obs kel.iv.pred
+    ## 1            FALSE             FALSE   FALSE    FALSE      FALSE       FALSE
+    ## 2            FALSE             FALSE   FALSE    FALSE      FALSE       FALSE
+    ## 3            FALSE             FALSE   FALSE    FALSE      FALSE       FALSE
+    ##   kel.int.inf.obs kel.int.inf.pred auclast.dn aucall.dn aucinf.obs.dn
+    ## 1           FALSE            FALSE      FALSE     FALSE         FALSE
+    ## 2           FALSE            FALSE      FALSE     FALSE         FALSE
+    ## 3           FALSE            FALSE      FALSE     FALSE         FALSE
+    ##   aucinf.pred.dn aumclast.dn aumcall.dn aumcinf.obs.dn aumcinf.pred.dn cmax.dn
+    ## 1          FALSE       FALSE      FALSE          FALSE           FALSE   FALSE
+    ## 2          FALSE       FALSE      FALSE          FALSE           FALSE   FALSE
+    ## 3          FALSE       FALSE      FALSE          FALSE           FALSE   FALSE
+    ##   cmin.dn clast.obs.dn clast.pred.dn cav.dn cav.last.dn ctrough.dn clr.last.dn
+    ## 1   FALSE        FALSE         FALSE  FALSE       FALSE      FALSE       FALSE
+    ## 2   FALSE        FALSE         FALSE  FALSE       FALSE      FALSE       FALSE
+    ## 3   FALSE        FALSE         FALSE  FALSE       FALSE      FALSE       FALSE
+    ##   clr.obs.dn clr.pred.dn Study_Part              impute
+    ## 1      FALSE       FALSE     Single start_predose_conc0
+    ## 2      FALSE       FALSE   Multiple start_predose_conc0
+    ## 3      FALSE       FALSE   Multiple          start_cmin
 
 ``` r
 

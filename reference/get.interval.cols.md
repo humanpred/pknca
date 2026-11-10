@@ -1000,6 +1000,392 @@ get.interval.cols()
 #> list()
 #> 
 #> 
+#> $aucivint.last
+#> $aucivint.last$FUN
+#> [1] "pk.calc.auciv.int"
+#> 
+#> $aucivint.last$FUN_sparse
+#> [1] NA
+#> 
+#> $aucivint.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $aucivint.last$unit_type
+#> [1] "auc"
+#> 
+#> $aucivint.last$pretty_name
+#> [1] "AUCint,last (IV dosing)"
+#> 
+#> $aucivint.last$desc
+#> [1] "AUCint,last, IV back-extrap C0"
+#> 
+#> $aucivint.last$formalsmap
+#> $aucivint.last$formalsmap$auc
+#> [1] "aucint.last"
+#> 
+#> $aucivint.last$formalsmap$conc
+#> [1] "conc.group"
+#> 
+#> $aucivint.last$formalsmap$time
+#> [1] "time.group"
+#> 
+#> $aucivint.last$formalsmap$time.dose
+#> [1] "time.dose.group"
+#> 
+#> $aucivint.last$formalsmap$route
+#> [1] "route.group"
+#> 
+#> $aucivint.last$formalsmap$duration.dose
+#> [1] "duration.dose.group"
+#> 
+#> 
+#> $aucivint.last$formalsmap_sparse
+#> list()
+#> 
+#> $aucivint.last$depends
+#> [1] "aucint.last"
+#> 
+#> $aucivint.last$datatype
+#> [1] "interval"
+#> 
+#> $aucivint.last$pptestcd_cdisc
+#> [1] "AUCIVILT"
+#> 
+#> $aucivint.last$pptest_cdisc
+#> [1] "AUCint,last (IV dosing)"
+#> 
+#> $aucivint.last$formula
+#> [1] "$AUC_{\\text{iv,int,last}} = AUC_{\\text{int,last}} + AUC(C_0, t_1) - AUC(C_{start}, t_1)$"
+#> 
+#> $aucivint.last$formula_note
+#> NULL
+#> 
+#> $aucivint.last$tier
+#> [1] "uncommon"
+#> 
+#> $aucivint.last$selection
+#> $aucivint.last$selection$route
+#> [1] "iv_bolus"
+#> 
+#> 
+#> 
+#> $aucivint.all
+#> $aucivint.all$FUN
+#> [1] "pk.calc.auciv.int"
+#> 
+#> $aucivint.all$FUN_sparse
+#> [1] NA
+#> 
+#> $aucivint.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $aucivint.all$unit_type
+#> [1] "auc"
+#> 
+#> $aucivint.all$pretty_name
+#> [1] "AUCint,all (IV dosing)"
+#> 
+#> $aucivint.all$desc
+#> [1] "AUCint,all, IV back-extrap C0"
+#> 
+#> $aucivint.all$formalsmap
+#> $aucivint.all$formalsmap$auc
+#> [1] "aucint.all"
+#> 
+#> $aucivint.all$formalsmap$conc
+#> [1] "conc.group"
+#> 
+#> $aucivint.all$formalsmap$time
+#> [1] "time.group"
+#> 
+#> $aucivint.all$formalsmap$time.dose
+#> [1] "time.dose.group"
+#> 
+#> $aucivint.all$formalsmap$route
+#> [1] "route.group"
+#> 
+#> $aucivint.all$formalsmap$duration.dose
+#> [1] "duration.dose.group"
+#> 
+#> 
+#> $aucivint.all$formalsmap_sparse
+#> list()
+#> 
+#> $aucivint.all$depends
+#> [1] "aucint.all"
+#> 
+#> $aucivint.all$datatype
+#> [1] "interval"
+#> 
+#> $aucivint.all$pptestcd_cdisc
+#> [1] "AUCIVINA"
+#> 
+#> $aucivint.all$pptest_cdisc
+#> [1] "AUCint,all (IV dosing)"
+#> 
+#> $aucivint.all$formula
+#> [1] "$AUC_{\\text{iv,int,all}} = AUC_{\\text{int,all}} + AUC(C_0, t_1) - AUC(C_{start}, t_1)$"
+#> 
+#> $aucivint.all$formula_note
+#> NULL
+#> 
+#> $aucivint.all$tier
+#> [1] "uncommon"
+#> 
+#> $aucivint.all$selection
+#> $aucivint.all$selection$route
+#> [1] "iv_bolus"
+#> 
+#> 
+#> 
+#> $aucivpbextint.last
+#> $aucivpbextint.last$FUN
+#> [1] "pk.calc.auciv_pbext"
+#> 
+#> $aucivpbextint.last$FUN_sparse
+#> [1] NA
+#> 
+#> $aucivpbextint.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $aucivpbextint.last$unit_type
+#> [1] "%"
+#> 
+#> $aucivpbextint.last$pretty_name
+#> [1] "AUCbext (based on AUCint,last)"
+#> 
+#> $aucivpbextint.last$desc
+#> [1] "Back-extrap %, IV, AUCint,last"
+#> 
+#> $aucivpbextint.last$formalsmap
+#> $aucivpbextint.last$formalsmap$auc
+#> [1] "aucint.last"
+#> 
+#> $aucivpbextint.last$formalsmap$auciv
+#> [1] "aucivint.last"
+#> 
+#> 
+#> $aucivpbextint.last$formalsmap_sparse
+#> list()
+#> 
+#> $aucivpbextint.last$depends
+#> [1] "aucint.last"   "aucivint.last"
+#> 
+#> $aucivpbextint.last$datatype
+#> [1] "interval"
+#> 
+#> $aucivpbextint.last$pptestcd_cdisc
+#> [1] "AUCIVPIL"
+#> 
+#> $aucivpbextint.last$pptest_cdisc
+#> [1] "AUCbext (based on AUCint,last)"
+#> 
+#> $aucivpbextint.last$formula
+#> [1] "$\\%AUC_{\\text{bext,int,last}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{int,last}}}{AUC_{\\text{iv,int,last}}}\\right)$"
+#> 
+#> $aucivpbextint.last$formula_note
+#> NULL
+#> 
+#> $aucivpbextint.last$tier
+#> [1] "uncommon"
+#> 
+#> $aucivpbextint.last$selection
+#> list()
+#> 
+#> 
+#> $aucivpbextint.all
+#> $aucivpbextint.all$FUN
+#> [1] "pk.calc.auciv_pbext"
+#> 
+#> $aucivpbextint.all$FUN_sparse
+#> [1] NA
+#> 
+#> $aucivpbextint.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $aucivpbextint.all$unit_type
+#> [1] "%"
+#> 
+#> $aucivpbextint.all$pretty_name
+#> [1] "AUCbext (based on AUCint,all)"
+#> 
+#> $aucivpbextint.all$desc
+#> [1] "Back-extrap %, IV, AUCint,all"
+#> 
+#> $aucivpbextint.all$formalsmap
+#> $aucivpbextint.all$formalsmap$auc
+#> [1] "aucint.all"
+#> 
+#> $aucivpbextint.all$formalsmap$auciv
+#> [1] "aucivint.all"
+#> 
+#> 
+#> $aucivpbextint.all$formalsmap_sparse
+#> list()
+#> 
+#> $aucivpbextint.all$depends
+#> [1] "aucint.all"   "aucivint.all"
+#> 
+#> $aucivpbextint.all$datatype
+#> [1] "interval"
+#> 
+#> $aucivpbextint.all$pptestcd_cdisc
+#> [1] "AUCIVPIA"
+#> 
+#> $aucivpbextint.all$pptest_cdisc
+#> [1] "AUCbext (based on AUCint,all)"
+#> 
+#> $aucivpbextint.all$formula
+#> [1] "$\\%AUC_{\\text{bext,int,all}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{int,all}}}{AUC_{\\text{iv,int,all}}}\\right)$"
+#> 
+#> $aucivpbextint.all$formula_note
+#> NULL
+#> 
+#> $aucivpbextint.all$tier
+#> [1] "uncommon"
+#> 
+#> $aucivpbextint.all$selection
+#> list()
+#> 
+#> 
+#> $aumcivint.last
+#> $aumcivint.last$FUN
+#> [1] "pk.calc.aumciv.int"
+#> 
+#> $aumcivint.last$FUN_sparse
+#> [1] NA
+#> 
+#> $aumcivint.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcivint.last$unit_type
+#> [1] "aumc"
+#> 
+#> $aumcivint.last$pretty_name
+#> [1] "AUMCint,last (IV dosing)"
+#> 
+#> $aumcivint.last$desc
+#> [1] "AUMCint,last, IV back-extrap C0"
+#> 
+#> $aumcivint.last$formalsmap
+#> $aumcivint.last$formalsmap$aumc
+#> [1] "aumcint.last"
+#> 
+#> $aumcivint.last$formalsmap$conc
+#> [1] "conc.group"
+#> 
+#> $aumcivint.last$formalsmap$time
+#> [1] "time.group"
+#> 
+#> $aumcivint.last$formalsmap$time.dose
+#> [1] "time.dose.group"
+#> 
+#> $aumcivint.last$formalsmap$route
+#> [1] "route.group"
+#> 
+#> $aumcivint.last$formalsmap$duration.dose
+#> [1] "duration.dose.group"
+#> 
+#> 
+#> $aumcivint.last$formalsmap_sparse
+#> list()
+#> 
+#> $aumcivint.last$depends
+#> [1] "aumcint.last"
+#> 
+#> $aumcivint.last$datatype
+#> [1] "interval"
+#> 
+#> $aumcivint.last$pptestcd_cdisc
+#> [1] "AUMCIVIL"
+#> 
+#> $aumcivint.last$pptest_cdisc
+#> [1] "AUMCint,last (IV dosing)"
+#> 
+#> $aumcivint.last$formula
+#> NULL
+#> 
+#> $aumcivint.last$formula_note
+#> NULL
+#> 
+#> $aumcivint.last$tier
+#> [1] "uncommon"
+#> 
+#> $aumcivint.last$selection
+#> $aumcivint.last$selection$route
+#> [1] "iv_bolus"
+#> 
+#> 
+#> 
+#> $aumcivint.all
+#> $aumcivint.all$FUN
+#> [1] "pk.calc.aumciv.int"
+#> 
+#> $aumcivint.all$FUN_sparse
+#> [1] NA
+#> 
+#> $aumcivint.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $aumcivint.all$unit_type
+#> [1] "aumc"
+#> 
+#> $aumcivint.all$pretty_name
+#> [1] "AUMCint,all (IV dosing)"
+#> 
+#> $aumcivint.all$desc
+#> [1] "AUMCint,all, IV back-extrap C0"
+#> 
+#> $aumcivint.all$formalsmap
+#> $aumcivint.all$formalsmap$aumc
+#> [1] "aumcint.all"
+#> 
+#> $aumcivint.all$formalsmap$conc
+#> [1] "conc.group"
+#> 
+#> $aumcivint.all$formalsmap$time
+#> [1] "time.group"
+#> 
+#> $aumcivint.all$formalsmap$time.dose
+#> [1] "time.dose.group"
+#> 
+#> $aumcivint.all$formalsmap$route
+#> [1] "route.group"
+#> 
+#> $aumcivint.all$formalsmap$duration.dose
+#> [1] "duration.dose.group"
+#> 
+#> 
+#> $aumcivint.all$formalsmap_sparse
+#> list()
+#> 
+#> $aumcivint.all$depends
+#> [1] "aumcint.all"
+#> 
+#> $aumcivint.all$datatype
+#> [1] "interval"
+#> 
+#> $aumcivint.all$pptestcd_cdisc
+#> [1] "AUMCIVIA"
+#> 
+#> $aumcivint.all$pptest_cdisc
+#> [1] "AUMCint,all (IV dosing)"
+#> 
+#> $aumcivint.all$formula
+#> NULL
+#> 
+#> $aumcivint.all$formula_note
+#> NULL
+#> 
+#> $aumcivint.all$tier
+#> [1] "uncommon"
+#> 
+#> $aumcivint.all$selection
+#> $aumcivint.all$selection$route
+#> [1] "iv_bolus"
+#> 
+#> 
+#> 
 #> $c0
 #> $c0$FUN
 #> [1] "pk.calc.c0"
@@ -1636,6 +2022,110 @@ get.interval.cols()
 #> list()
 #> 
 #> 
+#> $cl.ivint.all
+#> $cl.ivint.all$FUN
+#> [1] "pk.calc.cl"
+#> 
+#> $cl.ivint.all$FUN_sparse
+#> [1] NA
+#> 
+#> $cl.ivint.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $cl.ivint.all$unit_type
+#> [1] "clearance"
+#> 
+#> $cl.ivint.all$pretty_name
+#> [1] "CL (for IV dosing, based on AUCint,all)"
+#> 
+#> $cl.ivint.all$desc
+#> [1] "IV clearance, AUCint,all"
+#> 
+#> $cl.ivint.all$formalsmap
+#> $cl.ivint.all$formalsmap$auc
+#> [1] "aucivint.all"
+#> 
+#> 
+#> $cl.ivint.all$formalsmap_sparse
+#> list()
+#> 
+#> $cl.ivint.all$depends
+#> [1] "aucivint.all"
+#> 
+#> $cl.ivint.all$datatype
+#> [1] "interval"
+#> 
+#> $cl.ivint.all$pptestcd_cdisc
+#> [1] "CLWA"
+#> 
+#> $cl.ivint.all$pptest_cdisc
+#> [1] "CL (IV dose interval, AUCint,all)"
+#> 
+#> $cl.ivint.all$formula
+#> [1] "$CL_{\\text{iv,int,all}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,int,all}}}$"
+#> 
+#> $cl.ivint.all$formula_note
+#> NULL
+#> 
+#> $cl.ivint.all$tier
+#> [1] "uncommon"
+#> 
+#> $cl.ivint.all$selection
+#> list()
+#> 
+#> 
+#> $cl.ivint.last
+#> $cl.ivint.last$FUN
+#> [1] "pk.calc.cl"
+#> 
+#> $cl.ivint.last$FUN_sparse
+#> [1] NA
+#> 
+#> $cl.ivint.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $cl.ivint.last$unit_type
+#> [1] "clearance"
+#> 
+#> $cl.ivint.last$pretty_name
+#> [1] "CL (for IV dosing, based on AUCint,last)"
+#> 
+#> $cl.ivint.last$desc
+#> [1] "IV clearance, AUCint,last"
+#> 
+#> $cl.ivint.last$formalsmap
+#> $cl.ivint.last$formalsmap$auc
+#> [1] "aucivint.last"
+#> 
+#> 
+#> $cl.ivint.last$formalsmap_sparse
+#> list()
+#> 
+#> $cl.ivint.last$depends
+#> [1] "aucivint.last"
+#> 
+#> $cl.ivint.last$datatype
+#> [1] "interval"
+#> 
+#> $cl.ivint.last$pptestcd_cdisc
+#> [1] "CLWL"
+#> 
+#> $cl.ivint.last$pptest_cdisc
+#> [1] "CL (IV dose interval, AUCint,last)"
+#> 
+#> $cl.ivint.last$formula
+#> [1] "$CL_{\\text{iv,int,last}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,int,last}}}$"
+#> 
+#> $cl.ivint.last$formula_note
+#> NULL
+#> 
+#> $cl.ivint.last$tier
+#> [1] "uncommon"
+#> 
+#> $cl.ivint.last$selection
+#> list()
+#> 
+#> 
 #> $mrt.last
 #> $mrt.last$FUN
 #> [1] "pk.calc.mrt"
@@ -1922,6 +2412,116 @@ get.interval.cols()
 #> [1] "uncommon"
 #> 
 #> $mrt.iv.last$selection
+#> list()
+#> 
+#> 
+#> $mrt.ivint.all
+#> $mrt.ivint.all$FUN
+#> [1] "pk.calc.mrt.iv"
+#> 
+#> $mrt.ivint.all$FUN_sparse
+#> [1] NA
+#> 
+#> $mrt.ivint.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $mrt.ivint.all$unit_type
+#> [1] "time"
+#> 
+#> $mrt.ivint.all$pretty_name
+#> [1] "MRT (for IV dosing, based on AUCint,all)"
+#> 
+#> $mrt.ivint.all$desc
+#> [1] "IV MRT, interval AUCall/AUMCall"
+#> 
+#> $mrt.ivint.all$formalsmap
+#> $mrt.ivint.all$formalsmap$auc
+#> [1] "aucivint.all"
+#> 
+#> $mrt.ivint.all$formalsmap$aumc
+#> [1] "aumcivint.all"
+#> 
+#> 
+#> $mrt.ivint.all$formalsmap_sparse
+#> list()
+#> 
+#> $mrt.ivint.all$depends
+#> [1] "aucivint.all"  "aumcivint.all"
+#> 
+#> $mrt.ivint.all$datatype
+#> [1] "interval"
+#> 
+#> $mrt.ivint.all$pptestcd_cdisc
+#> [1] "MRTWA"
+#> 
+#> $mrt.ivint.all$pptest_cdisc
+#> [1] "MRT (IV dose interval, AUCint,all)"
+#> 
+#> $mrt.ivint.all$formula
+#> NULL
+#> 
+#> $mrt.ivint.all$formula_note
+#> NULL
+#> 
+#> $mrt.ivint.all$tier
+#> [1] "uncommon"
+#> 
+#> $mrt.ivint.all$selection
+#> list()
+#> 
+#> 
+#> $mrt.ivint.last
+#> $mrt.ivint.last$FUN
+#> [1] "pk.calc.mrt.iv"
+#> 
+#> $mrt.ivint.last$FUN_sparse
+#> [1] NA
+#> 
+#> $mrt.ivint.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $mrt.ivint.last$unit_type
+#> [1] "time"
+#> 
+#> $mrt.ivint.last$pretty_name
+#> [1] "MRT (for IV dosing, based on AUCint,last)"
+#> 
+#> $mrt.ivint.last$desc
+#> [1] "IV MRT, interval AUClast/AUMClast"
+#> 
+#> $mrt.ivint.last$formalsmap
+#> $mrt.ivint.last$formalsmap$auc
+#> [1] "aucivint.last"
+#> 
+#> $mrt.ivint.last$formalsmap$aumc
+#> [1] "aumcivint.last"
+#> 
+#> 
+#> $mrt.ivint.last$formalsmap_sparse
+#> list()
+#> 
+#> $mrt.ivint.last$depends
+#> [1] "aucivint.last"  "aumcivint.last"
+#> 
+#> $mrt.ivint.last$datatype
+#> [1] "interval"
+#> 
+#> $mrt.ivint.last$pptestcd_cdisc
+#> [1] "MRTWL"
+#> 
+#> $mrt.ivint.last$pptest_cdisc
+#> [1] "MRT (IV dose interval, AUCint,last)"
+#> 
+#> $mrt.ivint.last$formula
+#> NULL
+#> 
+#> $mrt.ivint.last$formula_note
+#> NULL
+#> 
+#> $mrt.ivint.last$tier
+#> [1] "uncommon"
+#> 
+#> $mrt.ivint.last$selection
 #> list()
 #> 
 #> 
@@ -2214,6 +2814,116 @@ get.interval.cols()
 #> list()
 #> 
 #> 
+#> $vss.ivint.all
+#> $vss.ivint.all$FUN
+#> [1] "pk.calc.vss"
+#> 
+#> $vss.ivint.all$FUN_sparse
+#> [1] NA
+#> 
+#> $vss.ivint.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $vss.ivint.all$unit_type
+#> [1] "volume"
+#> 
+#> $vss.ivint.all$pretty_name
+#> [1] "Vss (for IV dosing, based on AUCint,all)"
+#> 
+#> $vss.ivint.all$desc
+#> [1] "IV Vss, calc from interval AUCint,all"
+#> 
+#> $vss.ivint.all$formalsmap
+#> $vss.ivint.all$formalsmap$cl
+#> [1] "cl.ivint.all"
+#> 
+#> $vss.ivint.all$formalsmap$mrt
+#> [1] "mrt.ivint.all"
+#> 
+#> 
+#> $vss.ivint.all$formalsmap_sparse
+#> list()
+#> 
+#> $vss.ivint.all$depends
+#> [1] "cl.ivint.all"  "mrt.ivint.all"
+#> 
+#> $vss.ivint.all$datatype
+#> [1] "interval"
+#> 
+#> $vss.ivint.all$pptestcd_cdisc
+#> [1] "VSSWA"
+#> 
+#> $vss.ivint.all$pptest_cdisc
+#> [1] "Vss (IV dose interval, AUCint,all)"
+#> 
+#> $vss.ivint.all$formula
+#> NULL
+#> 
+#> $vss.ivint.all$formula_note
+#> NULL
+#> 
+#> $vss.ivint.all$tier
+#> [1] "uncommon"
+#> 
+#> $vss.ivint.all$selection
+#> list()
+#> 
+#> 
+#> $vss.ivint.last
+#> $vss.ivint.last$FUN
+#> [1] "pk.calc.vss"
+#> 
+#> $vss.ivint.last$FUN_sparse
+#> [1] NA
+#> 
+#> $vss.ivint.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $vss.ivint.last$unit_type
+#> [1] "volume"
+#> 
+#> $vss.ivint.last$pretty_name
+#> [1] "Vss (for IV dosing, based on AUCint,last)"
+#> 
+#> $vss.ivint.last$desc
+#> [1] "IV Vss, calc from interval AUCint,last"
+#> 
+#> $vss.ivint.last$formalsmap
+#> $vss.ivint.last$formalsmap$cl
+#> [1] "cl.ivint.last"
+#> 
+#> $vss.ivint.last$formalsmap$mrt
+#> [1] "mrt.ivint.last"
+#> 
+#> 
+#> $vss.ivint.last$formalsmap_sparse
+#> list()
+#> 
+#> $vss.ivint.last$depends
+#> [1] "cl.ivint.last"  "mrt.ivint.last"
+#> 
+#> $vss.ivint.last$datatype
+#> [1] "interval"
+#> 
+#> $vss.ivint.last$pptestcd_cdisc
+#> [1] "VSSWL"
+#> 
+#> $vss.ivint.last$pptest_cdisc
+#> [1] "Vss (IV dose interval, AUCint,last)"
+#> 
+#> $vss.ivint.last$formula
+#> NULL
+#> 
+#> $vss.ivint.last$formula_note
+#> NULL
+#> 
+#> $vss.ivint.last$tier
+#> [1] "uncommon"
+#> 
+#> $vss.ivint.last$selection
+#> list()
+#> 
+#> 
 #> $cav
 #> $cav$FUN
 #> [1] "pk.calc.cav"
@@ -2263,6 +2973,58 @@ get.interval.cols()
 #> [1] "uncommon"
 #> 
 #> $cav$selection
+#> list()
+#> 
+#> 
+#> $cav.last
+#> $cav.last$FUN
+#> [1] "pk.calc.cav"
+#> 
+#> $cav.last$FUN_sparse
+#> [1] NA
+#> 
+#> $cav.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $cav.last$unit_type
+#> [1] "conc"
+#> 
+#> $cav.last$pretty_name
+#> [1] "Cav (based on AUClast)"
+#> 
+#> $cav.last$desc
+#> [1] "Avg conc in interval (AUClast)"
+#> 
+#> $cav.last$formalsmap
+#> $cav.last$formalsmap$auc
+#> [1] "auclast"
+#> 
+#> 
+#> $cav.last$formalsmap_sparse
+#> list()
+#> 
+#> $cav.last$depends
+#> [1] "auclast"
+#> 
+#> $cav.last$datatype
+#> [1] "interval"
+#> 
+#> $cav.last$pptestcd_cdisc
+#> [1] "CAVG"
+#> 
+#> $cav.last$pptest_cdisc
+#> [1] "Average Conc"
+#> 
+#> $cav.last$formula
+#> [1] "$C_{av,\\text{last}} = \\frac{AUC_{\\text{last}}}{t_{end} - t_{start}}$"
+#> 
+#> $cav.last$formula_note
+#> NULL
+#> 
+#> $cav.last$tier
+#> [1] "uncommon"
+#> 
+#> $cav.last$selection
 #> list()
 #> 
 #> 
@@ -2367,6 +3129,162 @@ get.interval.cols()
 #> [1] "uncommon"
 #> 
 #> $cav.int.all$selection
+#> list()
+#> 
+#> 
+#> $cav.all
+#> $cav.all$FUN
+#> [1] "pk.calc.cav"
+#> 
+#> $cav.all$FUN_sparse
+#> [1] NA
+#> 
+#> $cav.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $cav.all$unit_type
+#> [1] "conc"
+#> 
+#> $cav.all$pretty_name
+#> [1] "Cav (based on AUCall)"
+#> 
+#> $cav.all$desc
+#> [1] "Avg conc in interval (AUCall)"
+#> 
+#> $cav.all$formalsmap
+#> $cav.all$formalsmap$auc
+#> [1] "aucall"
+#> 
+#> 
+#> $cav.all$formalsmap_sparse
+#> list()
+#> 
+#> $cav.all$depends
+#> [1] "aucall"
+#> 
+#> $cav.all$datatype
+#> [1] "interval"
+#> 
+#> $cav.all$pptestcd_cdisc
+#> [1] "CAVGALL"
+#> 
+#> $cav.all$pptest_cdisc
+#> [1] "Average Conc (AUCall)"
+#> 
+#> $cav.all$formula
+#> [1] "$C_{av,\\text{all}} = \\frac{AUC_{\\text{all}}}{t_{end} - t_{start}}$"
+#> 
+#> $cav.all$formula_note
+#> NULL
+#> 
+#> $cav.all$tier
+#> [1] "uncommon"
+#> 
+#> $cav.all$selection
+#> list()
+#> 
+#> 
+#> $cav.ivint.last
+#> $cav.ivint.last$FUN
+#> [1] "pk.calc.cav"
+#> 
+#> $cav.ivint.last$FUN_sparse
+#> [1] NA
+#> 
+#> $cav.ivint.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $cav.ivint.last$unit_type
+#> [1] "conc"
+#> 
+#> $cav.ivint.last$pretty_name
+#> [1] "Cav (for IV dosing, based on AUCint,last)"
+#> 
+#> $cav.ivint.last$desc
+#> [1] "Avg conc in interval (IV AUCint,last)"
+#> 
+#> $cav.ivint.last$formalsmap
+#> $cav.ivint.last$formalsmap$auc
+#> [1] "aucivint.last"
+#> 
+#> 
+#> $cav.ivint.last$formalsmap_sparse
+#> list()
+#> 
+#> $cav.ivint.last$depends
+#> [1] "aucivint.last"
+#> 
+#> $cav.ivint.last$datatype
+#> [1] "interval"
+#> 
+#> $cav.ivint.last$pptestcd_cdisc
+#> [1] "CAVGIVIL"
+#> 
+#> $cav.ivint.last$pptest_cdisc
+#> [1] "Average Conc (IV, AUCint,last)"
+#> 
+#> $cav.ivint.last$formula
+#> [1] "$C_{av,\\text{ivint,last}} = \\frac{AUC_{\\text{ivint,last}}}{t_{end} - t_{start}}$"
+#> 
+#> $cav.ivint.last$formula_note
+#> NULL
+#> 
+#> $cav.ivint.last$tier
+#> [1] "uncommon"
+#> 
+#> $cav.ivint.last$selection
+#> list()
+#> 
+#> 
+#> $cav.ivint.all
+#> $cav.ivint.all$FUN
+#> [1] "pk.calc.cav"
+#> 
+#> $cav.ivint.all$FUN_sparse
+#> [1] NA
+#> 
+#> $cav.ivint.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $cav.ivint.all$unit_type
+#> [1] "conc"
+#> 
+#> $cav.ivint.all$pretty_name
+#> [1] "Cav (for IV dosing, based on AUCint,all)"
+#> 
+#> $cav.ivint.all$desc
+#> [1] "Avg conc in interval (IV AUCint,all)"
+#> 
+#> $cav.ivint.all$formalsmap
+#> $cav.ivint.all$formalsmap$auc
+#> [1] "aucivint.all"
+#> 
+#> 
+#> $cav.ivint.all$formalsmap_sparse
+#> list()
+#> 
+#> $cav.ivint.all$depends
+#> [1] "aucivint.all"
+#> 
+#> $cav.ivint.all$datatype
+#> [1] "interval"
+#> 
+#> $cav.ivint.all$pptestcd_cdisc
+#> [1] "CAVGIVIA"
+#> 
+#> $cav.ivint.all$pptest_cdisc
+#> [1] "Average Conc (IV, AUCint,all)"
+#> 
+#> $cav.ivint.all$formula
+#> [1] "$C_{av,\\text{ivint,all}} = \\frac{AUC_{\\text{ivint,all}}}{t_{end} - t_{start}}$"
+#> 
+#> $cav.ivint.all$formula_note
+#> NULL
+#> 
+#> $cav.ivint.all$tier
+#> [1] "uncommon"
+#> 
+#> $cav.ivint.all$selection
 #> list()
 #> 
 #> 
@@ -2594,13 +3512,15 @@ get.interval.cols()
 #> [1] "Degree of fluctuation"
 #> 
 #> $deg.fluc$formalsmap
-#> list()
+#> $deg.fluc$formalsmap$cav
+#> [1] "cav.last"
+#> 
 #> 
 #> $deg.fluc$formalsmap_sparse
 #> list()
 #> 
 #> $deg.fluc$depends
-#> [1] "cmax" "cmin" "cav" 
+#> [1] "cmax"     "cmin"     "cav.last"
 #> 
 #> $deg.fluc$datatype
 #> [1] "interval"
@@ -4474,128 +5394,6 @@ get.interval.cols()
 #> list()
 #> 
 #> 
-#> $aucivint.last
-#> $aucivint.last$FUN
-#> [1] "pk.calc.auciv"
-#> 
-#> $aucivint.last$FUN_sparse
-#> [1] NA
-#> 
-#> $aucivint.last$values
-#> [1] FALSE  TRUE
-#> 
-#> $aucivint.last$unit_type
-#> [1] "auc"
-#> 
-#> $aucivint.last$pretty_name
-#> [1] "AUCint,last (IV dosing)"
-#> 
-#> $aucivint.last$desc
-#> [1] "AUCint,last, IV back-extrap C0"
-#> 
-#> $aucivint.last$formalsmap
-#> $aucivint.last$formalsmap$auc
-#> [1] "aucint.last"
-#> 
-#> $aucivint.last$formalsmap$auc.type
-#> NULL
-#> 
-#> $aucivint.last$formalsmap$lambda.z
-#> NULL
-#> 
-#> $aucivint.last$formalsmap$clast
-#> NULL
-#> 
-#> 
-#> $aucivint.last$formalsmap_sparse
-#> list()
-#> 
-#> $aucivint.last$depends
-#> [1] "aucint.last" "c0"         
-#> 
-#> $aucivint.last$datatype
-#> [1] "interval"
-#> 
-#> $aucivint.last$pptestcd_cdisc
-#> [1] "AUCIVILT"
-#> 
-#> $aucivint.last$pptest_cdisc
-#> [1] "AUCint,last (IV dosing)"
-#> 
-#> $aucivint.last$formula
-#> [1] "$AUC_{\\text{iv,int,last}} = AUC_{\\text{int,last}} + AUC(C_0, t_1) - AUC(C(0), t_1)$"
-#> 
-#> $aucivint.last$formula_note
-#> NULL
-#> 
-#> $aucivint.last$tier
-#> [1] "uncommon"
-#> 
-#> $aucivint.last$selection
-#> list()
-#> 
-#> 
-#> $aucivint.all
-#> $aucivint.all$FUN
-#> [1] "pk.calc.auciv"
-#> 
-#> $aucivint.all$FUN_sparse
-#> [1] NA
-#> 
-#> $aucivint.all$values
-#> [1] FALSE  TRUE
-#> 
-#> $aucivint.all$unit_type
-#> [1] "auc"
-#> 
-#> $aucivint.all$pretty_name
-#> [1] "AUCint,all (IV dosing)"
-#> 
-#> $aucivint.all$desc
-#> [1] "AUCint,all, IV back-extrap C0"
-#> 
-#> $aucivint.all$formalsmap
-#> $aucivint.all$formalsmap$auc
-#> [1] "aucint.all"
-#> 
-#> $aucivint.all$formalsmap$auc.type
-#> NULL
-#> 
-#> $aucivint.all$formalsmap$lambda.z
-#> NULL
-#> 
-#> $aucivint.all$formalsmap$clast
-#> NULL
-#> 
-#> 
-#> $aucivint.all$formalsmap_sparse
-#> list()
-#> 
-#> $aucivint.all$depends
-#> [1] "aucint.all" "c0"        
-#> 
-#> $aucivint.all$datatype
-#> [1] "interval"
-#> 
-#> $aucivint.all$pptestcd_cdisc
-#> [1] "AUCIVINA"
-#> 
-#> $aucivint.all$pptest_cdisc
-#> [1] "AUCint,all (IV dosing)"
-#> 
-#> $aucivint.all$formula
-#> [1] "$AUC_{\\text{iv,int,all}} = AUC_{\\text{int,all}} + AUC(C_0, t_1) - AUC(C(0), t_1)$"
-#> 
-#> $aucivint.all$formula_note
-#> NULL
-#> 
-#> $aucivint.all$tier
-#> [1] "uncommon"
-#> 
-#> $aucivint.all$selection
-#> list()
-#> 
-#> 
 #> $aucivpbextlast
 #> $aucivpbextlast$FUN
 #> [1] "pk.calc.auciv_pbext"
@@ -4703,116 +5501,6 @@ get.interval.cols()
 #> [1] "uncommon"
 #> 
 #> $aucivpbextall$selection
-#> list()
-#> 
-#> 
-#> $aucivpbextint.last
-#> $aucivpbextint.last$FUN
-#> [1] "pk.calc.auciv_pbext"
-#> 
-#> $aucivpbextint.last$FUN_sparse
-#> [1] NA
-#> 
-#> $aucivpbextint.last$values
-#> [1] FALSE  TRUE
-#> 
-#> $aucivpbextint.last$unit_type
-#> [1] "%"
-#> 
-#> $aucivpbextint.last$pretty_name
-#> [1] "AUCbext (based on AUCint,last)"
-#> 
-#> $aucivpbextint.last$desc
-#> [1] "Back-extrap %, IV, AUCint,last"
-#> 
-#> $aucivpbextint.last$formalsmap
-#> $aucivpbextint.last$formalsmap$auc
-#> [1] "aucint.last"
-#> 
-#> $aucivpbextint.last$formalsmap$auciv
-#> [1] "aucivint.last"
-#> 
-#> 
-#> $aucivpbextint.last$formalsmap_sparse
-#> list()
-#> 
-#> $aucivpbextint.last$depends
-#> [1] "aucint.last"   "aucivint.last"
-#> 
-#> $aucivpbextint.last$datatype
-#> [1] "interval"
-#> 
-#> $aucivpbextint.last$pptestcd_cdisc
-#> [1] "AUCIVPIL"
-#> 
-#> $aucivpbextint.last$pptest_cdisc
-#> [1] "AUCbext (based on AUCint,last)"
-#> 
-#> $aucivpbextint.last$formula
-#> [1] "$\\%AUC_{\\text{bext,int,last}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{int,last}}}{AUC_{\\text{iv,int,last}}}\\right)$"
-#> 
-#> $aucivpbextint.last$formula_note
-#> NULL
-#> 
-#> $aucivpbextint.last$tier
-#> [1] "uncommon"
-#> 
-#> $aucivpbextint.last$selection
-#> list()
-#> 
-#> 
-#> $aucivpbextint.all
-#> $aucivpbextint.all$FUN
-#> [1] "pk.calc.auciv_pbext"
-#> 
-#> $aucivpbextint.all$FUN_sparse
-#> [1] NA
-#> 
-#> $aucivpbextint.all$values
-#> [1] FALSE  TRUE
-#> 
-#> $aucivpbextint.all$unit_type
-#> [1] "%"
-#> 
-#> $aucivpbextint.all$pretty_name
-#> [1] "AUCbext (based on AUCint,all)"
-#> 
-#> $aucivpbextint.all$desc
-#> [1] "Back-extrap %, IV, AUCint,all"
-#> 
-#> $aucivpbextint.all$formalsmap
-#> $aucivpbextint.all$formalsmap$auc
-#> [1] "aucint.all"
-#> 
-#> $aucivpbextint.all$formalsmap$auciv
-#> [1] "aucivint.all"
-#> 
-#> 
-#> $aucivpbextint.all$formalsmap_sparse
-#> list()
-#> 
-#> $aucivpbextint.all$depends
-#> [1] "aucint.all"   "aucivint.all"
-#> 
-#> $aucivpbextint.all$datatype
-#> [1] "interval"
-#> 
-#> $aucivpbextint.all$pptestcd_cdisc
-#> [1] "AUCIVPIA"
-#> 
-#> $aucivpbextint.all$pptest_cdisc
-#> [1] "AUCbext (based on AUCint,all)"
-#> 
-#> $aucivpbextint.all$formula
-#> [1] "$\\%AUC_{\\text{bext,int,all}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{int,all}}}{AUC_{\\text{iv,int,all}}}\\right)$"
-#> 
-#> $aucivpbextint.all$formula_note
-#> NULL
-#> 
-#> $aucivpbextint.all$tier
-#> [1] "uncommon"
-#> 
-#> $aucivpbextint.all$selection
 #> list()
 #> 
 #> 
@@ -5135,128 +5823,6 @@ get.interval.cols()
 #> [1] "uncommon"
 #> 
 #> $aumcivall_df$selection
-#> list()
-#> 
-#> 
-#> $aumcivint.last
-#> $aumcivint.last$FUN
-#> [1] "pk.calc.aumciv"
-#> 
-#> $aumcivint.last$FUN_sparse
-#> [1] NA
-#> 
-#> $aumcivint.last$values
-#> [1] FALSE  TRUE
-#> 
-#> $aumcivint.last$unit_type
-#> [1] "aumc"
-#> 
-#> $aumcivint.last$pretty_name
-#> [1] "AUMCint,last (IV dosing)"
-#> 
-#> $aumcivint.last$desc
-#> [1] "AUMCint,last, IV back-extrap C0"
-#> 
-#> $aumcivint.last$formalsmap
-#> $aumcivint.last$formalsmap$aumc
-#> [1] "aumcint.last"
-#> 
-#> $aumcivint.last$formalsmap$auc.type
-#> NULL
-#> 
-#> $aumcivint.last$formalsmap$lambda.z
-#> NULL
-#> 
-#> $aumcivint.last$formalsmap$clast
-#> NULL
-#> 
-#> 
-#> $aumcivint.last$formalsmap_sparse
-#> list()
-#> 
-#> $aumcivint.last$depends
-#> [1] "aumcint.last" "c0"          
-#> 
-#> $aumcivint.last$datatype
-#> [1] "interval"
-#> 
-#> $aumcivint.last$pptestcd_cdisc
-#> [1] "AUMCIVIL"
-#> 
-#> $aumcivint.last$pptest_cdisc
-#> [1] "AUMCint,last (IV dosing)"
-#> 
-#> $aumcivint.last$formula
-#> NULL
-#> 
-#> $aumcivint.last$formula_note
-#> NULL
-#> 
-#> $aumcivint.last$tier
-#> [1] "uncommon"
-#> 
-#> $aumcivint.last$selection
-#> list()
-#> 
-#> 
-#> $aumcivint.all
-#> $aumcivint.all$FUN
-#> [1] "pk.calc.aumciv"
-#> 
-#> $aumcivint.all$FUN_sparse
-#> [1] NA
-#> 
-#> $aumcivint.all$values
-#> [1] FALSE  TRUE
-#> 
-#> $aumcivint.all$unit_type
-#> [1] "aumc"
-#> 
-#> $aumcivint.all$pretty_name
-#> [1] "AUMCint,all (IV dosing)"
-#> 
-#> $aumcivint.all$desc
-#> [1] "AUMCint,all, IV back-extrap C0"
-#> 
-#> $aumcivint.all$formalsmap
-#> $aumcivint.all$formalsmap$aumc
-#> [1] "aumcint.all"
-#> 
-#> $aumcivint.all$formalsmap$auc.type
-#> NULL
-#> 
-#> $aumcivint.all$formalsmap$lambda.z
-#> NULL
-#> 
-#> $aumcivint.all$formalsmap$clast
-#> NULL
-#> 
-#> 
-#> $aumcivint.all$formalsmap_sparse
-#> list()
-#> 
-#> $aumcivint.all$depends
-#> [1] "aumcint.all" "c0"         
-#> 
-#> $aumcivint.all$datatype
-#> [1] "interval"
-#> 
-#> $aumcivint.all$pptestcd_cdisc
-#> [1] "AUMCIVIA"
-#> 
-#> $aumcivint.all$pptest_cdisc
-#> [1] "AUMCint,all (IV dosing)"
-#> 
-#> $aumcivint.all$formula
-#> NULL
-#> 
-#> $aumcivint.all$formula_note
-#> NULL
-#> 
-#> $aumcivint.all$tier
-#> [1] "uncommon"
-#> 
-#> $aumcivint.all$selection
 #> list()
 #> 
 #> 
@@ -6276,6 +6842,110 @@ get.interval.cols()
 #> list()
 #> 
 #> 
+#> $kel.ivint.all
+#> $kel.ivint.all$FUN
+#> [1] "pk.calc.kel"
+#> 
+#> $kel.ivint.all$FUN_sparse
+#> [1] NA
+#> 
+#> $kel.ivint.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $kel.ivint.all$unit_type
+#> [1] "inverse_time"
+#> 
+#> $kel.ivint.all$pretty_name
+#> [1] "Kel (for IV dosing, based on AUCint,all)"
+#> 
+#> $kel.ivint.all$desc
+#> [1] "Elim rate, IV MRTint,all"
+#> 
+#> $kel.ivint.all$formalsmap
+#> $kel.ivint.all$formalsmap$mrt
+#> [1] "mrt.ivint.all"
+#> 
+#> 
+#> $kel.ivint.all$formalsmap_sparse
+#> list()
+#> 
+#> $kel.ivint.all$depends
+#> [1] "mrt.ivint.all"
+#> 
+#> $kel.ivint.all$datatype
+#> [1] "interval"
+#> 
+#> $kel.ivint.all$pptestcd_cdisc
+#> [1] "KELWA"
+#> 
+#> $kel.ivint.all$pptest_cdisc
+#> [1] "Kel (IV dose interval, AUCint,all)"
+#> 
+#> $kel.ivint.all$formula
+#> NULL
+#> 
+#> $kel.ivint.all$formula_note
+#> NULL
+#> 
+#> $kel.ivint.all$tier
+#> [1] "uncommon"
+#> 
+#> $kel.ivint.all$selection
+#> list()
+#> 
+#> 
+#> $kel.ivint.last
+#> $kel.ivint.last$FUN
+#> [1] "pk.calc.kel"
+#> 
+#> $kel.ivint.last$FUN_sparse
+#> [1] NA
+#> 
+#> $kel.ivint.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $kel.ivint.last$unit_type
+#> [1] "inverse_time"
+#> 
+#> $kel.ivint.last$pretty_name
+#> [1] "Kel (for IV dosing, based on AUCint,last)"
+#> 
+#> $kel.ivint.last$desc
+#> [1] "Elim rate, IV MRTint,last"
+#> 
+#> $kel.ivint.last$formalsmap
+#> $kel.ivint.last$formalsmap$mrt
+#> [1] "mrt.ivint.last"
+#> 
+#> 
+#> $kel.ivint.last$formalsmap_sparse
+#> list()
+#> 
+#> $kel.ivint.last$depends
+#> [1] "mrt.ivint.last"
+#> 
+#> $kel.ivint.last$datatype
+#> [1] "interval"
+#> 
+#> $kel.ivint.last$pptestcd_cdisc
+#> [1] "KELWL"
+#> 
+#> $kel.ivint.last$pptest_cdisc
+#> [1] "Kel (IV dose interval, AUCint,last)"
+#> 
+#> $kel.ivint.last$formula
+#> NULL
+#> 
+#> $kel.ivint.last$formula_note
+#> NULL
+#> 
+#> $kel.ivint.last$tier
+#> [1] "uncommon"
+#> 
+#> $kel.ivint.last$selection
+#> list()
+#> 
+#> 
 #> $cl.iv.all
 #> $cl.iv.all$FUN
 #> [1] "pk.calc.cl"
@@ -6377,110 +7047,6 @@ get.interval.cols()
 #> [1] "uncommon"
 #> 
 #> $cl.iv.last$selection
-#> list()
-#> 
-#> 
-#> $cl.ivint.all
-#> $cl.ivint.all$FUN
-#> [1] "pk.calc.cl"
-#> 
-#> $cl.ivint.all$FUN_sparse
-#> [1] NA
-#> 
-#> $cl.ivint.all$values
-#> [1] FALSE  TRUE
-#> 
-#> $cl.ivint.all$unit_type
-#> [1] "clearance"
-#> 
-#> $cl.ivint.all$pretty_name
-#> [1] "CL (for IV dosing, based on AUCint,all)"
-#> 
-#> $cl.ivint.all$desc
-#> [1] "IV clearance, AUCint,all"
-#> 
-#> $cl.ivint.all$formalsmap
-#> $cl.ivint.all$formalsmap$auc
-#> [1] "aucivint.all"
-#> 
-#> 
-#> $cl.ivint.all$formalsmap_sparse
-#> list()
-#> 
-#> $cl.ivint.all$depends
-#> [1] "aucivint.all"
-#> 
-#> $cl.ivint.all$datatype
-#> [1] "interval"
-#> 
-#> $cl.ivint.all$pptestcd_cdisc
-#> [1] "CLWA"
-#> 
-#> $cl.ivint.all$pptest_cdisc
-#> [1] "CL (IV dose interval, AUCint,all)"
-#> 
-#> $cl.ivint.all$formula
-#> [1] "$CL_{\\text{iv,int,all}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,int,all}}}$"
-#> 
-#> $cl.ivint.all$formula_note
-#> NULL
-#> 
-#> $cl.ivint.all$tier
-#> [1] "uncommon"
-#> 
-#> $cl.ivint.all$selection
-#> list()
-#> 
-#> 
-#> $cl.ivint.last
-#> $cl.ivint.last$FUN
-#> [1] "pk.calc.cl"
-#> 
-#> $cl.ivint.last$FUN_sparse
-#> [1] NA
-#> 
-#> $cl.ivint.last$values
-#> [1] FALSE  TRUE
-#> 
-#> $cl.ivint.last$unit_type
-#> [1] "clearance"
-#> 
-#> $cl.ivint.last$pretty_name
-#> [1] "CL (for IV dosing, based on AUCint,last)"
-#> 
-#> $cl.ivint.last$desc
-#> [1] "IV clearance, AUCint,last"
-#> 
-#> $cl.ivint.last$formalsmap
-#> $cl.ivint.last$formalsmap$auc
-#> [1] "aucivint.last"
-#> 
-#> 
-#> $cl.ivint.last$formalsmap_sparse
-#> list()
-#> 
-#> $cl.ivint.last$depends
-#> [1] "aucivint.last"
-#> 
-#> $cl.ivint.last$datatype
-#> [1] "interval"
-#> 
-#> $cl.ivint.last$pptestcd_cdisc
-#> [1] "CLWL"
-#> 
-#> $cl.ivint.last$pptest_cdisc
-#> [1] "CL (IV dose interval, AUCint,last)"
-#> 
-#> $cl.ivint.last$formula
-#> [1] "$CL_{\\text{iv,int,last}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,int,last}}}$"
-#> 
-#> $cl.ivint.last$formula_note
-#> NULL
-#> 
-#> $cl.ivint.last$tier
-#> [1] "uncommon"
-#> 
-#> $cl.ivint.last$selection
 #> list()
 #> 
 #> 
@@ -6856,116 +7422,6 @@ get.interval.cols()
 #> [1] "uncommon"
 #> 
 #> $mrt.iv.all$selection
-#> list()
-#> 
-#> 
-#> $mrt.ivint.all
-#> $mrt.ivint.all$FUN
-#> [1] "pk.calc.mrt.iv"
-#> 
-#> $mrt.ivint.all$FUN_sparse
-#> [1] NA
-#> 
-#> $mrt.ivint.all$values
-#> [1] FALSE  TRUE
-#> 
-#> $mrt.ivint.all$unit_type
-#> [1] "time"
-#> 
-#> $mrt.ivint.all$pretty_name
-#> [1] "MRT (for IV dosing, based on AUCint,all)"
-#> 
-#> $mrt.ivint.all$desc
-#> [1] "IV MRT, interval AUCall/AUMCall"
-#> 
-#> $mrt.ivint.all$formalsmap
-#> $mrt.ivint.all$formalsmap$auc
-#> [1] "aucivint.all"
-#> 
-#> $mrt.ivint.all$formalsmap$aumc
-#> [1] "aumcivint.all"
-#> 
-#> 
-#> $mrt.ivint.all$formalsmap_sparse
-#> list()
-#> 
-#> $mrt.ivint.all$depends
-#> [1] "aucivint.all"  "aumcivint.all"
-#> 
-#> $mrt.ivint.all$datatype
-#> [1] "interval"
-#> 
-#> $mrt.ivint.all$pptestcd_cdisc
-#> [1] "MRTWA"
-#> 
-#> $mrt.ivint.all$pptest_cdisc
-#> [1] "MRT (IV dose interval, AUCint,all)"
-#> 
-#> $mrt.ivint.all$formula
-#> NULL
-#> 
-#> $mrt.ivint.all$formula_note
-#> NULL
-#> 
-#> $mrt.ivint.all$tier
-#> [1] "uncommon"
-#> 
-#> $mrt.ivint.all$selection
-#> list()
-#> 
-#> 
-#> $mrt.ivint.last
-#> $mrt.ivint.last$FUN
-#> [1] "pk.calc.mrt.iv"
-#> 
-#> $mrt.ivint.last$FUN_sparse
-#> [1] NA
-#> 
-#> $mrt.ivint.last$values
-#> [1] FALSE  TRUE
-#> 
-#> $mrt.ivint.last$unit_type
-#> [1] "time"
-#> 
-#> $mrt.ivint.last$pretty_name
-#> [1] "MRT (for IV dosing, based on AUCint,last)"
-#> 
-#> $mrt.ivint.last$desc
-#> [1] "IV MRT, interval AUClast/AUMClast"
-#> 
-#> $mrt.ivint.last$formalsmap
-#> $mrt.ivint.last$formalsmap$auc
-#> [1] "aucivint.last"
-#> 
-#> $mrt.ivint.last$formalsmap$aumc
-#> [1] "aumcivint.last"
-#> 
-#> 
-#> $mrt.ivint.last$formalsmap_sparse
-#> list()
-#> 
-#> $mrt.ivint.last$depends
-#> [1] "aucivint.last"  "aumcivint.last"
-#> 
-#> $mrt.ivint.last$datatype
-#> [1] "interval"
-#> 
-#> $mrt.ivint.last$pptestcd_cdisc
-#> [1] "MRTWL"
-#> 
-#> $mrt.ivint.last$pptest_cdisc
-#> [1] "MRT (IV dose interval, AUCint,last)"
-#> 
-#> $mrt.ivint.last$formula
-#> NULL
-#> 
-#> $mrt.ivint.last$formula_note
-#> NULL
-#> 
-#> $mrt.ivint.last$tier
-#> [1] "uncommon"
-#> 
-#> $mrt.ivint.last$selection
 #> list()
 #> 
 #> 
@@ -7440,116 +7896,6 @@ get.interval.cols()
 #> list()
 #> 
 #> 
-#> $vss.ivint.all
-#> $vss.ivint.all$FUN
-#> [1] "pk.calc.vss"
-#> 
-#> $vss.ivint.all$FUN_sparse
-#> [1] NA
-#> 
-#> $vss.ivint.all$values
-#> [1] FALSE  TRUE
-#> 
-#> $vss.ivint.all$unit_type
-#> [1] "volume"
-#> 
-#> $vss.ivint.all$pretty_name
-#> [1] "Vss (for IV dosing, based on AUCint,all)"
-#> 
-#> $vss.ivint.all$desc
-#> [1] "IV Vss, calc from interval AUCint,all"
-#> 
-#> $vss.ivint.all$formalsmap
-#> $vss.ivint.all$formalsmap$cl
-#> [1] "cl.ivint.all"
-#> 
-#> $vss.ivint.all$formalsmap$mrt
-#> [1] "mrt.ivint.all"
-#> 
-#> 
-#> $vss.ivint.all$formalsmap_sparse
-#> list()
-#> 
-#> $vss.ivint.all$depends
-#> [1] "cl.ivint.all"  "mrt.ivint.all"
-#> 
-#> $vss.ivint.all$datatype
-#> [1] "interval"
-#> 
-#> $vss.ivint.all$pptestcd_cdisc
-#> [1] "VSSWA"
-#> 
-#> $vss.ivint.all$pptest_cdisc
-#> [1] "Vss (IV dose interval, AUCint,all)"
-#> 
-#> $vss.ivint.all$formula
-#> NULL
-#> 
-#> $vss.ivint.all$formula_note
-#> NULL
-#> 
-#> $vss.ivint.all$tier
-#> [1] "uncommon"
-#> 
-#> $vss.ivint.all$selection
-#> list()
-#> 
-#> 
-#> $vss.ivint.last
-#> $vss.ivint.last$FUN
-#> [1] "pk.calc.vss"
-#> 
-#> $vss.ivint.last$FUN_sparse
-#> [1] NA
-#> 
-#> $vss.ivint.last$values
-#> [1] FALSE  TRUE
-#> 
-#> $vss.ivint.last$unit_type
-#> [1] "volume"
-#> 
-#> $vss.ivint.last$pretty_name
-#> [1] "Vss (for IV dosing, based on AUCint,last)"
-#> 
-#> $vss.ivint.last$desc
-#> [1] "IV Vss, calc from interval AUCint,last"
-#> 
-#> $vss.ivint.last$formalsmap
-#> $vss.ivint.last$formalsmap$cl
-#> [1] "cl.ivint.last"
-#> 
-#> $vss.ivint.last$formalsmap$mrt
-#> [1] "mrt.ivint.last"
-#> 
-#> 
-#> $vss.ivint.last$formalsmap_sparse
-#> list()
-#> 
-#> $vss.ivint.last$depends
-#> [1] "cl.ivint.last"  "mrt.ivint.last"
-#> 
-#> $vss.ivint.last$datatype
-#> [1] "interval"
-#> 
-#> $vss.ivint.last$pptestcd_cdisc
-#> [1] "VSSWL"
-#> 
-#> $vss.ivint.last$pptest_cdisc
-#> [1] "Vss (IV dose interval, AUCint,last)"
-#> 
-#> $vss.ivint.last$formula
-#> NULL
-#> 
-#> $vss.ivint.last$formula_note
-#> NULL
-#> 
-#> $vss.ivint.last$tier
-#> [1] "uncommon"
-#> 
-#> $vss.ivint.last$selection
-#> list()
-#> 
-#> 
 #> $vss.sparse.last
 #> $vss.sparse.last$FUN
 #> [1] NA
@@ -7602,6 +7948,110 @@ get.interval.cols()
 #> [1] "uncommon"
 #> 
 #> $vss.sparse.last$selection
+#> list()
+#> 
+#> 
+#> $cav.iv.last
+#> $cav.iv.last$FUN
+#> [1] "pk.calc.cav"
+#> 
+#> $cav.iv.last$FUN_sparse
+#> [1] NA
+#> 
+#> $cav.iv.last$values
+#> [1] FALSE  TRUE
+#> 
+#> $cav.iv.last$unit_type
+#> [1] "conc"
+#> 
+#> $cav.iv.last$pretty_name
+#> [1] "Cav (for IV dosing, based on AUClast)"
+#> 
+#> $cav.iv.last$desc
+#> [1] "Avg conc in interval (IV AUClast)"
+#> 
+#> $cav.iv.last$formalsmap
+#> $cav.iv.last$formalsmap$auc
+#> [1] "aucivlast"
+#> 
+#> 
+#> $cav.iv.last$formalsmap_sparse
+#> list()
+#> 
+#> $cav.iv.last$depends
+#> [1] "aucivlast"
+#> 
+#> $cav.iv.last$datatype
+#> [1] "interval"
+#> 
+#> $cav.iv.last$pptestcd_cdisc
+#> [1] "CAVGIVL"
+#> 
+#> $cav.iv.last$pptest_cdisc
+#> [1] "Average Conc (IV, AUClast)"
+#> 
+#> $cav.iv.last$formula
+#> [1] "$C_{av,\\text{iv,last}} = \\frac{AUC_{\\text{iv,last}}}{t_{end} - t_{start}}$"
+#> 
+#> $cav.iv.last$formula_note
+#> NULL
+#> 
+#> $cav.iv.last$tier
+#> [1] "uncommon"
+#> 
+#> $cav.iv.last$selection
+#> list()
+#> 
+#> 
+#> $cav.iv.all
+#> $cav.iv.all$FUN
+#> [1] "pk.calc.cav"
+#> 
+#> $cav.iv.all$FUN_sparse
+#> [1] NA
+#> 
+#> $cav.iv.all$values
+#> [1] FALSE  TRUE
+#> 
+#> $cav.iv.all$unit_type
+#> [1] "conc"
+#> 
+#> $cav.iv.all$pretty_name
+#> [1] "Cav (for IV dosing, based on AUCall)"
+#> 
+#> $cav.iv.all$desc
+#> [1] "Avg conc in interval (IV AUCall)"
+#> 
+#> $cav.iv.all$formalsmap
+#> $cav.iv.all$formalsmap$auc
+#> [1] "aucivall"
+#> 
+#> 
+#> $cav.iv.all$formalsmap_sparse
+#> list()
+#> 
+#> $cav.iv.all$depends
+#> [1] "aucivall"
+#> 
+#> $cav.iv.all$datatype
+#> [1] "interval"
+#> 
+#> $cav.iv.all$pptestcd_cdisc
+#> [1] "CAVGIVA"
+#> 
+#> $cav.iv.all$pptest_cdisc
+#> [1] "Average Conc (IV, AUCall)"
+#> 
+#> $cav.iv.all$formula
+#> [1] "$C_{av,\\text{iv,all}} = \\frac{AUC_{\\text{iv,all}}}{t_{end} - t_{start}}$"
+#> 
+#> $cav.iv.all$formula_note
+#> NULL
+#> 
+#> $cav.iv.all$tier
+#> [1] "uncommon"
+#> 
+#> $cav.iv.all$selection
 #> list()
 #> 
 #> 
@@ -8259,6 +8709,144 @@ get.interval.cols()
 #> 
 #> $aumcint.inf.pred$selection
 #> list()
+#> 
+#> 
+#> $aucivint.inf.obs
+#> $aucivint.inf.obs$FUN
+#> [1] "pk.calc.auciv.int"
+#> 
+#> $aucivint.inf.obs$FUN_sparse
+#> [1] NA
+#> 
+#> $aucivint.inf.obs$values
+#> [1] FALSE  TRUE
+#> 
+#> $aucivint.inf.obs$unit_type
+#> [1] "auc"
+#> 
+#> $aucivint.inf.obs$pretty_name
+#> [1] "AUCint,inf,obs (IV dosing)"
+#> 
+#> $aucivint.inf.obs$desc
+#> [1] "AUCint,inf,obs, IV back-extrap C0"
+#> 
+#> $aucivint.inf.obs$formalsmap
+#> $aucivint.inf.obs$formalsmap$auc
+#> [1] "aucint.inf.obs"
+#> 
+#> $aucivint.inf.obs$formalsmap$conc
+#> [1] "conc.group"
+#> 
+#> $aucivint.inf.obs$formalsmap$time
+#> [1] "time.group"
+#> 
+#> $aucivint.inf.obs$formalsmap$time.dose
+#> [1] "time.dose.group"
+#> 
+#> $aucivint.inf.obs$formalsmap$route
+#> [1] "route.group"
+#> 
+#> $aucivint.inf.obs$formalsmap$duration.dose
+#> [1] "duration.dose.group"
+#> 
+#> 
+#> $aucivint.inf.obs$formalsmap_sparse
+#> list()
+#> 
+#> $aucivint.inf.obs$depends
+#> [1] "aucint.inf.obs"
+#> 
+#> $aucivint.inf.obs$datatype
+#> [1] "interval"
+#> 
+#> $aucivint.inf.obs$pptestcd_cdisc
+#> [1] "AUCIVIIO"
+#> 
+#> $aucivint.inf.obs$pptest_cdisc
+#> [1] "AUCint,inf,obs (IV dosing)"
+#> 
+#> $aucivint.inf.obs$formula
+#> [1] "$AUC_{\\text{iv,int,}\\infty\\text{,obs}} = AUC_{\\text{int,}\\infty\\text{,obs}} + AUC(C_0, t_1) - AUC(C_{start}, t_1)$"
+#> 
+#> $aucivint.inf.obs$formula_note
+#> NULL
+#> 
+#> $aucivint.inf.obs$tier
+#> [1] "uncommon"
+#> 
+#> $aucivint.inf.obs$selection
+#> $aucivint.inf.obs$selection$route
+#> [1] "iv_bolus"
+#> 
+#> 
+#> 
+#> $aucivint.inf.pred
+#> $aucivint.inf.pred$FUN
+#> [1] "pk.calc.auciv.int"
+#> 
+#> $aucivint.inf.pred$FUN_sparse
+#> [1] NA
+#> 
+#> $aucivint.inf.pred$values
+#> [1] FALSE  TRUE
+#> 
+#> $aucivint.inf.pred$unit_type
+#> [1] "auc"
+#> 
+#> $aucivint.inf.pred$pretty_name
+#> [1] "AUCint,inf,pred (IV dosing)"
+#> 
+#> $aucivint.inf.pred$desc
+#> [1] "AUCint,inf,pred, IV back-extrap C0"
+#> 
+#> $aucivint.inf.pred$formalsmap
+#> $aucivint.inf.pred$formalsmap$auc
+#> [1] "aucint.inf.pred"
+#> 
+#> $aucivint.inf.pred$formalsmap$conc
+#> [1] "conc.group"
+#> 
+#> $aucivint.inf.pred$formalsmap$time
+#> [1] "time.group"
+#> 
+#> $aucivint.inf.pred$formalsmap$time.dose
+#> [1] "time.dose.group"
+#> 
+#> $aucivint.inf.pred$formalsmap$route
+#> [1] "route.group"
+#> 
+#> $aucivint.inf.pred$formalsmap$duration.dose
+#> [1] "duration.dose.group"
+#> 
+#> 
+#> $aucivint.inf.pred$formalsmap_sparse
+#> list()
+#> 
+#> $aucivint.inf.pred$depends
+#> [1] "aucint.inf.pred"
+#> 
+#> $aucivint.inf.pred$datatype
+#> [1] "interval"
+#> 
+#> $aucivint.inf.pred$pptestcd_cdisc
+#> [1] "AUCIVIIP"
+#> 
+#> $aucivint.inf.pred$pptest_cdisc
+#> [1] "AUCint,inf,pred (IV dosing)"
+#> 
+#> $aucivint.inf.pred$formula
+#> [1] "$AUC_{\\text{iv,int,}\\infty\\text{,pred}} = AUC_{\\text{int,}\\infty\\text{,pred}} + AUC(C_0, t_1) - AUC(C_{start}, t_1)$"
+#> 
+#> $aucivint.inf.pred$formula_note
+#> NULL
+#> 
+#> $aucivint.inf.pred$tier
+#> [1] "uncommon"
+#> 
+#> $aucivint.inf.pred$selection
+#> $aucivint.inf.pred$selection$route
+#> [1] "iv_bolus"
+#> 
 #> 
 #> 
 #> $aucivinf.obs
@@ -8956,110 +9544,6 @@ get.interval.cols()
 #> [1] "uncommon"
 #> 
 #> $kel.iv.all$selection
-#> list()
-#> 
-#> 
-#> $kel.ivint.all
-#> $kel.ivint.all$FUN
-#> [1] "pk.calc.kel"
-#> 
-#> $kel.ivint.all$FUN_sparse
-#> [1] NA
-#> 
-#> $kel.ivint.all$values
-#> [1] FALSE  TRUE
-#> 
-#> $kel.ivint.all$unit_type
-#> [1] "inverse_time"
-#> 
-#> $kel.ivint.all$pretty_name
-#> [1] "Kel (for IV dosing, based on AUCint,all)"
-#> 
-#> $kel.ivint.all$desc
-#> [1] "Elim rate, IV MRTint,all"
-#> 
-#> $kel.ivint.all$formalsmap
-#> $kel.ivint.all$formalsmap$mrt
-#> [1] "mrt.ivint.all"
-#> 
-#> 
-#> $kel.ivint.all$formalsmap_sparse
-#> list()
-#> 
-#> $kel.ivint.all$depends
-#> [1] "mrt.ivint.all"
-#> 
-#> $kel.ivint.all$datatype
-#> [1] "interval"
-#> 
-#> $kel.ivint.all$pptestcd_cdisc
-#> [1] "KELWA"
-#> 
-#> $kel.ivint.all$pptest_cdisc
-#> [1] "Kel (IV dose interval, AUCint,all)"
-#> 
-#> $kel.ivint.all$formula
-#> NULL
-#> 
-#> $kel.ivint.all$formula_note
-#> NULL
-#> 
-#> $kel.ivint.all$tier
-#> [1] "uncommon"
-#> 
-#> $kel.ivint.all$selection
-#> list()
-#> 
-#> 
-#> $kel.ivint.last
-#> $kel.ivint.last$FUN
-#> [1] "pk.calc.kel"
-#> 
-#> $kel.ivint.last$FUN_sparse
-#> [1] NA
-#> 
-#> $kel.ivint.last$values
-#> [1] FALSE  TRUE
-#> 
-#> $kel.ivint.last$unit_type
-#> [1] "inverse_time"
-#> 
-#> $kel.ivint.last$pretty_name
-#> [1] "Kel (for IV dosing, based on AUCint,last)"
-#> 
-#> $kel.ivint.last$desc
-#> [1] "Elim rate, IV MRTint,last"
-#> 
-#> $kel.ivint.last$formalsmap
-#> $kel.ivint.last$formalsmap$mrt
-#> [1] "mrt.ivint.last"
-#> 
-#> 
-#> $kel.ivint.last$formalsmap_sparse
-#> list()
-#> 
-#> $kel.ivint.last$depends
-#> [1] "mrt.ivint.last"
-#> 
-#> $kel.ivint.last$datatype
-#> [1] "interval"
-#> 
-#> $kel.ivint.last$pptestcd_cdisc
-#> [1] "KELWL"
-#> 
-#> $kel.ivint.last$pptest_cdisc
-#> [1] "Kel (IV dose interval, AUCint,last)"
-#> 
-#> $kel.ivint.last$formula
-#> NULL
-#> 
-#> $kel.ivint.last$formula_note
-#> NULL
-#> 
-#> $kel.ivint.last$tier
-#> [1] "uncommon"
-#> 
-#> $kel.ivint.last$selection
 #> list()
 #> 
 #> 
@@ -11422,6 +11906,110 @@ get.interval.cols()
 #> list()
 #> 
 #> 
+#> $cav.ivint.inf.obs
+#> $cav.ivint.inf.obs$FUN
+#> [1] "pk.calc.cav"
+#> 
+#> $cav.ivint.inf.obs$FUN_sparse
+#> [1] NA
+#> 
+#> $cav.ivint.inf.obs$values
+#> [1] FALSE  TRUE
+#> 
+#> $cav.ivint.inf.obs$unit_type
+#> [1] "conc"
+#> 
+#> $cav.ivint.inf.obs$pretty_name
+#> [1] "Cav (for IV dosing, based on AUCint,inf,obs)"
+#> 
+#> $cav.ivint.inf.obs$desc
+#> [1] "Avg conc in intvl (IV AUCint,inf,obs)"
+#> 
+#> $cav.ivint.inf.obs$formalsmap
+#> $cav.ivint.inf.obs$formalsmap$auc
+#> [1] "aucivint.inf.obs"
+#> 
+#> 
+#> $cav.ivint.inf.obs$formalsmap_sparse
+#> list()
+#> 
+#> $cav.ivint.inf.obs$depends
+#> [1] "aucivint.inf.obs"
+#> 
+#> $cav.ivint.inf.obs$datatype
+#> [1] "interval"
+#> 
+#> $cav.ivint.inf.obs$pptestcd_cdisc
+#> [1] "CAVGIVIO"
+#> 
+#> $cav.ivint.inf.obs$pptest_cdisc
+#> [1] "Average Conc (IV, AUCint,inf,obs)"
+#> 
+#> $cav.ivint.inf.obs$formula
+#> [1] "$C_{av,\\text{ivint,}\\infty\\text{,obs}} = \\frac{AUC_{\\text{ivint,}\\infty\\text{,obs}}}{t_{end} - t_{start}}$"
+#> 
+#> $cav.ivint.inf.obs$formula_note
+#> NULL
+#> 
+#> $cav.ivint.inf.obs$tier
+#> [1] "uncommon"
+#> 
+#> $cav.ivint.inf.obs$selection
+#> list()
+#> 
+#> 
+#> $cav.ivint.inf.pred
+#> $cav.ivint.inf.pred$FUN
+#> [1] "pk.calc.cav"
+#> 
+#> $cav.ivint.inf.pred$FUN_sparse
+#> [1] NA
+#> 
+#> $cav.ivint.inf.pred$values
+#> [1] FALSE  TRUE
+#> 
+#> $cav.ivint.inf.pred$unit_type
+#> [1] "conc"
+#> 
+#> $cav.ivint.inf.pred$pretty_name
+#> [1] "Cav (for IV dosing, based on AUCint,inf,pred)"
+#> 
+#> $cav.ivint.inf.pred$desc
+#> [1] "Avg conc in intvl (IV AUCint,inf,pred)"
+#> 
+#> $cav.ivint.inf.pred$formalsmap
+#> $cav.ivint.inf.pred$formalsmap$auc
+#> [1] "aucivint.inf.pred"
+#> 
+#> 
+#> $cav.ivint.inf.pred$formalsmap_sparse
+#> list()
+#> 
+#> $cav.ivint.inf.pred$depends
+#> [1] "aucivint.inf.pred"
+#> 
+#> $cav.ivint.inf.pred$datatype
+#> [1] "interval"
+#> 
+#> $cav.ivint.inf.pred$pptestcd_cdisc
+#> [1] "CAVGIVIP"
+#> 
+#> $cav.ivint.inf.pred$pptest_cdisc
+#> [1] "Average Conc (IV, AUCint,inf,pred)"
+#> 
+#> $cav.ivint.inf.pred$formula
+#> [1] "$C_{av,\\text{ivint,}\\infty\\text{,pred}} = \\frac{AUC_{\\text{ivint,}\\infty\\text{,pred}}}{t_{end} - t_{start}}$"
+#> 
+#> $cav.ivint.inf.pred$formula_note
+#> NULL
+#> 
+#> $cav.ivint.inf.pred$tier
+#> [1] "uncommon"
+#> 
+#> $cav.ivint.inf.pred$selection
+#> list()
+#> 
+#> 
 #> $ratio.aucinf.obs
 #> $ratio.aucinf.obs$FUN
 #> [1] "pk.calc.ratio"
@@ -12742,6 +13330,58 @@ get.interval.cols()
 #> [1] "uncommon"
 #> 
 #> $cav.dn$selection
+#> list()
+#> 
+#> 
+#> $cav.last.dn
+#> $cav.last.dn$FUN
+#> [1] "pk.calc.dn"
+#> 
+#> $cav.last.dn$FUN_sparse
+#> [1] NA
+#> 
+#> $cav.last.dn$values
+#> [1] FALSE  TRUE
+#> 
+#> $cav.last.dn$unit_type
+#> [1] "conc_dosenorm"
+#> 
+#> $cav.last.dn$pretty_name
+#> [1] "Cav (based on AUClast) (dose-normalized)"
+#> 
+#> $cav.last.dn$desc
+#> [1] "Dose-normalized cav.last"
+#> 
+#> $cav.last.dn$formalsmap
+#> $cav.last.dn$formalsmap$parameter
+#> [1] "cav.last"
+#> 
+#> 
+#> $cav.last.dn$formalsmap_sparse
+#> list()
+#> 
+#> $cav.last.dn$depends
+#> [1] "cav.last"
+#> 
+#> $cav.last.dn$datatype
+#> [1] "interval"
+#> 
+#> $cav.last.dn$pptestcd_cdisc
+#> [1] "CAVGD"
+#> 
+#> $cav.last.dn$pptest_cdisc
+#> [1] "Average Conc by Dose"
+#> 
+#> $cav.last.dn$formula
+#> [1] "$C_{av,\\text{last},dn} = \\frac{C_{av,\\text{last}}}{Dose}$"
+#> 
+#> $cav.last.dn$formula_note
+#> NULL
+#> 
+#> $cav.last.dn$tier
+#> [1] "uncommon"
+#> 
+#> $cav.last.dn$selection
 #> list()
 #> 
 #> 

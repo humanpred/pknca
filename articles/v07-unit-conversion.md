@@ -201,8 +201,8 @@ d_units_auto[d_units_auto$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "
 #>          PPORRESU PPTESTCD
 #> 51             hr     tmax
 #> 104         ng/mL     cmax
-#> 160      hr*ng/mL  auclast
-#> 226 mg/(hr*ng/mL)   cl.obs
+#> 169      hr*ng/mL  auclast
+#> 237 mg/(hr*ng/mL)   cl.obs
 ```
 
 As you see above, the default units table has a column for the
@@ -235,9 +235,9 @@ d_units_clean[d_units_clean$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs",
 #>          PPORRESU PPTESTCD PPSTRESU conversion_factor
 #> 51             hr     tmax      day      4.166667e-02
 #> 104         ng/mL     cmax    ng/mL      1.000000e+00
-#> 117         ng/mg       fe fraction      1.000000e-06
-#> 160      hr*ng/mL  auclast hr*ng/mL      1.000000e+00
-#> 226 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03
+#> 125         ng/mg       fe fraction      1.000000e-06
+#> 169      hr*ng/mL  auclast hr*ng/mL      1.000000e+00
+#> 237 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03
 ```
 
 Now, the units are much cleaner to look at.
@@ -268,8 +268,8 @@ d_units_clean_manual[d_units_clean_manual$PPTESTCD %in% c("cmax", "tmax", "aucla
 #>          PPORRESU PPTESTCD PPSTRESU conversion_factor
 #> 51             hr     tmax      day      4.166667e-02
 #> 104         ng/mL     cmax   nmol/L      8.130081e+00
-#> 160      hr*ng/mL  auclast hr*ng/mL      1.000000e+00
-#> 226 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03
+#> 169      hr*ng/mL  auclast hr*ng/mL      1.000000e+00
+#> 237 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03
 ```
 
 ## What happens when units are missing for some parameters?
