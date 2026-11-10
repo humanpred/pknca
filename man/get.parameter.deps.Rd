@@ -28,7 +28,7 @@ Get all columns that depend on a parameter
 The two directions answer different questions.  The default
 answers "what becomes invalid if \code{x} changes?".  \code{recursive = TRUE}
 answers "what does \code{x} need?".  Its result is the leaf inputs only, not
-the intermediate parameters on the way to them (\code{cl.obs} gives \code{"dose"}
+the intermediate parameters on the way to them (\code{cl.inf.obs} gives \code{"dose"}
 and the inputs of the half-life, not \code{"half.life"} or \code{"aucinf.obs"}).
 The leaves are the data the calculation reads (\code{"conc"}, \code{"time"},
 \code{"dose"}, \code{"time.dose"}, \code{"duration.dose"}, and so on) and the other
