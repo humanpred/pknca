@@ -86,8 +86,8 @@ function takes up to seven arguments:
 - `formalsmap` remaps the (formal) function arguments. `formalsmap` is
   usually used when the same function may be used for multiple different
   parameters, for example the function `pk.calc.thalf.eff` is used to
-  calculate the parameters `thalf.eff.obs`, `thalf.eff.pred`,
-  `thalf.eff.last`, `thalf.eff.iv.obs`, `thalf.eff.iv.pred`, and
+  calculate the parameters `thalf.eff.inf.obs`, `thalf.eff.inf.pred`,
+  `thalf.eff.last`, `thalf.eff.iv.inf.obs`, `thalf.eff.iv.inf.pred`, and
   `thalf.eff.iv.last` with different mean residence time inputs.
 - `desc` is a text description of the parameter.
 

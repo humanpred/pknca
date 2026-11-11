@@ -76,7 +76,7 @@ as.data.frame(excluded_result)
 #>  4       1     0   Inf tlast                 4     Imputation: start_pr… NA     
 #>  5       1     0   Inf clast.obs             1     Imputation: start_pr… NA     
 #>  6       1     0   Inf tlag                 NA     Imputation: start_pr… NA     
-#>  7       1     0   Inf count_conc            5     Imputation: start_pr… NA     
+#>  7       1     0   Inf count.conc            5     Imputation: start_pr… NA     
 #>  8       1     0   Inf lambda.z              0.549 Imputation: start_pr… NA     
 #>  9       1     0   Inf r.squared             0.978 Imputation: start_pr… NA     
 #> 10       1     0   Inf adj.r.squared         0.955 Imputation: start_pr… NA     
@@ -88,6 +88,6 @@ as.data.frame(excluded_result)
 #> 16       1     0   Inf half.life             1.26  Imputation: start_pr… NA     
 #> 17       1     0   Inf span.ratio            1.58  Imputation: start_pr… span.r…
 #> 18       1     0   Inf aucinf.obs           13.7   Imputation: start_pr… NA     
-#> 19       1     0   Inf aucpext.obs          13.3   Imputation: start_pr… NA     
-#> 20       1     0   Inf cl.obs                7.31  Imputation: start_pr… NA     
+#> 19       1     0   Inf aucpext.inf.obs      13.3   Imputation: start_pr… NA     
+#> 20       1     0   Inf cl.inf.obs            7.31  Imputation: start_pr… NA     
 ```

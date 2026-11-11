@@ -62,9 +62,9 @@ kinetics), the equation becomes the same as the single-dose MRT.
 
 These are the parameters to use when PK are nonlinear. With linear PK,
 MRT and Vss can be measured from a single dose and the single-dose
-parameters (`mrt.obs`, `vss.obs`, and similar) describe steady state as
-well. When PK are nonlinear they do not, so MRT and Vss have to be
-measured over a steady-state dosing interval, which is what these
+parameters (`mrt.inf.obs`, `vss.inf.obs`, and similar) describe steady
+state as well. When PK are nonlinear they do not, so MRT and Vss have to
+be measured over a steady-state dosing interval, which is what these
 parameters do. The ratio `aumctau/auctau` on its own (`mrt.last` over a
 dosing interval) is not MRT at steady state and underestimates it
 substantially; the `tau*(aucinf-auctau)/auctau` term accounts for the

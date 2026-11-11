@@ -197,12 +197,12 @@ automatically generates the units for each NCA parameter.
 
 d_units_auto <- pknca_units_table(concu="ng/mL", doseu="mg", amountu="mg", timeu="hr")
 # Show a selection of the units generated
-d_units_auto[d_units_auto$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "vd.obs"), ]
-#>          PPORRESU PPTESTCD
-#> 51             hr     tmax
-#> 104         ng/mL     cmax
-#> 169      hr*ng/mL  auclast
-#> 237 mg/(hr*ng/mL)   cl.obs
+d_units_auto[d_units_auto$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.inf.obs", "vd.obs"), ]
+#>          PPORRESU   PPTESTCD
+#> 69             hr       tmax
+#> 153         ng/mL       cmax
+#> 234      hr*ng/mL    auclast
+#> 304 mg/(hr*ng/mL) cl.inf.obs
 ```
 
 As you see above, the default units table has a column for the
@@ -234,13 +234,13 @@ d_units_clean <-
       )
   )
 # Show a selection of the units generated
-d_units_clean[d_units_clean$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "vd.obs", "fe"), ]
-#>          PPORRESU PPTESTCD PPSTRESU conversion_factor
-#> 51             hr     tmax      day      4.166667e-02
-#> 104         ng/mL     cmax    ng/mL      1.000000e+00
-#> 125         ng/mg       fe fraction      1.000000e-06
-#> 169      hr*ng/mL  auclast hr*ng/mL      1.000000e+00
-#> 237 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03
+d_units_clean[d_units_clean$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.inf.obs", "vd.obs", "fe"), ]
+#>          PPORRESU   PPTESTCD PPSTRESU conversion_factor
+#> 69             hr       tmax      day      4.166667e-02
+#> 153         ng/mL       cmax    ng/mL      1.000000e+00
+#> 174         ng/mg         fe fraction      1.000000e-06
+#> 234      hr*ng/mL    auclast hr*ng/mL      1.000000e+00
+#> 304 mg/(hr*ng/mL) cl.inf.obs     L/hr      1.000000e+03
 ```
 
 Now, the units are much cleaner to look at.
@@ -267,12 +267,12 @@ d_units_clean_manual <-
       )
   )
 # Show a selection of the units generated
-d_units_clean_manual[d_units_clean_manual$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.obs", "vd.obs"), ]
-#>          PPORRESU PPTESTCD PPSTRESU conversion_factor
-#> 51             hr     tmax      day      4.166667e-02
-#> 104         ng/mL     cmax   nmol/L      8.130081e+00
-#> 169      hr*ng/mL  auclast hr*ng/mL      1.000000e+00
-#> 237 mg/(hr*ng/mL)   cl.obs     L/hr      1.000000e+03
+d_units_clean_manual[d_units_clean_manual$PPTESTCD %in% c("cmax", "tmax", "auclast", "cl.inf.obs", "vd.obs"), ]
+#>          PPORRESU   PPTESTCD PPSTRESU conversion_factor
+#> 69             hr       tmax      day      4.166667e-02
+#> 153         ng/mL       cmax   nmol/L      8.130081e+00
+#> 234      hr*ng/mL    auclast hr*ng/mL      1.000000e+00
+#> 304 mg/(hr*ng/mL) cl.inf.obs     L/hr      1.000000e+03
 ```
 
 ## What happens when units are missing for some parameters?

@@ -41,24 +41,33 @@ kable(
 | parameter         | concept         | sample_type |
 |:------------------|:----------------|:------------|
 | clr.last          | renal_clearance | interval    |
-| clr.obs           | renal_clearance | interval    |
-| clr.pred          | renal_clearance | interval    |
+| clr.int.inf.pred  | renal_clearance | interval    |
+| clr.int.inf.obs   | renal_clearance | interval    |
+| clr.int.all       | renal_clearance | interval    |
+| clr.int.last      | renal_clearance | interval    |
+| clr.all           | renal_clearance | interval    |
+| clr.inf.obs       | renal_clearance | interval    |
+| clr.inf.pred      | renal_clearance | interval    |
 | ratio.cmax        | parameter_ratio | spot        |
 | ratio.auclast     | parameter_ratio | spot        |
 | ratio.aucint.last | parameter_ratio | spot        |
 | ratio.aucint.all  | parameter_ratio | spot        |
 | f.last            | bioavailability | spot        |
+| f.all             | bioavailability | spot        |
 | f.int.last        | bioavailability | spot        |
 | f.int.all         | bioavailability | spot        |
-| f.obs             | bioavailability | spot        |
-| f.pred            | bioavailability | spot        |
-| f.int.obs         | bioavailability | spot        |
-| f.int.pred        | bioavailability | spot        |
+| f.inf.obs         | bioavailability | spot        |
+| f.inf.pred        | bioavailability | spot        |
+| f.int.inf.obs     | bioavailability | spot        |
+| f.int.inf.pred    | bioavailability | spot        |
 | ratio.aucinf.obs  | parameter_ratio | spot        |
 | ratio.aucinf.pred | parameter_ratio | spot        |
-| clr.last.dn       | renal_clearance | interval    |
-| clr.obs.dn        | renal_clearance | interval    |
-| clr.pred.dn       | renal_clearance | interval    |
+| clr.obs           | renal_clearance | interval    |
+| clr.pred          | renal_clearance | interval    |
+| f.int.obs         | bioavailability | spot        |
+| f.int.pred        | bioavailability | spot        |
+| f.obs             | bioavailability | spot        |
+| f.pred            | bioavailability | spot        |
 
 Two words are used throughout:
 
@@ -568,8 +577,8 @@ intervals_f <-
     interval_id = c("refprofile", NA),
     aucinf.obs = TRUE,
     totdose = TRUE,
-    f.obs = c(FALSE, TRUE),
-    f.obs_ref = c(NA, "refprofile")
+    f.inf.obs = c(FALSE, TRUE),
+    f.inf.obs_ref = c(NA, "refprofile")
   )
 o_data_f <-
   PKNCAdata(
@@ -578,7 +587,7 @@ o_data_f <-
     intervals = intervals_f
   )
 d_f <- as.data.frame(pk.nca(o_data_f))
-kable(d_f[d_f$PPTESTCD %in% c("totdose", "aucinf.obs", "f.obs"), ])
+kable(d_f[d_f$PPTESTCD %in% c("totdose", "aucinf.obs", "f.inf.obs"), ])
 ```
 
 | treatment | subject | start | end | PPTESTCD | PPORRES | PPANMETH | exclude | treatment_ref | subject_ref |
@@ -587,7 +596,7 @@ kable(d_f[d_f$PPTESTCD %in% c("totdose", "aucinf.obs", "f.obs"), ])
 | ref | 1 | 0 | Inf | aucinf.obs | 48.491740 | AUC: lin up/log down | NA | NA | NA |
 | test | 1 | 0 | Inf | totdose | 50.000000 |  | NA | NA | NA |
 | test | 1 | 0 | Inf | aucinf.obs | 19.628268 | AUC: lin up/log down | NA | NA | NA |
-| test | 1 | 0 | Inf | f.obs | 0.809551 | Reference interval: treatment=ref, 0-Inf | NA | ref | 1 |
+| test | 1 | 0 | Inf | f.inf.obs | 0.809551 | Reference interval: treatment=ref, 0-Inf | NA | ref | 1 |
 
 The result is the ratio of the dose-normalized exposures:
 
@@ -607,7 +616,7 @@ changes the answer and is not recoverable from the number:
 ``` r
 
 f_params <-
-  c("f.obs", "f.pred", "f.last", "f.int.obs", "f.int.pred",
+  c("f.inf.obs", "f.inf.pred", "f.last", "f.int.inf.obs", "f.int.inf.pred",
     "f.int.last", "f.int.all")
 kable(
   data.frame(
@@ -624,15 +633,15 @@ kable(
 )
 ```
 
-| parameter  | AUC basis       |
-|:-----------|:----------------|
-| f.obs      | aucinf.obs      |
-| f.pred     | aucinf.pred     |
-| f.last     | auclast         |
-| f.int.obs  | aucint.inf.obs  |
-| f.int.pred | aucint.inf.pred |
-| f.int.last | aucint.last     |
-| f.int.all  | aucint.all      |
+| parameter      | AUC basis       |
+|:---------------|:----------------|
+| f.inf.obs      | aucinf.obs      |
+| f.inf.pred     | aucinf.pred     |
+| f.last         | auclast         |
+| f.int.inf.obs  | aucint.inf.obs  |
+| f.int.inf.pred | aucint.inf.pred |
+| f.int.last     | aucint.last     |
+| f.int.all      | aucint.all      |
 
 The `ratio.*` parameters are named the same way: `ratio.cmax`,
 `ratio.auclast`, `ratio.aucinf.obs`, `ratio.aucinf.pred`,
@@ -670,17 +679,17 @@ d_dose_period <-
 intervals_period <-
   interval_add_secondary(
     data.frame(treatment = c("iv", "oral"), start = 0, end = Inf, aucinf.obs = TRUE),
-    param = "f.obs",
+    param = "f.inf.obs",
     reference = data.frame(treatment = "iv"),
     ref_vary = "period"
   )
-kable(intervals_period[, c("treatment", "interval_id", "f.obs", "f.obs_ref", "f.obs_ref_vary")])
+kable(intervals_period[, c("treatment", "interval_id", "f.inf.obs", "f.inf.obs_ref", "f.inf.obs_ref_vary")])
 ```
 
-| treatment | interval_id | f.obs | f.obs_ref | f.obs_ref_vary |
-|:----------|:------------|:------|:----------|:---------------|
-| iv        | ref1        | FALSE | NA        | NA             |
-| oral      | NA          | TRUE  | ref1      | period         |
+| treatment | interval_id | f.inf.obs | f.inf.obs_ref | f.inf.obs_ref_vary |
+|:----------|:------------|:----------|:--------------|:-------------------|
+| iv        | ref1        | FALSE     | NA            | NA                 |
+| oral      | NA          | TRUE      | ref1          | period             |
 
 ``` r
 
@@ -693,7 +702,7 @@ o_data_period <-
 d_period <- as.data.frame(pk.nca(o_data_period))
 kable(
   d_period[
-    d_period$PPTESTCD %in% "f.obs",
+    d_period$PPTESTCD %in% "f.inf.obs",
     c("subject", "period", "treatment", "PPORRES", "period_ref", "PPANMETH")
   ]
 )
@@ -743,8 +752,8 @@ intervals_x <-
     interval_id = c("plasma06", NA),
     aucinf.obs = c(TRUE, FALSE),
     ae = c(FALSE, TRUE),
-    clr.obs = c(FALSE, TRUE),
-    clr.obs_ref = c(NA, "plasma06")
+    clr.inf.obs = c(FALSE, TRUE),
+    clr.inf.obs_ref = c(NA, "plasma06")
   )
 o_data_x <-
   PKNCAdata(
@@ -757,7 +766,7 @@ d_x <- as.data.frame(pk.nca(o_data_x))
 #> points)
 kable(
   d_x[
-    d_x$PPTESTCD %in% c("half.life", "aucinf.obs", "ae", "clr.obs"),
+    d_x$PPTESTCD %in% c("half.life", "aucinf.obs", "ae", "clr.inf.obs"),
     c("PCSPEC", "PPTESTCD", "PPORRES", "exclude")
   ]
 )
@@ -768,7 +777,7 @@ kable(
 | plasma | half.life | NA | Too few points for half-life calculation (min.hl.points=3 with only 2 points) |
 | plasma | aucinf.obs | NA | Too few points for half-life calculation (min.hl.points=3 with only 2 points) |
 | urine | ae | 350 | NA |
-| urine | clr.obs | NA | Too few points for half-life calculation (min.hl.points=3 with only 2 points) |
+| urine | clr.inf.obs | NA | Too few points for half-life calculation (min.hl.points=3 with only 2 points) |
 
 This is the property that post-hoc division of a results table does not
 have: an excluded input cannot quietly become a reported clearance.
@@ -912,7 +921,7 @@ o_data_fu <-
     intervals = intervals_f
   )
 d_fu <- as.data.frame(pk.nca(o_data_fu))
-kable(d_fu[d_fu$PPTESTCD %in% "f.obs", c("treatment", "treatment_ref", "PPORRES", "PPORRESU")])
+kable(d_fu[d_fu$PPTESTCD %in% "f.inf.obs", c("treatment", "treatment_ref", "PPORRES", "PPORRESU")])
 ```
 
 | treatment | treatment_ref |  PPORRES | PPORRESU                             |
@@ -965,8 +974,8 @@ to support a link.
 - Sparse concentration data (`PKNCAconc(sparse = TRUE)`) with any
   secondary parameter requested is an error. Supporting it is planned.
 - The reference for an absolute bioavailability is not yet derived from
-  the route of administration; give it with `group_ref`, a `f.obs_ref`
-  pointer, or
+  the route of administration; give it with `group_ref`, a
+  `f.inf.obs_ref` pointer, or
   [`interval_add_secondary()`](https://humanpred.github.io/pknca/reference/interval_add_secondary.md).
 - The CDISC `PPTESTCD` of a ratio does not yet depend on what the ratio
   compares (accumulation against metabolite ratio).

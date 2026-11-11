@@ -188,7 +188,7 @@ argument to <code><a href="../reference/exclude.html">exclude()</a></code>.</p>
 <span><span class="co">## <span style="color: #BCBCBC;"> 4</span>       1     0   <span style="color: #BB0000;">Inf</span> tlast                24.4    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 5</span>       1     0   <span style="color: #BB0000;">Inf</span> clast.obs             3.28   Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 6</span>       1     0   <span style="color: #BB0000;">Inf</span> tlag                  0      Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 7</span>       1     0   <span style="color: #BB0000;">Inf</span> count_conc           11      Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 7</span>       1     0   <span style="color: #BB0000;">Inf</span> count.conc           11      Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 8</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z              0.048<span style="text-decoration: underline;">5</span> Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 9</span>       1     0   <span style="color: #BB0000;">Inf</span> r.squared             1.000  Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">10</span>       1     0   <span style="color: #BB0000;">Inf</span> adj.r.squared         1.000  Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
@@ -200,8 +200,8 @@ argument to <code><a href="../reference/exclude.html">exclude()</a></code>.</p>
 <span><span class="co">## <span style="color: #BCBCBC;">16</span>       1     0   <span style="color: #BB0000;">Inf</span> half.life            14.3    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">17</span>       1     0   <span style="color: #BB0000;">Inf</span> span.ratio            1.07   Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">18</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">19</span>       1     0   <span style="color: #BB0000;">Inf</span> aucpext.obs          31.5    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">20</span>       1     0   <span style="color: #BB0000;">Inf</span> cl.obs                0.018<span style="text-decoration: underline;">7</span> Imputation: start_p… <span style="color: #BB0000;">NA</span></span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">19</span>       1     0   <span style="color: #BB0000;">Inf</span> aucpext.inf.obs      31.5    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">20</span>       1     0   <span style="color: #BB0000;">Inf</span> cl.inf.obs            0.018<span style="text-decoration: underline;">7</span> Imputation: start_p… <span style="color: #BB0000;">NA</span></span></span></code></pre>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># With exclusions applied, the 'exclude' column has the reason for exclusion.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_excl_span</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -215,7 +215,7 @@ argument to <code><a href="../reference/exclude.html">exclude()</a></code>.</p>
 <span><span class="co">## <span style="color: #BCBCBC;"> 4</span>       1     0   <span style="color: #BB0000;">Inf</span> tlast                24.4    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 5</span>       1     0   <span style="color: #BB0000;">Inf</span> clast.obs             3.28   Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 6</span>       1     0   <span style="color: #BB0000;">Inf</span> tlag                  0      Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 7</span>       1     0   <span style="color: #BB0000;">Inf</span> count_conc           11      Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 7</span>       1     0   <span style="color: #BB0000;">Inf</span> count.conc           11      Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 8</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z              0.048<span style="text-decoration: underline;">5</span> Imputation: start_p… span.r…</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 9</span>       1     0   <span style="color: #BB0000;">Inf</span> r.squared             1.000  Imputation: start_p… span.r…</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">10</span>       1     0   <span style="color: #BB0000;">Inf</span> adj.r.squared         1.000  Imputation: start_p… span.r…</span></span>
@@ -227,8 +227,8 @@ argument to <code><a href="../reference/exclude.html">exclude()</a></code>.</p>
 <span><span class="co">## <span style="color: #BCBCBC;">16</span>       1     0   <span style="color: #BB0000;">Inf</span> half.life            14.3    Imputation: start_p… span.r…</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">17</span>       1     0   <span style="color: #BB0000;">Inf</span> span.ratio            1.07   Imputation: start_p… span.r…</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">18</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     Imputation: start_p… span.r…</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">19</span>       1     0   <span style="color: #BB0000;">Inf</span> aucpext.obs          31.5    Imputation: start_p… span.r…</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">20</span>       1     0   <span style="color: #BB0000;">Inf</span> cl.obs                0.018<span style="text-decoration: underline;">7</span> Imputation: start_p… span.r…</span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">19</span>       1     0   <span style="color: #BB0000;">Inf</span> aucpext.inf.obs      31.5    Imputation: start_p… span.r…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">20</span>       1     0   <span style="color: #BB0000;">Inf</span> cl.inf.obs            0.018<span style="text-decoration: underline;">7</span> Imputation: start_p… span.r…</span></span></code></pre>
 </div>
 <div class="section level4">
 <h4 id="missing-samples-and-t_max-coverage">Missing Samples and
@@ -366,7 +366,7 @@ will not be excluded.</p>
 <span><span class="co">## <span style="color: #BCBCBC;"> 4</span>       1     0   <span style="color: #BB0000;">Inf</span> tlast                24.4    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 5</span>       1     0   <span style="color: #BB0000;">Inf</span> clast.obs             3.28   Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 6</span>       1     0   <span style="color: #BB0000;">Inf</span> tlag                  0      Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 7</span>       1     0   <span style="color: #BB0000;">Inf</span> count_conc           11      Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 7</span>       1     0   <span style="color: #BB0000;">Inf</span> count.conc           11      Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 8</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z              0.048<span style="text-decoration: underline;">5</span> Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 9</span>       1     0   <span style="color: #BB0000;">Inf</span> r.squared             1.000  Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">10</span>       1     0   <span style="color: #BB0000;">Inf</span> adj.r.squared         1.000  Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
@@ -378,8 +378,8 @@ will not be excluded.</p>
 <span><span class="co">## <span style="color: #BCBCBC;">16</span>       1     0   <span style="color: #BB0000;">Inf</span> half.life            14.3    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">17</span>       1     0   <span style="color: #BB0000;">Inf</span> span.ratio            1.07   Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">18</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">19</span>       1     0   <span style="color: #BB0000;">Inf</span> aucpext.obs          31.5    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">20</span>       1     0   <span style="color: #BB0000;">Inf</span> cl.obs                0.018<span style="text-decoration: underline;">7</span> Imputation: start_p… <span style="color: #BB0000;">NA</span></span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">19</span>       1     0   <span style="color: #BB0000;">Inf</span> aucpext.inf.obs      31.5    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">20</span>       1     0   <span style="color: #BB0000;">Inf</span> cl.inf.obs            0.018<span style="text-decoration: underline;">7</span> Imputation: start_p… <span style="color: #BB0000;">NA</span></span></span></code></pre>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># With exclusions applied, the 'exclude' column has the reason for exclusion.</span></span>
 <span><span class="va">results_excl_specific</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -394,7 +394,7 @@ will not be excluded.</p>
 <span><span class="co">## <span style="color: #BCBCBC;"> 4</span>       1     0   <span style="color: #BB0000;">Inf</span> tlast                24.4    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 5</span>       1     0   <span style="color: #BB0000;">Inf</span> clast.obs             3.28   Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 6</span>       1     0   <span style="color: #BB0000;">Inf</span> tlag                  0      Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 7</span>       1     0   <span style="color: #BB0000;">Inf</span> count_conc           11      Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 7</span>       1     0   <span style="color: #BB0000;">Inf</span> count.conc           11      Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 8</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z              0.048<span style="text-decoration: underline;">5</span> Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 9</span>       1     0   <span style="color: #BB0000;">Inf</span> r.squared             1.000  Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">10</span>       1     0   <span style="color: #BB0000;">Inf</span> adj.r.squared         1.000  Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
@@ -406,8 +406,8 @@ will not be excluded.</p>
 <span><span class="co">## <span style="color: #BCBCBC;">16</span>       1     0   <span style="color: #BB0000;">Inf</span> half.life            14.3    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">17</span>       1     0   <span style="color: #BB0000;">Inf</span> span.ratio            1.07   Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">18</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">19</span>       1     0   <span style="color: #BB0000;">Inf</span> aucpext.obs          31.5    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">20</span>       1     0   <span style="color: #BB0000;">Inf</span> cl.obs                0.018<span style="text-decoration: underline;">7</span> Imputation: start_p… <span style="color: #BB0000;">NA</span></span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">19</span>       1     0   <span style="color: #BB0000;">Inf</span> aucpext.inf.obs      31.5    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">20</span>       1     0   <span style="color: #BB0000;">Inf</span> cl.inf.obs            0.018<span style="text-decoration: underline;">7</span> Imputation: start_p… <span style="color: #BB0000;">NA</span></span></span></code></pre>
 </div>
 <div class="section level4">
 <h4 id="multiple-exclusions">Multiple Exclusions<a class="anchor" aria-label="anchor" href="#multiple-exclusions"></a>
@@ -452,7 +452,7 @@ the example below.</p>
 <span><span class="co">## <span style="color: #BCBCBC;"> 4</span>       1     0   <span style="color: #BB0000;">Inf</span> tlast                24.4    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 5</span>       1     0   <span style="color: #BB0000;">Inf</span> clast.obs             3.28   Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 6</span>       1     0   <span style="color: #BB0000;">Inf</span> tlag                  0      Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 7</span>       1     0   <span style="color: #BB0000;">Inf</span> count_conc           11      Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 7</span>       1     0   <span style="color: #BB0000;">Inf</span> count.conc           11      Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 8</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z              0.048<span style="text-decoration: underline;">5</span> Imputation: start_p… span.r…</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 9</span>       1     0   <span style="color: #BB0000;">Inf</span> r.squared             1.000  Imputation: start_p… span.r…</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">10</span>       1     0   <span style="color: #BB0000;">Inf</span> adj.r.squared         1.000  Imputation: start_p… span.r…</span></span>
@@ -464,8 +464,8 @@ the example below.</p>
 <span><span class="co">## <span style="color: #BCBCBC;">16</span>       1     0   <span style="color: #BB0000;">Inf</span> half.life            14.3    Imputation: start_p… span.r…</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">17</span>       1     0   <span style="color: #BB0000;">Inf</span> span.ratio            1.07   Imputation: start_p… span.r…</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">18</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     Imputation: start_p… span.r…</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">19</span>       1     0   <span style="color: #BB0000;">Inf</span> aucpext.obs          31.5    Imputation: start_p… span.r…</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">20</span>       1     0   <span style="color: #BB0000;">Inf</span> cl.obs                0.018<span style="text-decoration: underline;">7</span> Imputation: start_p… span.r…</span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">19</span>       1     0   <span style="color: #BB0000;">Inf</span> aucpext.inf.obs      31.5    Imputation: start_p… span.r…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">20</span>       1     0   <span style="color: #BB0000;">Inf</span> cl.inf.obs            0.018<span style="text-decoration: underline;">7</span> Imputation: start_p… span.r…</span></span></code></pre>
 </div>
 </div>
 </div>
@@ -592,10 +592,10 @@ end time; and one column per parameter calculated.</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">results_obj</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##  start end  N     auclast        cmax               tmax                 tlag</span></span>
 <span><span class="co">##      0 Inf 12 98.7 [22.5] 8.65 [17.0] 1.14 [0.630, 3.55] 0.000 [0.000, 0.000]</span></span>
-<span><span class="co">##         count_conc   half.life aucinf.obs aucpext.obs        cl.obs</span></span>
-<span><span class="co">##  11.0 [11.0, 11.0] 8.18 [2.12] 115 [28.4] 13.8 [6.34] 0.0398 [29.4]</span></span>
+<span><span class="co">##         count.conc   half.life aucinf.obs aucpext.inf.obs    cl.inf.obs</span></span>
+<span><span class="co">##  11.0 [11.0, 11.0] 8.18 [2.12] 115 [28.4]     13.8 [6.34] 0.0398 [29.4]</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Caption: auclast, cmax, aucinf.obs, cl.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count_conc: median and range; half.life, aucpext.obs: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre>
+<span><span class="co">## Caption: auclast, cmax, aucinf.obs, cl.inf.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count.conc: median and range; half.life, aucpext.inf.obs: arithmetic mean and standard deviation; N: number of subjects</span></span></code></pre>
 <p>When values are excluded as described above, the excluded values are
 not included in the summary (note that half.life and aucinf.obs
 differ).</p>
@@ -603,12 +603,12 @@ differ).</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">results_excl_span</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##  start end  N     auclast        cmax               tmax                 tlag</span></span>
 <span><span class="co">##      0 Inf 12 98.7 [22.5] 8.65 [17.0] 1.14 [0.630, 3.55] 0.000 [0.000, 0.000]</span></span>
-<span><span class="co">##         count_conc         half.life      aucinf.obs      aucpext.obs</span></span>
+<span><span class="co">##         count.conc         half.life      aucinf.obs  aucpext.inf.obs</span></span>
 <span><span class="co">##  11.0 [11.0, 11.0] 7.36 [0.742], n=9 105 [16.4], n=9 11.3 [2.28], n=9</span></span>
-<span><span class="co">##              cl.obs</span></span>
+<span><span class="co">##          cl.inf.obs</span></span>
 <span><span class="co">##  0.0453 [11.2], n=9</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Caption: auclast, cmax, aucinf.obs, cl.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count_conc: median and range; half.life, aucpext.obs: arithmetic mean and standard deviation; N: number of subjects; n: number of measurements included in summary</span></span></code></pre>
+<span><span class="co">## Caption: auclast, cmax, aucinf.obs, cl.inf.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count.conc: median and range; half.life, aucpext.inf.obs: arithmetic mean and standard deviation; N: number of subjects; n: number of measurements included in summary</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="listing-of-results">Listing of Results<a class="anchor" aria-label="anchor" href="#listing-of-results"></a>
@@ -627,7 +627,7 @@ differ).</p>
 <span><span class="co">## <span style="color: #BCBCBC;"> 4</span>       1     0   <span style="color: #BB0000;">Inf</span> tlast                24.4    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 5</span>       1     0   <span style="color: #BB0000;">Inf</span> clast.obs             3.28   Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 6</span>       1     0   <span style="color: #BB0000;">Inf</span> tlag                  0      Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 7</span>       1     0   <span style="color: #BB0000;">Inf</span> count_conc           11      Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 7</span>       1     0   <span style="color: #BB0000;">Inf</span> count.conc           11      Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 8</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z              0.048<span style="text-decoration: underline;">5</span> Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 9</span>       1     0   <span style="color: #BB0000;">Inf</span> r.squared             1.000  Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">10</span>       1     0   <span style="color: #BB0000;">Inf</span> adj.r.squared         1.000  Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
@@ -639,8 +639,8 @@ differ).</p>
 <span><span class="co">## <span style="color: #BCBCBC;">16</span>       1     0   <span style="color: #BB0000;">Inf</span> half.life            14.3    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">17</span>       1     0   <span style="color: #BB0000;">Inf</span> span.ratio            1.07   Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">18</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">19</span>       1     0   <span style="color: #BB0000;">Inf</span> aucpext.obs          31.5    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">20</span>       1     0   <span style="color: #BB0000;">Inf</span> cl.obs                0.018<span style="text-decoration: underline;">7</span> Imputation: start_p… <span style="color: #BB0000;">NA</span></span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">19</span>       1     0   <span style="color: #BB0000;">Inf</span> aucpext.inf.obs      31.5    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">20</span>       1     0   <span style="color: #BB0000;">Inf</span> cl.inf.obs            0.018<span style="text-decoration: underline;">7</span> Imputation: start_p… <span style="color: #BB0000;">NA</span></span></span></code></pre>
 <p>Excluded values remain in the listing.</p>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="va">results_excl_span</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -654,7 +654,7 @@ differ).</p>
 <span><span class="co">## <span style="color: #BCBCBC;"> 4</span>       1     0   <span style="color: #BB0000;">Inf</span> tlast                24.4    Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 5</span>       1     0   <span style="color: #BB0000;">Inf</span> clast.obs             3.28   Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 6</span>       1     0   <span style="color: #BB0000;">Inf</span> tlag                  0      Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
-<span><span class="co">## <span style="color: #BCBCBC;"> 7</span>       1     0   <span style="color: #BB0000;">Inf</span> count_conc           11      Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
+<span><span class="co">## <span style="color: #BCBCBC;"> 7</span>       1     0   <span style="color: #BB0000;">Inf</span> count.conc           11      Imputation: start_p… <span style="color: #BB0000;">NA</span>     </span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 8</span>       1     0   <span style="color: #BB0000;">Inf</span> lambda.z              0.048<span style="text-decoration: underline;">5</span> Imputation: start_p… span.r…</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;"> 9</span>       1     0   <span style="color: #BB0000;">Inf</span> r.squared             1.000  Imputation: start_p… span.r…</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">10</span>       1     0   <span style="color: #BB0000;">Inf</span> adj.r.squared         1.000  Imputation: start_p… span.r…</span></span>
@@ -666,8 +666,8 @@ differ).</p>
 <span><span class="co">## <span style="color: #BCBCBC;">16</span>       1     0   <span style="color: #BB0000;">Inf</span> half.life            14.3    Imputation: start_p… span.r…</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">17</span>       1     0   <span style="color: #BB0000;">Inf</span> span.ratio            1.07   Imputation: start_p… span.r…</span></span>
 <span><span class="co">## <span style="color: #BCBCBC;">18</span>       1     0   <span style="color: #BB0000;">Inf</span> aucinf.obs          215.     Imputation: start_p… span.r…</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">19</span>       1     0   <span style="color: #BB0000;">Inf</span> aucpext.obs          31.5    Imputation: start_p… span.r…</span></span>
-<span><span class="co">## <span style="color: #BCBCBC;">20</span>       1     0   <span style="color: #BB0000;">Inf</span> cl.obs                0.018<span style="text-decoration: underline;">7</span> Imputation: start_p… span.r…</span></span></code></pre>
+<span><span class="co">## <span style="color: #BCBCBC;">19</span>       1     0   <span style="color: #BB0000;">Inf</span> aucpext.inf.obs      31.5    Imputation: start_p… span.r…</span></span>
+<span><span class="co">## <span style="color: #BCBCBC;">20</span>       1     0   <span style="color: #BB0000;">Inf</span> cl.inf.obs            0.018<span style="text-decoration: underline;">7</span> Imputation: start_p… span.r…</span></span></code></pre>
 </div>
 <div class="section level3">
 <h3 id="concentrations-used-for-half-life-estimation">Concentrations Used for Half-Life Estimation<a class="anchor" aria-label="anchor" href="#concentrations-used-for-half-life-estimation"></a>

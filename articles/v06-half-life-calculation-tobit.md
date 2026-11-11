@@ -97,8 +97,8 @@ The steps for Tobit regression are:
         half-life line) is not positive are removed from consideration;
         in other words, the half-life slope must be decreasing.
     2.  Among the remaining sets, select the set minimizing
-        `tobit_residual * n_points ^ tobit_n_points_penalty`, where
-        `tobit_residual` is the residual standard deviation of the Tobit
+        `tobit.residual * n_points ^ tobit_n_points_penalty`, where
+        `tobit.residual` is the residual standard deviation of the Tobit
         fit on the log-concentration scale and `n_points` is the number
         of points in the set. The `tobit_n_points_penalty` option
         (default 0) sets the penalty on the number of points; with the
@@ -189,12 +189,12 @@ names(hl_loglinear)
 #>  [7] "lambda.z.n.points"   "clast.pred"          "half.life"          
 #> [10] "span.ratio"          "tmax"                "tlast"
 
-# Tobit returns tobit_residual and BLQ point counts instead
+# Tobit returns tobit.residual and BLQ point counts instead
 names(hl_tobit)
 #>  [1] "lambda.z"              "lambda.z.time.first"   "lambda.z.time.last"   
-#>  [4] "lambda.z.n.points"     "lambda.z.n.points_blq" "clast.pred"           
-#>  [7] "half.life"             "span.ratio"            "tobit_residual"       
-#> [10] "adj_tobit_residual"    "tmax"                  "tlast"
+#>  [4] "lambda.z.n.points"     "lambda.z.n.points.blq" "clast.pred"           
+#>  [7] "half.life"             "span.ratio"            "tobit.residual"       
+#> [10] "adj.tobit.residual"    "tmax"                  "tlast"
 ```
 
 #### Example 2: BLQ observations before T_(last)
@@ -247,9 +247,9 @@ cat("  Half-life:      ", round(hl_tobit$half.life, 3), "\n")
 #>   Half-life:       1
 cat("  Total points:   ", hl_tobit$lambda.z.n.points, "\n")
 #>   Total points:    6
-cat("  BLQ points:     ", hl_tobit$lambda.z.n.points_blq, "\n")
+cat("  BLQ points:     ", hl_tobit$lambda.z.n.points.blq, "\n")
 #>   BLQ points:      2
-cat("  Tobit residual: ", round(hl_tobit$tobit_residual, 4), "\n")
+cat("  Tobit residual: ", round(hl_tobit$tobit.residual, 4), "\n")
 #>   Tobit residual:  0
 ```
 
@@ -308,12 +308,12 @@ as.data.frame(o_result)[, c("PPTESTCD", "PPORRES")]
 #>  4 lambda.z.time.first   1   e+ 0
 #>  5 lambda.z.time.last    5   e+ 0
 #>  6 lambda.z.n.points     5   e+ 0
-#>  7 lambda.z.n.points_blq 2   e+ 0
+#>  7 lambda.z.n.points.blq 2   e+ 0
 #>  8 clast.pred            1.25e+ 0
 #>  9 half.life             1   e+ 0
 #> 10 span.ratio            2   e+ 0
-#> 11 tobit_residual        1.32e-16
-#> 12 adj_tobit_residual    6.60e-17
+#> 11 tobit.residual        1.32e-16
+#> 12 adj.tobit.residual    6.60e-17
 ```
 
 ### Controlling Tobit point selection

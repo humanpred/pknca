@@ -116,10 +116,10 @@ results_obj_automatic <- pk.nca(data_obj_automatic)
 summary(results_obj_automatic)
 #>  start end  N     auclast        cmax               tmax                 tlag
 #>      0 Inf 12 98.7 [22.5] 8.65 [17.0] 1.14 [0.630, 3.55] 0.000 [0.000, 0.000]
-#>         count_conc   half.life aucinf.obs aucpext.obs        cl.obs
-#>  11.0 [11.0, 11.0] 8.18 [2.12] 115 [28.4] 13.8 [6.34] 0.0398 [29.4]
+#>         count.conc   half.life aucinf.obs aucpext.inf.obs    cl.inf.obs
+#>  11.0 [11.0, 11.0] 8.18 [2.12] 115 [28.4]     13.8 [6.34] 0.0398 [29.4]
 #> 
-#> Caption: auclast, cmax, aucinf.obs, cl.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count_conc: median and range; half.life, aucpext.obs: arithmetic mean and standard deviation; N: number of subjects
+#> Caption: auclast, cmax, aucinf.obs, cl.inf.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count.conc: median and range; half.life, aucpext.inf.obs: arithmetic mean and standard deviation; N: number of subjects
 #> 
 # To enable numeric conversion and extraction, do not give a spread function
 # and subsequently run as.numeric on the result columns.
@@ -134,11 +134,11 @@ PKNCA.set.summary(
   description = "median"
 )
 summary(results_obj_automatic, not_requested = "NA")
-#>  start end  N auclast cmax tmax                 tlag        count_conc
+#>  start end  N auclast cmax tmax                 tlag        count.conc
 #>      0 Inf 12    98.7 8.65 1.14 0.000 [0.000, 0.000] 11.0 [11.0, 11.0]
-#>  half.life aucinf.obs aucpext.obs        cl.obs
-#>       7.99        115 13.8 [6.34] 0.0398 [29.4]
+#>  half.life aucinf.obs aucpext.inf.obs    cl.inf.obs
+#>       7.99        115     13.8 [6.34] 0.0398 [29.4]
 #> 
-#> Caption: auclast, cmax, half.life, aucinf.obs: geometric mean; tmax: median; tlag, count_conc: median and range; aucpext.obs: arithmetic mean and standard deviation; cl.obs: geometric mean and geometric coefficient of variation; N: number of subjects
+#> Caption: auclast, cmax, half.life, aucinf.obs: geometric mean; tmax: median; tlag, count.conc: median and range; aucpext.inf.obs: arithmetic mean and standard deviation; cl.inf.obs: geometric mean and geometric coefficient of variation; N: number of subjects
 #> 
 ```

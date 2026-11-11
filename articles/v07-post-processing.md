@@ -107,7 +107,7 @@ as.data.frame(results_obj) %>%
     ##  4       1     0   Inf tlast                24.4    Imputation: start_p… NA     
     ##  5       1     0   Inf clast.obs             3.28   Imputation: start_p… NA     
     ##  6       1     0   Inf tlag                  0      Imputation: start_p… NA     
-    ##  7       1     0   Inf count_conc           11      Imputation: start_p… NA     
+    ##  7       1     0   Inf count.conc           11      Imputation: start_p… NA     
     ##  8       1     0   Inf lambda.z              0.0485 Imputation: start_p… NA     
     ##  9       1     0   Inf r.squared             1.000  Imputation: start_p… NA     
     ## 10       1     0   Inf adj.r.squared         1.000  Imputation: start_p… NA     
@@ -119,8 +119,8 @@ as.data.frame(results_obj) %>%
     ## 16       1     0   Inf half.life            14.3    Imputation: start_p… NA     
     ## 17       1     0   Inf span.ratio            1.07   Imputation: start_p… NA     
     ## 18       1     0   Inf aucinf.obs          215.     Imputation: start_p… NA     
-    ## 19       1     0   Inf aucpext.obs          31.5    Imputation: start_p… NA     
-    ## 20       1     0   Inf cl.obs                0.0187 Imputation: start_p… NA
+    ## 19       1     0   Inf aucpext.inf.obs      31.5    Imputation: start_p… NA     
+    ## 20       1     0   Inf cl.inf.obs            0.0187 Imputation: start_p… NA
 
 ``` r
 
@@ -138,7 +138,7 @@ as.data.frame(results_excl_span) %>%
     ##  4       1     0   Inf tlast                24.4    Imputation: start_p… NA     
     ##  5       1     0   Inf clast.obs             3.28   Imputation: start_p… NA     
     ##  6       1     0   Inf tlag                  0      Imputation: start_p… NA     
-    ##  7       1     0   Inf count_conc           11      Imputation: start_p… NA     
+    ##  7       1     0   Inf count.conc           11      Imputation: start_p… NA     
     ##  8       1     0   Inf lambda.z              0.0485 Imputation: start_p… span.r…
     ##  9       1     0   Inf r.squared             1.000  Imputation: start_p… span.r…
     ## 10       1     0   Inf adj.r.squared         1.000  Imputation: start_p… span.r…
@@ -150,8 +150,8 @@ as.data.frame(results_excl_span) %>%
     ## 16       1     0   Inf half.life            14.3    Imputation: start_p… span.r…
     ## 17       1     0   Inf span.ratio            1.07   Imputation: start_p… span.r…
     ## 18       1     0   Inf aucinf.obs          215.     Imputation: start_p… span.r…
-    ## 19       1     0   Inf aucpext.obs          31.5    Imputation: start_p… span.r…
-    ## 20       1     0   Inf cl.obs                0.0187 Imputation: start_p… span.r…
+    ## 19       1     0   Inf aucpext.inf.obs      31.5    Imputation: start_p… span.r…
+    ## 20       1     0   Inf cl.inf.obs            0.0187 Imputation: start_p… span.r…
 
 #### Missing Samples and $`T_{max}`$ Coverage
 
@@ -306,7 +306,7 @@ results_obj %>%
     ##  4       1     0   Inf tlast                24.4    Imputation: start_p… NA     
     ##  5       1     0   Inf clast.obs             3.28   Imputation: start_p… NA     
     ##  6       1     0   Inf tlag                  0      Imputation: start_p… NA     
-    ##  7       1     0   Inf count_conc           11      Imputation: start_p… NA     
+    ##  7       1     0   Inf count.conc           11      Imputation: start_p… NA     
     ##  8       1     0   Inf lambda.z              0.0485 Imputation: start_p… NA     
     ##  9       1     0   Inf r.squared             1.000  Imputation: start_p… NA     
     ## 10       1     0   Inf adj.r.squared         1.000  Imputation: start_p… NA     
@@ -318,8 +318,8 @@ results_obj %>%
     ## 16       1     0   Inf half.life            14.3    Imputation: start_p… NA     
     ## 17       1     0   Inf span.ratio            1.07   Imputation: start_p… NA     
     ## 18       1     0   Inf aucinf.obs          215.     Imputation: start_p… NA     
-    ## 19       1     0   Inf aucpext.obs          31.5    Imputation: start_p… NA     
-    ## 20       1     0   Inf cl.obs                0.0187 Imputation: start_p… NA
+    ## 19       1     0   Inf aucpext.inf.obs      31.5    Imputation: start_p… NA     
+    ## 20       1     0   Inf cl.inf.obs            0.0187 Imputation: start_p… NA
 
 ``` r
 
@@ -338,7 +338,7 @@ results_excl_specific %>%
     ##  4       1     0   Inf tlast                24.4    Imputation: start_p… NA     
     ##  5       1     0   Inf clast.obs             3.28   Imputation: start_p… NA     
     ##  6       1     0   Inf tlag                  0      Imputation: start_p… NA     
-    ##  7       1     0   Inf count_conc           11      Imputation: start_p… NA     
+    ##  7       1     0   Inf count.conc           11      Imputation: start_p… NA     
     ##  8       1     0   Inf lambda.z              0.0485 Imputation: start_p… NA     
     ##  9       1     0   Inf r.squared             1.000  Imputation: start_p… NA     
     ## 10       1     0   Inf adj.r.squared         1.000  Imputation: start_p… NA     
@@ -350,8 +350,8 @@ results_excl_specific %>%
     ## 16       1     0   Inf half.life            14.3    Imputation: start_p… NA     
     ## 17       1     0   Inf span.ratio            1.07   Imputation: start_p… NA     
     ## 18       1     0   Inf aucinf.obs          215.     Imputation: start_p… NA     
-    ## 19       1     0   Inf aucpext.obs          31.5    Imputation: start_p… NA     
-    ## 20       1     0   Inf cl.obs                0.0187 Imputation: start_p… NA
+    ## 19       1     0   Inf aucpext.inf.obs      31.5    Imputation: start_p… NA     
+    ## 20       1     0   Inf cl.inf.obs            0.0187 Imputation: start_p… NA
 
 #### Multiple Exclusions
 
@@ -399,7 +399,7 @@ results_excl_multi %>%
     ##  4       1     0   Inf tlast                24.4    Imputation: start_p… NA     
     ##  5       1     0   Inf clast.obs             3.28   Imputation: start_p… NA     
     ##  6       1     0   Inf tlag                  0      Imputation: start_p… NA     
-    ##  7       1     0   Inf count_conc           11      Imputation: start_p… NA     
+    ##  7       1     0   Inf count.conc           11      Imputation: start_p… NA     
     ##  8       1     0   Inf lambda.z              0.0485 Imputation: start_p… span.r…
     ##  9       1     0   Inf r.squared             1.000  Imputation: start_p… span.r…
     ## 10       1     0   Inf adj.r.squared         1.000  Imputation: start_p… span.r…
@@ -411,8 +411,8 @@ results_excl_multi %>%
     ## 16       1     0   Inf half.life            14.3    Imputation: start_p… span.r…
     ## 17       1     0   Inf span.ratio            1.07   Imputation: start_p… span.r…
     ## 18       1     0   Inf aucinf.obs          215.     Imputation: start_p… span.r…
-    ## 19       1     0   Inf aucpext.obs          31.5    Imputation: start_p… span.r…
-    ## 20       1     0   Inf cl.obs                0.0187 Imputation: start_p… span.r…
+    ## 19       1     0   Inf aucpext.inf.obs      31.5    Imputation: start_p… span.r…
+    ## 20       1     0   Inf cl.inf.obs            0.0187 Imputation: start_p… span.r…
 
 ## Normalizing Results
 
@@ -549,10 +549,10 @@ summary(results_obj)
 
     ##  start end  N     auclast        cmax               tmax                 tlag
     ##      0 Inf 12 98.7 [22.5] 8.65 [17.0] 1.14 [0.630, 3.55] 0.000 [0.000, 0.000]
-    ##         count_conc   half.life aucinf.obs aucpext.obs        cl.obs
-    ##  11.0 [11.0, 11.0] 8.18 [2.12] 115 [28.4] 13.8 [6.34] 0.0398 [29.4]
+    ##         count.conc   half.life aucinf.obs aucpext.inf.obs    cl.inf.obs
+    ##  11.0 [11.0, 11.0] 8.18 [2.12] 115 [28.4]     13.8 [6.34] 0.0398 [29.4]
     ## 
-    ## Caption: auclast, cmax, aucinf.obs, cl.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count_conc: median and range; half.life, aucpext.obs: arithmetic mean and standard deviation; N: number of subjects
+    ## Caption: auclast, cmax, aucinf.obs, cl.inf.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count.conc: median and range; half.life, aucpext.inf.obs: arithmetic mean and standard deviation; N: number of subjects
 
 When values are excluded as described above, the excluded values are not
 included in the summary (note that half.life and aucinf.obs differ).
@@ -564,12 +564,12 @@ summary(results_excl_span)
 
     ##  start end  N     auclast        cmax               tmax                 tlag
     ##      0 Inf 12 98.7 [22.5] 8.65 [17.0] 1.14 [0.630, 3.55] 0.000 [0.000, 0.000]
-    ##         count_conc         half.life      aucinf.obs      aucpext.obs
+    ##         count.conc         half.life      aucinf.obs  aucpext.inf.obs
     ##  11.0 [11.0, 11.0] 7.36 [0.742], n=9 105 [16.4], n=9 11.3 [2.28], n=9
-    ##              cl.obs
+    ##          cl.inf.obs
     ##  0.0453 [11.2], n=9
     ## 
-    ## Caption: auclast, cmax, aucinf.obs, cl.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count_conc: median and range; half.life, aucpext.obs: arithmetic mean and standard deviation; N: number of subjects; n: number of measurements included in summary
+    ## Caption: auclast, cmax, aucinf.obs, cl.inf.obs: geometric mean and geometric coefficient of variation; tmax, tlag, count.conc: median and range; half.life, aucpext.inf.obs: arithmetic mean and standard deviation; N: number of subjects; n: number of measurements included in summary
 
 ### Listing of Results
 
@@ -591,7 +591,7 @@ as.data.frame(results_obj) %>%
     ##  4       1     0   Inf tlast                24.4    Imputation: start_p… NA     
     ##  5       1     0   Inf clast.obs             3.28   Imputation: start_p… NA     
     ##  6       1     0   Inf tlag                  0      Imputation: start_p… NA     
-    ##  7       1     0   Inf count_conc           11      Imputation: start_p… NA     
+    ##  7       1     0   Inf count.conc           11      Imputation: start_p… NA     
     ##  8       1     0   Inf lambda.z              0.0485 Imputation: start_p… NA     
     ##  9       1     0   Inf r.squared             1.000  Imputation: start_p… NA     
     ## 10       1     0   Inf adj.r.squared         1.000  Imputation: start_p… NA     
@@ -603,8 +603,8 @@ as.data.frame(results_obj) %>%
     ## 16       1     0   Inf half.life            14.3    Imputation: start_p… NA     
     ## 17       1     0   Inf span.ratio            1.07   Imputation: start_p… NA     
     ## 18       1     0   Inf aucinf.obs          215.     Imputation: start_p… NA     
-    ## 19       1     0   Inf aucpext.obs          31.5    Imputation: start_p… NA     
-    ## 20       1     0   Inf cl.obs                0.0187 Imputation: start_p… NA
+    ## 19       1     0   Inf aucpext.inf.obs      31.5    Imputation: start_p… NA     
+    ## 20       1     0   Inf cl.inf.obs            0.0187 Imputation: start_p… NA
 
 Excluded values remain in the listing.
 
@@ -623,7 +623,7 @@ as.data.frame(results_excl_span) %>%
     ##  4       1     0   Inf tlast                24.4    Imputation: start_p… NA     
     ##  5       1     0   Inf clast.obs             3.28   Imputation: start_p… NA     
     ##  6       1     0   Inf tlag                  0      Imputation: start_p… NA     
-    ##  7       1     0   Inf count_conc           11      Imputation: start_p… NA     
+    ##  7       1     0   Inf count.conc           11      Imputation: start_p… NA     
     ##  8       1     0   Inf lambda.z              0.0485 Imputation: start_p… span.r…
     ##  9       1     0   Inf r.squared             1.000  Imputation: start_p… span.r…
     ## 10       1     0   Inf adj.r.squared         1.000  Imputation: start_p… span.r…
@@ -635,8 +635,8 @@ as.data.frame(results_excl_span) %>%
     ## 16       1     0   Inf half.life            14.3    Imputation: start_p… span.r…
     ## 17       1     0   Inf span.ratio            1.07   Imputation: start_p… span.r…
     ## 18       1     0   Inf aucinf.obs          215.     Imputation: start_p… span.r…
-    ## 19       1     0   Inf aucpext.obs          31.5    Imputation: start_p… span.r…
-    ## 20       1     0   Inf cl.obs                0.0187 Imputation: start_p… span.r…
+    ## 19       1     0   Inf aucpext.inf.obs      31.5    Imputation: start_p… span.r…
+    ## 20       1     0   Inf cl.inf.obs            0.0187 Imputation: start_p… span.r…
 
 ### Concentrations Used for Half-Life Estimation
 

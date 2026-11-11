@@ -131,37 +131,67 @@ secondary:</p>
 <td align="left">interval</td>
 </tr>
 <tr class="even">
-<td align="left">clr.obs</td>
+<td align="left">clr.int.inf.pred</td>
 <td align="left">renal_clearance</td>
 <td align="left">interval</td>
 </tr>
 <tr class="odd">
-<td align="left">clr.pred</td>
+<td align="left">clr.int.inf.obs</td>
 <td align="left">renal_clearance</td>
 <td align="left">interval</td>
 </tr>
 <tr class="even">
+<td align="left">clr.int.all</td>
+<td align="left">renal_clearance</td>
+<td align="left">interval</td>
+</tr>
+<tr class="odd">
+<td align="left">clr.int.last</td>
+<td align="left">renal_clearance</td>
+<td align="left">interval</td>
+</tr>
+<tr class="even">
+<td align="left">clr.all</td>
+<td align="left">renal_clearance</td>
+<td align="left">interval</td>
+</tr>
+<tr class="odd">
+<td align="left">clr.inf.obs</td>
+<td align="left">renal_clearance</td>
+<td align="left">interval</td>
+</tr>
+<tr class="even">
+<td align="left">clr.inf.pred</td>
+<td align="left">renal_clearance</td>
+<td align="left">interval</td>
+</tr>
+<tr class="odd">
 <td align="left">ratio.cmax</td>
 <td align="left">parameter_ratio</td>
 <td align="left">spot</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">ratio.auclast</td>
 <td align="left">parameter_ratio</td>
 <td align="left">spot</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">ratio.aucint.last</td>
 <td align="left">parameter_ratio</td>
 <td align="left">spot</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">ratio.aucint.all</td>
 <td align="left">parameter_ratio</td>
 <td align="left">spot</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">f.last</td>
+<td align="left">bioavailability</td>
+<td align="left">spot</td>
+</tr>
+<tr class="even">
+<td align="left">f.all</td>
 <td align="left">bioavailability</td>
 <td align="left">spot</td>
 </tr>
@@ -176,22 +206,22 @@ secondary:</p>
 <td align="left">spot</td>
 </tr>
 <tr class="odd">
-<td align="left">f.obs</td>
+<td align="left">f.inf.obs</td>
 <td align="left">bioavailability</td>
 <td align="left">spot</td>
 </tr>
 <tr class="even">
-<td align="left">f.pred</td>
+<td align="left">f.inf.pred</td>
 <td align="left">bioavailability</td>
 <td align="left">spot</td>
 </tr>
 <tr class="odd">
-<td align="left">f.int.obs</td>
+<td align="left">f.int.inf.obs</td>
 <td align="left">bioavailability</td>
 <td align="left">spot</td>
 </tr>
 <tr class="even">
-<td align="left">f.int.pred</td>
+<td align="left">f.int.inf.pred</td>
 <td align="left">bioavailability</td>
 <td align="left">spot</td>
 </tr>
@@ -206,19 +236,34 @@ secondary:</p>
 <td align="left">spot</td>
 </tr>
 <tr class="odd">
-<td align="left">clr.last.dn</td>
+<td align="left">clr.obs</td>
 <td align="left">renal_clearance</td>
 <td align="left">interval</td>
 </tr>
 <tr class="even">
-<td align="left">clr.obs.dn</td>
+<td align="left">clr.pred</td>
 <td align="left">renal_clearance</td>
 <td align="left">interval</td>
 </tr>
 <tr class="odd">
-<td align="left">clr.pred.dn</td>
-<td align="left">renal_clearance</td>
-<td align="left">interval</td>
+<td align="left">f.int.obs</td>
+<td align="left">bioavailability</td>
+<td align="left">spot</td>
+</tr>
+<tr class="even">
+<td align="left">f.int.pred</td>
+<td align="left">bioavailability</td>
+<td align="left">spot</td>
+</tr>
+<tr class="odd">
+<td align="left">f.obs</td>
+<td align="left">bioavailability</td>
+<td align="left">spot</td>
+</tr>
+<tr class="even">
+<td align="left">f.pred</td>
+<td align="left">bioavailability</td>
+<td align="left">spot</td>
 </tr>
 </tbody>
 </table>
@@ -1251,8 +1296,8 @@ come from the reference interval:</p>
 <span>    interval_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"refprofile"</span>, <span class="cn">NA</span><span class="op">)</span>,</span>
 <span>    aucinf.obs <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>    totdose <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>    f.obs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="cn">TRUE</span><span class="op">)</span>,</span>
-<span>    f.obs_ref <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="st">"refprofile"</span><span class="op">)</span></span>
+<span>    f.inf.obs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    f.inf.obs_ref <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="st">"refprofile"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="va">o_data_f</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span></span>
@@ -1261,7 +1306,7 @@ come from the reference interval:</p>
 <span>    intervals <span class="op">=</span> <span class="va">intervals_f</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="va">d_f</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data_f</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">d_f</span><span class="op">[</span><span class="va">d_f</span><span class="op">$</span><span class="va">PPTESTCD</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"totdose"</span>, <span class="st">"aucinf.obs"</span>, <span class="st">"f.obs"</span><span class="op">)</span>, <span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">d_f</span><span class="op">[</span><span class="va">d_f</span><span class="op">$</span><span class="va">PPTESTCD</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"totdose"</span>, <span class="st">"aucinf.obs"</span>, <span class="st">"f.inf.obs"</span><span class="op">)</span>, <span class="op">]</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
 <col width="8%">
@@ -1341,7 +1386,7 @@ come from the reference interval:</p>
 <td align="right">1</td>
 <td align="right">0</td>
 <td align="right">Inf</td>
-<td align="left">f.obs</td>
+<td align="left">f.inf.obs</td>
 <td align="right">0.809551</td>
 <td align="left">Reference interval: treatment=ref, 0-Inf</td>
 <td align="left">NA</td>
@@ -1362,7 +1407,7 @@ come from the reference interval:</p>
 used changes the answer and is not recoverable from the number:</p>
 <div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">f_params</span> <span class="op">&lt;-</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"f.obs"</span>, <span class="st">"f.pred"</span>, <span class="st">"f.last"</span>, <span class="st">"f.int.obs"</span>, <span class="st">"f.int.pred"</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"f.inf.obs"</span>, <span class="st">"f.inf.pred"</span>, <span class="st">"f.last"</span>, <span class="st">"f.int.inf.obs"</span>, <span class="st">"f.int.inf.pred"</span>,</span>
 <span>    <span class="st">"f.int.last"</span>, <span class="st">"f.int.all"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
@@ -1384,11 +1429,11 @@ used changes the answer and is not recoverable from the number:</p>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td align="left">f.obs</td>
+<td align="left">f.inf.obs</td>
 <td align="left">aucinf.obs</td>
 </tr>
 <tr class="even">
-<td align="left">f.pred</td>
+<td align="left">f.inf.pred</td>
 <td align="left">aucinf.pred</td>
 </tr>
 <tr class="odd">
@@ -1396,11 +1441,11 @@ used changes the answer and is not recoverable from the number:</p>
 <td align="left">auclast</td>
 </tr>
 <tr class="even">
-<td align="left">f.int.obs</td>
+<td align="left">f.int.inf.obs</td>
 <td align="left">aucint.inf.obs</td>
 </tr>
 <tr class="odd">
-<td align="left">f.int.pred</td>
+<td align="left">f.int.inf.pred</td>
 <td align="left">aucint.inf.pred</td>
 </tr>
 <tr class="even">
@@ -1448,18 +1493,18 @@ the group columns in which the reference may differ:</p>
 <span><span class="va">intervals_period</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="../reference/interval_add_secondary.html">interval_add_secondary</a></span><span class="op">(</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>treatment <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"iv"</span>, <span class="st">"oral"</span><span class="op">)</span>, start <span class="op">=</span> <span class="fl">0</span>, end <span class="op">=</span> <span class="cn">Inf</span>, aucinf.obs <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
-<span>    param <span class="op">=</span> <span class="st">"f.obs"</span>,</span>
+<span>    param <span class="op">=</span> <span class="st">"f.inf.obs"</span>,</span>
 <span>    reference <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>treatment <span class="op">=</span> <span class="st">"iv"</span><span class="op">)</span>,</span>
 <span>    ref_vary <span class="op">=</span> <span class="st">"period"</span></span>
 <span>  <span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">intervals_period</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"treatment"</span>, <span class="st">"interval_id"</span>, <span class="st">"f.obs"</span>, <span class="st">"f.obs_ref"</span>, <span class="st">"f.obs_ref_vary"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">intervals_period</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"treatment"</span>, <span class="st">"interval_id"</span>, <span class="st">"f.inf.obs"</span>, <span class="st">"f.inf.obs_ref"</span>, <span class="st">"f.inf.obs_ref_vary"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <thead><tr class="header">
 <th align="left">treatment</th>
 <th align="left">interval_id</th>
-<th align="left">f.obs</th>
-<th align="left">f.obs_ref</th>
-<th align="left">f.obs_ref_vary</th>
+<th align="left">f.inf.obs</th>
+<th align="left">f.inf.obs_ref</th>
+<th align="left">f.inf.obs_ref_vary</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
@@ -1488,7 +1533,7 @@ the group columns in which the reference may differ:</p>
 <span><span class="va">d_period</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data_period</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="va">d_period</span><span class="op">[</span></span>
-<span>    <span class="va">d_period</span><span class="op">$</span><span class="va">PPTESTCD</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="st">"f.obs"</span>,</span>
+<span>    <span class="va">d_period</span><span class="op">$</span><span class="va">PPTESTCD</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="st">"f.inf.obs"</span>,</span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"subject"</span>, <span class="st">"period"</span>, <span class="st">"treatment"</span>, <span class="st">"PPORRES"</span>, <span class="st">"period_ref"</span>, <span class="st">"PPANMETH"</span><span class="op">)</span></span>
 <span>  <span class="op">]</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -1567,8 +1612,8 @@ the renal clearance built on that AUC inherits the reason:</p>
 <span>    interval_id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"plasma06"</span>, <span class="cn">NA</span><span class="op">)</span>,</span>
 <span>    aucinf.obs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">TRUE</span>, <span class="cn">FALSE</span><span class="op">)</span>,</span>
 <span>    ae <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="cn">TRUE</span><span class="op">)</span>,</span>
-<span>    clr.obs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="cn">TRUE</span><span class="op">)</span>,</span>
-<span>    clr.obs_ref <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="st">"plasma06"</span><span class="op">)</span></span>
+<span>    clr.inf.obs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">FALSE</span>, <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    clr.inf.obs_ref <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="st">"plasma06"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="va">o_data_x</span> <span class="op">&lt;-</span></span>
 <span>  <span class="fu"><a href="../reference/PKNCAdata.html">PKNCAdata</a></span><span class="op">(</span></span>
@@ -1581,16 +1626,16 @@ the renal clearance built on that AUC inherits the reason:</p>
 <span><span class="co">#&gt; points)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="va">d_x</span><span class="op">[</span></span>
-<span>    <span class="va">d_x</span><span class="op">$</span><span class="va">PPTESTCD</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"half.life"</span>, <span class="st">"aucinf.obs"</span>, <span class="st">"ae"</span>, <span class="st">"clr.obs"</span><span class="op">)</span>,</span>
+<span>    <span class="va">d_x</span><span class="op">$</span><span class="va">PPTESTCD</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"half.life"</span>, <span class="st">"aucinf.obs"</span>, <span class="st">"ae"</span>, <span class="st">"clr.inf.obs"</span><span class="op">)</span>,</span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"PCSPEC"</span>, <span class="st">"PPTESTCD"</span>, <span class="st">"PPORRES"</span>, <span class="st">"exclude"</span><span class="op">)</span></span>
 <span>  <span class="op">]</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
 <col width="6%">
-<col width="10%">
+<col width="11%">
 <col width="7%">
-<col width="75%">
+<col width="74%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">PCSPEC</th>
@@ -1621,7 +1666,7 @@ the renal clearance built on that AUC inherits the reason:</p>
 </tr>
 <tr class="even">
 <td align="left">urine</td>
-<td align="left">clr.obs</td>
+<td align="left">clr.inf.obs</td>
 <td align="right">NA</td>
 <td align="left">Too few points for half-life calculation
 (min.hl.points=3 with only 2 points)</td>
@@ -1922,7 +1967,7 @@ dimensionless, and the units say so instead of reporting the number as a
 <span>    intervals <span class="op">=</span> <span class="va">intervals_f</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="va">d_fu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">as.data.frame</a></span><span class="op">(</span><span class="fu"><a href="../reference/pk.nca.html">pk.nca</a></span><span class="op">(</span><span class="va">o_data_fu</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">d_fu</span><span class="op">[</span><span class="va">d_fu</span><span class="op">$</span><span class="va">PPTESTCD</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="st">"f.obs"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"treatment"</span>, <span class="st">"treatment_ref"</span>, <span class="st">"PPORRES"</span>, <span class="st">"PPORRESU"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">d_fu</span><span class="op">[</span><span class="va">d_fu</span><span class="op">$</span><span class="va">PPTESTCD</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="st">"f.inf.obs"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"treatment"</span>, <span class="st">"treatment_ref"</span>, <span class="st">"PPORRES"</span>, <span class="st">"PPORRESU"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
 <col width="14%">
@@ -2011,7 +2056,7 @@ with any secondary parameter requested is an error. Supporting it is
 planned.</li>
 <li>The reference for an absolute bioavailability is not yet derived
 from the route of administration; give it with <code>group_ref</code>, a
-<code>f.obs_ref</code> pointer, or
+<code>f.inf.obs_ref</code> pointer, or
 <code><a href="../reference/interval_add_secondary.html">interval_add_secondary()</a></code>.</li>
 <li>The CDISC <code>PPTESTCD</code> of a ratio does not yet depend on
 what the ratio compares (accumulation against metabolite ratio).</li>

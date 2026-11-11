@@ -31,8 +31,8 @@ fit_half_life_tobit(data, tlast, optim_control = list())
 
 A data.frame with one row and columns named `"lambda.z"`,
 `"clast.pred"`, `"lambda.z.time.first"`, `"lambda.z.time.last"`,
-`"lambda.z.n.points"`, `"lambda.z.n.points_blq"`, `"half.life"`,
-`"span.ratio"`, `"tobit_residual"`, and `"adj_tobit_residual"`. Returns
+`"lambda.z.n.points"`, `"lambda.z.n.points.blq"`, `"half.life"`,
+`"span.ratio"`, `"tobit.residual"`, and `"adj.tobit.residual"`. Returns
 `NA` for all columns if
 [`stats::optim()`](https://rdrr.io/r/stats/optim.html) does not
 converge, and emits a warning.

@@ -1,6 +1,6 @@
 # Count the number of concentration measurements in an interval
 
-`count_conc` and `count_conc_measured` are typically used for quality
+`count.conc` and `count.conc.measured` are typically used for quality
 control on the data to ensure that there are a sufficient number of
 non-missing samples for a calculation and to ensure that data are
 consistent between individuals.
@@ -44,9 +44,9 @@ section).
 ## Imputed concentrations
 
 Both counts are taken after imputation, and neither distinguishes an
-imputed concentration from a measured one. `count_conc` counts every
+imputed concentration from a measured one. `count.conc` counts every
 non-missing concentration, so any imputation that adds a point increases
-it. `count_conc_measured` counts concentrations above the limit of
+it. `count.conc.measured` counts concentrations above the limit of
 quantification, so whether an imputed point is counted depends on its
 value rather than on its being imputed: the zero added by
 [`PKNCA_impute_method_start_conc0()`](https://humanpred.github.io/pknca/reference/PKNCA_impute_method.md)

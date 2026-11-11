@@ -189,8 +189,8 @@ value (slope for the half-life line) is not positive are removed from
 consideration; in other words, the half-life slope must be
 decreasing.</li>
 <li>Among the remaining sets, select the set minimizing
-<code>tobit_residual * n_points ^ tobit_n_points_penalty</code>, where
-<code>tobit_residual</code> is the residual standard deviation of the
+<code>tobit.residual * n_points ^ tobit_n_points_penalty</code>, where
+<code>tobit.residual</code> is the residual standard deviation of the
 Tobit fit on the log-concentration scale and <code>n_points</code> is
 the number of points in the set. The <code>tobit_n_points_penalty</code>
 option (default 0) sets the penalty on the number of points; with the
@@ -277,12 +277,12 @@ regression produce essentially the same answer.</p>
 <span><span class="co">#&gt;  [7] "lambda.z.n.points"   "clast.pred"          "half.life"          </span></span>
 <span><span class="co">#&gt; [10] "span.ratio"          "tmax"                "tlast"</span></span>
 <span></span>
-<span><span class="co"># Tobit returns tobit_residual and BLQ point counts instead</span></span>
+<span><span class="co"># Tobit returns tobit.residual and BLQ point counts instead</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">hl_tobit</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  [1] "lambda.z"              "lambda.z.time.first"   "lambda.z.time.last"   </span></span>
-<span><span class="co">#&gt;  [4] "lambda.z.n.points"     "lambda.z.n.points_blq" "clast.pred"           </span></span>
-<span><span class="co">#&gt;  [7] "half.life"             "span.ratio"            "tobit_residual"       </span></span>
-<span><span class="co">#&gt; [10] "adj_tobit_residual"    "tmax"                  "tlast"</span></span></code></pre></div>
+<span><span class="co">#&gt;  [4] "lambda.z.n.points"     "lambda.z.n.points.blq" "clast.pred"           </span></span>
+<span><span class="co">#&gt;  [7] "half.life"             "span.ratio"            "tobit.residual"       </span></span>
+<span><span class="co">#&gt; [10] "adj.tobit.residual"    "tmax"                  "tlast"</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="example-2-blq-observations-before-tlast">Example 2: BLQ observations before T<sub>last</sub><a class="anchor" aria-label="anchor" href="#example-2-blq-observations-before-tlast"></a>
@@ -333,9 +333,9 @@ which can provide a better estimate.</p>
 <span><span class="co">#&gt;   Half-life:       1</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"  Total points:   "</span>, <span class="va">hl_tobit</span><span class="op">$</span><span class="va">lambda.z.n.points</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   Total points:    6</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"  BLQ points:     "</span>, <span class="va">hl_tobit</span><span class="op">$</span><span class="va">lambda.z.n.points_blq</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"  BLQ points:     "</span>, <span class="va">hl_tobit</span><span class="op">$</span><span class="va">lambda.z.n.points.blq</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   BLQ points:      2</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"  Tobit residual: "</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">hl_tobit</span><span class="op">$</span><span class="va">tobit_residual</span>, <span class="fl">4</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"  Tobit residual: "</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">hl_tobit</span><span class="op">$</span><span class="va">tobit.residual</span>, <span class="fl">4</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   Tobit residual:  0</span></span></code></pre></div>
 </div>
 </div>
@@ -391,12 +391,12 @@ LLOQ.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> lambda.z.time.first   1   <span style="color: #949494;">e</span>+ 0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> lambda.z.time.last    5   <span style="color: #949494;">e</span>+ 0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> lambda.z.n.points     5   <span style="color: #949494;">e</span>+ 0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> lambda.z.n.points_blq 2   <span style="color: #949494;">e</span>+ 0</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> lambda.z.n.points.blq 2   <span style="color: #949494;">e</span>+ 0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> clast.pred            1.25<span style="color: #949494;">e</span>+ 0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> half.life             1   <span style="color: #949494;">e</span>+ 0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> span.ratio            2   <span style="color: #949494;">e</span>+ 0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> tobit_residual        1.32<span style="color: #949494;">e</span><span style="color: #BB0000;">-16</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> adj_tobit_residual    6.60<span style="color: #949494;">e</span><span style="color: #BB0000;">-17</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> tobit.residual        1.32<span style="color: #949494;">e</span><span style="color: #BB0000;">-16</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> adj.tobit.residual    6.60<span style="color: #949494;">e</span><span style="color: #BB0000;">-17</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="controlling-tobit-point-selection">Controlling Tobit point selection<a class="anchor" aria-label="anchor" href="#controlling-tobit-point-selection"></a>

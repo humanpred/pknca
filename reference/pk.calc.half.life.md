@@ -233,16 +233,16 @@ Additional columns for `hl_method = "log-linear"`:
 
 Additional columns for `hl_method = "tobit"`:
 
-- lambda.z.n.points_blq:
+- lambda.z.n.points.blq:
 
   number of BLQ points included in the fit
 
-- tobit_residual:
+- tobit.residual:
 
   estimated residual standard deviation from the Tobit fit (on the
   log-concentration scale)
 
-- adj_tobit_residual:
+- adj.tobit.residual:
 
   adjusted Tobit residual (analogous to adjusted r-squared; penalizes
   smaller windows)
@@ -270,8 +270,8 @@ following rules in order:
 
 For `hl_method = "tobit"`, BLQ observations are retained and treated as
 left-censored. The best window is the one minimizing
-`tobit_residual * n ^ tobit_n_points_penalty` (default: raw
-`tobit_residual`) among windows with `lambda.z > 0`, at least
+`tobit.residual * n ^ tobit_n_points_penalty` (default: raw
+`tobit.residual`) among windows with `lambda.z > 0`, at least
 `min.hl.points` and at most `max.hl.points` above-LLOQ points, and a
 first point no earlier than `min.hl.start.time`. On ties the largest
 window (most total points) is preferred.

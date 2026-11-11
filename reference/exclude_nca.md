@@ -218,7 +218,7 @@ my_conc <- PKNCAconc(data.frame(conc=1.1^(3:0),
 my_data <- PKNCAdata(my_conc,
                      intervals=data.frame(start=0, end=Inf,
                                           aucinf.obs=TRUE,
-                                          aucpext.obs=TRUE))
+                                          aucpext.inf.obs=TRUE))
 my_result <- pk.nca(my_data)
 my_result_excluded <- exclude(my_result,
                               FUN=exclude_nca_max.aucinf.pext())
@@ -241,5 +241,5 @@ as.data.frame(my_result_excluded)
 #> 13       1     0   Inf half.life            7.27   ""                    NA     
 #> 14       1     0   Inf span.ratio           0.275  ""                    NA     
 #> 15       1     0   Inf aucinf.obs          14.0    "AUC: lin up/log dow… aucpex…
-#> 16       1     0   Inf aucpext.obs         75.1    ""                    aucpex…
+#> 16       1     0   Inf aucpext.inf.obs     75.1    ""                    aucpex…
 ```
