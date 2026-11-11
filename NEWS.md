@@ -1167,6 +1167,14 @@ the generated intervals:
 
 ## Bug fixes
 
+* `"mcg"` is accepted as a unit, an alias of `"ug"`, so concentration and dose
+  units like `"mcg/mL"` convert to preferred units.  Before, converting
+  `"min*mcg/mL"` to `"hr*ng/mL"` stopped with "'mcg' is not recognized by
+  udunits".  Loading PKNCA adds `"mcg"` (like `"fraction"`) to the `units`
+  package with `units::install_unit()`, which changes the udunits database of
+  the whole R session, so `"mcg"` is then available to every package that uses
+  `units` (@billdenney).
+
 * The IV interval AUCs and AUMCs (`aucivint.last`, `aucivint.all`,
   `aumcivint.last`, `aumcivint.all`, and the new `aucivint.inf.obs` and
   `aucivint.inf.pred`) are calculated by the new `pk.calc.auciv.int()` and
