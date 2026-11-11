@@ -2290,6 +2290,56 @@ test_that("parameter_arg_spec() caches per parameter and sparse flag until the r
   expect_identical(parameter_arg_spec("pknca_test_arg_spec"), spec_mean)
 })
 
+test_that("an empty imputation string means no imputation", {
+  d_conc <- data.frame(time = 1:4, conc = c(4, 3, 2, 1))
+  o_conc <- PKNCAconc(d_conc, conc~time)
+  o_dose <- PKNCAdose(data.frame(time = 0, dose = 1), dose~time)
+  intervals <- data.frame(start = 0, end = 4, auclast = TRUE)
+  expect_warning(
+    res_none <- as.data.frame(pk.nca(PKNCAdata(o_conc, o_dose, intervals = intervals))),
+    class = "pknca_warning_auc_before_first"
+  )
+  # No concentration at the interval start, so auclast is not calculable
+  expect_equal(res_none$PPORRES, NA_real_)
+  for (current_impute in c("", " ", " , ")) {
+    # As the whole-dataset setting
+    expect_warning(
+      res_arg <- as.data.frame(pk.nca(PKNCAdata(o_conc, o_dose, intervals = intervals, impute = current_impute))),
+      class = "pknca_warning_auc_before_first"
+    )
+    expect_equal(res_arg$PPORRES, NA_real_)
+    expect_equal(res_arg$exclude, res_none$exclude)
+    # As an interval column, next to an interval that does impute
+    intervals_col <- data.frame(start = 0, end = c(4, 4), auclast = TRUE, impute = c(current_impute, "start_conc0"))
+    expect_warning(
+      res_col <- as.data.frame(pk.nca(PKNCAdata(o_conc, o_dose, intervals = intervals_col))),
+      class = "pknca_warning_auc_before_first"
+    )
+    # 4*1/2 for the imputed 0 at time 0, then the log-down trapezoids of the
+    # observed data
+    expect_equal(
+      res_col$PPORRES,
+      c(NA_real_, 2 + (4 - 3)/log(4/3) + (3 - 2)/log(3/2) + (2 - 1)/log(2/1))
+    )
+  }
+})
+
+test_that("pk.nca() reads a PKNCAdata object without an impute setting as no imputation", {
+  d_conc <- data.frame(time = 0:4, conc = c(0, 4, 3, 2, 1))
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time),
+      PKNCAdose(data.frame(time = 0, dose = 1), dose~time),
+      intervals = data.frame(start = 0, end = 4, auclast = TRUE)
+    )
+  o_data_null <- o_data
+  o_data_null$impute <- NULL
+  expect_equal(
+    as.data.frame(pk.nca(o_data_null))$PPORRES,
+    as.data.frame(pk.nca(o_data))$PPORRES
+  )
+})
+
 test_that("ctrough, cstart, and aumcint use the interval's own times for an interval not starting at zero", {
   d_conc <- data.frame(
     time = c(0, 1, 2, 4, 8, 12, 13, 14, 16, 20, 24),

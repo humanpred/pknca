@@ -143,7 +143,9 @@ pk_nca_run_splitdata <- function(splitdata, data, data_calc, verbose) {
       ),
       .f = pk.nca.intervals,
       options = data$options,
-      impute = data$impute,
+      # A PKNCAdata object without an impute setting has no whole-dataset
+      # imputation
+      impute = data$impute %||% NA_character_,
       verbose = verbose,
       .progress = data$options$progress
     )
@@ -958,9 +960,10 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   has_sparse_conc <- !is.null(conc.sparse)
   sparse_impute_changed <- FALSE
 
-  if (!all(is.na(impute_method))) {
-    impute_funs <- PKNCA_impute_fun_list(impute_method)
-    stopifnot(length(impute_funs) == 1)
+  # A method string with no method names in it (like "") is no imputation
+  impute_funs <- PKNCA_impute_fun_list(impute_method)
+  stopifnot(length(impute_funs) == 1)
+  if (!all(is.na(impute_funs[[1]]))) {
     impute_data <-
       impute_conc_time(
         impute_funs=impute_funs[[1]], conc=conc, time=time,

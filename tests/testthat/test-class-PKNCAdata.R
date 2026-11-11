@@ -634,3 +634,29 @@ test_that("PKNCAdata keeps the intervals of the groups that get them", {
   expect_equal(ret$intervals$end, Inf)
   expect_false("data_intervals" %in% names(ret$intervals))
 })
+
+test_that("PKNCAdata() reads impute = NA and impute = NULL as the default", {
+  d_conc <- data.frame(time = 0:4, conc = c(0, 4, 3, 2, 1))
+  d_dose <- data.frame(time = 0, dose = 1)
+  o_conc <- PKNCAconc(d_conc, conc~time)
+  o_dose <- PKNCAdose(d_dose, dose~time)
+  intervals <- data.frame(start = 0, end = 4, auclast = TRUE)
+  # auclast by the linear-up/log-down rule from the observed data
+  auclast_none <- as.data.frame(pk.nca(PKNCAdata(o_conc, o_dose, intervals = intervals)))$PPORRES
+  for (current_impute in list(NA, NA_character_, NULL)) {
+    o_data <- PKNCAdata(o_conc, o_dose, intervals = intervals, impute = current_impute)
+    expect_identical(o_data$impute, NA_character_)
+    expect_equal(as.data.frame(pk.nca(o_data))$PPORRES, auclast_none)
+  }
+
+  # NA finds an "impute" column in the intervals:  without the time-0 sample,
+  # start_conc0 adds back the same 0 at time 0, so auclast is unchanged
+  d_conc_nozero <- d_conc[-1, ]
+  o_conc_nozero <- PKNCAconc(d_conc_nozero, conc~time)
+  intervals_impute <- data.frame(start = 0, end = 4, auclast = TRUE, impute = "start_conc0")
+  for (current_impute in list(NA, NULL)) {
+    o_data <- PKNCAdata(o_conc_nozero, o_dose, intervals = intervals_impute, impute = current_impute)
+    expect_identical(o_data$impute, NA_character_)
+    expect_equal(as.data.frame(pk.nca(o_data))$PPORRES, auclast_none)
+  }
+})

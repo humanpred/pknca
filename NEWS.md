@@ -1481,6 +1481,19 @@ the generated intervals:
   function name has a dot in it, so loading the package failed with `could not
   find function "getS3method"`.  `getS3method` is now imported.
 
+* `PKNCAdata(impute = NA)` and `PKNCAdata(impute = NULL)` now mean the same as
+  the default:  the `"impute"` column of the intervals when there is one, else
+  no imputation.  Before, `impute = NA` stored no imputation setting and
+  `pk.nca()` then stopped with "Assertion on 'impute' failed: Must be of type
+  'atomic scalar', not 'NULL'", and `impute = NULL` stopped in `PKNCAdata()`.
+  An imputation string with no method in it (`""`, `" "`, or `","`, as the
+  `impute` argument or in an imputation column) is now no imputation; before,
+  `pk.nca()` stopped with `could not find function "NA"`.  A separator before
+  the first method (`" start_conc0"`) no longer makes an empty method name that
+  is not found, and `interval_add_impute()` and `interval_remove_impute()` no
+  longer leave an empty name in the result (`",start_conc0,start_predose"`)
+  (@billdenney).
+
 ## Other changes
 
 * The sparse AUC vignette and the help of `var_sparse_auc()` and
