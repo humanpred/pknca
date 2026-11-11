@@ -375,6 +375,53 @@ the generated intervals:
   `pknca_interval_table()` no longer offers them.  `deg.fluc` is now calculated
   from `cav.last` (@billdenney).
 
+* Parameter names follow one pattern:  the suffix names the AUC the parameter
+  is calculated from, as the AUC names do, and words are separated by dots.
+  The old names are deprecated; they still calculate the same values, but
+  requesting them gives the classed warning
+  `pknca_warning_deprecated_parameter` (once per session for each set of
+  names), and `pknca_interval_table()` no longer offers them (@billdenney):
+  * Parameters calculated from AUCinf say so with `.inf`:  `cl.obs` is now
+    `cl.inf.obs`, and likewise for `cl`, `kel`, `mrt`, `vz`, `vss`, and
+    `thalf.eff` (with their `.iv` forms), `mrt.md`, `vss.md`, `mrt.ivmd`,
+    `vss.ivmd`, `f`, `f.int`, `clr`, and `aucpext` (`aucpext.obs` is now
+    `aucpext.inf.obs`).
+  * The percent back-extrapolated separates its AUC with a dot:
+    `aucivpbextlast` is now `aucivpbext.last`, and likewise for `all`,
+    `inf.obs`, `inf.pred`, `int.last`, and `int.all`.
+  * Underscores become dots:  `count_conc` is now `count.conc`,
+    `count_conc_measured` is `count.conc.measured`, `time_above` is
+    `time.above`, `tobit_residual` and `adj_tobit_residual` are
+    `tobit.residual` and `adj.tobit.residual`, and `lambda.z.n.points_blq` is
+    `lambda.z.n.points.blq`.  The `_se` and `_df` suffixes of the sparse
+    estimates, which name a statistic of the parameter rather than the
+    parameter, are unchanged, as is the `conc_above` interval column, which is
+    an argument rather than a parameter.  The columns that
+    `pk.calc.half.life()` and `fit_half_life_tobit()` return are renamed the
+    same way (`tobit.residual`, `adj.tobit.residual`, and
+    `lambda.z.n.points.blq`).
+  * Requesting an old name gives its value under the old name, and the
+    exclusion rules (`exclude_nca_max.aucinf.pext()`,
+    `exclude_nca_count_conc_measured()`, and any rule built with
+    `exclude_nca_by_param()`) read a parameter requested by its old name.
+    `pknca_parameter_table()` and `pknca_units_table()` still list the old
+    names.
+
+* Families that had some AUC variants now have all of them, in the
+  `"uncommon"` tier (@billdenney):  `aumcivint.inf.obs` and
+  `aumcivint.inf.pred`; `cl`, `kel`, `mrt`, `vss`, and `vz` from the IV
+  interval AUCs extrapolated to infinity (`cl.ivint.inf.obs`,
+  `cl.ivint.inf.pred`, and so on); the effective half-life on every AUC
+  (`thalf.eff.all`, `thalf.eff.int.*`, `thalf.eff.iv.all`, and
+  `thalf.eff.ivint.*`); bioavailability from AUCall (`f.all`); and renal
+  clearance from AUCall and the interval AUCs (`clr.all` and `clr.int.*`).
+  They carry the sponsor-defined PPTESTCD codes `AUMIVIIO`, `AUMIVIIP`,
+  `CLWO`, `CLWP`, `KELWO`, `KELWP`, `MRTWO`, `MRTWP`, `VSSWO`, `VSSWP`,
+  `VZWO`, `VZWP`, `EFFAHL`, `EFFILHL`, `EFFIAHL`, `EFFIOHL`, `EFFIPHL`,
+  `EFFIVAHL`, `EFFWLHL`, `EFFWAHL`, `EFFWOHL`, and `EFFWPHL`, and the new
+  bioavailability and renal clearance variants share the CDISC codes of their
+  families (`FAB` and `RENALCL`).
+
 * An interval specification whose parameters are not calculated on one basis
   now gives one classed warning, `pknca_warning_interval_inconsistent_parameters`,
   from `PKNCAdata()`, `set_intervals()`, and `pk.nca()` (one warning for the
@@ -383,7 +430,7 @@ the generated intervals:
   that `pknca_interval_table()` builds intervals on (single-dose or interval
   AUCs, AUClast or AUCall, AUCinf,obs or AUCinf,pred), and parameters that no
   basis holds together are reported:  `aucint.all` with `cav.last`, `cl.last` with
-  `vz.all`, and `cl.obs` with `vz.pred`, for example.  Secondary parameters
+  `vz.all`, and `cl.inf.obs` with `vz.inf.pred`, for example.  Secondary parameters
   (`f.*`, `ratio.*`) and renal clearance (`clr.*`), which name their AUC with
   `pknca_ref()`, are judged by the AUC they reference.  A parameter that needs a
   finite interval end (an average concentration, or a parameter that applies
@@ -1025,10 +1072,8 @@ the generated intervals:
   supplies the concentration at time 0 and the AU(M)C is calculated from it
   (#352).
 
-* New excretion parameters: `volpk` ("Sum of Urine Vol", the total urine
-  volume for an interval) and
-  dose-normalized renal clearance parameters: `clr.last.dn`, `clr.obs.dn`,
-  `clr.pred.dn` (#433)
+* New excretion parameter: `volpk` ("Sum of Urine Vol", the total urine
+  volume for an interval) (#433)
 
 * New excretion rate parameters: `ermax` (maximum excretion rate), `ertmax`
   (collection midpoint of the maximum excretion rate), and `ertlst`

@@ -1276,6 +1276,17 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       }
     }
   }
+  # A deprecated name for a result that another calculation gives (registered
+  # without a function of its own, such as tobit_residual from half.life)
+  # repeats the rows of the name that replaced it
+  for (current_old in deprecated_output_names(names(requested)[requested], all_intervals = all_intervals)) {
+    idx_new <- which(result_testcd == deprecated_renamed_parameters[[current_old]])
+    result_testcd <- c(result_testcd, rep(current_old, length(idx_new)))
+    result_value <- c(result_value, result_value[idx_new])
+    result_method <- c(result_method, result_method[idx_new])
+    result_exclude <- c(result_exclude, result_exclude[idx_new])
+    result_sparse <- c(result_sparse, result_sparse[idx_new])
+  }
   ret <-
     if (length(result_testcd) == 0) {
       # Nothing was calculated for this interval

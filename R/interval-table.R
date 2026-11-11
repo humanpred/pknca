@@ -111,12 +111,12 @@ impute_exclusions <- function(impute, dosing) {
       impute,
       # The imputed value is a measurement carried to the start time or a
       # fabricated one; either way it was not measured there
-      start_predose = "count_conc_measured",
-      start_predose_conc0 = "count_conc_measured",
-      start_conc0 = "count_conc_measured",
+      start_predose = "count.conc.measured",
+      start_predose_conc0 = "count.conc.measured",
+      start_conc0 = "count.conc.measured",
       # start_cmin imputes the minimum, so a minimum calculated afterward is
       # the imputed value
-      start_cmin = c("count_conc_measured", "tfirst", "cmin", "tmin"),
+      start_cmin = c("count.conc.measured", "tfirst", "cmin", "tmin"),
       # Dropping the concentration at the end of the interval removes exactly
       # the sample the trough reports
       end_conc_drop = "ctrough",

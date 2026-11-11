@@ -56,7 +56,7 @@ assert_intervals <- function(intervals, data) {
       names(get.interval.cols()),
       impute_column_names(data$impute),
       "conc_above",
-      "time_above",
+      "time.above",
       "impute",
       "tau",
       "interval_id",
@@ -74,7 +74,7 @@ assert_intervals <- function(intervals, data) {
     # rejection
     renamed <-
       c(
-        f = "f.obs",
+        f = "f.inf.obs",
         # The AUCint parameters are all dose-aware now, so the `.dose` variants
         # calculate what the parameter they were named after calculates (#508)
         aucint.last.dose = "aucint.last",

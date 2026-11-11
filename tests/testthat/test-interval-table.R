@@ -20,8 +20,8 @@ test_that("single dose, extravascular", {
   expect_equal(nrow(ret), 1L)
   expect_equal(
     params_of(ret),
-    sort(c("auclast", "aucinf.obs", "aucpext.obs", "cl.obs", "cmax", "tmax",
-           "count_conc", "half.life", "tlag"))
+    sort(c("auclast", "aucinf.obs", "aucpext.inf.obs", "cl.inf.obs", "cmax", "tmax",
+           "count.conc", "half.life", "tlag"))
   )
   expect_equal(ret$impute, "start_predose_conc0")
 })
@@ -33,8 +33,8 @@ test_that("single dose, IV bolus, splits c0 out of the imputation", {
   # unimputed data
   expect_equal(
     params_of(ret, 1),
-    sort(c("auclast", "aucinf.obs", "aucpext.obs", "cl.obs", "cmax", "tmax",
-           "count_conc", "half.life"))
+    sort(c("auclast", "aucinf.obs", "aucpext.inf.obs", "cl.inf.obs", "cmax", "tmax",
+           "count.conc", "half.life"))
   )
   expect_equal(params_of(ret, 2), "c0")
   expect_equal(ret$impute, c("start_predose_conc0", NA_character_))
@@ -59,10 +59,10 @@ test_that("steady state uses the interval AUCs and their clearance", {
   expect_equal(
     params_of(ret),
     sort(c("aucint.last", "aucint.inf.obs", "cl.int.inf.obs", "cmax", "tmax",
-           "ctrough", "count_conc", "half.life", "tlag"))
+           "ctrough", "count.conc", "half.life", "tlag"))
   )
   # Not the single-dose AUCs, which would need data past the last dose
-  expect_false(any(c("auclast", "aucinf.obs", "cl.obs") %in% params_of(ret)))
+  expect_false(any(c("auclast", "aucinf.obs", "cl.inf.obs") %in% params_of(ret)))
   expect_equal(ret$impute, "start_predose")
 })
 
@@ -93,7 +93,7 @@ test_that("a sparse design reports the same parameters as the dense one, imputin
     pknca_interval_table(0, 24, dosing = "single", route = "extravascular", sparse = FALSE)
   expect_equal(
     params_of(ret),
-    sort(c("aucinf.obs", "auclast", "aucpext.obs", "cl.obs", "cmax", "count_conc",
+    sort(c("aucinf.obs", "auclast", "aucpext.inf.obs", "cl.inf.obs", "cmax", "count.conc",
            "half.life", "tlag", "tmax"))
   )
   expect_equal(params_of(ret), params_of(dense))
@@ -201,8 +201,8 @@ test_that("excluding everything is an error", {
   expect_error(
     pknca_interval_table(
       0, 24, dosing = "single", route = "extravascular",
-      exclude = c("auclast", "aucinf.obs", "aucpext.obs", "cl.obs", "cmax",
-                  "tmax", "count_conc", "half.life", "tlag")
+      exclude = c("auclast", "aucinf.obs", "aucpext.inf.obs", "cl.inf.obs", "cmax",
+                  "tmax", "count.conc", "half.life", "tlag")
     ),
     class = "pknca_error_interval_no_parameters"
   )
@@ -244,10 +244,10 @@ test_that("start_cmin does not calculate the minimum from the imputed minimum", 
   expect_equal(ret$impute[row_of("aucint.last")], "start_cmin")
 })
 
-test_that("count_conc_measured is never calculated from imputed data", {
+test_that("count.conc.measured is never calculated from imputed data", {
   for (d in pknca_dosing()) {
     ret <- pknca_interval_table(0, 24, dosing = d, tier = "all")
-    row <- which(unlist(ret[, "count_conc_measured"]) %in% TRUE)
+    row <- which(unlist(ret[, "count.conc.measured"]) %in% TRUE)
     expect_true(is.na(ret$impute[row]), info = d)
   }
 })
@@ -328,7 +328,7 @@ test_that("every parameter is reachable from some context, or documented as not"
   # `auc_type = "all"`) except the ones below.
   expect_equal(
     unreachable,
-    sort(c(
+    sort(unique(c(
       # Deprecated names duplicate the parameters that replaced them
       names(deprecated_renamed_parameters),
       # Secondary parameters need inputs from more than one profile, which one
@@ -339,7 +339,7 @@ test_that("every parameter is reachable from some context, or documented as not"
       # sparse estimator output without being asked for, so no context chooses
       # one.  Derived for the same reason.
       parameter_table$parameter[parameter_table$sparse]
-    ))
+    )))
   )
   # Asking for it by name works
   expect_true(
@@ -352,11 +352,11 @@ test_that("every parameter is reachable from some context, or documented as not"
 test_that("a secondary parameter is not chosen automatically", {
   for (tier in c("common", "all")) {
     expect_false(
-      "f.obs" %in% params_of_all(pknca_interval_table(0, 24, dosing = "single", tier = tier)),
+      "f.inf.obs" %in% params_of_all(pknca_interval_table(0, 24, dosing = "single", tier = tier)),
       info = tier
     )
     expect_false(
-      "clr.obs" %in%
+      "clr.inf.obs" %in%
         params_of_all(pknca_interval_table(
           0, 24, dosing = "single", sample_type = "interval", tier = tier
         )),
@@ -367,12 +367,12 @@ test_that("a secondary parameter is not chosen automatically", {
 
 test_that("a secondary parameter is still available by name", {
   expect_true(
-    "f.obs" %in% params_of_all(pknca_interval_table(0, 24, dosing = "single", include = "f.obs"))
+    "f.inf.obs" %in% params_of_all(pknca_interval_table(0, 24, dosing = "single", include = "f.inf.obs"))
   )
   expect_true(
-    "clr.obs" %in%
+    "clr.inf.obs" %in%
       params_of_all(pknca_interval_table(
-        0, 24, dosing = "single", sample_type = "interval", include = "clr.obs"
+        0, 24, dosing = "single", sample_type = "interval", include = "clr.inf.obs"
       ))
   )
 })

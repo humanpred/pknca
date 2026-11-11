@@ -53,11 +53,11 @@ test_that("PKNCAresults generation", {
       start=0,
       end=Inf,
       PPTESTCD=rep(c("auclast", "cmax", "tmax", "tlast", "clast.obs",
-                     "tlag", "count_conc",
+                     "tlag", "count.conc",
                      "lambda.z", "r.squared", "adj.r.squared", "lambda.z.corrxy",
                      "lambda.z.time.first", "lambda.z.time.last", "lambda.z.n.points",
                      "clast.pred", "half.life", "span.ratio", "aucinf.obs",
-                     "aucpext.obs", "cl.obs"),
+                     "aucpext.inf.obs", "cl.inf.obs"),
                    times=2),
       PPORRES=c(13.54, 0.9998, 4.000, 24.00, 0.3441,
                 0.000, 25.00,
@@ -148,7 +148,7 @@ test_that("PKNCAresults has exclude, when applicable", {
             "span.ratio", "tlast", "tmax",
             # The automatically generated single-dose interval comes from
             # pknca_interval_table(), which gives these as well
-            "tlag", "count_conc", "aucpext.obs", "cl.obs"
+            "tlag", "count.conc", "aucpext.inf.obs", "cl.inf.obs"
           )
     ),
     info="verify that only expected results are present"
@@ -560,7 +560,7 @@ test_that("as.data.frame.PKNCAresults with out_format='cdisc' resolves route-dep
   # Extravascular
   o_dose_ev <- PKNCAdose(d_dose, dose ~ time | subject, route = "extravascular")
   o_data_ev <- PKNCAdata(o_conc, o_dose_ev, intervals = data.frame(
-    start = 0, end = Inf, cl.obs = TRUE, aucinf.obs = TRUE, half.life = TRUE
+    start = 0, end = Inf, cl.inf.obs = TRUE, aucinf.obs = TRUE, half.life = TRUE
   ))
   suppressMessages(suppressWarnings(o_nca_ev <- pk.nca(o_data_ev)))
   result_ev <- as.data.frame(o_nca_ev, out_format = "cdisc")
@@ -570,7 +570,7 @@ test_that("as.data.frame.PKNCAresults with out_format='cdisc' resolves route-dep
   # Intravascular
   o_dose_iv <- PKNCAdose(d_dose, dose ~ time | subject, route = "intravascular")
   o_data_iv <- PKNCAdata(o_conc, o_dose_iv, intervals = data.frame(
-    start = 0, end = Inf, cl.obs = TRUE, aucinf.obs = TRUE, half.life = TRUE
+    start = 0, end = Inf, cl.inf.obs = TRUE, aucinf.obs = TRUE, half.life = TRUE
   ))
   suppressMessages(suppressWarnings(o_nca_iv <- pk.nca(o_data_iv)))
   result_iv <- as.data.frame(o_nca_iv, out_format = "cdisc")
