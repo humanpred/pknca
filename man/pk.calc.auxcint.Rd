@@ -268,6 +268,15 @@ When the interval ends at or before Tlast, no extrapolation happens and
 in the method (\code{PPANMETH}) column.
 }
 
+\section{The time origin of the AUMC}{
+The AUMC is weighted by the time since \code{start}, which is what \code{aumclast}
+gives for the interval's own data in \code{\link[=pk.nca]{pk.nca()}} (where times are relative to
+the start of the interval).  The AUC does not depend on the time origin.
+\code{\link[=pk.calc.aumc]{pk.calc.aumc()}} weights by the times as given, so with an \code{interval} that
+does not start at time 0 it differs from the AUMC over the same interval
+here.
+}
+
 \seealso{
 \code{\link[=PKNCA.options]{PKNCA.options()}}, \code{\link[=interp.extrap.conc.dose]{interp.extrap.conc.dose()}}
 

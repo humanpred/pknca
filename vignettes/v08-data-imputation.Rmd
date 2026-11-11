@@ -175,3 +175,8 @@ In addition to the above, the function may take named arguments of:
 * `start` and `end` to indicate the start and end time of the interval, and
 * `conc.group` and `time.group` to indicate the concentrations and times that
   have not been filtered for the interval.
+
+Imputation functions receive `time`, `start`, `end`, and `time.group` on the
+original time scale of the data.  NCA calculation functions receive `start`,
+`end`, and `time.group` on that scale too, but `time` relative to the start of
+the interval.

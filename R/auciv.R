@@ -144,6 +144,8 @@ pknca_concept(pk.calc.auciv) <- "auc"
 #'   so the AUXCint is returned unchanged; an interval that does not start at an
 #'   IV dose gives `NA`.
 #'
+#'   Like the AUMCint, the AUMC is weighted by the time since `start`.
+#'
 #' @param conc,time All concentrations and their times for the group
 #' @param start,end The start and end of the interval
 #' @param time.dose,route,duration.dose The dose times, routes, and durations

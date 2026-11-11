@@ -1212,6 +1212,22 @@ the generated intervals:
 
 ## Bug fixes
 
+* `ctrough`, `cstart`, and the AUMC over an interval (`aumcint.last`,
+  `aumcint.all`, `aumcint.inf.obs`, `aumcint.inf.pred`, the `aumcivint.*`
+  parameters built on them, and the `mrt`, `vss`, `kel`, and `thalf.eff`
+  parameters calculated from those, such as `mrt.int.last` and
+  `mrt.ivint.last`) are correct for an interval that does not start at time 0.  With intervals of 0 to 12 and 12 to 24, `ctrough` for the second
+  interval was `NA` instead of the concentration at 24, `cstart` was the
+  concentration at 24 instead of at 12, and `aumcint.last` weighted by the time
+  since 0 instead of since 12 (544 instead of the 154 that `aumclast` gives).
+  `ctrough` and `cstart` compared the interval's times, which are relative to
+  the start of the interval, with `start` and `end`, which are on the original
+  time scale; they now use the new `time.start` and `time.end` data sources (the
+  interval's bounds on the scale of `time`, which a parameter registered with
+  `add.interval.col()` can use too).  `pk.calc.auxcint()` and `pk.calc.aumcint()`
+  now weight the AUMC by the time since `start`; the AUC is unchanged
+  (@billdenney).
+
 * `"mcg"` is accepted as a unit, an alias of `"ug"`, so concentration and dose
   units like `"mcg/mL"` convert to preferred units.  Before, converting
   `"min*mcg/mL"` to `"hr*ng/mL"` stopped with "'mcg' is not recognized by

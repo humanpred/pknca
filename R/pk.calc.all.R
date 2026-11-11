@@ -1065,9 +1065,11 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   # Every data source a calculation function can name, under the name that
   # add.interval.col() uses for it.  A source that was not given is NULL, which
   # leaves the argument off the call so that the function's own default
-  # applies.  The interval's own times start at zero, so `time` and `time.dose`
-  # are realigned to the start of the interval; the group times keep the
-  # group's scale.
+  # applies.  The interval's own times (`time`, `time.dose`, and `time.sparse`)
+  # are relative to the start of the interval; `start`, `end`, and the group
+  # times keep the original scale.  `time.start` and `time.end` are the
+  # interval's bounds on the scale of `time`, for a function that compares the
+  # interval's own times to its bounds (ctrough and cstart).
   source_map <-
     list(
       conc=conc,
@@ -1096,6 +1098,8 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       lloq=lloq,
       start=interval[["start"]],
       end=interval[["end"]],
+      time.start=interval[["start"]] - interval$start[1],
+      time.end=interval[["end"]] - interval$start[1],
       options=options
     )
   # Do the calculations

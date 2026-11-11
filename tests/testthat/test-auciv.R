@@ -744,7 +744,12 @@ test_that("aucivint.* and aumcivint.* back-extrapolate C0 of the dose that start
   # The samples are exact and the elimination is monoexponential, so the
   # log-down trapezoids give the true areas
   true_auc <- c(integrate(iv_md_true_conc, 0, 12)$value, integrate(iv_md_true_conc, 12, 24)$value)
-  true_aumc <- c(integrate(iv_md_true_moment, 0, 12)$value, integrate(iv_md_true_moment, 12, 24)$value)
+  # The AUMC weights by the time since the start of the interval
+  true_aumc <-
+    c(
+      integrate(iv_md_true_moment, 0, 12)$value,
+      integrate(function(t) (t - 12)*iv_md_true_conc(t), 12, 24)$value
+    )
   for (i in 1:2) {
     start <- c(0, 12)[i]
     for (param in c("aucivint.last", "aucivint.all", "aucivint.inf.obs", "aucivint.inf.pred")) {
@@ -844,8 +849,15 @@ test_that("aucivint for an interval starting at an IV infusion is the AUCint", {
     expect_equal(value_of("aucivint.last", start), value_of("aucint.last", start))
     expect_equal(value_of("aumcivint.last", start), value_of("aumcint.last", start))
   }
-  # The infusion-capable parameters calculated from them
-  expect_equal(value_of("mrt.ivint.last", 12), 15.7534, tolerance = 1e-5)
-  expect_equal(value_of("vss.ivint.last", 12), 33.4518, tolerance = 1e-5)
-  expect_equal(value_of("kel.ivint.last", 12), 0.063478, tolerance = 1e-4)
+  # The infusion-capable parameters calculated from them, from the second
+  # interval's own samples with time measured from its start (the 0.5 hour
+  # infusion shortens the MRT by half its duration)
+  mask_second <- iv_md_time >= 12
+  auc_second <- as.numeric(pk.calc.auc.last(conc = iv_md_conc[mask_second], time = iv_md_time[mask_second] - 12))
+  aumc_second <- as.numeric(pk.calc.aumc.last(conc = iv_md_conc[mask_second], time = iv_md_time[mask_second] - 12))
+  mrt_second <- aumc_second/auc_second - 0.5/2
+  expect_equal(value_of("mrt.ivint.last", 12), mrt_second)
+  expect_equal(value_of("mrt.ivint.last", 12), 3.753407, tolerance = 1e-6)
+  expect_equal(value_of("vss.ivint.last", 12), mrt_second*100/auc_second)
+  expect_equal(value_of("kel.ivint.last", 12), 1/mrt_second)
 })
