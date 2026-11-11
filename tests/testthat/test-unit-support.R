@@ -269,6 +269,27 @@ test_that("Use preferred units (#197)", {
   )
 })
 
+test_that("mcg is accepted as an alias of ug", {
+  skip_if_not_installed("units")
+  expect_equal(pknca_units_conversion_factor("mcg/mL", "ng/mL"), 1000)
+  expect_equal(pknca_units_conversion_factor("mcg", "ug"), 1)
+  expect_equal(pknca_units_conversion_factor("min*mcg/mL", "hr*ng/mL"), 1000/60)
+
+  prep <-
+    pknca_units_table(
+      concu = "mcg/mL", doseu = "mg", timeu = "min", amountu = "mcg",
+      concu_pref = "ng/mL", timeu_pref = "hr"
+    )
+  expect_equal(prep$conversion_factor[prep$PPTESTCD == "cmax"], 1000)
+  expect_equal(prep$conversion_factor[prep$PPTESTCD == "tmax"], 1/60)
+  expect_equal(prep$conversion_factor[prep$PPTESTCD == "auclast"], 1000/60)
+
+  # Installing the units again (a second load of the package) is not an error
+  expect_no_error(pknca_install_units())
+  expect_equal(pknca_units_conversion_factor("mcg", "ug"), 1)
+  expect_equal(pknca_units_conversion_factor("fraction", "1"), 1)
+})
+
 test_that("pknca_units_table expected errors", {
   expect_error(
     pknca_units_table(conversions = "A")
