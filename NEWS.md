@@ -1212,6 +1212,16 @@ the generated intervals:
 
 ## Bug fixes
 
+* Group columns that are ordered factors with different levels in the
+  concentration data, the dose data, the intervals, or a normalization table
+  now join by value.  Before, `PKNCAdata()` with units, `pk.nca()`,
+  date-time intervals, `as.data.frame(filter_requested = TRUE)`,
+  `summary()` by group, and `normalize()` stopped with "Can't join ... due to incompatible types".  The
+  most common case was `update()` on results from `datasets::Theoph` (an nlme
+  `groupedData`, whose subsetting drops unused levels), which failed for every
+  change.  The joined group column is a factor with the levels of both sides
+  (@billdenney).
+
 * `interp.extrap.conc.dose()` warns only about the times requested in
   `time.out`.  It warned about every dose and measurement in the timeline that
   could not be interpolated, so a later IV bolus without a concentration after

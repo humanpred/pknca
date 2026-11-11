@@ -562,3 +562,33 @@ test_that("A preferred unit equal to the original unit needs no conversion (and 
   units_none <- pknca_units_table(concu = "ng/mL", doseu = "mg", amountu = "mg", timeu = "hr")
   expect_equal(units_same, units_none)
 })
+
+test_that("pknca_units_table for PKNCAdata joins ordered factor groups whose levels differ", {
+  ord <- function(x, levels) factor(x, levels = levels, ordered = TRUE)
+  d_conc <-
+    data.frame(
+      subject = ord(rep(c("a", "b"), each = 3), c("b", "a")),
+      time = rep(0:2, 2),
+      conc = c(0, 2, 1, 0, 3, 1)
+    )
+  d_dose <-
+    data.frame(
+      subject = ord(c("a", "b"), c("c", "b", "a")),
+      time = 0, dose = 10, doseu = c("mg", "ug")
+    )
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc~time|subject, concu = "ng/mL", timeu = "hr", amountu = "mg"),
+      PKNCAdose(d_dose, dose~time|subject, doseu = "doseu"),
+      intervals = data.frame(start = 0, end = 2, cmax = TRUE, cmax.dn = TRUE)
+    )
+  units_table <- o_data$units
+  expect_equal(
+    units_table$PPORRESU[units_table$PPTESTCD == "cmax.dn" & is.na(units_table$subject_ref)],
+    c("(ng/mL)/mg", "(ng/mL)/ug")
+  )
+  expect_equal(
+    units_table$subject[units_table$PPTESTCD == "cmax.dn" & is.na(units_table$subject_ref)],
+    c("a", "b")
+  )
+})

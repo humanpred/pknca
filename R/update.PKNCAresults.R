@@ -84,6 +84,55 @@ coerce_factor_join_keys <- function(data, cols) {
   data
 }
 
+#' Give the factor join-key columns of two data.frames the same levels
+#'
+#' dplyr joins combine two unordered factors with different levels into a
+#' factor with the union of their levels, but they error on two ordered
+#' factors (or an ordered and an unordered factor) whose levels differ, as when
+#' one data.frame dropped the levels it does not use.  Re-leveling both sides
+#' to one set of levels lets such pairs join by value while the joined column
+#' stays a factor.  When the levels of one side are all among the levels of
+#' the other, the larger set is used in its own order; otherwise the levels of
+#' `x` come first.  The joined column is ordered when the column of `x` is.
+#'
+#' @param x,y Data.frames to join
+#' @param by Column names to join by
+#' @returns A list with elements `x` and `y`, the inputs with each column in
+#'   `by` that is a factor in both re-leveled to the same levels
+#' @noRd
+unify_factor_join_keys <- function(x, y, by) {
+  for (nm in by) {
+    x_col <- x[[nm]]
+    y_col <- y[[nm]]
+    same_type <-
+      identical(levels(x_col), levels(y_col)) &&
+      identical(is.ordered(x_col), is.ordered(y_col))
+    if (is.factor(x_col) && is.factor(y_col) && !same_type) {
+      new_levels <-
+        if (all(levels(x_col) %in% levels(y_col))) {
+          levels(y_col)
+        } else {
+          union(levels(x_col), levels(y_col))
+        }
+      x[[nm]] <- factor(as.character(x_col), levels = new_levels, ordered = is.ordered(x_col))
+      y[[nm]] <- factor(as.character(y_col), levels = new_levels, ordered = is.ordered(x_col))
+    }
+  }
+  list(x = x, y = y)
+}
+
+#' A `dplyr` join whose factor key columns are first given the same levels
+#'
+#' @inheritParams unify_factor_join_keys
+#' @param join_fun A `dplyr` join, such as [dplyr::full_join()]
+#' @param ... Passed to `join_fun`
+#' @returns The result of `join_fun`
+#' @noRd
+join_unify_factor_keys <- function(x, y, by, join_fun, ...) {
+  unified <- unify_factor_join_keys(x, y, by = by)
+  join_fun(unified$x, unified$y, by = by, ...)
+}
+
 #' Rows of `x` kept by a `dplyr` filtering join, matching factor key columns by value
 #'
 #' @param x,y Data.frames to join
