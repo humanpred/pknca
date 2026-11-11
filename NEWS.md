@@ -1212,6 +1212,15 @@ the generated intervals:
 
 ## Bug fixes
 
+* `interp.extrap.conc.dose()` warns only about the times requested in
+  `time.out`.  It warned about every dose and measurement in the timeline that
+  could not be interpolated, so a later IV bolus without a concentration after
+  it gave "Cannot interpolate immediately after an IV bolus without a
+  concentration next" even when only an earlier time was requested, and every
+  `aucint` over an IV multiple-dose interval ending at the next dose gave that
+  warning.  The count in the warning is now the number of requested times
+  (@billdenney).
+
 * `aucint.inf.obs`, `aucint.inf.pred`, `aumcint.inf.obs`, and
   `aumcint.inf.pred` estimate an unmeasured concentration at the start of the
   interval the same way wherever the interval ends.  When that concentration is
