@@ -36,8 +36,12 @@
 #' }
 #'
 #' When the interval ends at or before Tlast, no extrapolation happens and
-#' `lambda.z` is not used at all.  The extrapolation that was used is reported
-#' in the method (`PPANMETH`) column.
+#' `lambda.z` is not used at all, with one exception:  a concentration at `start`
+#' that is estimated from the profile before a dose (the trough before the dose
+#' that starts the interval, when it was not measured) is past the Tlast of that
+#' profile, so `AUCinf` extrapolates it with `lambda.z` wherever the interval
+#' ends.  The extrapolation that was used is reported in the method (`PPANMETH`)
+#' column.
 #'
 #' # The time origin of the AUMC
 #'
@@ -156,13 +160,17 @@ pk.calc.auxcint <- function(conc, time,
   # matter.
   extrapolates <- is.infinite(interval[2]) || interval[2] > tlast
   auc_type_calc <- auc.type
+  # Whether the half-life extrapolated the region after Tlast, and whether it
+  # extrapolated the concentration at `start` (see below)
   lambda_z_used <- FALSE
+  lambda_z_used_start <- FALSE
   if (auc.type %in% "AUCinf") {
     if (!extrapolates) {
       # The interval is interpolated throughout, so the half-life never enters
       # the result and neither does an exclusion of it (#270).  AUClast and
       # AUCinf integrate identically when nothing after tlast is in the
-      # interval.
+      # interval.  The concentration at `start` is the exception, handled
+      # where it is estimated below.
       auc_type_calc <- "AUClast"
     } else if (is.na(lambda.z)) {
       if (is.infinite(interval[2])) {
@@ -189,16 +197,6 @@ pk.calc.auxcint <- function(conc, time,
     # the end of the interval must not become the point it is drawn to.
     auc_type_calc <- "AUClast"
   }
-  extrap_method <-
-    if (!extrapolates) {
-      "none"
-    } else if (lambda_z_used) {
-      pknca_extrap_method_halflife
-    } else if (auc.type %in% "AUCinf") {
-      "AUCall (half-life not estimable)"
-    } else {
-      auc.type
-    }
   # Only the ends of the interval are estimated.  A dose within the interval is
   # integrated across with the concentrations measured on either side of it:
   # the interval asks for the profiles on both sides of that dose to be
@@ -261,6 +259,35 @@ pk.calc.auxcint <- function(conc, time,
           out.after = FALSE,
           ...
         )
+      mask_start <- missing_times == interval[1]
+      if (auc.type %in% "AUCinf" && !extrapolates && !is.na(lambda.z) && any(mask_start)) {
+        # The concentration at `start` may be extrapolated from the profile
+        # before a dose (the trough before the dose that starts the interval).
+        # That is past the Tlast of that profile, so it is extrapolated with the
+        # half-life as it is when the interval ends after Tlast; otherwise the
+        # start concentration would depend on where the interval ends.  The
+        # AUClast estimate above gave any warnings for this time already.
+        conc_start <-
+          suppressWarnings(
+            interp.extrap.conc.dose(
+              conc = data$conc, time = data$time,
+              time.out = interval[1],
+              method = method,
+              auc.type = "AUCinf",
+              clast = clast, lambda.z = lambda.z,
+              options = options,
+              time.dose = time.dose,
+              route.dose = route,
+              duration.dose = duration.dose,
+              out.after = FALSE,
+              ...
+            )
+          )
+        if (!identical(as.numeric(conc_start), as.numeric(missing_conc[mask_start]))) {
+          missing_conc[mask_start] <- conc_start
+          lambda_z_used_start <- TRUE
+        }
+      }
     }
     new_data <- data.frame(conc=c(data$conc, conc_clast, missing_conc),
                            time=c(data$time, time_clast, missing_times))
@@ -331,6 +358,16 @@ pk.calc.auxcint <- function(conc, time,
       fun_log = fun_log,
       fun_inf = fun_inf
     )
+  extrap_method <-
+    if (lambda_z_used || lambda_z_used_start) {
+      pknca_extrap_method_halflife
+    } else if (!extrapolates) {
+      "none"
+    } else if (auc.type %in% "AUCinf") {
+      "AUCall (half-life not estimable)"
+    } else {
+      auc.type
+    }
   # Add method details as an attribute
   attr(ret, "method") <-
     c(
@@ -341,7 +378,7 @@ pk.calc.auxcint <- function(conc, time,
       ),
       paste0(pknca_extrap_method_prefix, extrap_method)
     )
-  if (auc.type %in% "AUCinf" && !lambda_z_used) {
+  if (auc.type %in% "AUCinf" && !lambda_z_used && !lambda_z_used_start) {
     # The half-life did not enter the result, so an exclusion of the half-life
     # (or of clast.pred, which comes from it) does not apply to it (#270).
     attr(ret, "exclude") <- "DO NOT EXCLUDE"
