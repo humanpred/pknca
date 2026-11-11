@@ -217,7 +217,10 @@ Notably for automatic conversion, you cannot go from mass to molar units
 since there is not a unique conversion from mass to moles.
 
 Loading the PKNCA package adds a unit of `"fraction"` so that it is
-usable for fraction excreted (`fe`).
+usable for fraction excreted (`fe`). It also adds `"mcg"` as another
+spelling of `"ug"`, so units like `"mcg/mL"` convert. These units are
+added to the `units` package for the whole R session, so they are
+available to every package that uses `units`, not only to PKNCA.
 
 ``` r
 

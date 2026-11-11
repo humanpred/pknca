@@ -651,6 +651,9 @@
 - [`pknca_impute_methods()`](https://humanpred.github.io/pknca/reference/pknca_impute_methods.md)
   : List the imputation methods
 
+- [`pknca_install_units()`](https://humanpred.github.io/pknca/reference/pknca_install_units.md)
+  : Add the units that PKNCA accepts beyond those of udunits
+
 - [`pknca_interval_table()`](https://humanpred.github.io/pknca/reference/pknca_interval_table.md)
   : Build an interval specification from a description of the analysis
 
