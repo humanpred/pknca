@@ -1494,6 +1494,30 @@ the generated intervals:
   longer leave an empty name in the result (`",start_conc0,start_predose"`)
   (@billdenney).
 
+* Every value given per observation now follows its observation when
+  imputation adds or drops one:  the urine and feces volume and collection
+  duration, `include_half.life`, `exclude_half.life`, and a per-observation
+  `lloq`.  Before, they stayed in their original positions while the
+  concentrations gained or lost one, so each applied to the wrong sample:
+  `impute = "start_conc0"` without a sample at the interval start gave an `ae`
+  of 440 instead of 300 on a urine profile (with only a "longer object length"
+  warning), and made `include_half.life` and `exclude_half.life` select the
+  observation before the intended one (without a warning).  An observation
+  added by imputation counts as a collection of no volume with no excretion
+  rate (so the excretion parameters `ae`, `fe`, `clr.*`, `volpk`, `ermax`,
+  `ertmax`, `ertlst`, `erlst`, and `erint` are those of the collected
+  samples), is neither included in nor excluded from the half-life, and has
+  the profile's `lloq` when that is constant (and a missing `lloq` when it
+  varies).  An observation is identified by its time.  An imputation step that
+  keeps the number of observations, and the position of each one whose time it
+  kept, modifies them in place (so a user-defined method may change times that
+  way).  A step that both adds and drops observations cannot be told apart from
+  one that moved an observation to a new time, so the observation at the new
+  time is an added one, and the classed warning
+  `pknca_warning_impute_obs_values_dropped` says when a value of a dropped
+  observation is lost that way; PKNCA's own methods never do both in one step
+  (@roninsightrx, @billdenney).
+
 ## Other changes
 
 * The sparse AUC vignette and the help of `var_sparse_auc()` and

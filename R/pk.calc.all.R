@@ -527,20 +527,137 @@ remap_sparse_sources <- function(arglist) {
 
 # Run one imputation chain (a vector of function names from
 # PKNCA_impute_fun_list()) over a single concentration-time profile, giving the
-# data.frame of imputed `conc` and `time`.
+# data.frame of imputed `conc` and `time`.  `obs_values` is a data.frame of
+# per-observation values (one row per element of `conc`; see
+# impute_obs_values()), which follow their observation through each step and
+# are returned as columns after `conc` and `time`; `obs_fill` gives the value
+# of each column for an observation that imputation adds.
 impute_conc_time <- function(impute_funs, conc, time, start, end,
-                             conc.group, time.group, options) {
+                             conc.group, time.group, options,
+                             obs_values = NULL, obs_fill = list()) {
   impute_data <- data.frame(conc=conc, time=time)
+  if (!is.null(obs_values)) {
+    impute_data <- cbind(impute_data, obs_values)
+  }
   for (current_fun_nm in impute_funs) {
-    impute_args <- as.list(impute_data)
+    impute_args <- list(conc = impute_data$conc, time = impute_data$time)
     impute_args$start <- start
     impute_args$end <- end
     impute_args$conc.group <- conc.group
     impute_args$time.group <- time.group
     impute_args$options <- options
-    impute_data <- do.call(current_fun_nm, args=impute_args)
+    new_data <- do.call(current_fun_nm, args=impute_args)
+    impute_data <-
+      impute_align_obs(
+        before = impute_data, after = new_data, fill = obs_fill, method = current_fun_nm
+      )
   }
   impute_data
+}
+
+# The values given to pk.nca.interval() one per observation, as a data.frame
+# whose rows imputation adds and drops with their observation (see
+# impute_align_obs()), and the value each column takes for an observation that
+# imputation adds.  An added observation was not collected, so it has a volume
+# of 0 (adding nothing to the amount excreted or the volume collected) and no
+# duration (so it has no excretion rate); it is neither included in nor
+# excluded from the half-life; and it has the profile's lloq when that is
+# constant.  A value not given per observation (NULL, or one lloq for the
+# profile) is left out.
+impute_obs_values <- function(time, volume, duration.conc, include_half.life,
+                              exclude_half.life, lloq) {
+  values <-
+    list(
+      volume = volume, duration.conc = duration.conc,
+      include_half.life = include_half.life, exclude_half.life = exclude_half.life,
+      lloq = lloq
+    )
+  fill <-
+    list(
+      volume = 0, duration.conc = NA_real_,
+      include_half.life = NA, exclude_half.life = NA,
+      lloq = if (length(unique(lloq)) == 1) lloq[1] else NA_real_
+    )
+  per_obs <- vapply(X = values, FUN = length, FUN.VALUE = 1L) == length(time)
+  if (!any(per_obs)) {
+    return(list(values = NULL, fill = list()))
+  }
+  list(
+    values = as.data.frame(values[per_obs], optional = TRUE),
+    fill = fill[per_obs]
+  )
+}
+
+# Align the per-observation columns of `before` (a data.frame with `conc`,
+# `time`, and those columns) with the result of one imputation step (`after`,
+# with `conc` and `time`).  An observation is identified by its time:  one whose
+# time is in `after` keeps its values, and one the step added takes the `fill`
+# value of each column.  A step that keeps the number of observations and the
+# position of every observation whose time it kept modified them in place
+# (changing a concentration or a time), so the values stay in order; that also
+# covers repeated times, which identify no single observation.  Otherwise, a
+# step that both adds and drops observations cannot say whether it moved an
+# observation to a new time or dropped one and added another, so the
+# observation at the new time is an added one; that is said with a warning
+# when a value of a dropped observation differs from the value an added one
+# gets.
+impute_align_obs <- function(before, after, fill, method) {
+  value_cols <- setdiff(names(before), c("conc", "time"))
+  ret <- data.frame(conc = after$conc, time = after$time)
+  if (length(value_cols) == 0) {
+    return(ret)
+  }
+  idx <- match(after$time, before$time)
+  in_place <-
+    nrow(after) == nrow(before) &&
+    (identical(after$time, before$time) || all(idx == seq_along(idx), na.rm = TRUE))
+  if (in_place) {
+    idx <- seq_len(nrow(after))
+  } else if (anyNA(idx)) {
+    dropped <- before[setdiff(seq_len(nrow(before)), idx), , drop = FALSE]
+    lost <-
+      value_cols[
+        vapply(X = value_cols, FUN = impute_obs_differs, values = dropped, fill = fill, FUN.VALUE = TRUE)
+      ]
+    if (length(lost) > 0) {
+      rlang::warn(
+        sprintf(
+          paste(
+            "Imputation with %s both added and dropped observations, so the values",
+            "of %s of the dropped observations (at times %s) are not carried to the",
+            "added observations (at times %s).  An observation is identified by its",
+            "time, so an observation moved to a new time cannot be told apart from",
+            "one dropped and another added; a method that changes the time of an",
+            "observation should keep the number of observations."
+          ),
+          method, paste(lost, collapse = ", "),
+          paste(dropped$time, collapse = ", "),
+          paste(after$time[is.na(idx)], collapse = ", ")
+        ),
+        class = "pknca_warning_impute_obs_values_dropped"
+      )
+    }
+  }
+  for (col in value_cols) {
+    ret[[col]] <- before[[col]][idx]
+    ret[[col]][is.na(idx)] <- fill[[col]]
+  }
+  ret
+}
+
+# Whether any value in column `col` of the data.frame `values` differs from
+# `fill[[col]]`.  A logical column is a flag that applies only where it is
+# TRUE, so FALSE and NA are the same there.
+impute_obs_differs <- function(col, values, fill) {
+  current <- values[[col]]
+  current_fill <- fill[[col]]
+  if (is.logical(current)) {
+    any((current %in% TRUE) != (current_fill %in% TRUE))
+  } else if (is.na(current_fill)) {
+    any(!is.na(current))
+  } else {
+    any(is.na(current) | current != current_fill)
+  }
 }
 
 # The pooled sparse samples after an imputation, when the imputation only added
@@ -964,12 +1081,26 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   impute_funs <- PKNCA_impute_fun_list(impute_method)
   stopifnot(length(impute_funs) == 1)
   if (!all(is.na(impute_funs[[1]]))) {
+    # Imputation may add or drop observations (at the start or end of the
+    # interval), and every per-observation value follows its observation
+    obs <-
+      impute_obs_values(
+        time = time, volume = volume, duration.conc = duration.conc,
+        include_half.life = include_half.life, exclude_half.life = exclude_half.life,
+        lloq = lloq
+      )
     impute_data <-
       impute_conc_time(
         impute_funs=impute_funs[[1]], conc=conc, time=time,
         start=interval$start[1], end=interval$end[1],
-        conc.group=conc.group, time.group=time.group, options=options
+        conc.group=conc.group, time.group=time.group, options=options,
+        obs_values = obs$values, obs_fill = obs$fill
       )
+    if ("volume" %in% names(impute_data)) volume <- impute_data$volume
+    if ("duration.conc" %in% names(impute_data)) duration.conc <- impute_data$duration.conc
+    if ("include_half.life" %in% names(impute_data)) include_half.life <- impute_data$include_half.life
+    if ("exclude_half.life" %in% names(impute_data)) exclude_half.life <- impute_data$exclude_half.life
+    if ("lloq" %in% names(impute_data)) lloq <- impute_data$lloq
     conc <- impute_data$conc
     time <- impute_data$time
     if (has_sparse_conc) {
