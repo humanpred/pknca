@@ -335,6 +335,96 @@ test_that("pk.calc.mrt.iv", {
                info="MRT.iv is calculated correctly when auc is zero")
 })
 
+test_that("pk.calc.mrt.iv uses the dose-weighted mean input time for several doses (#694)", {
+  # Two constant-rate segments: 10 mg over 1 h from time 0, then 10 mg over 2 h
+  # from time 1.  MIT = (10*0.5 + 10*(1 + 1))/20 = 1.25
+  expect_equal(
+    pk.calc.mrt.iv(
+      auc=1, aumc=6.2428, duration.dose=c(1, 2), dose=c(10, 10), time.dose=c(0, 1)
+    ),
+    6.2428 - 1.25
+  )
+  expect_length(
+    pk.calc.mrt.iv(auc=1, aumc=2, duration.dose=c(1, 2), dose=c(10, 10), time.dose=c(0, 1)),
+    1
+  )
+  # Unequal doses weight the input times
+  expect_equal(
+    pk.calc.mrt.iv(auc=1, aumc=5, duration.dose=c(1, 2), dose=c(30, 10), time.dose=c(0, 1)),
+    5 - (30*0.5 + 10*2)/40
+  )
+  # A single infusion at the interval start is unchanged, whatever the dose
+  expect_equal(
+    pk.calc.mrt.iv(auc=1, aumc=2, duration.dose=4, dose=100, time.dose=0),
+    pk.calc.mrt.iv(auc=1, aumc=2, duration.dose=4)
+  )
+  expect_equal(pk.calc.mrt.iv(auc=1, aumc=2, duration.dose=4, dose=NA_real_, time.dose=0), 0)
+  # A single infusion that starts after the interval start
+  expect_equal(
+    pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=2, dose=10, time.dose=3),
+    6 - (3 + 1)
+  )
+  # A bolus contributes its dose time; a bolus plus an infusion
+  expect_equal(
+    pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=0, dose=10, time.dose=0.5),
+    6 - 0.5
+  )
+  expect_equal(
+    pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(0, 2), dose=c(10, 10), time.dose=c(0, 2)),
+    6 - 1.5
+  )
+  # A scalar dose or time is used for each of the durations
+  expect_equal(
+    pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(0, 2), dose=10, time.dose=c(0, 2)),
+    6 - 1.5
+  )
+})
+
+test_that("pk.calc.mrt.iv returns NA when the mean input time is unknown for several doses", {
+  expect_equal(
+    pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(1, NA), dose=c(10, 10), time.dose=c(0, 1)),
+    NA_real_
+  )
+  expect_equal(
+    pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(1, 2), dose=c(10, NA), time.dose=c(0, 1)),
+    NA_real_
+  )
+  expect_equal(
+    pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(1, 2), dose=c(0, 0), time.dose=c(0, 1)),
+    NA_real_
+  )
+  expect_equal(
+    pk.calc.mrt.iv(auc=0, aumc=6, duration.dose=c(1, 2), dose=c(10, 10), time.dose=c(0, 1)),
+    NA_real_
+  )
+})
+
+test_that("pk.calc.mrt.iv requires one result and consistent dose inputs (#694)", {
+  expect_error(
+    pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(1, 2)),
+    class="pknca_error_mit_dose_missing"
+  )
+  expect_error(
+    pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(1, 2), dose=c(10, 10), time.dose=0:2),
+    class="pknca_error_mit_length"
+  )
+  expect_error(
+    pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(1, 2), dose=c(10, 10, 10), time.dose=c(0, 1)),
+    class="pknca_error_mit_length"
+  )
+  # More than one AUC and AUMC is not a single MRT per interval
+  expect_error(
+    pk.calc.mrt.iv(auc=c(1, 2), aumc=c(2, 4), duration.dose=1),
+    class="pknca_error_mrt_not_scalar"
+  )
+  expect_error(
+    pk.calc.mrt.md.iv(
+      auctau=c(1, 2), aumctau=c(2, 4), aucinf=c(1.5, 3), tau=24, duration.dose=1
+    ),
+    class="pknca_error_mrt_not_scalar"
+  )
+})
+
 test_that("pk.calc.mrt.md", {
   expect_equal(pk.calc.mrt.md(1, 2, 1.5, 24), 2 + 24*0.5)
   expect_equal(pk.calc.mrt.md(0, 2, 1.5, 24), NA_real_,
@@ -350,6 +440,33 @@ test_that("pk.calc.mrt.md.iv", {
                info="auctau <= 0 becomes NA (not Inf)")
   expect_equal(pk.calc.mrt.md.iv(1, 2, 1.5, 24, duration.dose=NA), NA_real_,
                info="a missing infusion duration becomes NA")
+})
+
+test_that("pk.calc.mrt.md.iv uses the dose-weighted mean input time for several doses (#694)", {
+  # The issue example: previously 5.9 and 5.4 (one value per duration)
+  expect_equal(
+    pk.calc.mrt.md.iv(
+      auctau=10, aumctau=40, aucinf=12, tau=12,
+      duration.dose=c(1, 2), dose=c(10, 10), time.dose=c(0, 1)
+    ),
+    40/10 + 12*(12 - 10)/10 - 1.25
+  )
+  # A single infusion at the interval start is unchanged
+  expect_equal(
+    pk.calc.mrt.md.iv(1, 2, 1.5, 24, duration.dose=4, dose=100, time.dose=0),
+    pk.calc.mrt.md.iv(1, 2, 1.5, 24, duration.dose=4)
+  )
+  # Bolus plus infusion
+  expect_equal(
+    pk.calc.mrt.md.iv(
+      1, 2, 1.5, 24, duration.dose=c(0, 2), dose=c(10, 10), time.dose=c(0, 2)
+    ),
+    2 + 24*0.5 - 1.5
+  )
+  expect_error(
+    pk.calc.mrt.md.iv(1, 2, 1.5, 24, duration.dose=c(1, 2)),
+    class="pknca_error_mit_dose_missing"
+  )
 })
 
 test_that("pk.calc.vz", {

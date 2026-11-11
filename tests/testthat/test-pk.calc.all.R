@@ -1751,6 +1751,221 @@ test_that("mrt.ivmd and vss.ivmd correct the multiple-dose MRT for the infusion 
   expect_equal(value_na[["vss.ivmd.pred"]], NA_real_)
 })
 
+# One-compartment model (k = 0.2/h, V = 10 L) with segments of constant-rate
+# infusion (or a bolus when the duration is 0).  The true MRT is 1/k = 5 and the
+# true Vss is V = 10.
+conc_one_comp_segments <- function(tt, segs, k = 0.2, V = 10) {
+  vapply(
+    X = tt,
+    FUN.VALUE = 1,
+    FUN = function(t) {
+      sum(mapply(
+        FUN = function(s, d, dose) {
+          if (t <= s) return(0)
+          if (d == 0) return(dose/V*exp(-k*(t - s)))
+          te <- min(t, s + d)
+          dose/d/(k*V)*(1 - exp(-k*(te - s)))*exp(-k*(t - te))
+        },
+        segs$start, segs$dur, segs$dose
+      ))
+    }
+  )
+}
+
+test_that("mrt.iv and vss.iv give one correct value for a multi-segment infusion (#694)", {
+  segs <- data.frame(start=c(0, 1), dur=c(1, 2), dose=c(10, 10))
+  tt <- c(0, 0.25, 0.5, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 36, 48)
+  d_conc <- data.frame(ID=1, time=tt, conc=conc_one_comp_segments(tt, segs))
+  d_dose <- data.frame(ID=1, time=segs$start, dose=segs$dose, dur=segs$dur)
+  o_conc <- PKNCAconc(d_conc, conc~time|ID)
+  o_dose <- PKNCAdose(d_dose, dose~time|ID, route="intravascular", duration="dur")
+  res <-
+    as.data.frame(
+      pk.nca(
+        PKNCAdata(
+          o_conc, o_dose,
+          intervals=data.frame(
+            start=0, end=Inf,
+            aucinf.obs=TRUE, aumcinf.obs=TRUE, cl.obs=TRUE,
+            mrt.iv.obs=TRUE, vss.iv.obs=TRUE, kel.iv.obs=TRUE, thalf.eff.iv.obs=TRUE
+          ),
+          options=list(auc.method="linear")
+        )
+      )
+    )
+  expect_false(
+    any(duplicated(res$PPTESTCD)),
+    info="one row per parameter for an interval with more than one dose row"
+  )
+  value <- stats::setNames(res$PPORRES, res$PPTESTCD)
+  mit <- (10*0.5 + 10*(1 + 1))/20
+  expect_equal(mit, 1.25)
+  expect_equal(value[["mrt.iv.obs"]], value[["aumcinf.obs"]]/value[["aucinf.obs"]] - mit)
+  expect_equal(value[["mrt.iv.obs"]], 4.9928, tolerance=1e-4)
+  expect_equal(value[["mrt.iv.obs"]], 5, tolerance=2e-3)
+  expect_equal(value[["cl.obs"]], 20/value[["aucinf.obs"]])
+  expect_equal(value[["vss.iv.obs"]], value[["cl.obs"]]*value[["mrt.iv.obs"]])
+  expect_equal(value[["vss.iv.obs"]], 9.71, tolerance=1e-3)
+  expect_equal(value[["kel.iv.obs"]], 1/value[["mrt.iv.obs"]])
+  expect_equal(value[["thalf.eff.iv.obs"]], log(2)*value[["mrt.iv.obs"]])
+})
+
+test_that("mrt.iv for a single infusion is unchanged and accounts for a late start (#694)", {
+  tt <- c(0, 0.5, 1, 2, 3, 4, 6, 8, 12, 16, 24, 36, 48)
+  # An infusion at the interval start: AUMC/AUC - duration/2, as before
+  segs <- data.frame(start=0, dur=2, dose=20)
+  o_conc <- PKNCAconc(
+    data.frame(ID=1, time=tt, conc=conc_one_comp_segments(tt, segs)), conc~time|ID
+  )
+  o_dose <- PKNCAdose(
+    data.frame(ID=1, time=0, dose=20, dur=2), dose~time|ID,
+    route="intravascular", duration="dur"
+  )
+  res <- as.data.frame(
+    pk.nca(
+      PKNCAdata(
+        o_conc, o_dose,
+        intervals=data.frame(start=0, end=Inf, aucinf.obs=TRUE, aumcinf.obs=TRUE, mrt.iv.obs=TRUE),
+        options=list(auc.method="linear")
+      )
+    )
+  )
+  value <- stats::setNames(res$PPORRES, res$PPTESTCD)
+  expect_equal(value[["mrt.iv.obs"]], value[["aumcinf.obs"]]/value[["aucinf.obs"]] - 1)
+  
+  # The same infusion starting 2 hours after the interval start: the AUMC is
+  # measured from the interval start, so the input time includes the delay
+  segs_late <- data.frame(start=2, dur=2, dose=20)
+  o_conc_late <- PKNCAconc(
+    data.frame(ID=1, time=tt, conc=conc_one_comp_segments(tt, segs_late)), conc~time|ID
+  )
+  o_dose_late <- PKNCAdose(
+    data.frame(ID=1, time=2, dose=20, dur=2), dose~time|ID,
+    route="intravascular", duration="dur"
+  )
+  res_late <- as.data.frame(
+    pk.nca(
+      PKNCAdata(
+        o_conc_late, o_dose_late,
+        intervals=data.frame(start=0, end=Inf, aucinf.obs=TRUE, aumcinf.obs=TRUE, mrt.iv.obs=TRUE),
+        options=list(auc.method="linear")
+      )
+    )
+  )
+  value_late <- stats::setNames(res_late$PPORRES, res_late$PPTESTCD)
+  expect_equal(
+    value_late[["mrt.iv.obs"]],
+    value_late[["aumcinf.obs"]]/value_late[["aucinf.obs"]] - 3
+  )
+  # Linear trapezoids on a sparse grid leave about 1% error against the true 5
+  expect_equal(value_late[["mrt.iv.obs"]], 5, tolerance=2e-2)
+})
+
+test_that("mrt.iv uses dose times relative to a non-zero interval start (#694)", {
+  # The interval starts at 10 and a 2 h infusion starts at 12, so the input
+  # midpoint is 2 + 1 = 3 from the interval start (the origin of the AUMC), not
+  # the absolute 12 + 1 = 13.
+  k <- 0.2
+  V <- 10
+  conc_fun <- function(t) {
+    vapply(t, FUN.VALUE=1, FUN=function(tt) {
+      if (tt <= 12) return(0)
+      te <- min(tt, 14)
+      10/(k*V)*(1 - exp(-k*(te - 12)))*exp(-k*(tt - te))
+    })
+  }
+  tt <- 10 + c(0, 1, 2, 2.5, 3, 3.5, 4, 5, 6, 8, 12, 16, 24, 36, 48)
+  res <- as.data.frame(
+    pk.nca(
+      PKNCAdata(
+        PKNCAconc(data.frame(ID=1, time=tt, conc=conc_fun(tt)), conc~time|ID),
+        PKNCAdose(
+          data.frame(ID=1, time=12, dose=20, dur=2), dose~time|ID,
+          route="intravascular", duration="dur"
+        ),
+        intervals=data.frame(
+          start=10, end=Inf, aucinf.obs=TRUE, aumcinf.obs=TRUE, mrt.iv.obs=TRUE
+        ),
+        options=list(auc.method="linear")
+      )
+    )
+  )
+  expect_false(any(duplicated(res$PPTESTCD)))
+  value <- stats::setNames(res$PPORRES, res$PPTESTCD)
+  expect_equal(value[["mrt.iv.obs"]], value[["aumcinf.obs"]]/value[["aucinf.obs"]] - 3)
+  expect_equal(value[["mrt.iv.obs"]], 5, tolerance=2e-2)
+})
+
+test_that("mrt.iv and vss.iv handle a bolus plus an infusion in one interval (#694)", {
+  segs <- data.frame(start=c(0, 2), dur=c(0, 2), dose=c(10, 10))
+  tt <- c(0, 0.25, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 8, 12, 16, 24, 36, 48)
+  o_conc <- PKNCAconc(
+    data.frame(ID=1, time=tt, conc=conc_one_comp_segments(tt, segs)), conc~time|ID
+  )
+  o_dose <- PKNCAdose(
+    data.frame(ID=1, time=segs$start, dose=segs$dose, dur=segs$dur), dose~time|ID,
+    route="intravascular", duration="dur"
+  )
+  res <- as.data.frame(
+    pk.nca(
+      PKNCAdata(
+        o_conc, o_dose,
+        intervals=data.frame(
+          start=0, end=Inf, aucinf.obs=TRUE, aumcinf.obs=TRUE, cl.obs=TRUE,
+          mrt.iv.obs=TRUE, vss.iv.obs=TRUE
+        ),
+        options=list(auc.method="linear")
+      )
+    )
+  )
+  expect_false(any(duplicated(res$PPTESTCD)))
+  value <- stats::setNames(res$PPORRES, res$PPTESTCD)
+  # MIT = (10*0 + 10*(2 + 1))/20
+  expect_equal(value[["mrt.iv.obs"]], value[["aumcinf.obs"]]/value[["aucinf.obs"]] - 1.5)
+  # Linear trapezoids on a sparse grid leave about 1.5% error against the true 5
+  expect_equal(value[["mrt.iv.obs"]], 5, tolerance=3e-2)
+  expect_equal(value[["vss.iv.obs"]], value[["cl.obs"]]*value[["mrt.iv.obs"]])
+})
+
+test_that("mrt.ivmd and vss.ivmd give one correct value for a multi-segment infusion (#694)", {
+  # The steady-state profile (CL=0.5, V=10, k=0.05, 100 q24h) given as 50 mg over
+  # 2 h from time 0 and 50 mg over 4 h from time 2.  The true MRT is 20 and the
+  # true Vss is 10.
+  tau <- 24
+  segs <- data.frame(start=c(0, 2), dur=c(2, 4), dose=c(50, 50))
+  d_time <- c(0, 1, 2, 3, 4, 5, 6, 8, 12, 18, 24)
+  d_conc <-
+    rowSums(sapply(
+      0:400,
+      function(i) conc_one_comp_segments(d_time + i*tau, segs, k=0.05, V=10)
+    ))
+  o_conc <- PKNCAconc(data.frame(subj=1, time=d_time, conc=d_conc), conc~time|subj)
+  o_dose <-
+    PKNCAdose(
+      data.frame(subj=1, time=segs$start, dose=segs$dose, duration=segs$dur),
+      dose~time|subj, route="intravascular", duration="duration"
+    )
+  res <-
+    as.data.frame(pk.nca(PKNCAdata(
+      o_conc, o_dose,
+      intervals=data.frame(
+        start=0, end=tau, tau=tau, cl.last=TRUE,
+        mrt.md.obs=TRUE, mrt.ivmd.obs=TRUE, vss.ivmd.obs=TRUE,
+        mrt.ivmd.pred=TRUE, vss.ivmd.pred=TRUE
+      )
+    )))
+  expect_false(any(duplicated(res$PPTESTCD)))
+  value <- stats::setNames(res$PPORRES, res$PPTESTCD)
+  # MIT = (50*1 + 50*(2 + 2))/100
+  mit <- 2.5
+  expect_equal(value[["mrt.ivmd.obs"]], value[["mrt.md.obs"]] - mit)
+  expect_equal(value[["mrt.ivmd.obs"]], 20, tolerance=1e-3)
+  expect_equal(value[["vss.ivmd.obs"]], 10, tolerance=1e-3)
+  expect_equal(value[["vss.ivmd.obs"]], value[["cl.last"]]*value[["mrt.ivmd.obs"]])
+  expect_equal(value[["vss.ivmd.pred"]], value[["cl.last"]]*value[["mrt.ivmd.pred"]])
+})
+
+
 test_that("an I()-wrapped formalsmap value is passed to the function as a constant", {
   fn_name <- "pknca_test_formalsmap_constant_"
   assign(
