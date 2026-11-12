@@ -1212,6 +1212,12 @@ the generated intervals:
 
 ## Bug fixes
 
+* Preferred units (`concu_pref`, `doseu_pref`, and the others) with unit
+  columns whose units differ between groups no longer stop `PKNCAdata()` with
+  "arguments imply differing number of rows: 1, 0" when some groups are
+  already in the preferred units.  Those groups now report their own units with
+  a conversion factor of 1, and the others are converted (@billdenney).
+
 * `pk.nca()` with units that differ between groups (for example, a subject
   without a dose, or a unit column) no longer stops with "Can't join ... due
   to incompatible types" when a group column is integer, numeric, or a date:
