@@ -1469,6 +1469,16 @@ the generated intervals:
   measured concentration is shifted instead, as long as it is within
   `max_shift` (#361).
 
+* The `start_predose_conc0`, `start_predose`, and `start_cmin` imputation
+  methods treat a row at the start time with a missing concentration as no
+  measurement, as they treat no row.  They tested only whether a row existed
+  at the start time, so a missing concentration there stopped the imputation
+  and was then dropped:  a profile sampled from 0.25 with a missing
+  concentration at 0 gave a missing AUClast from 0 with `start_predose_conc0`
+  ("Requesting an AUC range starting (0) before the first measurement (0.25)
+  is not allowed"), and now gives the value it gives without the row.
+  `start_conc0` already set the start concentration to 0 (@billdenney).
+
 * Business functions (used for calculations of means, etc.) now return NA_real_
   for empty inputs rather than giving an error (#559).
 

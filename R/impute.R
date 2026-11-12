@@ -178,11 +178,25 @@ pknca_register_impute_method(
     )
 )
 
+#' Drop the rows at the start time that have a missing concentration
+#'
+#' A missing concentration is not a measurement, so an imputation that adds a
+#' start concentration when there is none treats such a row as absent.
+#'
+#' @param ret A data frame with columns `conc` and `time`
+#' @param start The start time of the interval
+#' @returns `ret` without its rows at `start` with a missing `conc`
+#' @keywords Internal
+#' @noRd
+impute_drop_missing_start <- function(ret, start) {
+  ret[!(ret$time %in% start & is.na(ret$conc)), , drop = FALSE]
+}
+
 #' @eval pknca_rd_impute_method("PKNCA_impute_method_start_cmin")
 #' @export
 PKNCA_impute_method_start_cmin <- function(conc, time, start, end, ..., options = list()) {
-  ret <- data.frame(conc = conc, time = time)
-  mask_start <- time %in% start
+  ret <- impute_drop_missing_start(data.frame(conc = conc, time = time), start = start)
+  mask_start <- ret$time %in% start
   if (!any(mask_start)) {
     all_concs <- conc[start <= time & time <= end]
     if (!all(is.na(all_concs))) {
@@ -195,7 +209,12 @@ PKNCA_impute_method_start_cmin <- function(conc, time, start, end, ..., options 
 }
 pknca_register_impute_method(
   fun = "PKNCA_impute_method_start_cmin",
-  description = "Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data)"
+  description = "Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data)",
+  details =
+    paste(
+      "A row at the start time with a missing concentration is not a",
+      "measurement:  it is replaced by the imputed one."
+    )
 )
 
 #' @eval pknca_rd_impute_method("PKNCA_impute_method_start_predose")
@@ -206,7 +225,7 @@ pknca_register_impute_method(
 #' @inheritParams pk.nca.interval
 #' @export
 PKNCA_impute_method_start_predose <- function(conc, time, start, end, conc.group, time.group, ..., max_shift = NA_real_, options = list()) {
-  ret <- data.frame(conc = conc, time = time)
+  ret <- impute_drop_missing_start(data.frame(conc = conc, time = time), start = start)
   if (is.na(max_shift)) {
     if (is.infinite(end)) {
       # A measurement at an unknown time cannot bound the shift window, so
@@ -219,7 +238,7 @@ PKNCA_impute_method_start_predose <- function(conc, time, start, end, conc.group
     max_shift <- 0.05 * (shift_end - start)
   }
   # determine if the start time is already in the
-  mask_start <- time %in% start
+  mask_start <- ret$time %in% start
   if (!any(mask_start)) {
     # A measurement at an unknown time cannot be known to be predose, and a
     # missing concentration carries nothing to shift, so the predose sample is
@@ -242,7 +261,9 @@ pknca_register_impute_method(
   details =
     paste(
       "The most recent predose sample with a measured concentration is shifted;",
-      "samples with a missing concentration are skipped."
+      "samples with a missing concentration are skipped.  A row at the start",
+      "time with a missing concentration is not a measurement:  it is replaced",
+      "by the shifted one."
     )
 )
 
@@ -277,7 +298,9 @@ pknca_register_impute_method(
       "time of an intravenous bolus dose is the C0 for that dose, and",
       '`start_conc0` would replace it with 0.  The chain',
       '`"start_predose,start_conc0"` cannot express this, because `start_conc0`',
-      "overwrites whatever `start_predose` shifted."
+      "overwrites whatever `start_predose` shifted.  A row at the start time",
+      "with a missing concentration is not a measurement:  the start",
+      "concentration is imputed as if the row were absent."
     )
 )
 

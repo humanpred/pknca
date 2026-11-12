@@ -1166,25 +1166,61 @@ test_that("start imputations with a missing concentration at the start time", {
     PKNCA_impute_method_start_conc0(conc = conc, time = time, start = 0),
     data.frame(conc = c(0, 40, 80), time = c(0, 1, 2))
   )
-  # start_cmin, start_predose, and start_predose_conc0 see a row at the start
-  # time and impute nothing, so the start stays missing
+  # start_cmin, start_predose, and start_predose_conc0 treat the row as no
+  # measurement, so they impute the start as they do when there is no row:
+  # each gives what it gives for the same data without the row
   expect_equal(
     PKNCA_impute_method_start_cmin(conc = conc, time = time, start = 0, end = 2),
-    data.frame(conc = c(NA, 40, 80), time = c(0, 1, 2))
+    data.frame(conc = c(40, 40, 80), time = c(0, 1, 2)),
+    ignore_attr = "row.names"
   )
+  expect_equal(
+    PKNCA_impute_method_start_cmin(conc = conc, time = time, start = 0, end = 2),
+    PKNCA_impute_method_start_cmin(conc = conc[-1], time = time[-1], start = 0, end = 2),
+    ignore_attr = "row.names"
+  )
+  # The predose sample (at -0.05) is shifted to the start
   expect_equal(
     PKNCA_impute_method_start_predose(
       conc = conc, time = time, start = 0, end = 2,
       conc.group = c(5, conc), time.group = c(-0.05, time)
     ),
-    data.frame(conc = c(NA, 40, 80), time = c(0, 1, 2))
+    data.frame(conc = c(5, 40, 80), time = c(0, 1, 2)),
+    ignore_attr = "row.names"
+  )
+  # Without a predose sample, start_predose adds nothing and the missing row is
+  # dropped, as for no row
+  expect_equal(
+    PKNCA_impute_method_start_predose(
+      conc = conc, time = time, start = 0, end = 2,
+      conc.group = conc, time.group = time
+    ),
+    data.frame(conc = c(40, 80), time = c(1, 2)),
+    ignore_attr = "row.names"
   )
   expect_equal(
     PKNCA_impute_method_start_predose_conc0(
       conc = conc, time = time, start = 0, end = 2,
       conc.group = conc, time.group = time
     ),
-    data.frame(conc = c(NA, 40, 80), time = c(0, 1, 2))
+    data.frame(conc = c(0, 40, 80), time = c(0, 1, 2)),
+    ignore_attr = "row.names"
+  )
+  expect_equal(
+    PKNCA_impute_method_start_predose_conc0(
+      conc = conc, time = time, start = 0, end = 2,
+      conc.group = c(5, conc), time.group = c(-0.05, time)
+    ),
+    data.frame(conc = c(5, 40, 80), time = c(0, 1, 2)),
+    ignore_attr = "row.names"
+  )
+  # A measured start concentration is kept
+  expect_equal(
+    PKNCA_impute_method_start_predose_conc0(
+      conc = c(7, 40, 80), time = time, start = 0, end = 2,
+      conc.group = c(7, 40, 80), time.group = time
+    ),
+    data.frame(conc = c(7, 40, 80), time = c(0, 1, 2))
   )
 })
 
@@ -1211,11 +1247,9 @@ test_that("pk.nca with start_predose_conc0 and a missing concentration at the st
   expect_equal(impute_test_auclast(d_conc[-1, ], "start_predose_conc0"), 1836.33993274182)
   expect_equal(impute_test_auclast(transform(d_conc, conc = c(0, conc[-1])), "start_predose_conc0"), 1836.33993274182)
   expect_equal(impute_test_auclast(d_conc, "start_conc0"), 1836.33993274182)
-  # A missing concentration at time 0 stops the zero from being added
-  expect_warning(
-    auclast_na <- impute_test_auclast(d_conc, "start_predose_conc0"),
-    regexp = "Requesting an AUC range starting (0) before the first measurement (0.25) is not allowed",
-    fixed = TRUE
-  )
-  expect_equal(auclast_na, NA_real_)
+  # A missing concentration at time 0 is no measurement, as an absent row is
+  expect_equal(impute_test_auclast(d_conc, "start_predose_conc0"), 1836.33993274182)
+  # start_cmin imputes Cmin of the interval (40), as without the row
+  expect_equal(impute_test_auclast(d_conc, "start_cmin"), impute_test_auclast(d_conc[-1, ], "start_cmin"))
+  expect_equal(impute_test_auclast(d_conc, "start_cmin"), 1836.33993274182 + 0.25 * 40 / 2)
 })
