@@ -1601,3 +1601,18 @@ test_that("later data frame operations drop the estimates attribute or keep it u
   # Kept unchanged, so it still describes the rows that are gone
   expect_identical(attr(fit[fit$treatment == "A", , drop = FALSE], "estimates"), est)
 })
+
+test_that("a population request with one subject stops with an internal error", {
+  d <- tss_test_theoph()
+  d <- d[d$Subject %in% "1", ]
+  expect_error(
+    expect_warning(
+      pk.tss(
+        conc = d$conc, time = d$time, subject = d$Subject, time.dosing = tss_test_dose_times(),
+        type = "monoexponential", output = "population"
+      ),
+      class = "pknca_warning_tss_output_no_subjects"
+    ),
+    class = "pknca_error_internal_tss_return_selection"
+  )
+})
