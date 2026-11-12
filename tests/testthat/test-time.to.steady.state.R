@@ -1602,17 +1602,56 @@ test_that("later data frame operations drop the estimates attribute or keep it u
   expect_identical(attr(fit[fit$treatment == "A", , drop = FALSE], "estimates"), est)
 })
 
-test_that("a population request with one subject stops with an internal error", {
+test_that("a population, popind, or individual request with one subject is NA with insufficient data", {
+  # Before, pk.tss() stopped with the internal error "Error in selection of
+  # return values for pk.tss.monoexponential. This is likely a bug."
   d <- tss_test_theoph()
   d <- d[d$Subject %in% "1", ]
-  expect_error(
-    expect_warning(
+  msg <- "Cannot give 'population', 'popind', or 'individual' output without multiple subjects of data"
+  expect_warning(
+    fit <-
       pk.tss(
         conc = d$conc, time = d$time, subject = d$Subject, time.dosing = tss_test_dose_times(),
-        type = "monoexponential", output = "population"
+        type = "monoexponential", output = c("population", "popind")
       ),
-      class = "pknca_warning_tss_output_no_subjects"
-    ),
-    class = "pknca_error_internal_tss_return_selection"
+    regexp = msg, fixed = TRUE,
+    class = "pknca_warning_tss_output_no_subjects"
   )
+  expect_equal(
+    fit,
+    data.frame(tss.monoexponential.population = NA_real_, tss.monoexponential.popind = NA_real_),
+    ignore_attr = "estimates"
+  )
+  expect_equal(
+    tss_test_check_estimates(fit),
+    data.frame(
+      type = "monoexponential", output = c("population", "popind"), treatment = NA_character_, subject = NA_character_,
+      estimate = NA_real_, lower = NA_real_, upper = NA_real_, level = 0.95,
+      status = "insufficient_data", fit_warning = NA_character_, message = msg
+    )
+  )
+  # With stepwise linear, its estimate is still given
+  fit <-
+    suppressWarnings(
+      pk.tss(
+        conc = d$conc, time = d$time, subject = d$Subject, time.dosing = tss_test_dose_times(),
+        output = "individual"
+      )
+    )
+  est <- tss_test_check_estimates(fit)
+  expect_equal(est$output, c("individual", NA))
+  expect_equal(est$status, c("insufficient_data", "estimated"))
+  # With single, the outputs that need several subjects are left out of the
+  # result (as before) and are in the estimates
+  fit <-
+    suppressWarnings(
+      pk.tss(
+        conc = d$conc, time = d$time, subject = d$Subject, time.dosing = tss_test_dose_times(),
+        type = "monoexponential", output = c("population", "single")
+      )
+    )
+  expect_named(fit, "tss.monoexponential.single")
+  est <- tss_test_check_estimates(fit)
+  expect_equal(est$output, c("single", "population"))
+  expect_equal(est$status, c("estimated", "insufficient_data"))
 })

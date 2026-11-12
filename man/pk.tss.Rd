@@ -58,7 +58,10 @@ start time.}
 from at least one start time, so steady state may have been missed);
 the estimate is \code{NA}.}
 \item{\code{"insufficient_data"}}{Fewer dose times than \code{min.points}
-(stepwise linear); the estimate is \code{NA}.}
+(stepwise linear), or troughs from one subject for the
+\code{population}, \code{popind}, or \code{individual} output, which need several;
+the estimate is \code{NA}.  When another output is requested, those
+outputs are left out of the result and are only in this table.}
 \item{\code{"no_random_effect"}}{\code{popind} was requested, but the selected
 population model has no random effect on Tss; the estimate is \code{NA}.}
 }}

@@ -1275,6 +1275,13 @@ the generated intervals:
   AIC.  That model is now written `tss ~ treatment - 1`, so the population
   output gives each treatment its own Tss (@billdenney).
 
+* `pk.tss()` and `pk.tss.monoexponential()` asked only for outputs that need
+  several subjects (`population`, `popind`, or `individual`) when the troughs
+  are from one subject no longer stop with the internal error "Error in
+  selection of return values for pk.tss.monoexponential".  They give `NA`
+  with the status `"insufficient_data"` in the `"estimates"` attribute, after
+  the warning they already gave (@billdenney).
+
 * In `pk.tss()` with `subject.dosing`, a dose recorded more than once for a
   subject and time selects its trough once; it was fitted once per dose
   record (@billdenney).

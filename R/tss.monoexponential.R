@@ -113,15 +113,25 @@ pk.tss.monoexponential <- function(...,
   # Note that this will by default choose "population" if nothing is
   # requested.
   output <- match.arg(output, several.ok=TRUE)
+  # The outputs that need more than one subject, when the data have one (or
+  # no subject was given)
+  output_no_subjects <- character()
   if (!("subject" %in% names(modeldata))) {
-    if (any(c("population", "popind", "individual") %in% output)) {
-      rlang::warn(
-        "Cannot give 'population', 'popind', or 'individual' output without multiple subjects of data",
-        class = "pknca_warning_tss_output_no_subjects"
-      )
-      output <- setdiff(output, c("population", "popind", "individual"))
+    output_no_subjects <- intersect(c("population", "popind", "individual"), output)
+    if (length(output_no_subjects) > 0) {
+      msg_no_subjects <-
+        "Cannot give 'population', 'popind', or 'individual' output without multiple subjects of data"
+      rlang::warn(msg_no_subjects, class = "pknca_warning_tss_output_no_subjects")
+      output <- setdiff(output, output_no_subjects)
     }
   }
+  estimates_no_subjects <-
+    if (length(output_no_subjects) > 0) {
+      tss_estimates_table(
+        type="monoexponential", output=output_no_subjects, estimate=NA_real_, level=level,
+        status="insufficient_data", message=msg_no_subjects
+      )
+    }
   # Set the tss.constant so that exp(tss.constant) == tss.fraction so
   # that the model below solves for the requested tss.
   modeldata$tss.constant <- log(1-tss.fraction)
@@ -153,12 +163,22 @@ pk.tss.monoexponential <- function(...,
       ret_population
     } else if (!identical(NA, ret_individual)) {
       ret_individual
+    } else if (length(output_no_subjects) > 0) {
+      # Every requested output needs more than one subject:  one row of NA
+      stats::setNames(
+        as.data.frame(as.list(rep(NA_real_, length(output_no_subjects)))),
+        paste("tss.monoexponential", output_no_subjects, sep=".")
+      )
     } else {
       rlang::abort("Error in selection of return values for pk.tss.monoexponential. This is likely a bug.", class = "pknca_error_internal_tss_return_selection")  # nocov
     }
   tss_set_estimates(
     ret,
-    rbind(attr(ret_population, "estimates"), attr(ret_individual, "estimates"))
+    rbind(
+      attr(ret_population, "estimates"),
+      attr(ret_individual, "estimates"),
+      estimates_no_subjects
+    )
   )
 }
 

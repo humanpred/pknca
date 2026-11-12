@@ -96,6 +96,13 @@ tss_test_check_estimates <- function(fit) {
       } else {
         paste0("tss.monoexponential.", est$output[idx])
       }
+    if (!(col %in% names(fit))) {
+      # An output that needs more than one subject is left out of a result
+      # that has another output
+      testthat::expect_equal(est$status[idx], "insufficient_data")
+      testthat::expect_equal(est$estimate[idx], NA_real_)
+      next
+    }
     mask <- rep(TRUE, nrow(fit))
     if (!is.na(est$treatment[idx])) {
       mask <- mask & as.character(fit$treatment) %in% est$treatment[idx]
