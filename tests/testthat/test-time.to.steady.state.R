@@ -433,7 +433,7 @@ test_that("pk.tss.monoexponential", {
     ),
     tolerance=1e-4
   )
-  expect_output(
+  expect_warning(
     expect_equal(
       pk.tss.monoexponential(
         conc=c(0, 1000),
@@ -447,7 +447,8 @@ test_that("pk.tss.monoexponential", {
       data.frame(tss.monoexponential.single=NA_real_),
       info="Single-subject data fitting works when it does not converge."
     ),
-    regexp = "approximate covariance matrix for parameter estimates not of full rank"
+    regexp = "approximate covariance matrix for parameter estimates not of full rank",
+    class = "pknca_warning_tss_individual_fit_failed"
   )
 })
 
@@ -826,7 +827,7 @@ test_that("nca.reporter's per-treatment estimates: population and stepwise for e
   expect_equal(ret$B, c(25.9513099761, 60), tolerance = 1e-8)
 })
 
-test_that("the selected population model's nlme warning surfaces unclassed, and the population rows depend on the model", {
+test_that("only the selected population model's nlme warnings are given, as one classed warning", {
   d <- tss_test_theoph()
   d_a <- d[d$treatment == "A", ]
   fit_a <-
@@ -843,11 +844,18 @@ test_that("the selected population model's nlme warning surfaces unclassed, and 
     data.frame(subject = factor(as.character(1:6)), tss.monoexponential.population = 27.0640998681),
     tolerance = 1e-8
   )
+  # The selected model warned (in an inner step of an outer loop that
+  # converged)
   expect_equal(
     vapply(fit_a$warnings, conditionMessage, ""),
-    "Iteration 1, LME step: nlminb() did not converge (code = 1). Do increase 'msMaxIter'!"
+    paste(
+      "The selected population model for monoexponential Tss",
+      "(Fixed effects of Single Ctrough.ss and Single value for Tss; random effects of Ctrough.ss and Tss)",
+      "gave warnings while fitting:",
+      "Iteration 1, LME step: nlminb() did not converge (code = 1). Do increase 'msMaxIter'!"
+    )
   )
-  expect_equal(class(fit_a$warnings[[1]]), c("simpleWarning", "warning", "condition"))
+  expect_equal(tss_test_warning_classes(fit_a), "pknca_warning_tss_population_fit_warning")
 
   d_b <- d[d$treatment == "B", ]
   fit_b <-
@@ -864,13 +872,9 @@ test_that("the selected population model's nlme warning surfaces unclassed, and 
     data.frame(subject = factor(as.character(c(10:12, 7:9))), tss.monoexponential.population = 25.9513099761),
     tolerance = 1e-8
   )
-  expect_equal(
-    vapply(fit_b$warnings, conditionMessage, ""),
-    c(
-      "Iteration 1, LME step: nlminb() did not converge (code = 1). Do increase 'msMaxIter'!",
-      "Iteration 2, LME step: nlminb() did not converge (code = 1). Do increase 'msMaxIter'!"
-    )
-  )
+  # Only a candidate that is not selected warned (see the next test), so there
+  # is no warning; before, nlme's two warnings came through unclassed
+  expect_length(fit_b$warnings, 0)
 })
 
 test_that("nlme warns for candidate population models that are not selected", {
@@ -1074,18 +1078,70 @@ test_that("when the troughs are still rising, monoexponential gives an extrapola
     ),
     tolerance = 1e-8
   )
-  expect_equal(tss_test_warning_classes(fit), c("simpleWarning", "pknca_warning_tss_stepwise_fit_failed"))
+  # The nlme warning came from a candidate population model that is not
+  # selected, so it is not given
+  expect_equal(tss_test_warning_classes(fit), "pknca_warning_tss_stepwise_fit_failed")
 })
 
-test_that("a failed single fit is NA with no warning", {
-  expect_no_warning(
-    expect_output(
+test_that("a failed single or individual fit is NA with a classed warning that names the fit", {
+  # Before, the failure was printed and there was no warning
+  expect_silent(
+    expect_warning(
       fit <-
         pk.tss(conc = c(0, 1000), time = 0:1, subject = c(1, 1), time.dosing = 0:1, type = "monoexponential", output = "single"),
-      regexp = "approximate covariance matrix for parameter estimates not of full rank"
+      regexp = "A monoexponential gnls fit for Tss failed, so its estimate is NA:\nsingle: approximate covariance matrix for parameter estimates not of full rank",
+      fixed = TRUE,
+      class = "pknca_warning_tss_individual_fit_failed"
     )
   )
   expect_equal(fit, data.frame(tss.monoexponential.single = NA_real_))
+
+  # Subject 2 has two troughs, too few for the two parameters of the curve
+  d <- tss_test_theoph()
+  d <- d[d$treatment == "A" & (d$Subject != "2" | d$time %in% c(0, 12)), ]
+  expect_warning(
+    fit <-
+      pk.tss(
+        conc = d$conc, time = d$time, subject = d$Subject, time.dosing = tss_test_dose_times(),
+        type = "monoexponential", output = "individual"
+      ),
+    regexp = "A monoexponential gnls fit for Tss failed, so its estimate is NA:\nindividual (subject 2): ",
+    fixed = TRUE,
+    class = "pknca_warning_tss_individual_fit_failed"
+  )
+  expect_equal(is.na(fit$tss.monoexponential.individual), as.character(fit$subject) == "2")
+})
+
+test_that("the warnings of a gnls fit that gives an estimate are one classed warning", {
+  local_mocked_bindings(
+    tss_try_gnls = function(data, verbose, collector) {
+      pknca_collect_warnings(
+        {
+          warning("a gnls warning")
+          nlme::gnls(
+            conc ~ ctrough.ss * (1 - exp(tss.constant * time / tss)),
+            params = list(ctrough.ss ~ 1, tss ~ 1),
+            start = c(mean(data$conc), stats::median(unique(data$time))),
+            data = data
+          )
+        },
+        collector
+      )
+    }
+  )
+  d <- tss_test_theoph()
+  d <- d[d$Subject %in% "1", ]
+  expect_warning(
+    fit <-
+      pk.tss(
+        conc = d$conc, time = d$time, subject = d$Subject, time.dosing = tss_test_dose_times(),
+        type = "monoexponential", output = "single"
+      ),
+    regexp = "A monoexponential gnls fit for Tss gave warnings while fitting:\nsingle: a gnls warning",
+    fixed = TRUE,
+    class = "pknca_warning_tss_individual_fit_warning"
+  )
+  expect_false(is.na(fit$tss.monoexponential.single))
 })
 
 test_that("stepwise NA when every start time fails to fit looks like steady state not reached", {

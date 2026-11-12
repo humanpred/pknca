@@ -241,12 +241,13 @@ pknca_split_timeu <- function(splitdata, group_info, o_conc) {
   ret
 }
 
-# Gathering the dose regimen warnings of one group (the
-# "pknca_warning_dose_regimen" class of find.dose.regimen() and
-# resolve_dose_tau()), and its message that the units package is missing, so
-# that each is given once for the group, with the group named, rather than once
-# for every interval and every parameter that needed tau.
-pknca_regimen_warning_collector <- function() {
+# A place to keep warnings and messages (in `$conditions`, each once) to give
+# them later or to report them some other way.  The dose regimen warnings of
+# one group (the "pknca_warning_dose_regimen" class of find.dose.regimen() and
+# resolve_dose_tau()), and its message that the units package is missing, are
+# kept so that each is given once for the group, with the group named, rather
+# than once for every interval and every parameter that needed tau.
+pknca_condition_collector <- function() {
   collector <- new.env(parent = emptyenv())
   collector$conditions <- list()
   collector
@@ -256,13 +257,21 @@ pknca_regimen_warning_collector <- function() {
 pknca_collect_regimen_warnings <- function(expr, collector) {
   withCallingHandlers(
     expr,
-    pknca_warning_dose_regimen = function(cnd) pknca_keep_regimen_warning(cnd, collector),
-    pknca_message_tau_units_fallback = function(cnd) pknca_keep_regimen_warning(cnd, collector)
+    pknca_warning_dose_regimen = function(cnd) pknca_keep_condition(cnd, collector),
+    pknca_message_tau_units_fallback = function(cnd) pknca_keep_condition(cnd, collector)
   )
 }
 
-# Keep one dose regimen warning or message (by class and message) and muffle it
-pknca_keep_regimen_warning <- function(cnd, collector) {
+# Evaluate `expr`, keeping all of its warnings in `collector`
+pknca_collect_warnings <- function(expr, collector) {
+  withCallingHandlers(
+    expr,
+    warning = function(cnd) pknca_keep_condition(cnd, collector)
+  )
+}
+
+# Keep one warning or message (by class and message) and muffle it
+pknca_keep_condition <- function(cnd, collector) {
   key <- paste(class(cnd)[1], conditionMessage(cnd))
   collector$conditions[[key]] <- cnd
   invokeRestart(if (inherits(cnd, "message")) "muffleMessage" else "muffleWarning")
@@ -272,7 +281,7 @@ pknca_keep_regimen_warning <- function(cnd, collector) {
 # prefixed with the group.  They are given on the way out, so an error in
 # `expr` does not lose the warnings that came before it.
 pknca_with_regimen_warnings <- function(expr, prefix) {
-  collector <- pknca_regimen_warning_collector()
+  collector <- pknca_condition_collector()
   on.exit(pknca_emit_regimen_warnings(collector, prefix), add = TRUE)
   pknca_collect_regimen_warnings(expr, collector)
 }

@@ -44,6 +44,17 @@ An exponential curve is then fit through the data with a different magnitude
 by treatment (as a factor) and a random steady-state concentration and time
 to stead-state by subject (see \code{random.effects} argument).
 }
+\details{
+The population model is selected by AIC from several candidates (Ctrough,ss
+and Tss for all treatments or by treatment, with random effects on either
+or both).  nlme's warnings are kept with each candidate:  those of the
+selected model are given as one \code{pknca_warning_tss_population_fit_warning}
+that quotes them, and those of the other candidates are not given because
+they do not bear on the estimate.  The gnls fits of the \code{individual} and
+\code{single} outputs give \code{pknca_warning_tss_individual_fit_failed} when a fit
+fails (its estimate is \code{NA}) and \code{pknca_warning_tss_individual_fit_warning}
+when a fit that gives an estimate warns.
+}
 \references{
 Maganti, L., Panebianco, D.L. & Maes, A.L. Evaluation of Methods for
 Estimating Time to Steady State with Examples from Phase 1 Studies. AAPS J
