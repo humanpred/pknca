@@ -428,9 +428,12 @@ test_that("pk.tss.monoexponential", {
           3.91269286106442, 4.74475071729459, 3.99341726779716,
           5.08737230904342, 4.50068650719192, 3.4876172020751,
           5.35051537086801),
-        tss.monoexponential.single=4.56067603534
+        # Each treatment's own fit
+        tss.monoexponential.single=
+          c(A=4.49364717175, B=4.59871031113)[c("A", "B", "A", "A", "A", "A", "B", "B", "B", "B")]
       ),
-      tolerance=1e-4
+      tolerance=1e-4,
+      ignore_attr=TRUE
     )
   )
   expect_output(
@@ -911,7 +914,7 @@ test_that("one call with two treatments gives one population value with no treat
   )
 })
 
-test_that("the single output per treatment is the all-data fit, cross-joined with the population rows", {
+test_that("the single output per treatment fits each treatment, cross-joined with the population rows", {
   d <- tss_test_theoph()
   args <-
     list(
@@ -926,8 +929,24 @@ test_that("the single output per treatment is the all-data fit, cross-joined wit
   expect_equal(as.character(fit$treatment), rep(c("A", "B"), each = 12))
   # Every subject appears under both treatments
   expect_equal(as.character(fit$subject), rep(as.character(c(1, 10:12, 2:9)), 2))
-  expect_equal(unique(fit$tss.monoexponential.single), 27.87592, tolerance = 1e-6)
-  # ... and the value is the fit without treatment
+  expect_equal(fit$tss.monoexponential.single, rep(c(29.5184173115, 26.1732211957), each = 12), tolerance = 1e-8)
+  # ... which are the fits of each treatment alone (the fit of all the data is
+  # 27.87592)
+  for (trt in c("A", "B")) {
+    d_trt <- d[d$treatment == trt, ]
+    fit_trt <-
+      suppressWarnings(
+        pk.tss(
+          conc = d_trt$conc, time = d_trt$time, subject = d_trt$Subject, time.dosing = tss_test_dose_times(),
+          type = "monoexponential", output = "single"
+        )
+      )
+    expect_equal(
+      fit_trt$tss.monoexponential.single,
+      unique(fit$tss.monoexponential.single[fit$treatment == trt]),
+      tolerance = 1e-6
+    )
+  }
   fit_no_treatment <- suppressWarnings(do.call(pk.tss, c(args, list(output = "single"))))
   expect_equal(fit_no_treatment, data.frame(tss.monoexponential.single = 27.87592), tolerance = 1e-6)
 })

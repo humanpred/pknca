@@ -13,8 +13,8 @@
 #'   population estimate for time to steady-state (from an nlme model), `popind`
 #'   is the individual estimate (from an nlme model), `individual` fits each
 #'   individual separately with a gnls model (requires more than one individual;
-#'   use `single` for one individual), and `single` fits all the data to a
-#'   single gnls model.
+#'   use `single` for one individual), and `single` fits all the data of each
+#'   treatment (or all the data, without treatment) to one gnls model.
 #' @param check See [pk.tss.data.prep()].
 #' @param verbose Describe models as they are run, show convergence of the model
 #'   (passed to the nlme function), and additional details while running.
@@ -352,9 +352,9 @@ pk.tss.monoexponential.individual <- function(data,
       tss.monoexponential.single=
         fit_tss(
           data.frame(
-            time=.$time,
-            tss.constant=.$tss.constant,
-            conc=.$conc
+            time=.data$time,
+            tss.constant=.data$tss.constant,
+            conc=.data$conc
           )
         )
     )

@@ -23,8 +23,8 @@ steady-state}
 population estimate for time to steady-state (from an nlme model), \code{popind}
 is the individual estimate (from an nlme model), \code{individual} fits each
 individual separately with a gnls model (requires more than one individual;
-use \code{single} for one individual), and \code{single} fits all the data to a
-single gnls model.}
+use \code{single} for one individual), and \code{single} fits all the data of each
+treatment (or all the data, without treatment) to one gnls model.}
 
 \item{check}{See \code{\link[=pk.tss.data.prep]{pk.tss.data.prep()}}.}
 
