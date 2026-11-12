@@ -345,8 +345,21 @@ not estimable and the interval is finite, <code>AUCall</code> is used instead.</
 
 
 </dl><p>When the interval ends at or before Tlast, no extrapolation happens and
-<code>lambda.z</code> is not used at all.  The extrapolation that was used is reported
-in the method (<code>PPANMETH</code>) column.</p>
+<code>lambda.z</code> is not used at all, with one exception:  a concentration at <code>start</code>
+that is estimated from the profile before a dose (the trough before the dose
+that starts the interval, when it was not measured) is past the Tlast of that
+profile, so <code>AUCinf</code> extrapolates it with <code>lambda.z</code> wherever the interval
+ends.  The extrapolation that was used is reported in the method (<code>PPANMETH</code>)
+column.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="the-time-origin-of-the-aumc">The time origin of the AUMC<a class="anchor" aria-label="anchor" href="#the-time-origin-of-the-aumc"></a></h2>
+    <p>The AUMC is weighted by the time since <code>start</code>, which is what <code>aumclast</code>
+gives for the interval's own data in <code><a href="pk.nca.html">pk.nca()</a></code> (where times are relative to
+the start of the interval).  The AUC does not depend on the time origin.
+<code><a href="pk.calc.auxc.html">pk.calc.aumc()</a></code> weights by the times as given, so with an <code>interval</code> that
+does not start at time 0 it differs from the AUMC over the same interval
+here.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

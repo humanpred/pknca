@@ -285,10 +285,16 @@ and the values should be one of the following:</p>
 <dd><p>Route of dosing for the current interval.</p></dd>
 
 <dt>"start"</dt>
-<dd><p>Time of interval start.</p></dd>
+<dd><p>Time of interval start, on the original time scale of the data.</p></dd>
 
 <dt>"end"</dt>
-<dd><p>Time of interval end.</p></dd>
+<dd><p>Time of interval end, on the original time scale of the data.</p></dd>
+
+<dt>"time.start"</dt>
+<dd><p>Time of interval start on the scale of "time" (always 0).</p></dd>
+
+<dt>"time.end"</dt>
+<dd><p>Time of interval end on the scale of "time" (the interval duration; may be <code>Inf</code>).</p></dd>
 
 <dt>"options"</dt>
 <dd><p>PKNCA.options governing calculations.</p></dd>
@@ -299,7 +305,7 @@ and the values should be one of the following:</p>
 <dd><p>Concentration measurements for the current group.</p></dd>
 
 <dt>"time.group"</dt>
-<dd><p>Times associated with concentration measurements for the current group (values start at 0 at the beginning of the current interval).</p></dd>
+<dd><p>Times associated with concentration measurements for the current group (on the original time scale of the data, like "start" and "end").</p></dd>
 
 <dt>"volume.group"</dt>
 <dd><p>Volume associated with concentration measurements for the current interval (typically applies for excretion parameters like urine).</p></dd>
@@ -311,7 +317,7 @@ and the values should be one of the following:</p>
 <dd><p>Dose amounts assocuated with the current group.</p></dd>
 
 <dt>"time.dose.group"</dt>
-<dd><p>Time of dose start associated with the current group (values start at 0 at the beginning of the current interval).</p></dd>
+<dd><p>Time of dose start associated with the current group (on the original time scale of the data, like "start" and "end").</p></dd>
 
 <dt>"duration.dose.group"</dt>
 <dd><p>Duration of dose (typically infusion duration) for doses in the current group.</p></dd>
@@ -332,7 +338,7 @@ these is only calculable with a sparse <code>PKNCAconc</code>):</p><dl><dt>"conc
 <dd><p>The pooled individual concentration measurements for the current group.</p></dd>
 
 <dt>"time.sparse.group"</dt>
-<dd><p>Times associated with the pooled individual concentration measurements for the current group.</p></dd>
+<dd><p>Times associated with the pooled individual concentration measurements for the current group (on the original time scale of the data, like "start" and "end").</p></dd>
 
 <dt>"subject"</dt>
 <dd><p>Subject identifiers for the pooled individual concentration measurements for the current interval.</p></dd>

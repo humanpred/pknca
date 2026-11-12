@@ -32,6 +32,15 @@ pk.calc.cstart(conc, time, start)
 
 The concentration when `time == end`. If none match, then `NA`
 
+## Details
+
+`time` and `end` (or `start`) must be on the same time scale.
+[`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
+gives `time` relative to the start of the interval, so it gives these
+functions the bounds of the interval on that scale (the `time.end` and
+`time.start` sources of
+[`add.interval.col()`](https://humanpred.github.io/pknca/reference/add.interval.col.md)).
+
 ## Functions
 
 - `pk.calc.cstart()`: Concentration at the beginning of the interval

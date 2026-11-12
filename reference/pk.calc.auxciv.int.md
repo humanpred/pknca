@@ -112,6 +112,8 @@ An interval that starts at an IV infusion has nothing to
 back-extrapolate, so the AUXCint is returned unchanged; an interval that
 does not start at an IV dose gives `NA`.
 
+Like the AUMCint, the AUMC is weighted by the time since `start`.
+
 ## Functions
 
 - `pk.calc.auciv.int()`: Calculate AUC over an interval for IV bolus

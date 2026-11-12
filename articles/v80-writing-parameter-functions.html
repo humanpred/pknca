@@ -145,6 +145,16 @@ function.</li>
 <li>Or, any NCA parameters by name (as given by
 <code>names(get.interval.cols())</code>).</li>
 </ul>
+<p>The interval’s own times given to the function (<code>time</code> and
+<code>time.dose</code>) are relative to the start of the current
+interval, and a function that returns a time (like Tmax) returns it on
+the same scale. <code>start</code>, <code>end</code>, and the group
+times (such as <code>time.group</code>) are on the original time scale
+of the data. A function that compares <code>time</code> with the bounds
+of the interval should map them from <code>time.start</code> and
+<code>time.end</code> (the bounds on the scale of <code>time</code>, so
+<code>time.start</code> is always 0), as Ctrough does with
+<code>formalsmap = list(end = "time.end")</code>.</p>
 <p>The function should return either a scalar which is the value for the
 parameter (usually the case) or a data.frame with parameters named for
 each parameter calculated. For an example of returning a data.frame, see

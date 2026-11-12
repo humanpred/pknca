@@ -248,11 +248,20 @@ parameter names and the values should be one of the following:
 
   - "start":
 
-    Time of interval start.
+    Time of interval start, on the original time scale of the data.
 
   - "end":
 
-    Time of interval end.
+    Time of interval end, on the original time scale of the data.
+
+  - "time.start":
+
+    Time of interval start on the scale of "time" (always 0).
+
+  - "time.end":
+
+    Time of interval end on the scale of "time" (the interval duration;
+    may be `Inf`).
 
   - "options":
 
@@ -267,7 +276,8 @@ parameter names and the values should be one of the following:
   - "time.group":
 
     Times associated with concentration measurements for the current
-    group (values start at 0 at the beginning of the current interval).
+    group (on the original time scale of the data, like "start" and
+    "end").
 
   - "volume.group":
 
@@ -285,8 +295,8 @@ parameter names and the values should be one of the following:
 
   - "time.dose.group":
 
-    Time of dose start associated with the current group (values start
-    at 0 at the beginning of the current interval).
+    Time of dose start associated with the current group (on the
+    original time scale of the data, like "start" and "end").
 
   - "duration.dose.group":
 
@@ -319,7 +329,8 @@ parameter names and the values should be one of the following:
   - "time.sparse.group":
 
     Times associated with the pooled individual concentration
-    measurements for the current group.
+    measurements for the current group (on the original time scale of
+    the data, like "start" and "end").
 
   - "subject":
 

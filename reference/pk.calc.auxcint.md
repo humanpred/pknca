@@ -295,8 +295,23 @@ handled the same way as the matching AUC parameter:
   estimable and the interval is finite, `AUCall` is used instead.
 
 When the interval ends at or before Tlast, no extrapolation happens and
-`lambda.z` is not used at all. The extrapolation that was used is
-reported in the method (`PPANMETH`) column.
+`lambda.z` is not used at all, with one exception: a concentration at
+`start` that is estimated from the profile before a dose (the trough
+before the dose that starts the interval, when it was not measured) is
+past the Tlast of that profile, so `AUCinf` extrapolates it with
+`lambda.z` wherever the interval ends. The extrapolation that was used
+is reported in the method (`PPANMETH`) column.
+
+## The time origin of the AUMC
+
+The AUMC is weighted by the time since `start`, which is what `aumclast`
+gives for the interval's own data in
+[`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
+(where times are relative to the start of the interval). The AUC does
+not depend on the time origin.
+[`pk.calc.aumc()`](https://humanpred.github.io/pknca/reference/pk.calc.auxc.md)
+weights by the times as given, so with an `interval` that does not start
+at time 0 it differs from the AUMC over the same interval here.
 
 ## See also
 

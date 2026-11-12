@@ -60,11 +60,12 @@ PKNCAdata(
 
 - impute:
 
-  Methods for imputation. `NA` for to search for the column named
-  "impute" in the intervals or no imputation if that column does not
-  exist, a comma-or space-separated list of names, or the name of a
-  column in the `intervals` data.frame (any column name works, not only
-  `"impute"`, and the column must be character).
+  Methods for imputation. `NA` (or `NULL`) to search for the column
+  named "impute" in the intervals or no imputation if that column does
+  not exist, a comma-or space-separated list of names (`""` for no
+  imputation), or the name of a column in the `intervals` data.frame
+  (any column name works, not only `"impute"`, and the column must be
+  character).
   [`get_impute_method()`](https://humanpred.github.io/pknca/reference/get_impute_method.md)
   gives the exact rule. See
   [`vignette("v08-data-imputation", package="PKNCA")`](https://humanpred.github.io/pknca/articles/v08-data-imputation.md)

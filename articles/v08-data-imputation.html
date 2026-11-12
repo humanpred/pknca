@@ -81,7 +81,7 @@
                         <h4 data-toc-skip class="author">Bill
 Denney</h4>
             
-            <h4 data-toc-skip class="date">2026-11-11</h4>
+            <h4 data-toc-skip class="date">2026-11-12</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/humanpred/pknca/blob/main/vignettes/v08-data-imputation.Rmd" class="external-link"><code>vignettes/v08-data-imputation.Rmd</code></a></small>
       <div class="d-none name"><code>v08-data-imputation.Rmd</code></div>
@@ -309,6 +309,27 @@ end time of the interval, and</li>
 concentrations and times that have not been filtered for the
 interval.</li>
 </ul>
+<p>Values given per observation (the urine volume and collection
+duration, <code>include_half.life</code>,
+<code>exclude_half.life</code>, and a per-observation <code>lloq</code>)
+follow their observation through imputation, and an observation is
+identified by its time. So a function that adds or drops observations
+must keep the times of the others, and a function that changes times
+must keep the number of observations and their order (the values then
+stay in order). A function that both adds and drops observations in one
+step cannot be told apart from one that moved an observation, so the
+observation at the new time is treated as added, with a warning
+(<code>pknca_warning_impute_obs_values_dropped</code>) when a value of a
+dropped observation is lost; split such a function into two imputation
+methods instead. An observation the function adds has a collection
+volume of 0, no collection duration, is neither included in nor excluded
+from the half-life, and has the profile’s <code>lloq</code> when that is
+constant (and a missing <code>lloq</code> when it varies).</p>
+<p>Imputation functions receive <code>time</code>, <code>start</code>,
+<code>end</code>, and <code>time.group</code> on the original time scale
+of the data. NCA calculation functions receive <code>start</code>,
+<code>end</code>, and <code>time.group</code> on that scale too, but
+<code>time</code> relative to the start of the interval.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

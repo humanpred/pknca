@@ -3256,7 +3256,9 @@ get.interval.cols()
 #> [1] "Trough (end of interval) conc"
 #> 
 #> $ctrough$formalsmap
-#> list()
+#> $ctrough$formalsmap$end
+#> [1] "time.end"
+#> 
 #> 
 #> $ctrough$formalsmap_sparse
 #> list()
@@ -3308,7 +3310,9 @@ get.interval.cols()
 #> [1] "The predose concentration"
 #> 
 #> $cstart$formalsmap
-#> list()
+#> $cstart$formalsmap$start
+#> [1] "time.start"
+#> 
 #> 
 #> $cstart$formalsmap_sparse
 #> list()

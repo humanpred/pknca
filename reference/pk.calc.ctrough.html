@@ -95,6 +95,13 @@
     <p>The concentration when <code>time == end</code>.  If none match, then <code>NA</code></p>
     </div>
     <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p><code>time</code> and <code>end</code> (or <code>start</code>) must be on the same time scale.
+<code><a href="pk.nca.html">pk.nca()</a></code> gives <code>time</code> relative to the start of the interval, so it gives
+these functions the bounds of the interval on that scale (the <code>time.end</code>
+and <code>time.start</code> sources of <code><a href="add.interval.col.html">add.interval.col()</a></code>).</p>
+    </div>
+    <div class="section level2">
     <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>
 
 <ul><li><p><code>pk.calc.cstart()</code>: Concentration at the beginning of the interval</p></li>
