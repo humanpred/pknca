@@ -1611,6 +1611,90 @@ test_that("popind and stepwise linear estimates have no interval, and level goes
   )
 })
 
+test_that("with verbose, the warnings of each candidate population model are shown with the model", {
+  d <- tss_test_theoph()
+  d <- d[d$treatment == "B", ]
+  # The candidate that warns is not selected, so without verbose its warnings
+  # are not given
+  utils::capture.output(
+    expect_message(
+      fit <-
+        pk.tss.monoexponential(
+          conc = d$conc, time = d$time, subject = d$Subject, time.dosing = tss_test_dose_times(),
+          output = "population", verbose = TRUE
+        ),
+      regexp =
+        paste0(
+          "Warnings while fitting Fixed effects of Single Ctrough.ss and Single value for Tss; random effects of Ctrough.ss and Tss:\n",
+          "Iteration 1, LME step: nlminb() did not converge (code = 1). Do increase 'msMaxIter'!\n",
+          "Iteration 2, LME step: nlminb() did not converge (code = 1). Do increase 'msMaxIter'!"
+        ),
+      fixed = TRUE,
+      class = "pknca_message_tss_candidate_warnings"
+    )
+  )
+  expect_equal(attr(fit, "estimates")$fit_warning, NA_character_)
+})
+
+test_that("with options(warn = 2), candidates fit despite their warnings, and the selected model's warning is the error", {
+  withr::local_options(warn = 2)
+  d <- tss_test_theoph()
+  # Treatment B:  the candidate that warns is fitted and not selected
+  d_b <- d[d$treatment == "B", ]
+  fit_b <-
+    pk.tss(
+      conc = d_b$conc, time = d_b$time, subject = d_b$Subject, time.dosing = tss_test_dose_times(),
+      type = "monoexponential", output = "population"
+    )
+  expect_equal(unique(fit_b$tss.monoexponential.population), 25.95131, tolerance = 1e-6)
+  # Treatment A:  the selected model warned, and warn = 2 makes that an error
+  d_a <- d[d$treatment == "A", ]
+  expect_error(
+    pk.tss(
+      conc = d_a$conc, time = d_a$time, subject = d_a$Subject, time.dosing = tss_test_dose_times(),
+      type = "monoexponential", output = "population"
+    ),
+    regexp = "The selected population model for monoexponential Tss"
+  )
+})
+
+test_that("an interval that nlme cannot compute gives a classed warning and says why", {
+  local_mocked_bindings(intervals = function(...) stop("no interval here"), .package = "nlme")
+  d <- tss_test_theoph()
+  d_a <- d[d$treatment == "A", ]
+  expect_warning(
+    fit <-
+      suppressWarnings(
+        pk.tss(
+          conc = d_a$conc, time = d_a$time, subject = d_a$Subject, time.dosing = tss_test_dose_times(),
+          type = "monoexponential", output = "population"
+        ),
+        classes = "pknca_warning_tss_population_fit_warning"
+      ),
+    regexp = "The confidence interval of the population Tss could not be computed: no interval here",
+    fixed = TRUE,
+    class = "pknca_warning_tss_interval_failed"
+  )
+  est <- attr(fit, "estimates")
+  expect_equal(c(est$lower, est$upper), c(NA_real_, NA_real_))
+  expect_equal(est$message, "The confidence interval could not be computed: no interval here")
+
+  expect_warning(
+    fit <-
+      pk.tss(
+        conc = d_a$conc, time = d_a$time, subject = d_a$Subject, time.dosing = tss_test_dose_times(),
+        type = "monoexponential", output = "individual"
+      ),
+    regexp = "The confidence interval of a monoexponential gnls fit for Tss could not be computed:\nindividual (subject 1): no interval here\n",
+    fixed = TRUE,
+    class = "pknca_warning_tss_interval_failed"
+  )
+  expect_equal(
+    unique(attr(fit, "estimates")$message),
+    "The confidence interval could not be computed: no interval here"
+  )
+})
+
 test_that("level is checked, and an interval that cannot be computed says why", {
   d <- tss_test_theoph()
   d <- d[d$Subject %in% "1", ]

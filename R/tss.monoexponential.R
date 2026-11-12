@@ -8,10 +8,15 @@
 #'
 #' The population model is selected by AIC from several candidates (Ctrough,ss
 #' and Tss for all treatments or by treatment, with random effects on either
-#' or both).  The warnings of nlme are kept with each candidate:  those of the
-#' selected model are given as one `pknca_warning_tss_population_fit_warning`
-#' that quotes them, and those of the other candidates are not given because
-#' they do not bear on the estimate.  The gnls fits of the `individual` and
+#' or both).  Every warning raised while a candidate's `nlme()` call runs is
+#' kept as a warning of that fit:  those of the selected model are given as one
+#' `pknca_warning_tss_population_fit_warning` that quotes them, and those of
+#' the other candidates are not given because they do not bear on the
+#' estimate (with `verbose = TRUE`, each candidate's warnings are shown as a
+#' `pknca_message_tss_candidate_warnings` message with the candidate's
+#' description).  Because the warnings are caught as they are raised, a
+#' candidate is not stopped by its warnings even with `options(warn = 2)`.
+#' The gnls fits of the `individual` and
 #' `single` outputs give `pknca_warning_tss_individual_fit_failed` when a fit
 #' fails (its estimate is `NA`) and `pknca_warning_tss_individual_fit_warning`
 #' when a fit that gives an estimate warns.
@@ -311,6 +316,16 @@ pk.tss.monoexponential.population <- function(data,
             current.aic <- stats::AIC(current.model)
           }
         }, silent=!verbose)
+        if (verbose && length(current.warnings$conditions) > 0) {
+          rlang::inform(
+            sprintf(
+              "Warnings while fitting %s:\n%s",
+              current.desc,
+              paste(vapply(X=current.warnings$conditions, FUN=conditionMessage, FUN.VALUE=""), collapse="\n")
+            ),
+            class = "pknca_message_tss_candidate_warnings"
+          )
+        }
         # Put the current model (or model attempt) into the list of
         # models.
         models <-
@@ -466,6 +481,12 @@ tss_population_estimates <- function(model, data, fit_warning, level) {
   }
   estimate <- unname(fixef[name])
   interval <- tss_model_interval(model, name=name, level=level)
+  if (!is.na(interval$error)) {
+    rlang::warn(
+      paste("The confidence interval of the population Tss could not be computed:", interval$error),
+      class="pknca_warning_tss_interval_failed"
+    )
+  }
   last_time <- tss_last_time(data, treatment=treatment)
   status <- tss_estimate_status(estimate, last_time)
   tss_estimates_table(
@@ -629,6 +650,7 @@ tss_gnls_estimates <- function(fits, data, output, level, subject_given) {
   n_subject[is.na(n_subject) & subject_given] <- 1L
   lower <- upper <- rep(NA_real_, nrow(groups))
   message_interval <- rep(NA_character_, nrow(groups))
+  error_interval <- rep(NA_character_, nrow(groups))
   for (idx in seq_len(nrow(groups))) {
     if (is.null(fits$model[[idx]])) {
       # The failure is the message
@@ -643,7 +665,21 @@ tss_gnls_estimates <- function(fits, data, output, level, subject_given) {
       lower[idx] <- interval$lower
       upper[idx] <- interval$upper
       message_interval[idx] <- interval$message
+      error_interval[idx] <- interval$error
     }
+  }
+  mask_error <- !is.na(error_interval)
+  if (any(mask_error)) {
+    rlang::warn(
+      paste0(
+        "The confidence interval of a monoexponential gnls fit for Tss could not be computed:\n",
+        paste(
+          sprintf("%s: %s", tss_gnls_group_text(fits, output)[mask_error], error_interval[mask_error]),
+          collapse="\n"
+        )
+      ),
+      class="pknca_warning_tss_interval_failed"
+    )
   }
   tss_estimates_table(
     type="monoexponential", output=output, treatment=treatment, subject=subject,

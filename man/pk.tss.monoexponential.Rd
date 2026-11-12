@@ -54,10 +54,15 @@ to stead-state by subject (see \code{random.effects} argument).
 \details{
 The population model is selected by AIC from several candidates (Ctrough,ss
 and Tss for all treatments or by treatment, with random effects on either
-or both).  The warnings of nlme are kept with each candidate:  those of the
-selected model are given as one \code{pknca_warning_tss_population_fit_warning}
-that quotes them, and those of the other candidates are not given because
-they do not bear on the estimate.  The gnls fits of the \code{individual} and
+or both).  Every warning raised while a candidate's \code{nlme()} call runs is
+kept as a warning of that fit:  those of the selected model are given as one
+\code{pknca_warning_tss_population_fit_warning} that quotes them, and those of
+the other candidates are not given because they do not bear on the
+estimate (with \code{verbose = TRUE}, each candidate's warnings are shown as a
+\code{pknca_message_tss_candidate_warnings} message with the candidate's
+description).  Because the warnings are caught as they are raised, a
+candidate is not stopped by its warnings even with \code{options(warn = 2)}.
+The gnls fits of the \code{individual} and
 \code{single} outputs give \code{pknca_warning_tss_individual_fit_failed} when a fit
 fails (its estimate is \code{NA}) and \code{pknca_warning_tss_individual_fit_warning}
 when a fit that gives an estimate warns.

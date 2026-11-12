@@ -310,8 +310,10 @@ tss_join_messages <- function(...) {
 #' @param model An `nlme` or `gnls` model
 #' @param name The names of the Tss coefficients
 #' @param level The confidence level
-#' @returns A list with `lower` and `upper` (one per `name`) and `message` (`NA`
-#'   or why the interval could not be computed)
+#' @returns A list with `lower` and `upper` (one per `name`), `error` (`NA` or
+#'   the error of nlme::intervals()), and `message` (`NA` or the message for
+#'   the estimates table).  The caller gives the warning, because it knows which
+#'   estimate the interval is for.
 #' @keywords Internal
 #' @noRd
 tss_model_interval <- function(model, name, level) {
@@ -323,11 +325,15 @@ tss_model_interval <- function(model, name, level) {
         } else {
           nlme::intervals(model, level=level, which="fixed")$fixed
         }
-      list(lower=unname(ci[name, "lower"]), upper=unname(ci[name, "upper"]), message=NA_character_)
+      list(
+        lower=unname(ci[name, "lower"]), upper=unname(ci[name, "upper"]),
+        error=NA_character_, message=NA_character_
+      )
     },
     error=function(e) {
       list(
         lower=rep(NA_real_, length(name)), upper=rep(NA_real_, length(name)),
+        error=conditionMessage(e),
         message=paste("The confidence interval could not be computed:", conditionMessage(e))
       )
     }

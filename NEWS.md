@@ -234,7 +234,15 @@ the dosing including dose amount and route.
     given.  A gnls fit for `individual` or `single` that fails (`NA`) gives
     `pknca_warning_tss_individual_fit_failed`, where it was silent (gnls
     printed its reason), and warnings of a gnls fit that gives an estimate
-    are one `pknca_warning_tss_individual_fit_warning`.
+    are one `pknca_warning_tss_individual_fit_warning`.  With
+    `verbose = TRUE`, each candidate's warnings are shown as a
+    `pknca_message_tss_candidate_warnings` message.  Because the warnings
+    are caught as they are raised, under `options(warn = 2)` a candidate is
+    no longer dropped for its warnings, so the selected model can differ
+    there; the selected model's warning then becomes the error.
+  * A confidence interval that nlme cannot compute gives
+    `pknca_warning_tss_interval_failed`, and the `"estimates"` attribute
+    says why.
   * Through `pk.tss()`, the `level` argument is now also the confidence
     level of the monoexponential intervals (see New features).
 
