@@ -198,6 +198,10 @@ the dosing including dose amount and route.
 * Time to steady state (`pk.tss()`, `pk.tss.monoexponential()`, and
   `pk.tss.stepwise.linear()`) changes its results in these ways
   (@billdenney):
+  * Every result now has the `"estimates"` attribute (see New features), so
+    comparing a result with a plain data frame by `identical()` or
+    `testthat::expect_equal()` fails on the attribute.  Compare without it
+    (for example, `expect_equal(..., ignore_attr = "estimates")`).
   * The `single` monoexponential output fits each treatment's own troughs.
     Before, every treatment was given the fit of all the data (in the
     example data, 27.88 for both treatments where the treatments alone give

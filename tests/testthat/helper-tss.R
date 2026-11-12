@@ -8,7 +8,7 @@ tss_test_theoph <- function() {
   theoph$conc[theoph$Time == 0] <- 0
   o_single <- PKNCAconc(theoph, conc ~ Time | Subject)
   d_conc <- superposition(o_single, dose.times = tss_test_dose_times(), tau = 168, n.tau = 1)
-  set.seed(5)
+  withr::local_seed(5)
   d_conc$conc <- d_conc$conc * exp(stats::rnorm(nrow(d_conc), sd = 0.1))
   d_conc$treatment <- ifelse(as.integer(as.character(d_conc$Subject)) <= 6, "A", "B")
   d_conc$Subject <- as.character(d_conc$Subject)
@@ -21,7 +21,7 @@ tss_test_dose_times <- function() {
 
 # Two treatments whose true Tss differ (5 and 15), with troughs at 0 to 30
 tss_test_two_tss <- function() {
-  set.seed(5)
+  withr::local_seed(5)
   d <-
     merge(
       data.frame(
@@ -39,7 +39,7 @@ tss_test_two_tss <- function() {
 # Troughs still rising at the last dose: the true Tss is about 60, and the
 # troughs are at 0 to 14
 tss_test_rising <- function() {
-  set.seed(6)
+  withr::local_seed(6)
   d <- merge(data.frame(subject = factor(1:8), re = stats::rnorm(8, sd = 0.2)), data.frame(time = 0:14))
   d$conc <- 10 * exp(d$re + stats::rnorm(nrow(d), sd = 0.05)) * (1 - exp(log(0.1) * d$time / 60))
   d
@@ -47,7 +47,7 @@ tss_test_rising <- function() {
 
 # Troughs that rise linearly for the whole study
 tss_test_linear_rise <- function() {
-  set.seed(7)
+  withr::local_seed(7)
   d <- merge(data.frame(subject = factor(1:8)), data.frame(time = 0:14))
   d$conc <- d$time * (1 + stats::rnorm(nrow(d), sd = 0.02))
   d

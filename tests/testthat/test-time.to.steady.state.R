@@ -885,8 +885,8 @@ test_that("only the selected population model's nlme warnings are given, as one 
     tolerance = 1e-8,
     ignore_attr = "estimates"
   )
-  # Only a candidate that is not selected warned (see the next test), so there
-  # is no warning; before, nlme's two warnings came through unclassed
+  # Only a candidate that is not selected warned (see the next test); its
+  # warnings do not bear on the estimate, so none is given
   expect_length(fit_b$warnings, 0)
 })
 
@@ -948,8 +948,9 @@ test_that("the single output per treatment fits each treatment and joins the pop
     )
   fit <-
     suppressWarnings(do.call(pk.tss, c(args, list(treatment = d$treatment, output = c("population", "single")))))
-  # Each subject is in its own treatment only (before, every subject was
-  # under both treatments, 24 rows)
+  # Each subject is in its own treatment only:  the single rows join the
+  # population rows by treatment, so a subject is not paired with another
+  # treatment's estimate
   expect_equal(
     fit,
     data.frame(
@@ -1013,7 +1014,8 @@ test_that("stepwise with too few troughs returns a data frame with NA", {
       pk.tss(conc = d$conc[keep], time = d$time[keep], subject = d$Subject[keep], time.dosing = c(0, 12), type = "stepwise.linear"),
     class = "pknca_warning_tss_insufficient_data"
   )
-  # Before, a bare NA that pk.tss() merged as a column named "y"
+  # A data frame with the estimate's column, so that pk.tss() merges it as
+  # that column
   expect_equal(fit_step, data.frame(tss.stepwise.linear = NA_real_), ignore_attr = "estimates")
   fit_both <-
     suppressWarnings(
@@ -1048,7 +1050,8 @@ test_that("a treatment column with one level is dropped from the result", {
 })
 
 test_that("when the Tss-by-treatment model is selected, each treatment has its own population Tss", {
-  # Before, pk.tss() stopped with "subscript out of bounds"
+  # The model with a Tss by treatment has no coefficient named "tss":  each
+  # treatment's Tss is its own coefficient
   d <- tss_test_two_tss()
   fit <-
     suppressWarnings(
@@ -1208,8 +1211,9 @@ test_that("repeated subject-time records are an error", {
     )
   expect_equal(unique(fit_plasma$tss.monoexponential.population), 27.06413, tolerance = 1e-6)
   expect_equal(unique(fit_plasma$tss.stepwise.linear), NA_real_)
-  # Fitting plasma and blood together gave 31.6 (monoexponential) and 84
-  # (stepwise) without complaint
+  # Plasma and blood rows that no group separates would give one estimate from
+  # both matrices (31.6 and 84 here, where plasma alone gives 27.1 and NA), so
+  # they are refused
   err <-
     expect_error(
       pk.tss(
@@ -1800,8 +1804,8 @@ test_that("later data frame operations drop the estimates attribute or keep it u
 })
 
 test_that("a population, popind, or individual request with one subject is NA with insufficient data", {
-  # Before, pk.tss() stopped with the internal error "Error in selection of
-  # return values for pk.tss.monoexponential. This is likely a bug."
+  # One subject cannot give these outputs:  the data are valid but too few, so
+  # this is a status (as for too few troughs), not an error
   d <- tss_test_theoph()
   d <- d[d$Subject %in% "1", ]
   msg <- "Cannot give 'population', 'popind', or 'individual' output without multiple subjects of data"
@@ -1838,8 +1842,8 @@ test_that("a population, popind, or individual request with one subject is NA wi
   est <- tss_test_check_estimates(fit)
   expect_equal(est$output, c("individual", NA))
   expect_equal(est$status, c("insufficient_data", "estimated"))
-  # With single, the outputs that need several subjects are left out of the
-  # result (as before) and are in the estimates
+  # With single, the outputs that need several subjects are not columns of the
+  # result, and the estimates say why they are missing
   fit <-
     suppressWarnings(
       pk.tss(
