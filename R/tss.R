@@ -149,6 +149,9 @@ pk.tss.data.prep <- function(conc, time, subject, treatment,
 #' @param check See [pk.tss.data.prep()]
 #' @param type The type of Tss to calculate, either `stepwise.linear` or
 #'   `monoexponential`
+#' @param level Both the confidence level of the monoexponential intervals and
+#'   the level of the stepwise linear test (see [pk.tss.monoexponential()] and
+#'   [pk.tss.stepwise.linear()])
 #' @returns A data frame with columns as defined from `pk.tss.monoexponential`
 #'   and/or `pk.tss.stepwise.linear`, with an attribute `"estimates"` that
 #'   says how each estimate came about (see below).
@@ -201,8 +204,8 @@ pk.tss.data.prep <- function(conc, time, subject, treatment,
 #'     status means for the estimate, or `NA`}
 #' }
 #'
-#' The `level` argument (passed through `...`) is both the confidence level of
-#' the monoexponential intervals and the level of the stepwise linear test.
+#' The `treatment` and `subject` columns of the attribute are character, while
+#' those of the result are factors:  compare them with `as.character()`.
 #'
 #' An `NA` estimate never means "steady state not reached" by itself:  use
 #' `status`.  Read the attribute from the result of the call:  some later
@@ -214,11 +217,17 @@ pk.tss.data.prep <- function(conc, time, subject, treatment,
 #' @export
 pk.tss <- function(...,
                    type=c("monoexponential", "stepwise.linear"),
-                   check=TRUE) {
+                   check=TRUE,
+                   level=0.95) {
   type <- match.arg(type, several.ok=TRUE)
+  # Checked once here, so that each method does not warn for it again
+  if (length(level) > 1) {
+    rlang::warn("Only first value of level is being used", class = "pknca_warning_tss_level_multiple")
+    level <- level[1]
+  }
   ret <- NA
   if ("monoexponential" %in% type) {
-    ret_monoexponential <- pk.tss.monoexponential(..., check=check)
+    ret_monoexponential <- pk.tss.monoexponential(..., check=check, level=level)
     if (identical(NA, ret)) {
       ret <- ret_monoexponential
     } else {
@@ -229,7 +238,7 @@ pk.tss <- function(...,
     check <- FALSE
   }
   if ("stepwise.linear" %in% type) {
-    ret_stepwise <- pk.tss.stepwise.linear(..., check=check)
+    ret_stepwise <- pk.tss.stepwise.linear(..., check=check, level=level)
     if (identical(NA, ret)) {
       ret <- ret_stepwise
     } else {

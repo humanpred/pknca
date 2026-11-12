@@ -76,14 +76,19 @@ The \code{"estimates"} attribute gives a confidence interval (\code{lower} and
 \describe{
 \item{population}{The approximate (Wald) interval of \code{nlme::intervals()}
 for the fixed effect of Tss:  the estimate plus or minus a t quantile
-(with the nlme degrees of freedom for the fixed effects, which count the
-observations, so it is close to a normal quantile) times the standard
-error from the linearized covariance of nlme (\code{vcov()} of the fit, without
-the small-sample factor that \code{summary()} gives the standard errors of a
-maximum likelihood fit).  It assumes that the
-monoexponential model is right, that the random effects and residuals
-are normal and the residuals have constant variance, and that the
-linearization holds near the estimate.  It is symmetric on the Tss
+times the standard error from the linearized covariance of nlme
+(\code{vcov()} of the fit, without the small-sample factor that \code{summary()}
+gives the standard errors of a maximum likelihood fit).  nlme gives the
+fixed effects of these models the degrees of freedom of the innermost
+level:  the number of troughs, less the number of subjects, less the
+fixed effects other than the first (51 for 56 troughs from 4 subjects
+with one Ctrough,ss and one Tss; 297 for 310 troughs from 10 subjects
+with both by two treatments).  So the t quantile reflects the number of
+troughs, not the number of subjects that Tss varies between, and with
+few subjects the interval is likely too narrow.  It also assumes that
+the monoexponential model is right, that the random effects and
+residuals are normal and the residuals have constant variance, and that
+the linearization holds near the estimate.  It is symmetric on the Tss
 scale, so with poor data it can include zero or negative values; it is
 reported as computed.}
 \item{individual, and single with one subject}{The approximate (Wald)

@@ -4,7 +4,12 @@
 \alias{pk.tss}
 \title{Compute the time to steady-state (tss)}
 \usage{
-pk.tss(..., type = c("monoexponential", "stepwise.linear"), check = TRUE)
+pk.tss(
+  ...,
+  type = c("monoexponential", "stepwise.linear"),
+  check = TRUE,
+  level = 0.95
+)
 }
 \arguments{
 \item{\dots}{Passed to \code{\link[=pk.tss.monoexponential]{pk.tss.monoexponential()}} or
@@ -14,6 +19,10 @@ pk.tss(..., type = c("monoexponential", "stepwise.linear"), check = TRUE)
 \code{monoexponential}}
 
 \item{check}{See \code{\link[=pk.tss.data.prep]{pk.tss.data.prep()}}}
+
+\item{level}{Both the confidence level of the monoexponential intervals and
+the level of the stepwise linear test (see \code{\link[=pk.tss.monoexponential]{pk.tss.monoexponential()}} and
+\code{\link[=pk.tss.stepwise.linear]{pk.tss.stepwise.linear()}})}
 }
 \value{
 A data frame with columns as defined from \code{pk.tss.monoexponential}
@@ -72,8 +81,8 @@ still given; whether to report it is the caller's choice.}
 status means for the estimate, or \code{NA}}
 }
 
-The \code{level} argument (passed through \code{...}) is both the confidence level of
-the monoexponential intervals and the level of the stepwise linear test.
+The \code{treatment} and \code{subject} columns of the attribute are character, while
+those of the result are factors:  compare them with \code{as.character()}.
 
 An \code{NA} estimate never means "steady state not reached" by itself:  use
 \code{status}.  Read the attribute from the result of the call:  some later

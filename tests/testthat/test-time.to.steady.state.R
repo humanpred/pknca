@@ -1611,6 +1611,52 @@ test_that("popind and stepwise linear estimates have no interval, and level goes
   )
 })
 
+test_that("nlme's degrees of freedom for the Tss of the population model count troughs, not subjects", {
+  # The numbers in the documentation of the population interval:  troughs,
+  # less subjects, less the fixed effects other than the first
+  d <- tss_test_theoph()
+  d <- d[d$Subject %in% c("1", "2", "3", "4"), ]
+  modeldata <- pk.tss.data.prep(conc = d$conc, time = d$time, subject = d$Subject, time.dosing = tss_test_dose_times())
+  modeldata$tss.constant <- log(0.1)
+  # nlme warns for an inner step of this fit, which does not change its
+  # degrees of freedom
+  model <-
+    suppressWarnings(
+      nlme::nlme(
+        conc ~ ctrough.ss * (1 - exp(tss.constant * time / tss)),
+        fixed = list(ctrough.ss ~ 1, tss ~ 1), random = ctrough.ss + tss ~ 1 | subject,
+        start = c(mean(modeldata$conc), stats::median(unique(modeldata$time))), data = modeldata
+      )
+    )
+  expect_equal(nrow(modeldata), 56L)
+  expect_equal(unname(model$fixDF$X[["tss"]]), 56 - 4 - 1)
+
+  d <- tss_test_two_tss()
+  modeldata <- pk.tss.data.prep(conc = d$conc, time = d$time, subject = d$subject, treatment = d$treatment, time.dosing = 0:30)
+  modeldata$tss.constant <- log(0.1)
+  model <-
+    nlme::nlme(
+      conc ~ ctrough.ss * (1 - exp(tss.constant * time / tss)),
+      fixed = list(ctrough.ss ~ treatment - 1, tss ~ treatment - 1),
+      random = ctrough.ss + tss ~ 1 | subject,
+      start = c(tapply(modeldata$conc, modeldata$treatment, mean), rep(stats::median(unique(modeldata$time)), 2)),
+      data = modeldata
+    )
+  expect_equal(nrow(modeldata), 310L)
+  expect_equal(unname(model$fixDF$X[c("tss.treatmentA", "tss.treatmentB")]), rep(310 - 10 - 3, 2))
+})
+
+test_that("pk.tss() warns once for more than one level and uses the first for both methods", {
+  d <- tss_test_theoph()
+  d <- d[d$Subject %in% "1", ]
+  fit <-
+    tss_test_with_warnings(
+      pk.tss(conc = d$conc, time = d$time, subject = d$Subject, time.dosing = tss_test_dose_times(), output = "single", level = c(0.9, 0.8))
+    )
+  expect_equal(tss_test_warning_classes(fit), "pknca_warning_tss_level_multiple")
+  expect_equal(attr(fit$value, "estimates")$level, c(0.9, 0.9))
+})
+
 test_that("with verbose, the warnings of each candidate population model are shown with the model", {
   d <- tss_test_theoph()
   d <- d[d$treatment == "B", ]
