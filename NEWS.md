@@ -1212,6 +1212,14 @@ the generated intervals:
 
 ## Bug fixes
 
+* `pk.nca()` with units that differ between groups (for example, a subject
+  without a dose, or a unit column) no longer stops with "Can't join ... due
+  to incompatible types" when a group column is integer, numeric, or a date:
+  the units table holds group values as character, and the results are now
+  matched to it by value.  This includes the `<group>_ref` columns of
+  secondary parameters.  A factor group column also stays a factor in the
+  results where it used to become character (@billdenney).
+
 * Group columns that are ordered factors with different levels in the
   concentration data, the dose data, the intervals, or a normalization table
   now join by value.  Before, `PKNCAdata()` with units, `pk.nca()`,

@@ -592,3 +592,78 @@ test_that("pknca_units_table for PKNCAdata joins ordered factor groups whose lev
     c("a", "b")
   )
 })
+
+test_that("unit conversion joins results to the units table by group value, keeping the group column types", {
+  # Subject 2 has no dose, so the units differ by subject and the units table
+  # keeps the subject column (as character, while the data have integers)
+  d_conc <-
+    data.frame(
+      subject = rep(1:2, each = 3), time = rep(0:2, 2),
+      conc = c(0, 2, 1, 0, 3, 1)
+    )
+  o_data <-
+    suppressWarnings(PKNCAdata(
+      PKNCAconc(d_conc, conc~time|subject, concu = "ng/mL", timeu = "hr", amountu = "mg"),
+      PKNCAdose(data.frame(subject = 1L, time = 0, dose = 10), dose~time|subject, doseu = "mg"),
+      intervals = data.frame(start = 0, end = 2, cmax = TRUE)
+    ))
+  expect_type(o_data$units$subject, "character")
+  expect_equal(
+    o_data$units$PPORRESU[o_data$units$PPTESTCD == "cmax.dn"],
+    c("(ng/mL)/mg", NA)
+  )
+  df_nca <- as.data.frame(pk.nca(o_data))
+  expect_identical(df_nca$subject, 1:2)
+  expect_equal(df_nca$PPORRES, c(2, 3))
+  expect_equal(df_nca$PPORRESU, c("ng/mL", "ng/mL"))
+
+  # A factor group column stays a factor with its levels
+  d_conc_fct <- d_conc
+  d_conc_fct$subject <- factor(d_conc_fct$subject, levels = 2:1)
+  d_conc_fct$concu <- rep(c("ng/mL", "ug/mL"), each = 3)
+  o_data_fct <-
+    PKNCAdata(
+      PKNCAconc(d_conc_fct, conc~time|subject, concu = "concu", timeu = "hr"),
+      intervals = data.frame(start = 0, end = 2, cmax = TRUE)
+    )
+  df_nca_fct <- as.data.frame(pk.nca(o_data_fct))
+  # Results are in the order of the factor levels
+  expect_identical(df_nca_fct$subject, factor(c(2, 1), levels = 2:1))
+  expect_equal(df_nca_fct$PPORRES, c(3, 2))
+  expect_equal(df_nca_fct$PPORRESU, c("ug/mL", "ng/mL"))
+})
+
+test_that("unit conversion matches integer reference group columns of secondary parameters", {
+  d_conc <-
+    data.frame(
+      subject = 1L, spec = rep(1:2, times = c(3, 2)),
+      time = c(0, 12, 24, 0, 12), conc = c(10, 6, 2, 2, 1), vol = c(NA, NA, NA, 100, 150),
+      cu = rep(c("mg/L", "mg/mL"), times = c(3, 2))
+    )
+  o_conc <- PKNCAconc(d_conc, conc~time|spec + subject, volume = "vol", concu = "cu", timeu = "hr", amountu = "mg")
+  o_dose <- PKNCAdose(data.frame(subject = 1L, time = 0, dose = 50), dose~time|subject, doseu = "mg")
+  intervals <-
+    data.frame(
+      spec = 1:2, start = 0, end = 24, interval_id = c("p", NA),
+      auclast = c(TRUE, FALSE), clr.last = c(FALSE, TRUE), clr.last_ref = c(NA, "p")
+    )
+  df_nca <- as.data.frame(pk.nca(PKNCAdata(o_conc, o_dose, intervals = intervals)))
+  expect_equal(df_nca$PPTESTCD, c("auclast", "ae", "clr.last"))
+  expect_identical(df_nca$spec_ref, c(NA, NA, 1L))
+  expect_equal(df_nca$PPORRESU, c("hr*mg/L", "mg", "mg/(hr*mg/L)"))
+})
+
+test_that("left_join_by_value matches keys of different types by value", {
+  x <- data.frame(g = c(2L, 1L, 2L, 3L), f = factor(c("b", "a", "b", "c"), levels = c("c", "b", "a")), v = 1:4)
+  y <- data.frame(g = c("1", "2"), f = c("a", "b"), w = c("one", "two"))
+  expect_identical(
+    left_join_by_value(x, y, by = c("g", "f")),
+    data.frame(x, w = c("two", "one", "two", NA))
+  )
+  # A row of x with several matches in y is repeated
+  y_dup <- data.frame(g = c("2", "2"), w = c("a", "b"))
+  expect_identical(
+    left_join_by_value(x[1, c("g", "v")], y_dup, by = "g"),
+    data.frame(g = c(2L, 2L), v = c(1L, 1L), w = c("a", "b"))
+  )
+})
