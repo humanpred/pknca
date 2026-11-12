@@ -1290,7 +1290,8 @@ test_that("the estimates attribute is on every return path and agrees with the r
     est,
     data.frame(
       type = "stepwise.linear", output = NA_character_, treatment = NA_character_, subject = NA_character_,
-      estimate = 7, status = "estimated", fit_warning = NA_character_, message = NA_character_
+      estimate = 7, lower = NA_real_, upper = NA_real_, level = 0.95, status = "estimated", fit_warning = NA_character_,
+      message = "No confidence interval: the estimate is the first dose time of a sequence of tests, which has no derived sampling distribution"
     )
   )
 })
@@ -1307,9 +1308,18 @@ test_that("the estimates attribute says when steady state is not reached and whe
   est <- tss_test_check_estimates(fit)
   expect_equal(est$status, c("not_reached", "not_reached", "fit_failed"))
   expect_equal(est$estimate, c(54.7548037064, 56.2803272907, NA), tolerance = 1e-8)
+  # The population interval is reported for an estimate that is not reached
+  expect_equal(est$lower, c(46.436731877, NA, NA), tolerance = 1e-8)
+  expect_equal(est$upper, c(63.0728755358, NA, NA), tolerance = 1e-8)
   expect_equal(
     est$message[1:2],
-    rep("The estimate is later than the last trough (time 14), so steady state was not observed", 2)
+    c(
+      "The estimate is later than the last trough (time 14), so steady state was not observed",
+      paste(
+        "The estimate is later than the last trough (time 14), so steady state was not observed;",
+        "No confidence interval: the troughs of several subjects are pooled, and the troughs of a subject are correlated"
+      )
+    )
   )
   expect_match(
     est$message[3],
@@ -1325,7 +1335,7 @@ test_that("the estimates attribute says when steady state is not reached and whe
     tss_test_check_estimates(fit),
     data.frame(
       type = "monoexponential", output = "single", treatment = NA_character_, subject = NA_character_,
-      estimate = NA_real_, status = "fit_failed", fit_warning = NA_character_,
+      estimate = NA_real_, lower = NA_real_, upper = NA_real_, level = 0.95, status = "fit_failed", fit_warning = NA_character_,
       message = "approximate covariance matrix for parameter estimates not of full rank"
     )
   )
@@ -1341,7 +1351,7 @@ test_that("the estimates attribute says when steady state is not reached and whe
     data.frame(
       type = "monoexponential", output = c("population", "popind", "popind"),
       treatment = NA_character_, subject = c(NA, "1", "2"),
-      estimate = NA_real_, status = "fit_failed", fit_warning = NA_character_,
+      estimate = NA_real_, lower = NA_real_, upper = NA_real_, level = 0.95, status = "fit_failed", fit_warning = NA_character_,
       message = "No population model for monoexponential Tss converged, no results given"
     )
   )
@@ -1358,7 +1368,7 @@ test_that("the estimates attribute of stepwise linear separates not reached, too
     tss_test_check_estimates(fit),
     data.frame(
       type = "stepwise.linear", output = NA_character_, treatment = NA_character_, subject = NA_character_,
-      estimate = NA_real_, status = "not_reached", fit_warning = NA_character_,
+      estimate = NA_real_, lower = NA_real_, upper = NA_real_, level = 0.95, status = "not_reached", fit_warning = NA_character_,
       message = "The slope of the troughs is significant from every start time, so steady state was not observed"
     )
   )
@@ -1371,7 +1381,7 @@ test_that("the estimates attribute of stepwise linear separates not reached, too
     tss_test_check_estimates(fit),
     data.frame(
       type = "stepwise.linear", output = NA_character_, treatment = NA_character_, subject = NA_character_,
-      estimate = NA_real_, status = "insufficient_data", fit_warning = NA_character_,
+      estimate = NA_real_, lower = NA_real_, upper = NA_real_, level = 0.95, status = "insufficient_data", fit_warning = NA_character_,
       message = "After removing non-dosing time points, insufficient data remains for tss calculation (fewer than 3 dose times)"
     )
   )
@@ -1388,7 +1398,7 @@ test_that("the estimates attribute gives the selected model's warnings and the r
     tss_test_check_estimates(fit_a),
     data.frame(
       type = "monoexponential", output = "population", treatment = NA_character_, subject = NA_character_,
-      estimate = 27.06413, status = "estimated",
+      estimate = 27.06413, lower = 19.4642037164, upper = 34.6640579272, level = 0.95, status = "estimated",
       fit_warning = "Iteration 1, LME step: nlminb() did not converge (code = 1). Do increase 'msMaxIter'!",
       message = NA_character_
     ),
@@ -1423,10 +1433,154 @@ test_that("the estimates attribute has one population row per treatment when the
     tss_test_check_estimates(fit),
     data.frame(
       type = "monoexponential", output = "population", treatment = c("A", "B"), subject = NA_character_,
-      estimate = c(4.55515409582, 13.65350210893), status = "estimated", fit_warning = NA_character_,
+      estimate = c(4.55515409582, 13.65350210893),
+      lower = c(3.24165300657, 12.30140056707), upper = c(5.86865518507, 15.00560365080), level = 0.95,
+      status = "estimated", fit_warning = NA_character_,
       message = NA_character_
     ),
     tolerance = 1e-8
+  )
+})
+
+# Confidence intervals ####
+
+test_that("the population interval is the Wald interval of the selected nlme model's Tss", {
+  # Fit the selected model (Tss by treatment, random effects on Ctrough,ss and
+  # Tss) and compute the interval from its estimate, standard error, and
+  # degrees of freedom
+  d <- tss_test_two_tss()
+  modeldata <- pk.tss.data.prep(conc = d$conc, time = d$time, subject = d$subject, treatment = d$treatment, time.dosing = 0:30)
+  modeldata$tss.constant <- log(0.1)
+  model <-
+    nlme::nlme(
+      conc ~ ctrough.ss * (1 - exp(tss.constant * time / tss)),
+      fixed = list(ctrough.ss ~ treatment - 1, tss ~ treatment - 1),
+      random = ctrough.ss + tss ~ 1 | subject,
+      start = c(tapply(modeldata$conc, modeldata$treatment, mean), rep(stats::median(unique(modeldata$time)), 2)),
+      data = modeldata
+    )
+  name <- c("tss.treatmentA", "tss.treatmentB")
+  tss <- unname(nlme::fixef(model)[name])
+  # The standard error is from vcov() (the summary() standard errors of a
+  # maximum likelihood fit are larger by sqrt(N/(N - p)))
+  half_width <- unname(stats::qt(0.95, df = model$fixDF$X[name]) * sqrt(diag(stats::vcov(model))[name]))
+  fit <-
+    suppressWarnings(
+      pk.tss(
+        conc = d$conc, time = d$time, subject = d$subject, treatment = d$treatment,
+        time.dosing = 0:30, type = "monoexponential", output = "population", level = 0.9
+      )
+    )
+  est <- attr(fit, "estimates")
+  expect_equal(est$estimate, tss, tolerance = 1e-6)
+  expect_equal(est$lower, tss - half_width, tolerance = 1e-6)
+  expect_equal(est$upper, tss + half_width, tolerance = 1e-6)
+  expect_equal(est$lower, c(3.45388614086, 12.51987069280), tolerance = 1e-8)
+  expect_equal(est$level, c(0.9, 0.9))
+})
+
+test_that("the individual interval is the Wald interval of the subject's gnls fit, and single has one only for one subject", {
+  d <- tss_test_theoph()
+  d_one <- d[d$Subject %in% "1", ]
+  modeldata <- pk.tss.data.prep(conc = d_one$conc, time = d_one$time, time.dosing = tss_test_dose_times())
+  modeldata$tss.constant <- log(0.1)
+  model <-
+    nlme::gnls(
+      conc ~ ctrough.ss * (1 - exp(tss.constant * time / tss)),
+      params = list(ctrough.ss ~ 1, tss ~ 1),
+      start = c(mean(modeldata$conc), stats::median(unique(modeldata$time))),
+      data = modeldata
+    )
+  tss <- stats::coef(model)[["tss"]]
+  half_width <- stats::qt(0.975, df = nrow(modeldata) - 2) * sqrt(stats::vcov(model)["tss", "tss"])
+  # The estimate (40.65) is before the last trough (156)
+  expected_one <-
+    data.frame(
+      type = "monoexponential", output = "single", treatment = NA_character_, subject = NA_character_,
+      estimate = tss, lower = tss - half_width, upper = tss + half_width, level = 0.95,
+      status = "estimated", fit_warning = NA_character_, message = NA_character_
+    )
+  # Single with one subject
+  fit <- pk.tss(conc = d_one$conc, time = d_one$time, subject = d_one$Subject, time.dosing = tss_test_dose_times(), type = "monoexponential", output = "single")
+  expect_equal(attr(fit, "estimates"), expected_one, tolerance = 1e-6)
+  # Individual within a group of subjects
+  d_a <- d[d$treatment == "A", ]
+  fit <- pk.tss(conc = d_a$conc, time = d_a$time, subject = d_a$Subject, time.dosing = tss_test_dose_times(), type = "monoexponential", output = "individual")
+  est <- tss_test_check_estimates(fit)
+  expected_individual <- expected_one
+  expected_individual$output <- "individual"
+  expected_individual$subject <- "1"
+  expect_equal(est[est$subject == "1", ], expected_individual, tolerance = 1e-6, ignore_attr = "row.names")
+  expect_true(all(est$lower < est$estimate & est$estimate < est$upper))
+
+  # Single without subject:  the number of subjects is not known
+  fit <- pk.tss(conc = d_one$conc, time = d_one$time, time.dosing = tss_test_dose_times(), type = "monoexponential", output = "single")
+  expect_equal(attr(fit, "estimates")$estimate, tss, tolerance = 1e-6)
+  expect_equal(attr(fit, "estimates")$lower, NA_real_)
+  expect_equal(
+    attr(fit, "estimates")$message,
+    "No confidence interval: without subject, the troughs may come from several subjects, and the troughs of a subject are correlated"
+  )
+  # Single with several subjects:  pooled
+  fit <- pk.tss(conc = d_a$conc, time = d_a$time, subject = d_a$Subject, time.dosing = tss_test_dose_times(), type = "monoexponential", output = "single")
+  expect_equal(attr(fit, "estimates")$upper, NA_real_)
+  expect_equal(
+    attr(fit, "estimates")$message,
+    "No confidence interval: the troughs of several subjects are pooled, and the troughs of a subject are correlated"
+  )
+})
+
+test_that("popind and stepwise linear estimates have no interval, and level goes to both methods", {
+  tmpdata <- generate.data()
+  fit <-
+    suppressWarnings(
+      pk.tss(
+        conc = tmpdata$conc, time = tmpdata$time, subject = tmpdata$subject, treatment = tmpdata$treatment,
+        time.dosing = 0:14, output = "popind", level = 0.8
+      )
+    )
+  est <- tss_test_check_estimates(fit)
+  expect_equal(est$type, c(rep("monoexponential", 10), "stepwise.linear"))
+  expect_equal(est$status, rep("estimated", 11))
+  expect_equal(est$lower, rep(NA_real_, 11))
+  expect_equal(est$upper, rep(NA_real_, 11))
+  expect_equal(est$level, rep(0.8, 11))
+  expect_equal(
+    unique(est$message[1:10]),
+    "No confidence interval: individual estimates of a mixed-effects model are predictions of random effects, for which nlme gives no standard errors"
+  )
+  expect_equal(
+    est$message[11],
+    "No confidence interval: the estimate is the first dose time of a sequence of tests, which has no derived sampling distribution"
+  )
+  # The level is the level of the stepwise linear test, too
+  expect_equal(
+    est$estimate[11],
+    pk.tss.stepwise.linear(
+      conc = tmpdata$conc, time = tmpdata$time, subject = tmpdata$subject, treatment = tmpdata$treatment,
+      time.dosing = 0:14, level = 0.8
+    )$tss.stepwise.linear
+  )
+})
+
+test_that("level is checked, and an interval that cannot be computed says why", {
+  d <- tss_test_theoph()
+  d <- d[d$Subject %in% "1", ]
+  args <- list(conc = d$conc, time = d$time, subject = d$Subject, time.dosing = tss_test_dose_times(), output = "single")
+  expect_error(do.call(pk.tss.monoexponential, c(args, list(level = 1))), class = "pknca_error_tss_level_range")
+  expect_error(do.call(pk.tss.monoexponential, c(args, list(level = "A"))), regexp = "Must be of type 'number'")
+  expect_warning(
+    fit <- do.call(pk.tss.monoexponential, c(args, list(level = c(0.9, 0.8)))),
+    class = "pknca_warning_tss_level_multiple"
+  )
+  expect_equal(attr(fit, "estimates")$level, 0.9)
+  expect_equal(
+    tss_model_interval(structure(list(), class = "gnls"), name = "tss", level = 0.95)[c("lower", "upper")],
+    list(lower = NA_real_, upper = NA_real_)
+  )
+  expect_match(
+    tss_model_interval(structure(list(), class = "gnls"), name = "tss", level = 0.95)$message,
+    "^The confidence interval could not be computed: "
   )
 })
 

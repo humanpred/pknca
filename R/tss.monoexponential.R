@@ -28,6 +28,40 @@
 #' @param check See [pk.tss.data.prep()].
 #' @param verbose Describe models as they are run, show convergence of the model
 #'   (passed to the nlme function), and additional details while running.
+#' @param level The confidence level of the intervals of the estimates (in the
+#'   `"estimates"` attribute).  With [pk.tss()], `level` is also the level of
+#'   the stepwise linear test.
+#'
+#' @section Confidence intervals:
+#'
+#' The `"estimates"` attribute gives a confidence interval (`lower` and
+#' `upper`) where one can be defended:
+#'
+#' \describe{
+#'   \item{population}{The approximate (Wald) interval of `nlme::intervals()`
+#'     for the fixed effect of Tss:  the estimate plus or minus a t quantile
+#'     (with nlme's degrees of freedom for the fixed effects, which count the
+#'     observations, so it is close to a normal quantile) times the standard
+#'     error from nlme's linearized covariance (`vcov()` of the fit, without
+#'     the small-sample factor that `summary()` gives the standard errors of a
+#'     maximum likelihood fit).  It assumes that the
+#'     monoexponential model is right, that the random effects and residuals
+#'     are normal and the residuals have constant variance, and that the
+#'     linearization holds near the estimate.  It is symmetric on the Tss
+#'     scale, so with poor data it can include zero or negative values; it is
+#'     reported as computed.}
+#'   \item{individual, and single with one subject}{The approximate (Wald)
+#'     interval of `nlme::intervals()` for the gnls fit:  a t quantile with the
+#'     number of troughs less two degrees of freedom.  It assumes independent,
+#'     normal residuals with constant variance; with few troughs, its coverage
+#'     is approximate.}
+#'   \item{popind}{None:  these are predictions of random effects, for which
+#'     nlme gives no standard errors.}
+#'   \item{single with several subjects}{None:  the troughs of a subject are
+#'     correlated, so an interval that treats them as independent is too
+#'     narrow.  Without `subject`, the number of subjects is not known, so there
+#'     is no interval either.}
+#' }
 #'
 #' @returns A data frame with the requested `tss.monoexponential.*` columns,
 #'   and `subject` and `treatment` columns for the outputs that are by subject
@@ -50,9 +84,21 @@ pk.tss.monoexponential <- function(...,
                                      "individual",
                                      "single"),
                                    check=TRUE,
-                                   verbose=FALSE) {
+                                   verbose=FALSE,
+                                   level=0.95) {
   # Check inputs
   modeldata <- pk.tss.data.prep(..., check=check)
+  # Without a subject column, the data have one subject only when a subject
+  # was given (pk.tss.data.prep() drops the column for one subject).
+  subject_given <- "subject" %in% names(list(...))
+  if (length(level) > 1) {
+    rlang::warn("Only first value of level is being used", class = "pknca_warning_tss_level_multiple")
+    level <- level[1]
+  }
+  checkmate::assert_number(level, na.ok = FALSE)
+  if (level <= 0 || level >= 1) {
+    rlang::abort("level must be between 0 and 1, exclusive", class = "pknca_error_tss_level_range")
+  }
   if (length(tss.fraction) > 1) {
     rlang::warn("Only first value of tss.fraction is being used", class = "pknca_warning_tss_fraction_multiple")
     tss.fraction <- tss.fraction[1]
@@ -84,7 +130,8 @@ pk.tss.monoexponential <- function(...,
       pk.tss.monoexponential.population(
         modeldata,
         output=intersect(c("population", "popind"), output),
-        verbose=verbose)
+        verbose=verbose,
+        level=level)
     } else {
       NA
     }
@@ -93,7 +140,9 @@ pk.tss.monoexponential <- function(...,
       pk.tss.monoexponential.individual(
         modeldata,
         output=intersect(c("individual", "single"), output),
-        verbose=verbose)
+        verbose=verbose,
+        level=level,
+        subject_given=subject_given)
     } else {
       NA
     }
@@ -183,6 +232,7 @@ tss.monoexponential.generate.formula <- function(data) {
 #'   contain at least columns for `subject`, `time`, `conc`, and `tss.constant`.
 #' @param output a character vector requesting the output types.
 #' @param verbose Show verbose output.
+#' @param level The confidence level of the interval of the population Tss
 #' @returns A data frame with one row per subject (and treatment, when the
 #'   data have more than one), with columns `subject`, `treatment` (when the
 #'   data have it), and `tss.monoexponential.population` and/or
@@ -193,7 +243,8 @@ pk.tss.monoexponential.population <- function(data,
                                               output=c(
                                                 "population",
                                                 "popind"),
-                                              verbose=FALSE) {
+                                              verbose=FALSE,
+                                              level=0.95) {
   output <- match.arg(output, several.ok=TRUE)
   test.formula <- tss.monoexponential.generate.formula(data)
   # Loop over creating all models
@@ -282,13 +333,13 @@ pk.tss.monoexponential.population <- function(data,
     ret$tss.monoexponential.popind <- NA_real_
     estimates_population <-
       tss_estimates_table(
-        type="monoexponential", output="population", estimate=NA_real_,
+        type="monoexponential", output="population", estimate=NA_real_, level=level,
         status="fit_failed", message=msg_no_convergence
       )
     estimates_popind <-
       tss_estimates_table(
         type="monoexponential", output="popind",
-        treatment=ret$treatment %||% NA, subject=ret$subject, estimate=NA_real_,
+        treatment=ret$treatment %||% NA, subject=ret$subject, estimate=NA_real_, level=level,
         status="fit_failed", message=msg_no_convergence
       )
   } else {
@@ -317,7 +368,8 @@ pk.tss.monoexponential.population <- function(data,
       } else {
         NA_character_
       }
-    estimates_population <- tss_population_estimates(best.model, data=data, fit_warning=fit_warning)
+    estimates_population <-
+      tss_population_estimates(best.model, data=data, fit_warning=fit_warning, level=level)
     if (length(col_ranef_tss) == 1) {
       ret$tss.monoexponential.popind <-
         ret$tss.monoexponential.population +
@@ -328,9 +380,13 @@ pk.tss.monoexponential.population <- function(data,
         tss_estimates_table(
           type="monoexponential", output="popind",
           treatment=ret$treatment %||% NA, subject=ret$subject,
-          estimate=ret$tss.monoexponential.popind,
+          estimate=ret$tss.monoexponential.popind, level=level,
           status=status_popind, fit_warning=fit_warning,
-          message=tss_not_reached_message(status_popind, last_time)
+          message=
+            tss_join_messages(
+              tss_not_reached_message(status_popind, last_time),
+              "No confidence interval: individual estimates of a mixed-effects model are predictions of random effects, for which nlme gives no standard errors"
+            )
         )
     } else {
       if ("popind" %in% output) {
@@ -343,7 +399,7 @@ pk.tss.monoexponential.population <- function(data,
       estimates_popind <-
         tss_estimates_table(
           type="monoexponential", output="popind",
-          treatment=ret$treatment %||% NA, subject=ret$subject, estimate=NA_real_,
+          treatment=ret$treatment %||% NA, subject=ret$subject, estimate=NA_real_, level=level,
           status="no_random_effect", fit_warning=fit_warning,
           message="The selected population model has no random effect on Tss, so there are no individual estimates"
         )
@@ -369,26 +425,30 @@ pk.tss.monoexponential.population <- function(data,
 #' @param model The selected `nlme` model
 #' @param data The data of [pk.tss.monoexponential.population()]
 #' @param fit_warning The warnings of the model, or `NA`
+#' @param level The confidence level of the interval
 #' @returns The `tss_estimates_table()` rows of the population output:  one
 #'   with a `NA` treatment when the model has one Tss for all treatments, or
 #'   one per treatment when the model has one by treatment
 #' @keywords Internal
 #' @noRd
-tss_population_estimates <- function(model, data, fit_warning) {
+tss_population_estimates <- function(model, data, fit_warning, level) {
   fixef <- nlme::fixef(model)
   if ("tss" %in% names(fixef)) {
     treatment <- NA_character_
-    estimate <- fixef[["tss"]]
+    name <- "tss"
   } else {
     treatment <- as.character(sort(unique(data$treatment)))
-    estimate <- unname(fixef[paste0("tss.treatment", treatment)])
+    name <- paste0("tss.treatment", treatment)
   }
+  estimate <- unname(fixef[name])
+  interval <- tss_model_interval(model, name=name, level=level)
   last_time <- tss_last_time(data, treatment=treatment)
   status <- tss_estimate_status(estimate, last_time)
   tss_estimates_table(
     type="monoexponential", output="population", treatment=treatment,
-    estimate=estimate, status=status, fit_warning=fit_warning,
-    message=tss_not_reached_message(status, last_time)
+    estimate=estimate, lower=interval$lower, upper=interval$upper, level=level,
+    status=status, fit_warning=fit_warning,
+    message=tss_join_messages(tss_not_reached_message(status, last_time), interval$message)
   )
 }
 
@@ -436,6 +496,9 @@ tss_population_fixef <- function(model, treatment) {
 #'   contain at least columns for `subject`, `time`, `conc`, and `tss.constant`.
 #' @param output a character vector requesting the output types.
 #' @param verbose Show verbose output.
+#' @param level The confidence level of the intervals
+#' @param subject_given Was a subject given?  (Without a `subject` column in
+#'   `data`, this says whether the data have one subject or an unknown number.)
 #' @returns A data frame with one row per treatment (or one row, without
 #'   treatment) for `single`, and one row per subject (and treatment) for
 #'   `individual`, with columns `tss.monoexponential.single` and/or
@@ -445,7 +508,9 @@ pk.tss.monoexponential.individual <- function(data,
                                               output=c(
                                                 "individual",
                                                 "single"),
-                                              verbose=FALSE) {
+                                              verbose=FALSE,
+                                              level=0.95,
+                                              subject_given=TRUE) {
   output <- match.arg(output, several.ok=TRUE)
   if (!("subject" %in% names(data))) {
     output <- setdiff(output, "individual")
@@ -467,7 +532,8 @@ pk.tss.monoexponential.individual <- function(data,
     ret$tss.monoexponential.single <- fits$estimate
     failures <- tss_gnls_failures(fits, output="single")
     fit_warnings <- tss_gnls_warnings(fits, output="single")
-    estimates <- tss_gnls_estimates(fits, data=data, output="single")
+    estimates <-
+      tss_gnls_estimates(fits, data=data, output="single", level=level, subject_given=subject_given)
   }
   if ("individual" %in% output) {
     fits_sub <-
@@ -479,7 +545,11 @@ pk.tss.monoexponential.individual <- function(data,
     ret <- if (is.null(ret)) ret_sub else merge(ret, ret_sub, all=TRUE)
     failures <- c(failures, tss_gnls_failures(fits_sub, output="individual"))
     fit_warnings <- c(fit_warnings, tss_gnls_warnings(fits_sub, output="individual"))
-    estimates <- rbind(estimates, tss_gnls_estimates(fits_sub, data=data, output="individual"))
+    estimates <-
+      rbind(
+        estimates,
+        tss_gnls_estimates(fits_sub, data=data, output="individual", level=level, subject_given=subject_given)
+      )
   }
   if (length(failures) > 0) {
     rlang::warn(
@@ -511,12 +581,17 @@ pk.tss.monoexponential.individual <- function(data,
 
 #' The estimates of gnls fits, as estimate rows
 #'
+#' The interval of a gnls fit is given only for the troughs of one subject:  a
+#' subject's troughs are correlated, so an interval that treats the troughs of
+#' several subjects as independent is too narrow.
+#'
 #' @inheritParams tss_gnls_group_text
+#' @inheritParams pk.tss.monoexponential.individual
 #' @param data The data that was fit
 #' @returns The `tss_estimates_table()` rows of the fits, one per group
 #' @keywords Internal
 #' @noRd
-tss_gnls_estimates <- function(fits, data, output) {
+tss_gnls_estimates <- function(fits, data, output, level, subject_given) {
   groups <- fits$groups
   treatment <- if ("treatment" %in% names(groups)) groups$treatment else NA
   subject <- if ("subject" %in% names(groups)) groups$subject else NA
@@ -524,10 +599,38 @@ tss_gnls_estimates <- function(fits, data, output) {
   status <- tss_estimate_status(fits$estimate, last_time)
   fit_warning <- vapply(X=fits$warnings, FUN=paste, FUN.VALUE="", collapse="; ")
   fit_warning[!nzchar(fit_warning)] <- NA_character_
+  # Without a subject column, there is one subject when one was given and an
+  # unknown number otherwise
+  n_subject <- fits$n_subject
+  n_subject[is.na(n_subject) & subject_given] <- 1L
+  lower <- upper <- rep(NA_real_, nrow(groups))
+  message_interval <- rep(NA_character_, nrow(groups))
+  for (idx in seq_len(nrow(groups))) {
+    if (is.null(fits$model[[idx]])) {
+      # The failure is the message
+    } else if (is.na(n_subject[idx])) {
+      message_interval[idx] <-
+        "No confidence interval: without subject, the troughs may come from several subjects, and the troughs of a subject are correlated"
+    } else if (n_subject[idx] > 1) {
+      message_interval[idx] <-
+        "No confidence interval: the troughs of several subjects are pooled, and the troughs of a subject are correlated"
+    } else {
+      interval <- tss_model_interval(fits$model[[idx]], name="tss", level=level)
+      lower[idx] <- interval$lower
+      upper[idx] <- interval$upper
+      message_interval[idx] <- interval$message
+    }
+  }
   tss_estimates_table(
     type="monoexponential", output=output, treatment=treatment, subject=subject,
-    estimate=fits$estimate, status=status, fit_warning=fit_warning,
-    message=ifelse(is.na(fits$failure), tss_not_reached_message(status, last_time), fits$failure)
+    estimate=fits$estimate, lower=lower, upper=upper, level=level,
+    status=status, fit_warning=fit_warning,
+    message=
+      ifelse(
+        is.na(fits$failure),
+        tss_join_messages(tss_not_reached_message(status, last_time), message_interval),
+        fits$failure
+      )
   )
 }
 
@@ -540,7 +643,9 @@ tss_gnls_estimates <- function(fits, data, output) {
 #'   group, ordered by them; one row and no columns without `cols`) and, with
 #'   one element per group, `model` (the fit, or `NULL` when it failed),
 #'   `estimate` (the Tss, `NA` when the fit failed), `failure` (the error of a
-#'   failed fit, or `NA`), and `warnings` (the warnings of the fit)
+#'   failed fit, or `NA`), `warnings` (the warnings of the fit), and
+#'   `n_subject` (the number of subjects in the group, `NA` without a `subject`
+#'   column)
 #' @keywords Internal
 #' @noRd
 tss_fit_gnls_groups <- function(data, cols, verbose) {
@@ -551,7 +656,11 @@ tss_fit_gnls_groups <- function(data, cols, verbose) {
     groups <- groups[do.call(order, unname(as.list(groups))), , drop=FALSE]
     rownames(groups) <- NULL
   }
-  ret <- list(groups=groups, model=list(), estimate=numeric(), failure=character(), warnings=list())
+  ret <-
+    list(
+      groups=groups, model=list(), estimate=numeric(), failure=character(), warnings=list(),
+      n_subject=integer()
+    )
   for (idx in seq_len(nrow(groups))) {
     mask <- rep(TRUE, nrow(data))
     for (col in cols) {
@@ -562,6 +671,12 @@ tss_fit_gnls_groups <- function(data, cols, verbose) {
     ret$estimate[idx] <- fit$estimate
     ret$failure[idx] <- fit$failure
     ret$warnings[[idx]] <- fit$warnings
+    ret$n_subject[idx] <-
+      if ("subject" %in% names(data)) {
+        length(unique(data$subject[mask]))
+      } else {
+        NA_integer_
+      }
   }
   ret
 }

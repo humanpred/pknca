@@ -20,7 +20,9 @@
 #'   there is none (steady state is not observed, the models could not be fit,
 #'   or there are fewer than `min.points` dose times).  The slope is common to
 #'   all treatments, so the estimate is too.  The attribute `"estimates"` says
-#'   which of these it is (see [pk.tss()]).
+#'   which of these it is (see [pk.tss()]).  There is no confidence interval
+#'   for the estimate:  it is the first dose time of a sequence of tests, which
+#'   has no derived sampling distribution.
 #' @family Time to steady-state calculations
 #' @references Maganti L, Panebianco DL, Maes AL.  Evaluation of Methods for
 #' Estimating Time to Steady State with Examples from Phase 1 Studies. AAPS
@@ -63,7 +65,7 @@ pk.tss.stepwise.linear <- function(...,
       tss_set_estimates(
         data.frame(tss.stepwise.linear=NA_real_),
         tss_estimates_table(
-          type="stepwise.linear", estimate=NA_real_,
+          type="stepwise.linear", estimate=NA_real_, level=level,
           status="insufficient_data",
           message=sprintf("%s (fewer than %g dose times)", msg_insufficient, min.points)
         )
@@ -125,7 +127,8 @@ pk.tss.stepwise.linear <- function(...,
   # nothing was found:  then NA could be from failures, not from the data.
   if (!is.na(ret)) {
     status <- "estimated"
-    message <- NA_character_
+    message <-
+      "No confidence interval: the estimate is the first dose time of a sequence of tests, which has no derived sampling distribution"
   } else if (length(fit_failures) > 0) {
     status <- "fit_failed"
     message <-
@@ -143,7 +146,7 @@ pk.tss.stepwise.linear <- function(...,
     data.frame(
       tss.stepwise.linear=ret
     ),
-    tss_estimates_table(type="stepwise.linear", estimate=ret, status=status, message=message)
+    tss_estimates_table(type="stepwise.linear", estimate=ret, level=level, status=status, message=message)
   )
 }
 

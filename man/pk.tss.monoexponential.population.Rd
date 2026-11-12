@@ -8,7 +8,8 @@ monoexponential time to steady-state.}
 pk.tss.monoexponential.population(
   data,
   output = c("population", "popind"),
-  verbose = FALSE
+  verbose = FALSE,
+  level = 0.95
 )
 }
 \arguments{
@@ -18,6 +19,8 @@ contain at least columns for \code{subject}, \code{time}, \code{conc}, and \code
 \item{output}{a character vector requesting the output types.}
 
 \item{verbose}{Show verbose output.}
+
+\item{level}{The confidence level of the interval of the population Tss}
 }
 \value{
 A data frame with one row per subject (and treatment, when the

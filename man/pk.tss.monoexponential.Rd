@@ -10,7 +10,8 @@ pk.tss.monoexponential(
   tss.fraction = 0.9,
   output = c("population", "popind", "individual", "single"),
   check = TRUE,
-  verbose = FALSE
+  verbose = FALSE,
+  level = 0.95
 )
 }
 \arguments{
@@ -30,6 +31,10 @@ treatment (or all the data, without treatment) to one gnls model.}
 
 \item{verbose}{Describe models as they are run, show convergence of the model
 (passed to the nlme function), and additional details while running.}
+
+\item{level}{The confidence level of the intervals of the estimates (in the
+\code{"estimates"} attribute).  With \code{\link[=pk.tss]{pk.tss()}}, \code{level} is also the level of
+the stepwise linear test.}
 }
 \value{
 A data frame with the requested \verb{tss.monoexponential.*} columns,
@@ -57,6 +62,39 @@ they do not bear on the estimate.  The gnls fits of the \code{individual} and
 fails (its estimate is \code{NA}) and \code{pknca_warning_tss_individual_fit_warning}
 when a fit that gives an estimate warns.
 }
+\section{Confidence intervals}{
+
+
+The \code{"estimates"} attribute gives a confidence interval (\code{lower} and
+\code{upper}) where one can be defended:
+
+\describe{
+\item{population}{The approximate (Wald) interval of \code{nlme::intervals()}
+for the fixed effect of Tss:  the estimate plus or minus a t quantile
+(with nlme's degrees of freedom for the fixed effects, which count the
+observations, so it is close to a normal quantile) times the standard
+error from nlme's linearized covariance (\code{vcov()} of the fit, without
+the small-sample factor that \code{summary()} gives the standard errors of a
+maximum likelihood fit).  It assumes that the
+monoexponential model is right, that the random effects and residuals
+are normal and the residuals have constant variance, and that the
+linearization holds near the estimate.  It is symmetric on the Tss
+scale, so with poor data it can include zero or negative values; it is
+reported as computed.}
+\item{individual, and single with one subject}{The approximate (Wald)
+interval of \code{nlme::intervals()} for the gnls fit:  a t quantile with the
+number of troughs less two degrees of freedom.  It assumes independent,
+normal residuals with constant variance; with few troughs, its coverage
+is approximate.}
+\item{popind}{None:  these are predictions of random effects, for which
+nlme gives no standard errors.}
+\item{single with several subjects}{None:  the troughs of a subject are
+correlated, so an interval that treats them as independent is too
+narrow.  Without \code{subject}, the number of subjects is not known, so there
+is no interval either.}
+}
+}
+
 \references{
 Maganti, L., Panebianco, D.L. & Maes, A.L. Evaluation of Methods for
 Estimating Time to Steady State with Examples from Phase 1 Studies. AAPS J

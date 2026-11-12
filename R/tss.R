@@ -155,6 +155,11 @@ pk.tss.data.prep <- function(conc, time, subject, treatment,
 #'     for all treatments)}
 #'   \item{estimate}{The time to steady state, the value in the result's
 #'     column}
+#'   \item{lower, upper}{The confidence interval of the estimate, `NA` where
+#'     there is none (see the section "Confidence intervals" of
+#'     [pk.tss.monoexponential()]; there is none for stepwise linear)}
+#'   \item{level}{The confidence level:  of the interval, or for stepwise
+#'     linear, of its test}
 #'   \item{status}{Why the estimate is or is not there:
 #'     \describe{
 #'       \item{`"estimated"`}{Steady state is estimated within the data.}
@@ -174,9 +179,12 @@ pk.tss.data.prep <- function(conc, time, subject, treatment,
 #'   \item{fit_warning}{The warnings from fitting the model that gave the
 #'     estimate (separated by "; "), or `NA`.  An estimate with a warning is
 #'     still given; whether to report it is the caller's choice.}
-#'   \item{message}{Why there is no estimate, or what the status means for it,
-#'     or `NA`}
+#'   \item{message}{Why there is no estimate or no interval, or what the
+#'     status means for the estimate, or `NA`}
 #' }
+#'
+#' The `level` argument (passed through `...`) is both the confidence level of
+#' the monoexponential intervals and the level of the stepwise linear test.
 #'
 #' An `NA` estimate never means "steady state not reached" by itself:  use
 #' `status`.  Read the attribute from the result of the call:  some later
@@ -226,18 +234,23 @@ pk.tss <- function(...,
 #' @param treatment,subject The treatment and subject of the estimate, or `NA`
 #'   when the estimate is for all of them
 #' @param estimate The time to steady state, or `NA` when there is none
+#' @param lower,upper The confidence interval of the estimate, or `NA` when
+#'   there is none
+#' @param level The confidence level (of the interval, or of the stepwise
+#'   linear test)
 #' @param status Why the estimate is or is not there:  `"estimated"`,
 #'   `"not_reached"` (steady state is not observed in the data),
 #'   `"fit_failed"`, `"insufficient_data"`, or `"no_random_effect"`
 #' @param fit_warning The warnings from fitting the model that gave the
 #'   estimate, or `NA`
-#' @param message Why there is no estimate, or what the status means for it,
-#'   or `NA`
+#' @param message Why there is no estimate or no interval, or what the status
+#'   means for the estimate, or `NA`
 #' @returns A data frame with one row per estimate and the arguments as columns
 #'   (`treatment` and `subject` as character)
 #' @keywords Internal
 #' @noRd
 tss_estimates_table <- function(type, output=NA_character_, treatment=NA, subject=NA, estimate,
+                                lower=NA_real_, upper=NA_real_, level,
                                 status, fit_warning=NA_character_, message=NA_character_) {
   data.frame(
     type=type,
@@ -245,9 +258,61 @@ tss_estimates_table <- function(type, output=NA_character_, treatment=NA, subjec
     treatment=as.character(treatment),
     subject=as.character(subject),
     estimate=as.numeric(estimate),
+    lower=as.numeric(lower),
+    upper=as.numeric(upper),
+    level=as.numeric(level),
     status=status,
     fit_warning=as.character(fit_warning),
     message=as.character(message)
+  )
+}
+
+#' Join messages, leaving out the missing ones
+#'
+#' @param ... Character vectors of messages (`NA` for none), recycled to the
+#'   same length
+#' @returns The non-missing messages of each element joined with "; ", or `NA`
+#'   when all are missing
+#' @keywords Internal
+#' @noRd
+tss_join_messages <- function(...) {
+  parts <- list(...)
+  n <- max(lengths(parts))
+  ret <- rep(NA_character_, n)
+  for (part in parts) {
+    part <- rep_len(as.character(part), n)
+    mask_part <- !is.na(part)
+    ret[mask_part] <- ifelse(is.na(ret[mask_part]), part[mask_part], paste(ret[mask_part], part[mask_part], sep="; "))
+  }
+  ret
+}
+
+#' The confidence interval of a fitted Tss from nlme::intervals()
+#'
+#' @param model An `nlme` or `gnls` model
+#' @param name The names of the Tss coefficients
+#' @param level The confidence level
+#' @returns A list with `lower` and `upper` (one per `name`) and `message` (`NA`
+#'   or why the interval could not be computed)
+#' @keywords Internal
+#' @noRd
+tss_model_interval <- function(model, name, level) {
+  tryCatch(
+    {
+      ci <-
+        if (inherits(model, "gnls")) {
+          nlme::intervals(model, level=level)$coef
+        } else {
+          nlme::intervals(model, level=level, which="fixed")$fixed
+        }
+      list(lower=unname(ci[name, "lower"]), upper=unname(ci[name, "upper"]), message=NA_character_)
+    },
+    error=function(e) {
+      list(
+        lower=rep(NA_real_, length(name)), upper=rep(NA_real_, length(name)),
+        message=paste("The confidence interval could not be computed:", conditionMessage(e))
+      )
+    }
   )
 }
 

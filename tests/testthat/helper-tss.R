@@ -83,7 +83,7 @@ tss_test_check_estimates <- function(fit) {
   testthat::expect_s3_class(est, "data.frame")
   testthat::expect_named(
     est,
-    c("type", "output", "treatment", "subject", "estimate", "status", "fit_warning", "message")
+    c("type", "output", "treatment", "subject", "estimate", "lower", "upper", "level", "status", "fit_warning", "message")
   )
   testthat::expect_gt(nrow(est), 0)
   testthat::expect_true(

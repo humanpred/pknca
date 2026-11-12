@@ -41,6 +41,11 @@ one per subject for \code{popind} and \code{individual}; one per treatment for
 for all treatments)}
 \item{estimate}{The time to steady state, the value in the result's
 column}
+\item{lower, upper}{The confidence interval of the estimate, \code{NA} where
+there is none (see the section "Confidence intervals" of
+\code{\link[=pk.tss.monoexponential]{pk.tss.monoexponential()}}; there is none for stepwise linear)}
+\item{level}{The confidence level:  of the interval, or for stepwise
+linear, of its test}
 \item{status}{Why the estimate is or is not there:
 \describe{
 \item{\code{"estimated"}}{Steady state is estimated within the data.}
@@ -60,9 +65,12 @@ population model has no random effect on Tss; the estimate is \code{NA}.}
 \item{fit_warning}{The warnings from fitting the model that gave the
 estimate (separated by "; "), or \code{NA}.  An estimate with a warning is
 still given; whether to report it is the caller's choice.}
-\item{message}{Why there is no estimate, or what the status means for it,
-or \code{NA}}
+\item{message}{Why there is no estimate or no interval, or what the
+status means for the estimate, or \code{NA}}
 }
+
+The \code{level} argument (passed through \code{...}) is both the confidence level of
+the monoexponential intervals and the level of the stepwise linear test.
 
 An \code{NA} estimate never means "steady state not reached" by itself:  use
 \code{status}.  Read the attribute from the result of the call:  some later
