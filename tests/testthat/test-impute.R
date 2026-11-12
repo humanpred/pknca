@@ -1155,3 +1155,67 @@ test_that("PKNCA_impute_fun_list ignores leading and trailing separators", {
     )
   )
 })
+
+# A missing concentration at the start time ####
+
+test_that("start imputations with a missing concentration at the start time", {
+  conc <- c(NA, 40, 80)
+  time <- c(0, 1, 2)
+  # start_conc0 sets the start concentration to 0, missing or not
+  expect_equal(
+    PKNCA_impute_method_start_conc0(conc = conc, time = time, start = 0),
+    data.frame(conc = c(0, 40, 80), time = c(0, 1, 2))
+  )
+  # start_cmin, start_predose, and start_predose_conc0 see a row at the start
+  # time and impute nothing, so the start stays missing
+  expect_equal(
+    PKNCA_impute_method_start_cmin(conc = conc, time = time, start = 0, end = 2),
+    data.frame(conc = c(NA, 40, 80), time = c(0, 1, 2))
+  )
+  expect_equal(
+    PKNCA_impute_method_start_predose(
+      conc = conc, time = time, start = 0, end = 2,
+      conc.group = c(5, conc), time.group = c(-0.05, time)
+    ),
+    data.frame(conc = c(NA, 40, 80), time = c(0, 1, 2))
+  )
+  expect_equal(
+    PKNCA_impute_method_start_predose_conc0(
+      conc = conc, time = time, start = 0, end = 2,
+      conc.group = conc, time.group = time
+    ),
+    data.frame(conc = c(NA, 40, 80), time = c(0, 1, 2))
+  )
+})
+
+# auclast from 0 to Inf of one single-dose profile with the imputation `impute`
+impute_test_auclast <- function(d_conc, impute) {
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time | id),
+      PKNCAdose(data.frame(id = 1, time = 0, dose = 100), dose ~ time | id),
+      intervals = data.frame(start = 0, end = Inf, auclast = TRUE, cmax = TRUE),
+      impute = impute
+    )
+  res <- as.data.frame(suppressMessages(pk.nca(o_data)))
+  res$PPORRES[res$PPTESTCD == "auclast"]
+}
+
+test_that("pk.nca with start_predose_conc0 and a missing concentration at the start time", {
+  d_conc <-
+    data.frame(
+      id = 1, time = c(0, 0.25, 0.5, 1, 2, 4, 8, 12),
+      conc = c(NA, 40, 80, 130, 200, 240, 150, 60)
+    )
+  # Without the time-0 row, and with it at 0
+  expect_equal(impute_test_auclast(d_conc[-1, ], "start_predose_conc0"), 1836.33993274182)
+  expect_equal(impute_test_auclast(transform(d_conc, conc = c(0, conc[-1])), "start_predose_conc0"), 1836.33993274182)
+  expect_equal(impute_test_auclast(d_conc, "start_conc0"), 1836.33993274182)
+  # A missing concentration at time 0 stops the zero from being added
+  expect_warning(
+    auclast_na <- impute_test_auclast(d_conc, "start_predose_conc0"),
+    regexp = "Requesting an AUC range starting (0) before the first measurement (0.25) is not allowed",
+    fixed = TRUE
+  )
+  expect_equal(auclast_na, NA_real_)
+})
