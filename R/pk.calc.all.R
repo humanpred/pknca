@@ -781,7 +781,7 @@ pk.nca.intervals <- function(data_conc, data_dose, data_intervals,
   # The dose regimen warnings that detecting tau gives are the same for every
   # interval of the group, so they are given once, naming the group, on the way
   # out (so that an error does not lose them)
-  regimen_warnings <- pknca_condition_collector()
+  regimen_warnings <- pknca_regimen_warning_collector()
   on.exit(pknca_emit_regimen_warnings(regimen_warnings, prefix = warning_prefix), add = TRUE)
   for (i in seq_len(nrow(data_intervals))) {
     current_interval <- data_intervals[i, , drop=FALSE]

@@ -1156,7 +1156,7 @@ test_that("a group with fewer than three troughs is not fit and has insufficient
 test_that("the warnings of a gnls fit that gives an estimate are one classed warning", {
   local_mocked_bindings(
     tss_try_gnls = function(data, verbose, collector) {
-      pknca_collect_warnings(
+      tss_collect_warnings(
         {
           warning("a gnls warning")
           nlme::gnls(

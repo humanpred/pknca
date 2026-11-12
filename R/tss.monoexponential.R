@@ -298,11 +298,11 @@ pk.tss.monoexponential.population <- function(data,
         current.model.summary <- "Did not converge"
         # The warnings of each candidate are kept with it:  only those of the
         # selected model bear on the estimate.
-        current.warnings <- pknca_condition_collector()
+        current.warnings <- pknca_regimen_warning_collector()
         try({
           # Test the current model
           current.model <-
-            pknca_collect_warnings(
+            tss_collect_warnings(
               nlme::nlme(conc~ctrough.ss*(1-exp(tss.constant*time/tss)),
                          fixed=list(
                            test.formula$ctrough.by[[myctrough.ss]]$formula,
@@ -797,7 +797,7 @@ tss_fit_gnls_groups <- function(data, cols, verbose) {
 #' @keywords Internal
 #' @noRd
 tss_fit_gnls <- function(data, verbose) {
-  collector <- pknca_condition_collector()
+  collector <- pknca_regimen_warning_collector()
   if (verbose) {
     model <- tss_try_gnls(data, verbose=verbose, collector=collector)
   } else {
@@ -828,13 +828,13 @@ tss_fit_gnls <- function(data, verbose) {
 #' Try the monoexponential gnls fit, keeping its warnings
 #'
 #' @inheritParams tss_fit_gnls
-#' @param collector Where to keep the warnings (`pknca_condition_collector()`)
+#' @param collector Where to keep the warnings (`pknca_regimen_warning_collector()`)
 #' @returns The `gnls` fit, `NULL` (when gnls() gives none), or a `try-error`
 #' @keywords Internal
 #' @noRd
 tss_try_gnls <- function(data, verbose, collector) {
   try(
-    pknca_collect_warnings(
+    tss_collect_warnings(
       nlme::gnls(
         conc~ctrough.ss*(1-exp(tss.constant*time/tss)),
         params=list(

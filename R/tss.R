@@ -350,6 +350,26 @@ tss_model_interval <- function(model, name, level) {
   )
 }
 
+#' Evaluate a model fit, keeping all of its warnings
+#'
+#' Every warning raised while `expr` runs is a warning of that fit (nlme's
+#' warnings have no class of their own), so all are kept in `collector`, each
+#' once, and muffled.  It uses the collector of the dose regimen warnings
+#' (`pknca_regimen_warning_collector()` and `pknca_keep_regimen_warning()`),
+#' which keeps and muffles any condition it is given.
+#'
+#' @param expr The fit
+#' @param collector From `pknca_regimen_warning_collector()`
+#' @returns The value of `expr`
+#' @keywords Internal
+#' @noRd
+tss_collect_warnings <- function(expr, collector) {
+  withCallingHandlers(
+    expr,
+    warning = function(cnd) pknca_keep_regimen_warning(cnd, collector)
+  )
+}
+
 #' Set the "estimates" attribute of a time-to-steady-state result
 #'
 #' @param ret The result
