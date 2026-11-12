@@ -1513,6 +1513,18 @@ test_that("the individual interval is the Wald interval of the subject's gnls fi
   expect_equal(est[est$subject == "1", ], expected_individual, tolerance = 1e-6, ignore_attr = "row.names")
   expect_true(all(est$lower < est$estimate & est$estimate < est$upper))
 
+  # The subject counts however it is given:  by position, through pk.tss() or
+  # pk.tss.monoexponential()
+  fit <- pk.tss(d_one$conc, d_one$time, d_one$Subject, time.dosing = tss_test_dose_times(), type = "monoexponential", output = "single")
+  expect_equal(attr(fit, "estimates"), expected_one, tolerance = 1e-6)
+  fit <- pk.tss.monoexponential(d_one$conc, d_one$time, d_one$Subject, time.dosing = tss_test_dose_times(), output = "single")
+  expect_equal(attr(fit, "estimates"), expected_one, tolerance = 1e-6)
+  # (A partial name cannot match subject:  it also matches subject.dosing.)
+  expect_error(
+    pk.tss.monoexponential(conc = d_one$conc, time = d_one$time, subj = d_one$Subject, time.dosing = tss_test_dose_times(), output = "single"),
+    regexp = "matches multiple formal arguments"
+  )
+
   # Single without subject:  the number of subjects is not known
   fit <- pk.tss(conc = d_one$conc, time = d_one$time, time.dosing = tss_test_dose_times(), type = "monoexponential", output = "single")
   expect_equal(attr(fit, "estimates")$estimate, tss, tolerance = 1e-6)

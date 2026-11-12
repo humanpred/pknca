@@ -89,8 +89,12 @@ pk.tss.monoexponential <- function(...,
   # Check inputs
   modeldata <- pk.tss.data.prep(..., check=check)
   # Without a subject column, the data have one subject only when a subject
-  # was given (pk.tss.data.prep() drops the column for one subject).
-  subject_given <- "subject" %in% names(list(...))
+  # was given (pk.tss.data.prep() drops the column for one subject).  The
+  # arguments are matched as pk.tss.data.prep() matches them, so a subject
+  # given by position counts.
+  subject_given <-
+    "subject" %in%
+    names(match.call(pk.tss.data.prep, call=quote(pk.tss.data.prep(...)), envir=environment()))
   if (length(level) > 1) {
     rlang::warn("Only first value of level is being used", class = "pknca_warning_tss_level_multiple")
     level <- level[1]
