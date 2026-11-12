@@ -215,12 +215,18 @@ the dosing including dose amount and route.
     `NA`, which `pk.tss()` merged into a column named `y`.  The estimate is
     a numeric `NA` (it was a logical `NA`) when steady state is not found.
     Code that tests `identical(x, NA)` should read the column instead.
-  * With `subject`, two concentrations for the same subject, treatment (if
-    given), and time are an error (`pknca_error_tss_duplicate_rows`, also
-    `pknca_error_duplicate_rows`) when `check = TRUE`.  They were fitted
-    together:  plasma and blood rows that no group separated gave a Tss of
-    31.6 where plasma alone gives 27.1.  Without `subject`, repeated times
-    are pooled troughs and are still allowed.
+  * With `subject`, two records for the same subject, treatment (if given),
+    and time are an error (`pknca_error_tss_duplicate_rows`, also
+    `pknca_error_duplicate_rows`) when `check = TRUE`.  Every record given
+    is checked, before missing and BLQ concentrations are handled and
+    before the troughs are selected, so a repeated record is an error even
+    at a time that is not a dose time.  They were fitted together:  plasma
+    and blood rows that no group separated gave a Tss of 31.6 where plasma
+    alone gives 27.1.  Without `subject`, repeated times are pooled troughs
+    and are still allowed.
+  * When `check = TRUE`, a missing value in `subject` or `treatment` is an
+    error (`pknca_error_tss_subject_na` or `pknca_error_tss_treatment_na`).
+    Those rows were used with a missing group.
   * Of the warnings that nlme gives while fitting the candidate population
     models, only those of the selected model are given, as one
     `pknca_warning_tss_population_fit_warning` that quotes them; those of

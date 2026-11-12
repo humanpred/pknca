@@ -1214,6 +1214,42 @@ test_that("repeated subject-time records are an error", {
   )
 })
 
+test_that("every record is checked for repeats, before cleaning and trough selection", {
+  # At a time that is not a dose time, and with a missing concentration
+  expect_error(
+    pk.tss.data.prep(conc = c(1, 2, 3, 4), time = c(0, 0.5, 0.5, 1), subject = 1, time.dosing = 0:1),
+    regexp = "Row numbers: 3",
+    class = "pknca_error_tss_duplicate_rows"
+  )
+  expect_error(
+    pk.tss.data.prep(conc = c(1, 2, NA, 4), time = c(0, 1, 1, 2), subject = 1, time.dosing = 0:2),
+    regexp = "Row numbers: 3",
+    class = "pknca_error_tss_duplicate_rows"
+  )
+})
+
+test_that("a missing subject or treatment is an error, not a repeated record", {
+  # Two missing subjects at one time would otherwise look like a repeat
+  expect_error(
+    pk.tss.data.prep(conc = c(1, 2, 3, 4), time = c(0, 0, 1, 1), subject = c(NA, NA, 1, 1), time.dosing = 0:1),
+    regexp = "subject may not contain any NA values",
+    class = "pknca_error_tss_subject_na"
+  )
+  expect_error(
+    pk.tss.data.prep(
+      conc = c(1, 2, 3, 4), time = c(0, 0, 1, 1), subject = c(1, 1, 1, 1), treatment = c(NA, NA, "A", "A"),
+      time.dosing = 0:1
+    ),
+    regexp = "treatment may not contain any NA values",
+    class = "pknca_error_tss_treatment_na"
+  )
+  # A missing time is the assertion of the times
+  expect_error(
+    pk.tss.data.prep(conc = c(1, 2), time = c(NA, NA), subject = c(1, 1), time.dosing = 0),
+    regexp = "Assertion on 'time' failed: Contains missing values"
+  )
+})
+
 test_that("repeated subject-time records are allowed when the treatment tells them apart", {
   # A crossover with times relative to each period
   expect_equal(
