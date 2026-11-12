@@ -571,6 +571,7 @@ pk.tss.monoexponential.individual <- function(data,
   ret <- NULL
   failures <- character()
   fit_warnings <- character()
+  insufficient <- character()
   estimates <- NULL
   if ("single" %in% output) {
     # Fit each treatment (or all the data, without treatment)
@@ -582,6 +583,7 @@ pk.tss.monoexponential.individual <- function(data,
     ret$tss.monoexponential.single <- fits$estimate
     failures <- tss_gnls_failures(fits, output="single")
     fit_warnings <- tss_gnls_warnings(fits, output="single")
+    insufficient <- tss_gnls_insufficient(fits, output="single")
     estimates <-
       tss_gnls_estimates(fits, data=data, output="single", level=level, subject_given=subject_given)
   }
@@ -595,11 +597,21 @@ pk.tss.monoexponential.individual <- function(data,
     ret <- if (is.null(ret)) ret_sub else merge(ret, ret_sub, all=TRUE)
     failures <- c(failures, tss_gnls_failures(fits_sub, output="individual"))
     fit_warnings <- c(fit_warnings, tss_gnls_warnings(fits_sub, output="individual"))
+    insufficient <- c(insufficient, tss_gnls_insufficient(fits_sub, output="individual"))
     estimates <-
       rbind(
         estimates,
         tss_gnls_estimates(fits_sub, data=data, output="individual", level=level, subject_given=subject_given)
       )
+  }
+  if (length(insufficient) > 0) {
+    rlang::warn(
+      paste0(
+        "Too few troughs for a monoexponential gnls fit for Tss, so its estimate is NA:\n",
+        paste(insufficient, collapse="\n")
+      ),
+      class="pknca_warning_tss_insufficient_data"
+    )
   }
   if (length(failures) > 0) {
     rlang::warn(
@@ -686,18 +698,37 @@ tss_gnls_estimates <- function(fits, data, output, level, subject_given) {
       class="pknca_warning_tss_interval_failed"
     )
   }
+  mask_insufficient <- !is.na(fits$insufficient)
+  status[mask_insufficient] <- "insufficient_data"
+  message <-
+    ifelse(
+      is.na(fits$failure),
+      tss_join_messages(tss_not_reached_message(status, last_time), message_interval),
+      fits$failure
+    )
+  message[mask_insufficient] <- fits$insufficient[mask_insufficient]
   tss_estimates_table(
     type="monoexponential", output=output, treatment=treatment, subject=subject,
     estimate=fits$estimate, lower=lower, upper=upper, level=level,
     status=status, fit_warning=fit_warning,
-    message=
-      ifelse(
-        is.na(fits$failure),
-        tss_join_messages(tss_not_reached_message(status, last_time), message_interval),
-        fits$failure
-      )
+    message=message
   )
 }
+
+#' The gnls groups with too few troughs, described for a warning
+#'
+#' @inheritParams tss_gnls_group_text
+#' @returns A character vector with one line per group that was not fit
+#' @keywords Internal
+#' @noRd
+tss_gnls_insufficient <- function(fits, output) {
+  mask <- !is.na(fits$insufficient)
+  sprintf("%s: %s", tss_gnls_group_text(fits, output)[mask], fits$insufficient[mask])
+}
+
+# The fewest troughs that a monoexponential gnls fit needs:  one more than its
+# two parameters, for the residual error
+tss_gnls_min_troughs <- 3L
 
 #' Fit the monoexponential gnls model to each group of the data
 #'
@@ -708,9 +739,9 @@ tss_gnls_estimates <- function(fits, data, output, level, subject_given) {
 #'   group, ordered by them; one row and no columns without `cols`) and, with
 #'   one element per group, `model` (the fit, or `NULL` when it failed),
 #'   `estimate` (the Tss, `NA` when the fit failed), `failure` (the error of a
-#'   failed fit, or `NA`), `warnings` (the warnings of the fit), and
-#'   `n_subject` (the number of subjects in the group, `NA` without a `subject`
-#'   column)
+#'   failed fit, or `NA`), `warnings` (the warnings of the fit), `insufficient`
+#'   (why a group with too few troughs was not fit, or `NA`), and `n_subject`
+#'   (the number of subjects in the group, `NA` without a `subject` column)
 #' @keywords Internal
 #' @noRd
 tss_fit_gnls_groups <- function(data, cols, verbose) {
@@ -724,14 +755,26 @@ tss_fit_gnls_groups <- function(data, cols, verbose) {
   ret <-
     list(
       groups=groups, model=list(), estimate=numeric(), failure=character(), warnings=list(),
-      n_subject=integer()
+      insufficient=character(), n_subject=integer()
     )
   for (idx in seq_len(nrow(groups))) {
     mask <- rep(TRUE, nrow(data))
     for (col in cols) {
       mask <- mask & data[[col]] %in% groups[[col]][idx]
     }
-    fit <- tss_fit_gnls(data[mask, , drop=FALSE], verbose=verbose)
+    if (sum(mask) < tss_gnls_min_troughs) {
+      # Too few troughs for the two parameters of the curve and its residual
+      # error, so the group is not fit
+      fit <- list(model=NULL, estimate=NA_real_, failure=NA_character_, warnings=character())
+      ret$insufficient[idx] <-
+        sprintf(
+          "%d trough(s), fewer than the %d needed for the two parameters of the monoexponential curve and its residual error",
+          sum(mask), tss_gnls_min_troughs
+        )
+    } else {
+      fit <- tss_fit_gnls(data[mask, , drop=FALSE], verbose=verbose)
+      ret$insufficient[idx] <- NA_character_
+    }
     ret$model[idx] <- list(fit$model)
     ret$estimate[idx] <- fit$estimate
     ret$failure[idx] <- fit$failure

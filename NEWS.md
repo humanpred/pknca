@@ -234,7 +234,9 @@ the dosing including dose amount and route.
     given.  A gnls fit for `individual` or `single` that fails (`NA`) gives
     `pknca_warning_tss_individual_fit_failed`, where it was silent (gnls
     printed its reason), and warnings of a gnls fit that gives an estimate
-    are one `pknca_warning_tss_individual_fit_warning`.  With
+    are one `pknca_warning_tss_individual_fit_warning`.  A subject (or
+    treatment) with fewer than three troughs is not fit:  its estimate is
+    `NA` with `pknca_warning_tss_insufficient_data`.  With
     `verbose = TRUE`, each candidate's warnings are shown as a
     `pknca_message_tss_candidate_warnings` message.  Because the warnings
     are caught as they are raised, under `options(warn = 2)` a candidate is

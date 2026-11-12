@@ -190,9 +190,10 @@ pk.tss.data.prep <- function(conc, time, subject, treatment,
 #'         from at least one start time, so steady state may have been missed);
 #'         the estimate is `NA`.}
 #'       \item{`"insufficient_data"`}{Fewer dose times than `min.points`
-#'         (stepwise linear), or troughs from one subject for the
-#'         `population`, `popind`, or `individual` output, which need several;
-#'         the estimate is `NA`.  When another output is requested, those
+#'         (stepwise linear), troughs from one subject for the `population`,
+#'         `popind`, or `individual` output, which need several, or fewer than
+#'         three troughs for an `individual` or `single` fit (which is then not
+#'         run); the estimate is `NA`.  When another output is requested, those
 #'         outputs are left out of the result and are only in this table.}
 #'       \item{`"no_random_effect"`}{`popind` was requested, but the selected
 #'         population model has no random effect on Tss; the estimate is `NA`.}

@@ -439,11 +439,11 @@ test_that("pk.tss.monoexponential", {
   expect_warning(
     expect_equal(
       pk.tss.monoexponential(
-        conc=c(0, 1000),
-        time=0:1,
-        subject=c(1, 1),
-        treatment=c("A", "A"),
-        time.dosing=0:1,
+        conc=c(0, 0, 0, 0),
+        time=0:3,
+        subject=c(1, 1, 1, 1),
+        treatment=c("A", "A", "A", "A"),
+        time.dosing=0:3,
         tss.fraction=0.9,
         output="single"
       ),
@@ -1102,20 +1102,23 @@ test_that("when the troughs are still rising, monoexponential gives an extrapola
   expect_equal(tss_test_warning_classes(fit), "pknca_warning_tss_stepwise_fit_failed")
 })
 
-test_that("a failed single or individual fit is NA with a classed warning that names the fit", {
-  # Before, the failure was printed and there was no warning
+test_that("a failed single fit is NA with a classed warning that names the fit, and prints nothing", {
+  # All the troughs are zero, so gnls cannot estimate the curve
   expect_silent(
     expect_warning(
       fit <-
-        pk.tss(conc = c(0, 1000), time = 0:1, subject = c(1, 1), time.dosing = 0:1, type = "monoexponential", output = "single"),
+        pk.tss(conc = c(0, 0, 0, 0), time = 0:3, subject = rep(1, 4), time.dosing = 0:3, type = "monoexponential", output = "single"),
       regexp = "A monoexponential gnls fit for Tss failed, so its estimate is NA:\nsingle: approximate covariance matrix for parameter estimates not of full rank",
       fixed = TRUE,
       class = "pknca_warning_tss_individual_fit_failed"
     )
   )
   expect_equal(fit, data.frame(tss.monoexponential.single = NA_real_), ignore_attr = "estimates")
+})
 
-  # Subject 2 has two troughs, too few for the two parameters of the curve
+test_that("a group with fewer than three troughs is not fit and has insufficient data, like one subject", {
+  # Subject 2 has two troughs, too few for the two parameters of the curve and
+  # its residual error
   d <- tss_test_theoph()
   d <- d[d$treatment == "A" & (d$Subject != "2" | d$time %in% c(0, 12)), ]
   expect_warning(
@@ -1124,11 +1127,27 @@ test_that("a failed single or individual fit is NA with a classed warning that n
         conc = d$conc, time = d$time, subject = d$Subject, time.dosing = tss_test_dose_times(),
         type = "monoexponential", output = "individual"
       ),
-    regexp = "A monoexponential gnls fit for Tss failed, so its estimate is NA:\nindividual (subject 2): ",
+    regexp =
+      paste0(
+        "Too few troughs for a monoexponential gnls fit for Tss, so its estimate is NA:\n",
+        "individual (subject 2): 2 trough(s), fewer than the 3 needed for the two parameters of the monoexponential curve and its residual error"
+      ),
     fixed = TRUE,
-    class = "pknca_warning_tss_individual_fit_failed"
+    class = "pknca_warning_tss_insufficient_data"
   )
   expect_equal(is.na(fit$tss.monoexponential.individual), as.character(fit$subject) == "2")
+  est <- tss_test_check_estimates(fit)
+  expect_equal(est$status[est$subject == "2"], "insufficient_data")
+  expect_equal(unique(est$status[est$subject != "2"]), "estimated")
+  # A single fit with two troughs
+  expect_warning(
+    fit <-
+      pk.tss(conc = c(0, 1000), time = 0:1, subject = c(1, 1), time.dosing = 0:1, type = "monoexponential", output = "single"),
+    regexp = "single: 2 trough(s), fewer than the 3 needed",
+    fixed = TRUE,
+    class = "pknca_warning_tss_insufficient_data"
+  )
+  expect_equal(attr(fit, "estimates")$status, "insufficient_data")
 })
 
 test_that("the warnings of a gnls fit that gives an estimate are one classed warning", {
@@ -1365,7 +1384,7 @@ test_that("the estimates attribute says when steady state is not reached and whe
   # A gnls fit that failed
   fit <-
     suppressWarnings(
-      pk.tss(conc = c(0, 1000), time = 0:1, subject = c(1, 1), time.dosing = 0:1, type = "monoexponential", output = "single")
+      pk.tss(conc = c(0, 0, 0, 0), time = 0:3, subject = rep(1, 4), time.dosing = 0:3, type = "monoexponential", output = "single")
     )
   expect_equal(
     tss_test_check_estimates(fit),
