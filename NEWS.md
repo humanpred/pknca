@@ -195,63 +195,6 @@ the dosing including dose amount and route.
   relying on `%in%`'s implicit list coercion downstream instead of failing
   clearly. Passing a list now raises an error instead.
 
-* Time to steady state (`pk.tss()`, `pk.tss.monoexponential()`, and
-  `pk.tss.stepwise.linear()`) changes its results in these ways
-  (@billdenney):
-  * Every result now has the `"estimates"` attribute (see New features), so
-    comparing a result with a plain data frame by `identical()` or
-    `testthat::expect_equal()` fails on the attribute.  Compare without it
-    (for example, `expect_equal(..., ignore_attr = "estimates")`).
-  * The `single` monoexponential output fits each treatment's own troughs.
-    Before, every treatment was given the fit of all the data (in the
-    example data, 27.88 for both treatments where the treatments alone give
-    29.52 and 26.17).  The documentation, which said that `single` fits all
-    the data, now says that it fits each treatment.
-  * The `population` output always has one row per subject, with the
-    subject's `treatment` when the data have more than one treatment (after
-    `subject`, before the estimates).  Before, it had one row without a
-    `subject` column when the selected model had no random effect on Tss,
-    and it had no `treatment` column, so with treatments its rows were
-    cross-joined with the `single` output (24 rows for 12 subjects, each
-    subject under every treatment).  A factor `subject` keeps its levels.
-  * `pk.tss.stepwise.linear()` with fewer dose times than `min.points`
-    returns `data.frame(tss.stepwise.linear = NA_real_)` instead of a bare
-    `NA`, which `pk.tss()` merged into a column named `y`.  The estimate is
-    a numeric `NA` (it was a logical `NA`) when steady state is not found.
-    Code that tests `identical(x, NA)` should read the column instead.
-  * With `subject`, two records for the same subject, treatment (if given),
-    and time are an error (`pknca_error_tss_duplicate_rows`, also
-    `pknca_error_duplicate_rows`) when `check = TRUE`.  Every record given
-    is checked, before missing and BLQ concentrations are handled and
-    before the troughs are selected, so a repeated record is an error even
-    at a time that is not a dose time.  They were fitted together:  plasma
-    and blood rows that no group separated gave a Tss of 31.6 where plasma
-    alone gives 27.1.  Without `subject`, repeated times are pooled troughs
-    and are still allowed.
-  * When `check = TRUE`, a missing value in `subject` or `treatment` is an
-    error (`pknca_error_tss_subject_na` or `pknca_error_tss_treatment_na`).
-    Those rows were used with a missing group.
-  * Of the warnings that nlme gives while fitting the candidate population
-    models, only those of the selected model are given, as one
-    `pknca_warning_tss_population_fit_warning` that quotes them; those of
-    the other candidates do not bear on the estimate and are no longer
-    given.  A gnls fit for `individual` or `single` that fails (`NA`) gives
-    `pknca_warning_tss_individual_fit_failed`, where it was silent (gnls
-    printed its reason), and warnings of a gnls fit that gives an estimate
-    are one `pknca_warning_tss_individual_fit_warning`.  A subject (or
-    treatment) with fewer than three troughs is not fit:  its estimate is
-    `NA` with `pknca_warning_tss_insufficient_data`.  With
-    `verbose = TRUE`, each candidate's warnings are shown as a
-    `pknca_message_tss_candidate_warnings` message.  Because the warnings
-    are caught as they are raised, under `options(warn = 2)` a candidate is
-    no longer dropped for its warnings, so the selected model can differ
-    there; the selected model's warning then becomes the error.
-  * A confidence interval that nlme cannot compute gives
-    `pknca_warning_tss_interval_failed`, and the `"estimates"` attribute
-    says why.
-  * Through `pk.tss()`, the `level` argument is now also the confidence
-    level of the monoexponential intervals (see New features).
-
 ## Changes to automatically generated calculation intervals
 
 When `PKNCAdata()` is given no `intervals`, the intervals it generates now take
@@ -407,7 +350,68 @@ the generated intervals:
 
 (@billdenney, #642)
 
-## New features
+## Time to steady state (`pk.tss()`)
+
+### Breaking changes
+
+* Time to steady state (`pk.tss()`, `pk.tss.monoexponential()`, and
+  `pk.tss.stepwise.linear()`) changes its results in these ways
+  (@billdenney):
+  * Every result now has the `"estimates"` attribute (see New features), so
+    comparing a result with a plain data frame by `identical()` or
+    `testthat::expect_equal()` fails on the attribute.  Compare without it
+    (for example, `expect_equal(..., ignore_attr = "estimates")`).
+  * The `single` monoexponential output fits each treatment's own troughs.
+    Before, every treatment was given the fit of all the data (in the
+    example data, 27.88 for both treatments where the treatments alone give
+    29.52 and 26.17).  The documentation, which said that `single` fits all
+    the data, now says that it fits each treatment.
+  * The `population` output always has one row per subject, with the
+    subject's `treatment` when the data have more than one treatment (after
+    `subject`, before the estimates).  Before, it had one row without a
+    `subject` column when the selected model had no random effect on Tss,
+    and it had no `treatment` column, so with treatments its rows were
+    cross-joined with the `single` output (24 rows for 12 subjects, each
+    subject under every treatment).  A factor `subject` keeps its levels.
+  * `pk.tss.stepwise.linear()` with fewer dose times than `min.points`
+    returns `data.frame(tss.stepwise.linear = NA_real_)` instead of a bare
+    `NA`, which `pk.tss()` merged into a column named `y`.  The estimate is
+    a numeric `NA` (it was a logical `NA`) when steady state is not found.
+    Code that tests `identical(x, NA)` should read the column instead.
+  * With `subject`, two records for the same subject, treatment (if given),
+    and time are an error (`pknca_error_tss_duplicate_rows`, also
+    `pknca_error_duplicate_rows`) when `check = TRUE`.  Every record given
+    is checked, before missing and BLQ concentrations are handled and
+    before the troughs are selected, so a repeated record is an error even
+    at a time that is not a dose time.  They were fitted together:  plasma
+    and blood rows that no group separated gave a Tss of 31.6 where plasma
+    alone gives 27.1.  Without `subject`, repeated times are pooled troughs
+    and are still allowed.
+  * When `check = TRUE`, a missing value in `subject` or `treatment` is an
+    error (`pknca_error_tss_subject_na` or `pknca_error_tss_treatment_na`).
+    Those rows were used with a missing group.
+  * Of the warnings that nlme gives while fitting the candidate population
+    models, only those of the selected model are given, as one
+    `pknca_warning_tss_population_fit_warning` that quotes them; those of
+    the other candidates do not bear on the estimate and are no longer
+    given.  A gnls fit for `individual` or `single` that fails (`NA`) gives
+    `pknca_warning_tss_individual_fit_failed`, where it was silent (gnls
+    printed its reason), and warnings of a gnls fit that gives an estimate
+    are one `pknca_warning_tss_individual_fit_warning`.  A subject (or
+    treatment) with fewer than three troughs is not fit:  its estimate is
+    `NA` with `pknca_warning_tss_insufficient_data`.  With
+    `verbose = TRUE`, each candidate's warnings are shown as a
+    `pknca_message_tss_candidate_warnings` message.  Because the warnings
+    are caught as they are raised, under `options(warn = 2)` a candidate is
+    no longer dropped for its warnings, so the selected model can differ
+    there; the selected model's warning then becomes the error.
+  * A confidence interval that nlme cannot compute gives
+    `pknca_warning_tss_interval_failed`, and the `"estimates"` attribute
+    says why.
+  * Through `pk.tss()`, the `level` argument is now also the confidence
+    level of the monoexponential intervals (see New features).
+
+### New features
 
 * `pk.tss()`, `pk.tss.monoexponential()`, and `pk.tss.stepwise.linear()` say
   how each estimate came about, in an `"estimates"` attribute of their result
@@ -429,6 +433,26 @@ the generated intervals:
   subjects (the troughs of a subject are correlated), or for stepwise linear
   (the first dose time of a sequence of tests); the `message` says so.
   `pk.tss.monoexponential()` gains `level = 0.95` (@billdenney).
+
+### Bug fixes
+
+* `pk.tss()` and `pk.tss.monoexponential()` no longer stop with "subscript out
+  of bounds" when the population model with a Tss by treatment has the lowest
+  AIC.  That model is now written `tss ~ treatment - 1`, so the population
+  output gives each treatment its own Tss (@billdenney).
+
+* `pk.tss()` and `pk.tss.monoexponential()` asked only for outputs that need
+  several subjects (`population`, `popind`, or `individual`) when the troughs
+  are from one subject no longer stop with the internal error "Error in
+  selection of return values for pk.tss.monoexponential".  They give `NA`
+  with the status `"insufficient_data"` in the `"estimates"` attribute, after
+  the warning they already gave (@billdenney).
+
+* In `pk.tss()` with `subject.dosing`, a dose recorded more than once for a
+  subject and time selects its trough once; it was fitted once per dose
+  record (@billdenney).
+
+## New features
 
 * Cav is available for every AUC that covers only the interval, as `cav.last`
   (from `auclast`), `cav.all` (from `aucall`) and, for IV bolus dosing, `cav.iv.last`, `cav.iv.all`,
@@ -1289,22 +1313,6 @@ the generated intervals:
   inputs such as `conc`, `time`, and `dose`.
 
 ## Bug fixes
-
-* `pk.tss()` and `pk.tss.monoexponential()` no longer stop with "subscript out
-  of bounds" when the population model with a Tss by treatment has the lowest
-  AIC.  That model is now written `tss ~ treatment - 1`, so the population
-  output gives each treatment its own Tss (@billdenney).
-
-* `pk.tss()` and `pk.tss.monoexponential()` asked only for outputs that need
-  several subjects (`population`, `popind`, or `individual`) when the troughs
-  are from one subject no longer stop with the internal error "Error in
-  selection of return values for pk.tss.monoexponential".  They give `NA`
-  with the status `"insufficient_data"` in the `"estimates"` attribute, after
-  the warning they already gave (@billdenney).
-
-* In `pk.tss()` with `subject.dosing`, a dose recorded more than once for a
-  subject and time selects its trough once; it was fitted once per dose
-  record (@billdenney).
 
 * Preferred units (`concu_pref`, `doseu_pref`, and the others) with unit
   columns whose units differ between groups no longer stop `PKNCAdata()` with
