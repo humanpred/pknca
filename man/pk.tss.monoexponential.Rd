@@ -32,8 +32,11 @@ treatment (or all the data, without treatment) to one gnls model.}
 (passed to the nlme function), and additional details while running.}
 }
 \value{
-A scalar float for the first time when steady-state is achieved or
-\code{NA} if it is not observed.
+A data frame with the requested \verb{tss.monoexponential.*} columns,
+and \code{subject} and \code{treatment} columns for the outputs that are by subject
+or by treatment.  The population output has one row per subject (and
+treatment).  A monoexponential Tss is estimated from the fitted curve, so
+it can be later than the last trough; \code{NA} means that the fit failed.
 }
 \description{
 Trough concentrations are selected as concentrations at the time of dosing.

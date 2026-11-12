@@ -15,8 +15,11 @@
 #' @param level The confidence level required for assessment of steady-state
 #' @param verbose Describe models as they are run, show convergence of the model
 #'   (passed to the nlme function), and additional details while running.
-#' @returns A scalar float for the first time when steady-state is achieved or
-#'   `NA` if it is not observed.
+#' @returns A data frame with one row and the column `tss.stepwise.linear`:  the
+#'   first dose time from which the slope is not significant, or `NA` when
+#'   there is none (steady state is not observed, the models could not be fit,
+#'   or there are fewer than `min.points` dose times).  The slope is common to
+#'   all treatments, so the estimate is too.
 #' @family Time to steady-state calculations
 #' @references Maganti L, Panebianco DL, Maes AL.  Evaluation of Methods for
 #' Estimating Time to Steady State with Examples from Phase 1 Studies. AAPS
@@ -54,7 +57,7 @@ pk.tss.stepwise.linear <- function(...,
       "After removing non-dosing time points, insufficient data remains for tss calculation",
       class = "pknca_warning_tss_insufficient_data"
     )
-    return(NA)
+    return(data.frame(tss.stepwise.linear=NA_real_))
   }
   # Assign treatment if given and with multiple levels
   formula.to.fit <- stats::as.formula("conc~time")
@@ -63,7 +66,7 @@ pk.tss.stepwise.linear <- function(...,
   # Ensure that the dosing times are in order to allow us to kick
   # them out in order.
   remaining.time <- sort(unique(modeldata$time))
-  ret <- NA
+  ret <- NA_real_
   # Start times whose model could not be fit, with the reason
   fit_failures <- character()
   while (is.na(ret) &

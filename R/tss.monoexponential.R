@@ -19,8 +19,11 @@
 #' @param verbose Describe models as they are run, show convergence of the model
 #'   (passed to the nlme function), and additional details while running.
 #'
-#' @returns A scalar float for the first time when steady-state is achieved or
-#'   `NA` if it is not observed.
+#' @returns A data frame with the requested `tss.monoexponential.*` columns,
+#'   and `subject` and `treatment` columns for the outputs that are by subject
+#'   or by treatment.  The population output has one row per subject (and
+#'   treatment).  A monoexponential Tss is estimated from the fitted curve, so
+#'   it can be later than the last trough; `NA` means that the fit failed.
 #' @family Time to steady-state calculations
 #' @references
 #' Maganti, L., Panebianco, D.L. & Maes, A.L. Evaluation of Methods for
@@ -129,9 +132,11 @@ tss.monoexponential.generate.formula <- function(data) {
     "Single value for Tss"=list(
       formula=tss~1,
       start=stats::median(unique(data$time))))
+  # Without an intercept, each treatment's Tss is its own coefficient
+  # ("tss.treatmentA", ...), so its estimate and interval are read directly.
   if ("treatment" %in% names(data))
     tss.by[["Tss by treatment"]] <- list(
-      formula=tss~treatment,
+      formula=tss~treatment-1,
       start=rep(stats::median(unique(data$time)),
         length(unique(data$treatment))))
   # Try combinations of random effects with Ctrough.ss and
@@ -163,10 +168,12 @@ tss.monoexponential.generate.formula <- function(data) {
 #'   contain at least columns for `subject`, `time`, `conc`, and `tss.constant`.
 #' @param output a character vector requesting the output types.
 #' @param verbose Show verbose output.
-#' @returns A data frame with either one row (if `population` output is
-#'   provided) or one row per subject (if `popind` is provided).  The columns
-#'   will be named `tss.monoexponential.population` and/or
-#'   `tss.monoexponential.popind`.
+#' @returns A data frame with one row per subject (and treatment, when the
+#'   data have more than one), with columns `subject`, `treatment` (when the
+#'   data have it), and `tss.monoexponential.population` and/or
+#'   `tss.monoexponential.popind`.  When the selected model has a Tss by
+#'   treatment, `tss.monoexponential.population` is the Tss of the row's
+#'   treatment.
 pk.tss.monoexponential.population <- function(data,
                                               output=c(
                                                 "population",
@@ -235,52 +242,39 @@ pk.tss.monoexponential.population <- function(data,
     )
   if (verbose)
     print(all.model.summary)
+  # One row per subject (and treatment, so that a subject's row joins the rows
+  # of its treatment in other outputs)
+  ret <- tss_population_rows(data)
   if (all(is.na(all.model.summary$AIC)) ||
       length(all.model.summary) == 0) {
     rlang::warn(
       "No population model for monoexponential Tss converged, no results given",
       class = "pknca_warning_tss_population_no_convergence"
     )
-    ret <-
-      data.frame(
-        tss.monoexponential.population=NA,
-        tss.monoexponential.popind=NA,
-        subject=unique(data[["subject"]])
-      )
+    ret$tss.monoexponential.population <- NA_real_
+    ret$tss.monoexponential.popind <- NA_real_
   } else {
     best.model <-
       models[all.model.summary$AIC %in%
              min(all.model.summary$AIC, na.rm=TRUE)][[1]]$model
-    ret <-
-      data.frame(
-        tss.monoexponential.population=nlme::fixef(best.model)[["tss"]]
-      )
+    ret$tss.monoexponential.population <-
+      tss_population_fixef(best.model, treatment = ret$treatment)
     best.ranef <- nlme::ranef(best.model)
-    if ("tss" %in% names(best.ranef)) {
-      ret <-
-        merge(
-          ret,
-          data.frame(
-            tss.monoexponential.popind=(best.ranef$tss +
-                                          ret$tss.monoexponential.population),
-            subject=factor(rownames(best.ranef))
-          ),
-          all=TRUE
+    # The random effect is "tss" with one Tss and "tss.(Intercept)" with a Tss
+    # by treatment
+    col_ranef_tss <- grep("^tss", names(best.ranef), value=TRUE)
+    if (length(col_ranef_tss) == 1) {
+      ret$tss.monoexponential.popind <-
+        ret$tss.monoexponential.population +
+        best.ranef[as.character(ret$subject), col_ranef_tss]
+    } else {
+      if ("popind" %in% output) {
+        rlang::warn(
+          "tss.monoexponential.popind was requested, but the best model did not include a random effect for tss.  Set to NA.",
+          class = "pknca_warning_tss_popind_no_random_effect"
         )
-    } else if ("popind" %in% output) {
-      rlang::warn(
-        "tss.monoexponential.popind was requested, but the best model did not include a random effect for tss.  Set to NA.",
-        class = "pknca_warning_tss_popind_no_random_effect"
-      )
-      ret <-
-        merge(
-          ret,
-          data.frame(
-            tss.monoexponential.popind=NA,
-            subject=unique(data$subject)
-          ),
-          all=TRUE
-        )
+      }
+      ret$tss.monoexponential.popind <- NA_real_
     }
   }
   # Return the requested columns
@@ -288,6 +282,37 @@ pk.tss.monoexponential.population <- function(data,
                    paste("tss.monoexponential", output, sep=".")),
                  names(ret)),
       drop=FALSE]
+}
+
+#' The rows of the population output: one per subject and treatment
+#'
+#' @param data The data of [pk.tss.monoexponential.population()]
+#' @returns A data frame with the `subject` (and `treatment`) columns of
+#'   `data`, one row for each combination in the data, ordered by subject
+#' @keywords Internal
+#' @noRd
+tss_population_rows <- function(data) {
+  ret <- unique(data[, intersect(c("subject", "treatment"), names(data)), drop=FALSE])
+  ret <- ret[do.call(order, unname(as.list(ret))), , drop=FALSE]
+  rownames(ret) <- NULL
+  ret
+}
+
+#' The population Tss of each row from the selected model
+#'
+#' @param model The selected `nlme` model
+#' @param treatment The treatment of each row (`NULL` without treatment)
+#' @returns The Tss of each row:  the one Tss when the model has one, or the
+#'   Tss of the row's treatment when the model has one by treatment
+#' @keywords Internal
+#' @noRd
+tss_population_fixef <- function(model, treatment) {
+  fixef <- nlme::fixef(model)
+  if ("tss" %in% names(fixef)) {
+    rep(fixef[["tss"]], max(1, length(treatment)))
+  } else {
+    unname(fixef[paste0("tss.treatment", as.character(treatment))])
+  }
 }
 
 #' A helper function to estimate individual and single outputs for

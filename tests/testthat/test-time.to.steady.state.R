@@ -375,7 +375,7 @@ test_that("pk.tss.stepwise.linear", {
     ),
     regexp="After removing non-dosing time points, insufficient data remains for tss calculation"
   )
-  expect_equal(v1, NA)
+  expect_equal(v1, data.frame(tss.stepwise.linear=NA_real_))
   expect_warning(
     pk.tss.stepwise.linear(conc=tmpdata$conc,
                            time=tmpdata$time,
@@ -403,38 +403,35 @@ test_that("pk.tss.stepwise.linear", {
 
 test_that("pk.tss.monoexponential", {
   tmpdata <- generate.data()
-  expect_warning(
-    expect_equal(
-      pk.tss.monoexponential(
-        conc=tmpdata$conc,
-        time=tmpdata$time,
-        subject=tmpdata$subject,
-        treatment=tmpdata$treatment,
-        time.dosing=0:14,
-        verbose=FALSE
-      ),
-      data.frame(
-        subject=factor(as.character(c(1, 10, 2:9))),
-        tss.monoexponential.population=4.57618156812974,
-        tss.monoexponential.popind=c(
-          5.14156352865421, 4.64862524830397, 4.45956707917941,
-          4.41492203844343, 4.6782583033301, 4.0823047621517,
-          4.96242115751172, 4.52424147509819, 3.70338406668837,
-          5.1465280219363),
-        treatment=
-          factor(c("A", "B", "A", "A", "A", "A", "B", "B", "B", "B")),
-        tss.monoexponential.individual=c(
-          5.87784329336254, 4.71066285661623, 4.51882509145954,
-          3.91269286106442, 4.74475071729459, 3.99341726779716,
-          5.08737230904342, 4.50068650719192, 3.4876172020751,
-          5.35051537086801),
-        # Each treatment's own fit
-        tss.monoexponential.single=
-          c(A=4.49364717175, B=4.59871031113)[c("A", "B", "A", "A", "A", "A", "B", "B", "B", "B")]
-      ),
-      tolerance=1e-4,
-      ignore_attr=TRUE
-    )
+  expect_equal(
+    pk.tss.monoexponential(
+      conc=tmpdata$conc,
+      time=tmpdata$time,
+      subject=tmpdata$subject,
+      treatment=tmpdata$treatment,
+      time.dosing=0:14,
+      verbose=FALSE
+    ),
+    data.frame(
+      subject=factor(c(1, 10, 2:9), levels=1:10),
+      treatment=
+        factor(c("A", "B", "A", "A", "A", "A", "B", "B", "B", "B")),
+      tss.monoexponential.population=4.57618156812974,
+      tss.monoexponential.popind=c(
+        5.14156352865421, 4.64862524830397, 4.45956707917941,
+        4.41492203844343, 4.6782583033301, 4.0823047621517,
+        4.96242115751172, 4.52424147509819, 3.70338406668837,
+        5.1465280219363),
+      tss.monoexponential.individual=c(
+        5.87784329336254, 4.71066285661623, 4.51882509145954,
+        3.91269286106442, 4.74475071729459, 3.99341726779716,
+        5.08737230904342, 4.50068650719192, 3.4876172020751,
+        5.35051537086801),
+      # Each treatment's own fit
+      tss.monoexponential.single=
+        rep(c(4.49364717175, 4.59871031113), c(1, 1))[c(1, 2, 1, 1, 1, 1, 2, 2, 2, 2)]
+    ),
+    tolerance=1e-4
   )
   expect_output(
     expect_equal(
@@ -465,7 +462,8 @@ test_that("pk.tss.monoexponential without treatment", {
         verbose=FALSE
       ),
       data.frame(
-        subject=factor(as.character(c(1, 10, 2:9))),
+        # The levels are those of the subject given
+        subject=factor(c(1, 10, 2:9), levels=1:10),
         tss.monoexponential.population=4.561580,
         tss.monoexponential.popind=c(
           5.028357, 4.672555, 4.536178,
@@ -485,24 +483,23 @@ test_that("pk.tss.monoexponential without treatment", {
 
 test_that("pk.tss.monoexponential corner case tests", {
   tmpdata <- generate.data()
-  # population output, only
-  expect_warning(
-    expect_equal(
-      pk.tss.monoexponential(
-        conc=tmpdata$conc,
-        time=tmpdata$time,
-        subject=tmpdata$subject,
-        treatment=tmpdata$treatment,
-        time.dosing=0:14,
-        output = "population",
-        verbose=FALSE
-      ),
-      data.frame(
-        subject=factor(as.character(seq_len(10))),
-        tss.monoexponential.population=4.57618156812974
-      ),
-      tolerance=1e-4
-    )
+  # population output, only:  one row per subject, with its treatment
+  expect_equal(
+    pk.tss.monoexponential(
+      conc=tmpdata$conc,
+      time=tmpdata$time,
+      subject=tmpdata$subject,
+      treatment=tmpdata$treatment,
+      time.dosing=0:14,
+      output = "population",
+      verbose=FALSE
+    ),
+    data.frame(
+      subject=factor(seq_len(10)),
+      treatment=factor(rep(c("A", "B"), each=5)),
+      tss.monoexponential.population=4.57618156812974
+    ),
+    tolerance=1e-4
   )
   # (Pseudo) single treatment, only
   expect_equal(
@@ -515,7 +512,7 @@ test_that("pk.tss.monoexponential corner case tests", {
       verbose=FALSE
     ),
     data.frame(
-      subject=factor(as.character(seq_len(10))),
+      subject=factor(seq_len(10)),
       tss.monoexponential.population=4.56157960341961
     ),
     tolerance=1e-4
@@ -791,7 +788,7 @@ test_that("pk.tss.stepwise.linear warns when model failures may explain no stead
     regexp = "from time 0: the model did not converge",
     class = "pknca_warning_tss_stepwise_fit_failed"
   )
-  expect_equal(res, data.frame(tss.stepwise.linear = NA))
+  expect_equal(res, data.frame(tss.stepwise.linear = NA_real_))
 })
 
 test_that("pk.tss.stepwise.linear does not warn for failures when steady state is found", {
@@ -861,8 +858,12 @@ test_that("the selected population model's nlme warning surfaces unclassed, and 
         type = "monoexponential", output = "population"
       )
     )
-  # No Tss random effect is selected, so there is one row and no subject
-  expect_equal(fit_b$value, data.frame(tss.monoexponential.population = 25.9513099761), tolerance = 1e-8)
+  # No Tss random effect is selected, and there is still one row per subject
+  expect_equal(
+    fit_b$value,
+    data.frame(subject = factor(as.character(c(10:12, 7:9))), tss.monoexponential.population = 25.9513099761),
+    tolerance = 1e-8
+  )
   expect_equal(
     vapply(fit_b$warnings, conditionMessage, ""),
     c(
@@ -897,7 +898,7 @@ test_that("nlme warns for candidate population models that are not selected", {
   )
 })
 
-test_that("one call with two treatments gives one population value with no treatment column", {
+test_that("one call with two treatments gives the population value with each subject's treatment", {
   d <- tss_test_theoph()
   fit <-
     suppressWarnings(
@@ -907,14 +908,19 @@ test_that("one call with two treatments gives one population value with no treat
         type = "monoexponential", output = "population"
       )
     )
+  # The selected model has one Tss for both treatments
   expect_equal(
     fit,
-    data.frame(subject = factor(as.character(c(1, 10:12, 2:9))), tss.monoexponential.population = 26.41645),
-    tolerance = 1e-6
+    data.frame(
+      subject = factor(as.character(c(1, 10:12, 2:9))),
+      treatment = factor(c("A", "B", "B", "B", "A", "A", "A", "A", "A", "B", "B", "B")),
+      tss.monoexponential.population = 26.416445513
+    ),
+    tolerance = 1e-8
   )
 })
 
-test_that("the single output per treatment fits each treatment, cross-joined with the population rows", {
+test_that("the single output per treatment fits each treatment and joins the population rows of the treatment", {
   d <- tss_test_theoph()
   args <-
     list(
@@ -924,12 +930,18 @@ test_that("the single output per treatment fits each treatment, cross-joined wit
     )
   fit <-
     suppressWarnings(do.call(pk.tss, c(args, list(treatment = d$treatment, output = c("population", "single")))))
-  expect_equal(nrow(fit), 24L)
-  expect_equal(names(fit), c("subject", "tss.monoexponential.population", "treatment", "tss.monoexponential.single"))
-  expect_equal(as.character(fit$treatment), rep(c("A", "B"), each = 12))
-  # Every subject appears under both treatments
-  expect_equal(as.character(fit$subject), rep(as.character(c(1, 10:12, 2:9)), 2))
-  expect_equal(fit$tss.monoexponential.single, rep(c(29.5184173115, 26.1732211957), each = 12), tolerance = 1e-8)
+  # Each subject is in its own treatment only (before, every subject was
+  # under both treatments, 24 rows)
+  expect_equal(
+    fit,
+    data.frame(
+      treatment = factor(rep(c("A", "B"), each = 6)),
+      subject = factor(as.character(c(1, 3:5, 2, 6, 10:12, 7:9)), levels = as.character(c(1, 10:12, 2:9))),
+      tss.monoexponential.population = 26.416445513,
+      tss.monoexponential.single = rep(c(29.5184173115, 26.1732211957), each = 6)
+    ),
+    tolerance = 1e-8
+  )
   # ... which are the fits of each treatment alone (the fit of all the data is
   # 27.87592)
   for (trt in c("A", "B")) {
@@ -965,14 +977,15 @@ test_that("the stepwise estimate, common to the treatments, repeats on every mon
     fit,
     data.frame(
       subject = factor(as.character(c(1, 10:12, 2:9))),
-      tss.monoexponential.population = 26.41645,
+      treatment = factor(c("A", "B", "B", "B", "A", "A", "A", "A", "A", "B", "B", "B")),
+      tss.monoexponential.population = 26.416445513,
       tss.stepwise.linear = 108
     ),
-    tolerance = 1e-6
+    tolerance = 1e-8
   )
 })
 
-test_that("stepwise with too few troughs returns a bare NA, which pk.tss() merges as column y", {
+test_that("stepwise with too few troughs returns a data frame with NA", {
   d <- tss_test_theoph()
   keep <- d$time %in% c(0, 12)
   expect_warning(
@@ -980,7 +993,8 @@ test_that("stepwise with too few troughs returns a bare NA, which pk.tss() merge
       pk.tss(conc = d$conc[keep], time = d$time[keep], subject = d$Subject[keep], time.dosing = c(0, 12), type = "stepwise.linear"),
     class = "pknca_warning_tss_insufficient_data"
   )
-  expect_identical(fit_step, NA)
+  # Before, a bare NA that pk.tss() merged as a column named "y"
+  expect_identical(fit_step, data.frame(tss.stepwise.linear = NA_real_))
   fit_both <-
     suppressWarnings(
       pk.tss(
@@ -988,7 +1002,7 @@ test_that("stepwise with too few troughs returns a bare NA, which pk.tss() merge
         type = c("monoexponential", "stepwise.linear"), output = "single"
       )
     )
-  expect_equal(fit_both, data.frame(tss.monoexponential.single = NA_real_, y = NA))
+  expect_equal(fit_both, data.frame(tss.monoexponential.single = NA_real_, tss.stepwise.linear = NA_real_))
 })
 
 test_that("a treatment column with one level is dropped from the result", {
@@ -1012,20 +1026,32 @@ test_that("a treatment column with one level is dropped from the result", {
   )
 })
 
-test_that("when the Tss-by-treatment model is selected, pk.tss() stops with an unclassed error", {
+test_that("when the Tss-by-treatment model is selected, each treatment has its own population Tss", {
+  # Before, pk.tss() stopped with "subscript out of bounds"
   d <- tss_test_two_tss()
-  err <-
-    expect_error(
-      suppressWarnings(
-        pk.tss(
-          conc = d$conc, time = d$time, subject = d$subject, treatment = d$treatment,
-          time.dosing = 0:30, type = "monoexponential", output = "population"
-        )
-      ),
-      regexp = "subscript out of bounds",
-      fixed = TRUE
+  fit <-
+    suppressWarnings(
+      pk.tss(
+        conc = d$conc, time = d$time, subject = d$subject, treatment = d$treatment,
+        time.dosing = 0:30, type = "monoexponential", output = c("population", "popind")
+      )
     )
-  expect_false(any(grepl("^pknca_", class(err))))
+  # The true Tss are 5 and 15; the individual estimates add the subject's
+  # random effect to the Tss of its treatment
+  expect_equal(
+    fit,
+    data.frame(
+      subject = factor(1:10),
+      treatment = factor(rep(c("A", "B"), each = 5)),
+      tss.monoexponential.population = rep(c(4.55515409582, 13.65350210893), each = 5),
+      tss.monoexponential.popind =
+        c(
+          5.90625086071, 4.40940947938, 3.99206337780, 4.61448083346, 3.85356592774,
+          14.21690725051, 14.06000708786, 10.32522534867, 15.47027499399, 14.19509586364
+        )
+    ),
+    tolerance = 1e-8
+  )
 })
 
 test_that("when the troughs are still rising, monoexponential gives an extrapolated estimate with no flag", {
@@ -1041,9 +1067,10 @@ test_that("when the troughs are still rising, monoexponential gives an extrapola
   expect_equal(
     fit$value,
     data.frame(
+      subject = factor(1:8),
       tss.monoexponential.population = 54.7548037064,
       tss.monoexponential.single = 56.2803272907,
-      tss.stepwise.linear = NA
+      tss.stepwise.linear = NA_real_
     ),
     tolerance = 1e-8
   )
@@ -1067,7 +1094,7 @@ test_that("stepwise NA when every start time fails to fit looks like steady stat
     fit <- pk.tss(conc = d$conc, time = d$time, subject = d$subject, time.dosing = 0:14, type = "stepwise.linear"),
     class = "pknca_warning_tss_stepwise_fit_failed"
   )
-  expect_equal(fit, data.frame(tss.stepwise.linear = NA))
+  expect_equal(fit, data.frame(tss.stepwise.linear = NA_real_))
 })
 
 # Repeated records ####
@@ -1086,7 +1113,7 @@ test_that("repeated subject-time records are an error", {
       )
     )
   expect_equal(unique(fit_plasma$tss.monoexponential.population), 27.06413, tolerance = 1e-6)
-  expect_equal(unique(fit_plasma$tss.stepwise.linear), NA)
+  expect_equal(unique(fit_plasma$tss.stepwise.linear), NA_real_)
   # Fitting plasma and blood together gave 31.6 (monoexponential) and 84
   # (stepwise) without complaint
   err <-

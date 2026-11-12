@@ -20,10 +20,12 @@ contain at least columns for \code{subject}, \code{time}, \code{conc}, and \code
 \item{verbose}{Show verbose output.}
 }
 \value{
-A data frame with either one row (if \code{population} output is
-provided) or one row per subject (if \code{popind} is provided).  The columns
-will be named \code{tss.monoexponential.population} and/or
-\code{tss.monoexponential.popind}.
+A data frame with one row per subject (and treatment, when the
+data have more than one), with columns \code{subject}, \code{treatment} (when the
+data have it), and \code{tss.monoexponential.population} and/or
+\code{tss.monoexponential.popind}.  When the selected model has a Tss by
+treatment, \code{tss.monoexponential.population} is the Tss of the row's
+treatment.
 }
 \description{
 This function is not intended to be called directly.  Please use
