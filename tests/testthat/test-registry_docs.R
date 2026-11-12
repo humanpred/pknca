@@ -22,16 +22,29 @@ test_that("pknca_rd_exclude_rule writes the registered descriptions as roxygen2 
 })
 
 test_that("pknca_rd_impute_method writes the registered description and details", {
+  # A method without details has only its description
+  expect_equal(
+    pknca_rd_impute_method("PKNCA_impute_method_end_conc_drop"),
+    paste(
+      "@describeIn PKNCA_impute_method",
+      "Drop a concentration measured exactly at the end of the interval, if one is present (usually used with multiple-dose data when a point at the interval boundary belongs to the next dose, e.g. an imputed C0)"
+    )
+  )
   expect_equal(
     pknca_rd_impute_method("PKNCA_impute_method_start_cmin"),
-    "@describeIn PKNCA_impute_method Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data)"
+    paste(
+      "@describeIn PKNCA_impute_method",
+      "Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data)",
+      "A row at the start time with a missing concentration is not a measurement:  it is replaced by the imputed one."
+    )
   )
   expect_equal(
     pknca_rd_impute_method("PKNCA_impute_method_start_predose"),
     paste(
       "@describeIn PKNCA_impute_method",
       "Shift a predose concentration to become the time zero concentration (only if a time zero concentration does not exist).",
-      "The most recent predose sample with a measured concentration is shifted; samples with a missing concentration are skipped."
+      "The most recent predose sample with a measured concentration is shifted; samples with a missing concentration are skipped.",
+      " A row at the start time with a missing concentration is not a measurement:  it is replaced by the shifted one."
     )
   )
   expect_error(
