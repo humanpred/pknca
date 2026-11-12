@@ -135,7 +135,55 @@ pk.tss.data.prep <- function(conc, time, subject, treatment,
 #' @param type The type of Tss to calculate, either `stepwise.linear` or
 #'   `monoexponential`
 #' @returns A data frame with columns as defined from `pk.tss.monoexponential`
-#'   and/or `pk.tss.stepwise.linear`.
+#'   and/or `pk.tss.stepwise.linear`, with an attribute `"estimates"` that
+#'   says how each estimate came about (see below).
+#'
+#' @section The estimates attribute:
+#'
+#' `attr(result, "estimates")` is a data frame with one row per estimate:  one
+#' for each output of the monoexponential method (one row for the population
+#' Tss, or one per treatment when the selected model has a Tss by treatment;
+#' one per subject for `popind` and `individual`; one per treatment for
+#' `single`) and one for the stepwise linear method.  Its columns are:
+#'
+#' \describe{
+#'   \item{type}{`"monoexponential"` or `"stepwise.linear"`}
+#'   \item{output}{The monoexponential output (`"population"`, `"popind"`,
+#'     `"individual"`, or `"single"`), `NA` for stepwise linear}
+#'   \item{treatment, subject}{The treatment and subject of the estimate, or
+#'     `NA` when it is for all of them (the stepwise linear estimate is always
+#'     for all treatments)}
+#'   \item{estimate}{The time to steady state, the value in the result's
+#'     column}
+#'   \item{status}{Why the estimate is or is not there:
+#'     \describe{
+#'       \item{`"estimated"`}{Steady state is estimated within the data.}
+#'       \item{`"not_reached"`}{Steady state is not observed in the data.  A
+#'         monoexponential estimate is still given:  it is extrapolated from
+#'         the fitted curve beyond the last trough.  The stepwise linear
+#'         estimate is `NA`:  the slope of the troughs is significant from every
+#'         start time.}
+#'       \item{`"fit_failed"`}{The model could not be fit (for stepwise linear,
+#'         from at least one start time, so steady state may have been missed);
+#'         the estimate is `NA`.}
+#'       \item{`"insufficient_data"`}{Fewer dose times than `min.points`
+#'         (stepwise linear); the estimate is `NA`.}
+#'       \item{`"no_random_effect"`}{`popind` was requested, but the selected
+#'         population model has no random effect on Tss; the estimate is `NA`.}
+#'     }}
+#'   \item{fit_warning}{The warnings from fitting the model that gave the
+#'     estimate (separated by "; "), or `NA`.  An estimate with a warning is
+#'     still given; whether to report it is the caller's choice.}
+#'   \item{message}{Why there is no estimate, or what the status means for it,
+#'     or `NA`}
+#' }
+#'
+#' An `NA` estimate never means "steady state not reached" by itself:  use
+#' `status`.  Read the attribute from the result of the call:  some later
+#' operations drop it (`merge()`, selecting columns, `subset()`, `cbind()`)
+#' and others keep it unchanged (selecting rows, `rbind()`, and dplyr verbs),
+#' so after any operation it may be missing or describe rows that are no
+#' longer there.
 #' @family Time to steady-state calculations
 #' @export
 pk.tss <- function(...,
@@ -159,8 +207,116 @@ pk.tss <- function(...,
     if (identical(NA, ret)) {
       ret <- ret_stepwise
     } else {
-      ret <- merge(ret, ret_stepwise, all=TRUE)
+      # merge() drops the "estimates" attribute, so it is set again below
+      estimates <- rbind(attr(ret, "estimates"), attr(ret_stepwise, "estimates"))
+      ret <- tss_set_estimates(merge(ret, ret_stepwise, all=TRUE), estimates)
     }
+  }
+  ret
+}
+
+#' Rows of the table of time-to-steady-state estimates
+#'
+#' The table is the "estimates" attribute of the result of [pk.tss()] and its
+#' methods.  The arguments are recycled to the same length.
+#'
+#' @param type The method (`"monoexponential"` or `"stepwise.linear"`)
+#' @param output The monoexponential output (`"population"`, `"popind"`,
+#'   `"individual"`, or `"single"`), or `NA` for stepwise linear
+#' @param treatment,subject The treatment and subject of the estimate, or `NA`
+#'   when the estimate is for all of them
+#' @param estimate The time to steady state, or `NA` when there is none
+#' @param status Why the estimate is or is not there:  `"estimated"`,
+#'   `"not_reached"` (steady state is not observed in the data),
+#'   `"fit_failed"`, `"insufficient_data"`, or `"no_random_effect"`
+#' @param fit_warning The warnings from fitting the model that gave the
+#'   estimate, or `NA`
+#' @param message Why there is no estimate, or what the status means for it,
+#'   or `NA`
+#' @returns A data frame with one row per estimate and the arguments as columns
+#'   (`treatment` and `subject` as character)
+#' @keywords Internal
+#' @noRd
+tss_estimates_table <- function(type, output=NA_character_, treatment=NA, subject=NA, estimate,
+                                status, fit_warning=NA_character_, message=NA_character_) {
+  data.frame(
+    type=type,
+    output=as.character(output),
+    treatment=as.character(treatment),
+    subject=as.character(subject),
+    estimate=as.numeric(estimate),
+    status=status,
+    fit_warning=as.character(fit_warning),
+    message=as.character(message)
+  )
+}
+
+#' Set the "estimates" attribute of a time-to-steady-state result
+#'
+#' @param ret The result
+#' @param estimates The `tss_estimates_table()` rows
+#' @returns `ret` with the attribute
+#' @keywords Internal
+#' @noRd
+tss_set_estimates <- function(ret, estimates) {
+  rownames(estimates) <- NULL
+  attr(ret, "estimates") <- estimates
+  ret
+}
+
+#' The status of monoexponential estimates
+#'
+#' @param estimate The Tss estimates
+#' @param last_time The time of the last trough that each estimate came from
+#' @returns `"fit_failed"` for a missing estimate, `"not_reached"` for an
+#'   estimate later than the last trough (steady state is extrapolated from the
+#'   fitted curve, not observed), and `"estimated"` otherwise
+#' @keywords Internal
+#' @noRd
+tss_estimate_status <- function(estimate, last_time) {
+  ifelse(
+    is.na(estimate), "fit_failed",
+    ifelse(estimate > last_time, "not_reached", "estimated")
+  )
+}
+
+#' The message for a monoexponential estimate that is not reached
+#'
+#' @inheritParams tss_estimate_status
+#' @param status The status from `tss_estimate_status()`
+#' @returns The message for each `"not_reached"` status, `NA` for the others
+#' @keywords Internal
+#' @noRd
+tss_not_reached_message <- function(status, last_time) {
+  ifelse(
+    status %in% "not_reached",
+    sprintf("The estimate is later than the last trough (time %g), so steady state was not observed", last_time),
+    NA_character_
+  )
+}
+
+#' The time of the last trough of each group
+#'
+#' @param data The data prepared by [pk.tss.data.prep()]
+#' @param treatment,subject The treatment and subject of each group (recycled
+#'   to the same length); `NA` is all treatments or all subjects
+#' @returns The latest `time` of each group
+#' @keywords Internal
+#' @noRd
+tss_last_time <- function(data, treatment=NA, subject=NA) {
+  n <- max(length(treatment), length(subject))
+  treatment <- rep_len(as.character(treatment), n)
+  subject <- rep_len(as.character(subject), n)
+  ret <- numeric(n)
+  for (idx in seq_len(n)) {
+    mask <- rep(TRUE, nrow(data))
+    if (!is.na(treatment[idx])) {
+      mask <- mask & as.character(data$treatment) %in% treatment[idx]
+    }
+    if (!is.na(subject[idx])) {
+      mask <- mask & as.character(data$subject) %in% subject[idx]
+    }
+    ret[idx] <- max(data$time[mask])
   }
   ret
 }

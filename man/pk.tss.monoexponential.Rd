@@ -36,7 +36,9 @@ A data frame with the requested \verb{tss.monoexponential.*} columns,
 and \code{subject} and \code{treatment} columns for the outputs that are by subject
 or by treatment.  The population output has one row per subject (and
 treatment).  A monoexponential Tss is estimated from the fitted curve, so
-it can be later than the last trough; \code{NA} means that the fit failed.
+it can be later than the last trough; \code{NA} means that the fit failed.  The
+attribute \code{"estimates"} says how each estimate came about (see
+\code{\link[=pk.tss]{pk.tss()}}).
 }
 \description{
 Trough concentrations are selected as concentrations at the time of dosing.

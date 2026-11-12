@@ -75,6 +75,39 @@ tss_test_warning_classes <- function(x) {
   vapply(x$warnings, function(w) class(w)[1], "")
 }
 
+# Check the "estimates" attribute of a pk.tss() result:  its columns and status
+# values, and that each estimate is the value of its column in the result for
+# its treatment and subject
+tss_test_check_estimates <- function(fit) {
+  est <- attr(fit, "estimates", exact = TRUE)
+  testthat::expect_s3_class(est, "data.frame")
+  testthat::expect_named(
+    est,
+    c("type", "output", "treatment", "subject", "estimate", "status", "fit_warning", "message")
+  )
+  testthat::expect_gt(nrow(est), 0)
+  testthat::expect_true(
+    all(est$status %in% c("estimated", "not_reached", "fit_failed", "insufficient_data", "no_random_effect"))
+  )
+  for (idx in seq_len(nrow(est))) {
+    col <-
+      if (est$type[idx] == "stepwise.linear") {
+        "tss.stepwise.linear"
+      } else {
+        paste0("tss.monoexponential.", est$output[idx])
+      }
+    mask <- rep(TRUE, nrow(fit))
+    if (!is.na(est$treatment[idx])) {
+      mask <- mask & as.character(fit$treatment) %in% est$treatment[idx]
+    }
+    if (!is.na(est$subject[idx])) {
+      mask <- mask & as.character(fit$subject) %in% est$subject[idx]
+    }
+    testthat::expect_equal(unique(fit[[col]][mask]), est$estimate[idx])
+  }
+  invisible(est)
+}
+
 # Fit each candidate population model with one Tss for one treatment of
 # tss_test_theoph(), as pk.tss.monoexponential.population() does, keeping each
 # candidate's AIC, Tss, and number of warnings

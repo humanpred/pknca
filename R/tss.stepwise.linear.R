@@ -19,7 +19,8 @@
 #'   first dose time from which the slope is not significant, or `NA` when
 #'   there is none (steady state is not observed, the models could not be fit,
 #'   or there are fewer than `min.points` dose times).  The slope is common to
-#'   all treatments, so the estimate is too.
+#'   all treatments, so the estimate is too.  The attribute `"estimates"` says
+#'   which of these it is (see [pk.tss()]).
 #' @family Time to steady-state calculations
 #' @references Maganti L, Panebianco DL, Maes AL.  Evaluation of Methods for
 #' Estimating Time to Steady State with Examples from Phase 1 Studies. AAPS
@@ -53,11 +54,21 @@ pk.tss.stepwise.linear <- function(...,
   # time to steady-state, assurance that we have enough data is more
   # simply determined by model convergence.
   if (length(unique(modeldata$time)) < min.points) {
+    msg_insufficient <- "After removing non-dosing time points, insufficient data remains for tss calculation"
     rlang::warn(
-      "After removing non-dosing time points, insufficient data remains for tss calculation",
+      msg_insufficient,
       class = "pknca_warning_tss_insufficient_data"
     )
-    return(data.frame(tss.stepwise.linear=NA_real_))
+    return(
+      tss_set_estimates(
+        data.frame(tss.stepwise.linear=NA_real_),
+        tss_estimates_table(
+          type="stepwise.linear", estimate=NA_real_,
+          status="insufficient_data",
+          message=sprintf("%s (fewer than %g dose times)", msg_insufficient, min.points)
+        )
+      )
+    )
   }
   # Assign treatment if given and with multiple levels
   formula.to.fit <- stats::as.formula("conc~time")
@@ -112,18 +123,27 @@ pk.tss.stepwise.linear <- function(...,
   # Early start times often fail to converge (the concentrations are still
   # rising), and later ones decide the result, so failures matter only when
   # nothing was found:  then NA could be from failures, not from the data.
-  if (is.na(ret) && length(fit_failures) > 0) {
-    rlang::warn(
+  if (!is.na(ret)) {
+    status <- "estimated"
+    message <- NA_character_
+  } else if (length(fit_failures) > 0) {
+    status <- "fit_failed"
+    message <-
       sprintf(
         "Steady state was not found, and the stepwise linear model could not be fit for %d start time(s), which were skipped:\n%s",
         length(fit_failures),
         paste(fit_failures, collapse = "\n")
-      ),
-      class = "pknca_warning_tss_stepwise_fit_failed"
-    )
+      )
+    rlang::warn(message, class = "pknca_warning_tss_stepwise_fit_failed")
+  } else {
+    status <- "not_reached"
+    message <- "The slope of the troughs is significant from every start time, so steady state was not observed"
   }
-  data.frame(
-    tss.stepwise.linear=ret
+  tss_set_estimates(
+    data.frame(
+      tss.stepwise.linear=ret
+    ),
+    tss_estimates_table(type="stepwise.linear", estimate=ret, status=status, message=message)
   )
 }
 

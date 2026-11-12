@@ -186,7 +186,8 @@ test_that("pk.tss.stepwise.linear", {
                            treatment=tmpdata$treatment,
                            time.dosing=0:14,
                            verbose=FALSE),
-    data.frame(tss.stepwise.linear=7)
+    data.frame(tss.stepwise.linear=7),
+    ignore_attr = "estimates"
   )
 
   expect_warning(
@@ -375,7 +376,7 @@ test_that("pk.tss.stepwise.linear", {
     ),
     regexp="After removing non-dosing time points, insufficient data remains for tss calculation"
   )
-  expect_equal(v1, data.frame(tss.stepwise.linear=NA_real_))
+  expect_equal(v1, data.frame(tss.stepwise.linear=NA_real_), ignore_attr = "estimates")
   expect_warning(
     pk.tss.stepwise.linear(conc=tmpdata$conc,
                            time=tmpdata$time,
@@ -396,7 +397,8 @@ test_that("pk.tss.stepwise.linear", {
                              time.dosing=0:14,
                              verbose=FALSE),
       data.frame(tss.stepwise.linear=5),
-      info="pk.tss.stepwise.linear no subject"
+      info="pk.tss.stepwise.linear no subject",
+      ignore_attr = "estimates"
     )
   )
 })
@@ -431,7 +433,8 @@ test_that("pk.tss.monoexponential", {
       tss.monoexponential.single=
         rep(c(4.49364717175, 4.59871031113), c(1, 1))[c(1, 2, 1, 1, 1, 1, 2, 2, 2, 2)]
     ),
-    tolerance=1e-4
+    tolerance=1e-4,
+    ignore_attr = "estimates"
   )
   expect_warning(
     expect_equal(
@@ -445,7 +448,8 @@ test_that("pk.tss.monoexponential", {
         output="single"
       ),
       data.frame(tss.monoexponential.single=NA_real_),
-      info="Single-subject data fitting works when it does not converge."
+      info="Single-subject data fitting works when it does not converge.",
+      ignore_attr = "estimates"
     ),
     regexp = "approximate covariance matrix for parameter estimates not of full rank",
     class = "pknca_warning_tss_individual_fit_failed"
@@ -478,7 +482,8 @@ test_that("pk.tss.monoexponential without treatment", {
           5.35051537086801),
         tss.monoexponential.single=4.56067603534
       ),
-      tolerance=1e-4
+      tolerance=1e-4,
+      ignore_attr = "estimates"
     )
 })
 
@@ -500,7 +505,8 @@ test_that("pk.tss.monoexponential corner case tests", {
       treatment=factor(rep(c("A", "B"), each=5)),
       tss.monoexponential.population=4.57618156812974
     ),
-    tolerance=1e-4
+    tolerance=1e-4,
+    ignore_attr = "estimates"
   )
   # (Pseudo) single treatment, only
   expect_equal(
@@ -516,7 +522,8 @@ test_that("pk.tss.monoexponential corner case tests", {
       subject=factor(seq_len(10)),
       tss.monoexponential.population=4.56157960341961
     ),
-    tolerance=1e-4
+    tolerance=1e-4,
+    ignore_attr = "estimates"
   )
 })
 
@@ -615,7 +622,8 @@ test_that("pk.tss.monoexponential expected warnings and errors", {
   expect_equal(
     tss_single_subject,
     data.frame(tss.monoexponential.single=4.108541),
-    tolerance=1e-5
+    tolerance=1e-5,
+    ignore_attr = "estimates"
   )
 })
 
@@ -689,7 +697,8 @@ test_that("pk.tss", {
           verbose=FALSE
         ),
         all=TRUE
-      )
+      ),
+      ignore_attr = "estimates"
     )
   )
 })
@@ -712,7 +721,8 @@ test_that("pk.tss.monoexponential with single-subject data", {
       output="single"
     ),
     data.frame(tss.monoexponential.single=22.53),
-    tolerance=0.001
+    tolerance=0.001,
+    ignore_attr = "estimates"
   )
 })
 
@@ -734,7 +744,8 @@ test_that("verbose being TRUE", {
       output="single", verbose = TRUE
     ),
     data.frame(tss.monoexponential.single=22.53),
-    tolerance=0.001
+    tolerance=0.001,
+    ignore_attr = "estimates"
   )
 })
 
@@ -789,7 +800,7 @@ test_that("pk.tss.stepwise.linear warns when model failures may explain no stead
     regexp = "from time 0: the model did not converge",
     class = "pknca_warning_tss_stepwise_fit_failed"
   )
-  expect_equal(res, data.frame(tss.stepwise.linear = NA_real_))
+  expect_equal(res, data.frame(tss.stepwise.linear = NA_real_), ignore_attr = "estimates")
 })
 
 test_that("pk.tss.stepwise.linear does not warn for failures when steady state is found", {
@@ -803,7 +814,7 @@ test_that("pk.tss.stepwise.linear does not warn for failures when steady state i
         treatment = tmpdata$treatment, time.dosing = 0:14, verbose = FALSE
       )
   )
-  expect_equal(res, data.frame(tss.stepwise.linear = 7))
+  expect_equal(res, data.frame(tss.stepwise.linear = 7), ignore_attr = "estimates")
 })
 
 # Single-estimate path, warnings, and NA meanings ####
@@ -842,7 +853,8 @@ test_that("only the selected population model's nlme warnings are given, as one 
   expect_equal(
     fit_a$value,
     data.frame(subject = factor(as.character(1:6)), tss.monoexponential.population = 27.0640998681),
-    tolerance = 1e-8
+    tolerance = 1e-8,
+    ignore_attr = "estimates"
   )
   # The selected model warned (in an inner step of an outer loop that
   # converged)
@@ -870,7 +882,8 @@ test_that("only the selected population model's nlme warnings are given, as one 
   expect_equal(
     fit_b$value,
     data.frame(subject = factor(as.character(c(10:12, 7:9))), tss.monoexponential.population = 25.9513099761),
-    tolerance = 1e-8
+    tolerance = 1e-8,
+    ignore_attr = "estimates"
   )
   # Only a candidate that is not selected warned (see the next test), so there
   # is no warning; before, nlme's two warnings came through unclassed
@@ -920,7 +933,8 @@ test_that("one call with two treatments gives the population value with each sub
       treatment = factor(c("A", "B", "B", "B", "A", "A", "A", "A", "A", "B", "B", "B")),
       tss.monoexponential.population = 26.416445513
     ),
-    tolerance = 1e-8
+    tolerance = 1e-8,
+    ignore_attr = "estimates"
   )
 })
 
@@ -944,7 +958,8 @@ test_that("the single output per treatment fits each treatment and joins the pop
       tss.monoexponential.population = 26.416445513,
       tss.monoexponential.single = rep(c(29.5184173115, 26.1732211957), each = 6)
     ),
-    tolerance = 1e-8
+    tolerance = 1e-8,
+    ignore_attr = "estimates"
   )
   # ... which are the fits of each treatment alone (the fit of all the data is
   # 27.87592)
@@ -964,7 +979,7 @@ test_that("the single output per treatment fits each treatment and joins the pop
     )
   }
   fit_no_treatment <- suppressWarnings(do.call(pk.tss, c(args, list(output = "single"))))
-  expect_equal(fit_no_treatment, data.frame(tss.monoexponential.single = 27.87592), tolerance = 1e-6)
+  expect_equal(fit_no_treatment, data.frame(tss.monoexponential.single = 27.87592), tolerance = 1e-6, ignore_attr = "estimates")
 })
 
 test_that("the stepwise estimate, common to the treatments, repeats on every monoexponential row", {
@@ -985,7 +1000,8 @@ test_that("the stepwise estimate, common to the treatments, repeats on every mon
       tss.monoexponential.population = 26.416445513,
       tss.stepwise.linear = 108
     ),
-    tolerance = 1e-8
+    tolerance = 1e-8,
+    ignore_attr = "estimates"
   )
 })
 
@@ -998,7 +1014,7 @@ test_that("stepwise with too few troughs returns a data frame with NA", {
     class = "pknca_warning_tss_insufficient_data"
   )
   # Before, a bare NA that pk.tss() merged as a column named "y"
-  expect_identical(fit_step, data.frame(tss.stepwise.linear = NA_real_))
+  expect_equal(fit_step, data.frame(tss.stepwise.linear = NA_real_), ignore_attr = "estimates")
   fit_both <-
     suppressWarnings(
       pk.tss(
@@ -1006,7 +1022,7 @@ test_that("stepwise with too few troughs returns a data frame with NA", {
         type = c("monoexponential", "stepwise.linear"), output = "single"
       )
     )
-  expect_equal(fit_both, data.frame(tss.monoexponential.single = NA_real_, tss.stepwise.linear = NA_real_))
+  expect_equal(fit_both, data.frame(tss.monoexponential.single = NA_real_, tss.stepwise.linear = NA_real_), ignore_attr = "estimates")
 })
 
 test_that("a treatment column with one level is dropped from the result", {
@@ -1026,7 +1042,8 @@ test_that("a treatment column with one level is dropped from the result", {
       tss.monoexponential.population = 27.06413,
       tss.monoexponential.single = 29.51842
     ),
-    tolerance = 1e-6
+    tolerance = 1e-6,
+    ignore_attr = "estimates"
   )
 })
 
@@ -1054,7 +1071,8 @@ test_that("when the Tss-by-treatment model is selected, each treatment has its o
           14.21690725051, 14.06000708786, 10.32522534867, 15.47027499399, 14.19509586364
         )
     ),
-    tolerance = 1e-8
+    tolerance = 1e-8,
+    ignore_attr = "estimates"
   )
 })
 
@@ -1076,7 +1094,8 @@ test_that("when the troughs are still rising, monoexponential gives an extrapola
       tss.monoexponential.single = 56.2803272907,
       tss.stepwise.linear = NA_real_
     ),
-    tolerance = 1e-8
+    tolerance = 1e-8,
+    ignore_attr = "estimates"
   )
   # The nlme warning came from a candidate population model that is not
   # selected, so it is not given
@@ -1094,7 +1113,7 @@ test_that("a failed single or individual fit is NA with a classed warning that n
       class = "pknca_warning_tss_individual_fit_failed"
     )
   )
-  expect_equal(fit, data.frame(tss.monoexponential.single = NA_real_))
+  expect_equal(fit, data.frame(tss.monoexponential.single = NA_real_), ignore_attr = "estimates")
 
   # Subject 2 has two troughs, too few for the two parameters of the curve
   d <- tss_test_theoph()
@@ -1150,7 +1169,7 @@ test_that("stepwise NA when every start time fails to fit looks like steady stat
     fit <- pk.tss(conc = d$conc, time = d$time, subject = d$subject, time.dosing = 0:14, type = "stepwise.linear"),
     class = "pknca_warning_tss_stepwise_fit_failed"
   )
-  expect_equal(fit, data.frame(tss.stepwise.linear = NA_real_))
+  expect_equal(fit, data.frame(tss.stepwise.linear = NA_real_), ignore_attr = "estimates")
 })
 
 # Repeated records ####
@@ -1244,4 +1263,187 @@ test_that("a repeated dose record selects its trough once", {
     )
   expect_equal(nrow(once), 84L)
   expect_equal(twice, once)
+})
+
+# The "estimates" attribute ####
+
+test_that("the estimates attribute is on every return path and agrees with the result", {
+  tmpdata <- generate.data()
+  args_trt <-
+    list(conc = tmpdata$conc, time = tmpdata$time, subject = tmpdata$subject, treatment = tmpdata$treatment, time.dosing = 0:14)
+  args_no_trt <- args_trt[names(args_trt) != "treatment"]
+  for (current_output in c("population", "popind", "individual", "single")) {
+    for (args in list(args_trt, args_no_trt)) {
+      fit <- suppressWarnings(do.call(pk.tss, c(args, list(type = "monoexponential", output = current_output))))
+      est <- tss_test_check_estimates(fit)
+      expect_equal(unique(est$output), current_output)
+    }
+  }
+  # Every output at once, and both types
+  est <- tss_test_check_estimates(suppressWarnings(do.call(pk.tss, args_trt)))
+  expect_equal(unique(est$output), c("population", "popind", "single", "individual", NA))
+  expect_equal(unique(est$type), c("monoexponential", "stepwise.linear"))
+  # The methods called directly
+  tss_test_check_estimates(suppressWarnings(do.call(pk.tss.monoexponential, args_trt)))
+  est <- tss_test_check_estimates(do.call(pk.tss.stepwise.linear, args_trt))
+  expect_equal(
+    est,
+    data.frame(
+      type = "stepwise.linear", output = NA_character_, treatment = NA_character_, subject = NA_character_,
+      estimate = 7, status = "estimated", fit_warning = NA_character_, message = NA_character_
+    )
+  )
+})
+
+test_that("the estimates attribute says when steady state is not reached and when a fit failed", {
+  d <- tss_test_rising()
+  fit <-
+    suppressWarnings(
+      pk.tss(
+        conc = d$conc, time = d$time, subject = d$subject, time.dosing = 0:14,
+        type = c("monoexponential", "stepwise.linear"), output = c("population", "single")
+      )
+    )
+  est <- tss_test_check_estimates(fit)
+  expect_equal(est$status, c("not_reached", "not_reached", "fit_failed"))
+  expect_equal(est$estimate, c(54.7548037064, 56.2803272907, NA), tolerance = 1e-8)
+  expect_equal(
+    est$message[1:2],
+    rep("The estimate is later than the last trough (time 14), so steady state was not observed", 2)
+  )
+  expect_match(
+    est$message[3],
+    "^Steady state was not found, and the stepwise linear model could not be fit for 8 start time\\(s\\), which were skipped:\nfrom time 0: "
+  )
+
+  # A gnls fit that failed
+  fit <-
+    suppressWarnings(
+      pk.tss(conc = c(0, 1000), time = 0:1, subject = c(1, 1), time.dosing = 0:1, type = "monoexponential", output = "single")
+    )
+  expect_equal(
+    tss_test_check_estimates(fit),
+    data.frame(
+      type = "monoexponential", output = "single", treatment = NA_character_, subject = NA_character_,
+      estimate = NA_real_, status = "fit_failed", fit_warning = NA_character_,
+      message = "approximate covariance matrix for parameter estimates not of full rank"
+    )
+  )
+
+  # No population model converges
+  bad_data <- data.frame(subject = factor(rep(1:2, each = 4)), time = 0, conc = 0, tss.constant = 0.9)
+  expect_warning(
+    fit <- pk.tss.monoexponential.population(data = bad_data, output = c("population", "popind")),
+    class = "pknca_warning_tss_population_no_convergence"
+  )
+  expect_equal(
+    tss_test_check_estimates(fit),
+    data.frame(
+      type = "monoexponential", output = c("population", "popind", "popind"),
+      treatment = NA_character_, subject = c(NA, "1", "2"),
+      estimate = NA_real_, status = "fit_failed", fit_warning = NA_character_,
+      message = "No population model for monoexponential Tss converged, no results given"
+    )
+  )
+})
+
+test_that("the estimates attribute of stepwise linear separates not reached, too few troughs, and failed fits", {
+  # Without subjects, the linear model fits from every start time, and the
+  # slope stays significant
+  d <- tss_test_linear_rise()
+  expect_no_warning(
+    fit <- pk.tss(conc = d$conc, time = d$time, treatment = rep("A", nrow(d)), time.dosing = 0:14, type = "stepwise.linear")
+  )
+  expect_equal(
+    tss_test_check_estimates(fit),
+    data.frame(
+      type = "stepwise.linear", output = NA_character_, treatment = NA_character_, subject = NA_character_,
+      estimate = NA_real_, status = "not_reached", fit_warning = NA_character_,
+      message = "The slope of the troughs is significant from every start time, so steady state was not observed"
+    )
+  )
+  # With subjects, every mixed-effects fit fails
+  fit <- suppressWarnings(pk.tss(conc = d$conc, time = d$time, subject = d$subject, time.dosing = 0:14, type = "stepwise.linear"))
+  expect_equal(tss_test_check_estimates(fit)$status, "fit_failed")
+  # Too few troughs
+  fit <- suppressWarnings(pk.tss(conc = d$conc, time = d$time, subject = d$subject, time.dosing = 0:1, type = "stepwise.linear"))
+  expect_equal(
+    tss_test_check_estimates(fit),
+    data.frame(
+      type = "stepwise.linear", output = NA_character_, treatment = NA_character_, subject = NA_character_,
+      estimate = NA_real_, status = "insufficient_data", fit_warning = NA_character_,
+      message = "After removing non-dosing time points, insufficient data remains for tss calculation (fewer than 3 dose times)"
+    )
+  )
+})
+
+test_that("the estimates attribute gives the selected model's warnings and the reason popind is missing", {
+  d <- tss_test_theoph()
+  d_a <- d[d$treatment == "A", ]
+  fit_a <-
+    suppressWarnings(
+      pk.tss(conc = d_a$conc, time = d_a$time, subject = d_a$Subject, time.dosing = tss_test_dose_times(), type = "monoexponential", output = "population")
+    )
+  expect_equal(
+    tss_test_check_estimates(fit_a),
+    data.frame(
+      type = "monoexponential", output = "population", treatment = NA_character_, subject = NA_character_,
+      estimate = 27.06413, status = "estimated",
+      fit_warning = "Iteration 1, LME step: nlminb() did not converge (code = 1). Do increase 'msMaxIter'!",
+      message = NA_character_
+    ),
+    tolerance = 1e-6
+  )
+  d_b <- d[d$treatment == "B", ]
+  expect_warning(
+    fit_b <-
+      pk.tss(conc = d_b$conc, time = d_b$time, subject = d_b$Subject, time.dosing = tss_test_dose_times(), type = "monoexponential", output = c("population", "popind")),
+    class = "pknca_warning_tss_popind_no_random_effect"
+  )
+  est_b <- tss_test_check_estimates(fit_b)
+  expect_equal(est_b$output, c("population", rep("popind", 6)))
+  expect_equal(est_b$status, c("estimated", rep("no_random_effect", 6)))
+  expect_equal(est_b$fit_warning, rep(NA_character_, 7))
+  expect_equal(
+    est_b$message,
+    c(NA, rep("The selected population model has no random effect on Tss, so there are no individual estimates", 6))
+  )
+})
+
+test_that("the estimates attribute has one population row per treatment when the model has a Tss by treatment", {
+  d <- tss_test_two_tss()
+  fit <-
+    suppressWarnings(
+      pk.tss(
+        conc = d$conc, time = d$time, subject = d$subject, treatment = d$treatment,
+        time.dosing = 0:30, type = "monoexponential", output = "population"
+      )
+    )
+  expect_equal(
+    tss_test_check_estimates(fit),
+    data.frame(
+      type = "monoexponential", output = "population", treatment = c("A", "B"), subject = NA_character_,
+      estimate = c(4.55515409582, 13.65350210893), status = "estimated", fit_warning = NA_character_,
+      message = NA_character_
+    ),
+    tolerance = 1e-8
+  )
+})
+
+test_that("later data frame operations drop the estimates attribute or keep it unchanged", {
+  d <- tss_test_theoph()
+  fit <-
+    suppressWarnings(
+      pk.tss(
+        conc = d$conc, time = d$time, subject = d$Subject, treatment = d$treatment,
+        time.dosing = tss_test_dose_times(), type = "monoexponential", output = "single"
+      )
+    )
+  est <- attr(fit, "estimates")
+  expect_equal(est$treatment, c("A", "B"))
+  # Dropped
+  expect_null(attr(merge(fit, data.frame(x = 1)), "estimates"))
+  expect_null(attr(fit[, "tss.monoexponential.single", drop = FALSE], "estimates"))
+  # Kept unchanged, so it still describes the rows that are gone
+  expect_identical(attr(fit[fit$treatment == "A", , drop = FALSE], "estimates"), est)
 })
