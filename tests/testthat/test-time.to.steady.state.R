@@ -1053,7 +1053,7 @@ test_that("stepwise NA when every start time fails to fit looks like steady stat
 
 # Repeated records ####
 
-test_that("repeated subject-time records are fitted together without complaint", {
+test_that("repeated subject-time records are an error", {
   d <- tss_test_theoph()
   plasma <- d[d$treatment == "A", ]
   blood <- plasma
@@ -1068,20 +1068,49 @@ test_that("repeated subject-time records are fitted together without complaint",
     )
   expect_equal(unique(fit_plasma$tss.monoexponential.population), 27.06413, tolerance = 1e-6)
   expect_equal(unique(fit_plasma$tss.stepwise.linear), NA)
-  fit_both <-
-    tss_test_with_warnings(
+  # Fitting plasma and blood together gave 31.6 (monoexponential) and 84
+  # (stepwise) without complaint
+  err <-
+    expect_error(
       pk.tss(
         conc = both$conc, time = both$time, subject = both$Subject, time.dosing = tss_test_dose_times(),
         type = c("monoexponential", "stepwise.linear"), output = "population"
-      )
+      ),
+      regexp =
+        sprintf(
+          "Rows that are not unique per group and time (column names: subject, time) found within time to steady-state concentration data.  Row numbers: %d, %d,",
+          nrow(plasma) + 1L, nrow(plasma) + 2L
+        ),
+      fixed = TRUE,
+      class = "pknca_error_tss_duplicate_rows"
     )
+  expect_s3_class(err, "pknca_error_duplicate_rows")
+  expect_equal(err$rows, nrow(plasma) + seq_len(nrow(plasma)))
+  # The check is part of `check`
   expect_equal(
-    fit_both$value,
-    data.frame(tss.monoexponential.population = 31.60527, tss.stepwise.linear = 84),
-    tolerance = 1e-6
+    nrow(pk.tss.data.prep(conc = both$conc, time = both$time, subject = both$Subject, time.dosing = 0, check = FALSE)),
+    12L
   )
-  # Only nlme's own warnings: nothing says that the records repeat
-  expect_equal(unique(tss_test_warning_classes(fit_both)), "simpleWarning")
+})
+
+test_that("repeated subject-time records are allowed when the treatment tells them apart", {
+  # A crossover with times relative to each period
+  expect_equal(
+    pk.tss.data.prep(
+      conc = c(1, 2, 3, 4), time = c(0, 1, 0, 1), subject = c(1, 1, 1, 1), treatment = c("A", "A", "B", "B"),
+      time.dosing = 0:1
+    ),
+    data.frame(conc = c(1, 2, 3, 4), time = c(0, 1, 0, 1), treatment = factor(c("A", "A", "B", "B")))
+  )
+  expect_error(
+    pk.tss.data.prep(
+      conc = c(1, 2, 3, 4), time = c(0, 1, 0, 1), subject = c(1, 1, 1, 1), treatment = c("A", "A", "A", "B"),
+      time.dosing = 0:1
+    ),
+    regexp = "(column names: subject, treatment, time) found within time to steady-state concentration data.  Row numbers: 3",
+    fixed = TRUE,
+    class = "pknca_error_tss_duplicate_rows"
+  )
 })
 
 test_that("without subject, repeated times are an untyped error without treatment and accepted with it", {
@@ -1098,7 +1127,7 @@ test_that("without subject, repeated times are an untyped error without treatmen
   )
 })
 
-test_that("a repeated dose record repeats the troughs", {
+test_that("a repeated dose record selects its trough once", {
   d <- tss_test_theoph()
   d_a <- d[d$treatment == "A", ]
   once <-
@@ -1112,5 +1141,5 @@ test_that("a repeated dose record repeats the troughs", {
       subject.dosing = rep(unique(d_a$Subject), each = 28), time.dosing = rep(rep(tss_test_dose_times(), each = 2), 6)
     )
   expect_equal(nrow(once), 84L)
-  expect_equal(nrow(twice), 168L)
+  expect_equal(twice, once)
 })

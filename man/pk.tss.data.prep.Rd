@@ -53,3 +53,13 @@ and \code{treatment}.
 Clean up the time to steady-state parameters and return a data frame for use
 by the tss calculators.
 }
+\details{
+When \code{subject} is given and \code{check} is \code{TRUE}, two concentrations
+for the same subject, treatment (if given), and time are an error
+(\code{pknca_error_tss_duplicate_rows}, also of class
+\code{pknca_error_duplicate_rows}): they are usually records that another
+group column separates (such as plasma and blood), and fitting them
+together gives a wrong estimate.  Without \code{subject}, repeated times are
+pooled troughs and are allowed (with \code{treatment}).  A dose recorded more
+than once for a subject and time selects its trough once.
+}

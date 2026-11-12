@@ -10,6 +10,14 @@
 #' @param time.dosing Time of dosing
 #' @inheritParams clean.conc.blq
 #' @param \dots Discarded inputs to allow generic calls between tss methods.
+#' @details When `subject` is given and `check` is `TRUE`, two concentrations
+#'   for the same subject, treatment (if given), and time are an error
+#'   (`pknca_error_tss_duplicate_rows`, also of class
+#'   `pknca_error_duplicate_rows`): they are usually records that another
+#'   group column separates (such as plasma and blood), and fitting them
+#'   together gives a wrong estimate.  Without `subject`, repeated times are
+#'   pooled troughs and are allowed (with `treatment`).  A dose recorded more
+#'   than once for a subject and time selects its trough once.
 #' @returns a data frame with columns for `conc`entration, `time`, `subject`,
 #'   and `treatment`.
 pk.tss.data.prep <- function(conc, time, subject, treatment,
@@ -29,6 +37,23 @@ pk.tss.data.prep <- function(conc, time, subject, treatment,
   }
   if (anyNA(time.dosing)) {
     rlang::abort("time.dosing may not contain any NA values", class = "pknca_error_tss_time_dosing_na")
+  }
+  if (check && !missing(subject)) {
+    # Without a subject, repeated times are pooled (or sparse) troughs; with a
+    # subject, they are records that need a group to tell them apart (such as
+    # plasma and blood).
+    key_data <-
+      if (missing(treatment)) {
+        data.frame(time = time, subject = subject)
+      } else {
+        data.frame(time = time, subject = subject, treatment = treatment)
+      }
+    abort_duplicate_rows(
+      mask_dup = duplicated(key_data),
+      key_cols = c(setdiff(names(key_data), "time"), "time"),
+      data_type = "time to steady-state concentration",
+      class = "pknca_error_tss_duplicate_rows"
+    )
   }
   if (!missing(subject)) {
     if (!missing(treatment)) {
@@ -68,11 +93,13 @@ pk.tss.data.prep <- function(conc, time, subject, treatment,
     # Shrink the data to just the predose data
     ret <- subset(ret, time %in% time.dosing)
   } else {
+    # A dose time only marks a trough, so repeated dose records (such as two
+    # tablets recorded as two rows) select the trough once.
     dosing <-
-      data.frame(
+      unique(data.frame(
         subject=subject.dosing,
         time=time.dosing
-      )
+      ))
     # Shrink the data to just the predose data (by subject)
     ret <- merge(ret, dosing)
   }
