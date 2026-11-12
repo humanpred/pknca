@@ -54,7 +54,7 @@ to stead-state by subject (see \code{random.effects} argument).
 \details{
 The population model is selected by AIC from several candidates (Ctrough,ss
 and Tss for all treatments or by treatment, with random effects on either
-or both).  nlme's warnings are kept with each candidate:  those of the
+or both).  The warnings of nlme are kept with each candidate:  those of the
 selected model are given as one \code{pknca_warning_tss_population_fit_warning}
 that quotes them, and those of the other candidates are not given because
 they do not bear on the estimate.  The gnls fits of the \code{individual} and
@@ -71,9 +71,9 @@ The \code{"estimates"} attribute gives a confidence interval (\code{lower} and
 \describe{
 \item{population}{The approximate (Wald) interval of \code{nlme::intervals()}
 for the fixed effect of Tss:  the estimate plus or minus a t quantile
-(with nlme's degrees of freedom for the fixed effects, which count the
+(with the nlme degrees of freedom for the fixed effects, which count the
 observations, so it is close to a normal quantile) times the standard
-error from nlme's linearized covariance (\code{vcov()} of the fit, without
+error from the linearized covariance of nlme (\code{vcov()} of the fit, without
 the small-sample factor that \code{summary()} gives the standard errors of a
 maximum likelihood fit).  It assumes that the
 monoexponential model is right, that the random effects and residuals

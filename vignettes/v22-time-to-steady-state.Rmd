@@ -68,7 +68,7 @@ steady-state:
 1. tss.monoexponential.population: The population estimate of TSS using a nonlinear mixed effects model (one value for all subjects)
 2. tss.monoexponential.popind: The individual estimate from a nonlinear mixed effects model (one value per subject)
 3. tss.monoexponential.individual: The individual estimate using a gnls model to estimate each subject separately (one value per subject)
-4. tss.monoexponential.single: The mean estimate of TSS using a nonlinear model
+4. tss.monoexponential.single: The estimate of TSS from one gnls model fit to the troughs of all subjects (of each treatment, when a treatment is given)
 
 ```{r tss-mono}
 tss_mono <-
@@ -81,8 +81,35 @@ tss_mono <-
 tss_mono
 ```
 
+The population estimate comes from the candidate model with the lowest AIC.
+Its warning above (from nlme, while fitting) is given because it is the
+selected model's; the warnings of the other candidates are not given, because
+they do not bear on the estimate.
+
 The fraction of steady-state required for time to steady-state can be changed
 with the `tss.fraction` argument (see `?pk.tss.monoexponential`).
+
+### How each estimate came about
+
+The result has an `"estimates"` attribute with one row per estimate.  Its
+`status` says whether steady state was estimated within the data
+(`"estimated"`), is later than the last trough (`"not_reached"`), or could not
+be estimated (`"fit_failed"`, `"insufficient_data"`, or `"no_random_effect"`);
+`fit_warning` holds the warnings of the fit that gave the estimate; and
+`lower` and `upper` are the confidence interval, where one can be defended
+(see `?pk.tss.monoexponential`).  `message` says why there is no interval.
+
+```{r tss-mono-estimates}
+estimates_mono <- attr(tss_mono, "estimates")
+estimates_mono[
+  estimates_mono$output %in% c("population", "single") | estimates_mono$subject %in% "1",
+  c("output", "subject", "estimate", "lower", "upper", "status")
+]
+```
+
+Read the attribute from the result of the call:  some later operations drop it
+(such as `merge()`), and others keep it unchanged (such as selecting rows or
+dplyr verbs), so it may no longer match the rows of the result.
 
 ### Stepwise Linear
 
@@ -104,6 +131,15 @@ tss_step <-
     time.dosing = seq(0, 168 - 12, by=12)
   )
 tss_step
+```
+
+The stepwise linear estimate has no confidence interval:  it is the first dose
+time of a sequence of tests.  When it is `NA`, its `status` says whether steady
+state was not reached, the models could not be fit, or there were too few
+troughs.
+
+```{r tss-step-estimates}
+attr(tss_step, "estimates")[, c("estimate", "status", "message")]
 ```
 
 # References

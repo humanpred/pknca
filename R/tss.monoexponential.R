@@ -8,7 +8,7 @@
 #'
 #' The population model is selected by AIC from several candidates (Ctrough,ss
 #' and Tss for all treatments or by treatment, with random effects on either
-#' or both).  nlme's warnings are kept with each candidate:  those of the
+#' or both).  The warnings of nlme are kept with each candidate:  those of the
 #' selected model are given as one `pknca_warning_tss_population_fit_warning`
 #' that quotes them, and those of the other candidates are not given because
 #' they do not bear on the estimate.  The gnls fits of the `individual` and
@@ -40,9 +40,9 @@
 #' \describe{
 #'   \item{population}{The approximate (Wald) interval of `nlme::intervals()`
 #'     for the fixed effect of Tss:  the estimate plus or minus a t quantile
-#'     (with nlme's degrees of freedom for the fixed effects, which count the
+#'     (with the nlme degrees of freedom for the fixed effects, which count the
 #'     observations, so it is close to a normal quantile) times the standard
-#'     error from nlme's linearized covariance (`vcov()` of the fit, without
+#'     error from the linearized covariance of nlme (`vcov()` of the fit, without
 #'     the small-sample factor that `summary()` gives the standard errors of a
 #'     maximum likelihood fit).  It assumes that the
 #'     monoexponential model is right, that the random effects and residuals
