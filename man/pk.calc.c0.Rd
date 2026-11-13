@@ -55,6 +55,11 @@ has its own specific function.
 \item{\code{cmin}}{Set c0 to cmin during the interval.  This method should usually be used for multiple-dose oral data and IV infusion data.}
 \item{\code{set0}}{Set c0 to zero (regardless of any other data).  This method should usually be used first for single-dose oral data.}
 }
+
+With the default \code{method} and no measured concentration (every \code{conc} is
+\code{NA}), the result is \code{NA}:  the other methods need a measurement, and \code{set0}
+is not used to make up a C0.  Giving \code{method} explicitly with \code{set0} in it
+returns 0 in that case.
 }
 \section{Functions}{
 \itemize{
