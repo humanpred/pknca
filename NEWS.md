@@ -1476,8 +1476,15 @@ the generated intervals:
   and was then dropped:  a profile sampled from 0.25 with a missing
   concentration at 0 gave a missing AUClast from 0 with `start_predose_conc0`
   ("Requesting an AUC range starting (0) before the first measurement (0.25)
-  is not allowed"), and now gives the value it gives without the row.
-  `start_conc0` already set the start concentration to 0 (@billdenney).
+  is not allowed"), and now gives the value it gives without the row.  The
+  row's other values (volume, duration, half-life inclusion and exclusion,
+  and lloq) go with it, so the imputed start concentration has the values of
+  an added one.  With sparse data, missing samples at the start time are no
+  samples:  when every sample there is missing, `start_predose_conc0` now
+  adds a known zero and gives the sparse AUCs, and `start_cmin` is refused
+  (`pknca_error_sparse_impute`), each as without those rows; both gave
+  missing AUCs before.  `start_conc0` already set the start concentration
+  to 0 (@billdenney).
 
 * Business functions (used for calculations of means, etc.) now return NA_real_
   for empty inputs rather than giving an error (#559).

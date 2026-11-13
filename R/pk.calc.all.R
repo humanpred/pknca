@@ -540,6 +540,16 @@ impute_conc_time <- function(impute_funs, conc, time, start, end,
     impute_data <- cbind(impute_data, obs_values)
   }
   for (current_fun_nm in impute_funs) {
+    if (current_fun_nm %in% impute_methods_missing_start_absent) {
+      # The method treats a missing start concentration as no row, so the
+      # row's per-observation values leave with it, and the lloq of an added
+      # observation is the one of the rows left, as when it is not given
+      kept <- impute_drop_missing_start(impute_data, start = start)
+      if (nrow(kept) < nrow(impute_data) && "lloq" %in% names(obs_fill)) {
+        obs_fill$lloq <- impute_fill_lloq(kept$lloq)
+      }
+      impute_data <- kept
+    }
     impute_args <- list(conc = impute_data$conc, time = impute_data$time)
     impute_args$start <- start
     impute_args$end <- end
@@ -576,7 +586,7 @@ impute_obs_values <- function(time, volume, duration.conc, include_half.life,
     list(
       volume = 0, duration.conc = NA_real_,
       include_half.life = NA, exclude_half.life = NA,
-      lloq = if (length(unique(lloq)) == 1) lloq[1] else NA_real_
+      lloq = impute_fill_lloq(lloq)
     )
   per_obs <- vapply(X = values, FUN = length, FUN.VALUE = 1L) == length(time)
   if (!any(per_obs)) {
@@ -586,6 +596,12 @@ impute_obs_values <- function(time, volume, duration.conc, include_half.life,
     values = as.data.frame(values[per_obs], optional = TRUE),
     fill = fill[per_obs]
   )
+}
+
+# The lloq of an observation that imputation adds:  the profile's lloq when it
+# is constant, otherwise missing
+impute_fill_lloq <- function(lloq) {
+  if (length(unique(lloq)) == 1) lloq[1] else NA_real_
 }
 
 # Align the per-observation columns of `before` (a data.frame with `conc`,
@@ -1103,6 +1119,20 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
     if ("lloq" %in% names(impute_data)) lloq <- impute_data$lloq
     conc <- impute_data$conc
     time <- impute_data$time
+    if (has_sparse_conc && any(impute_funs[[1]] %in% impute_methods_missing_start_absent)) {
+      # A missing sample at the start time is no sample for those methods, so
+      # the samples are imputed and compared (sparse_impute_zeros()) without
+      # it, before the whole chain:  the imputed samples are then those of
+      # the data without it
+      sparse_data <-
+        impute_drop_missing_start(
+          data.frame(conc = conc.sparse, time = time.sparse, subject = subject),
+          start = interval$start[1]
+        )
+      conc.sparse <- sparse_data$conc
+      time.sparse <- sparse_data$time
+      subject <- sparse_data$subject
+    }
     if (has_sparse_conc) {
       impute_sparse <-
         impute_conc_time(

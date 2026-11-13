@@ -183,14 +183,31 @@ pknca_register_impute_method(
 #' A missing concentration is not a measurement, so an imputation that adds a
 #' start concentration when there is none treats such a row as absent.
 #'
-#' @param ret A data frame with columns `conc` and `time`
+#' @param ret A data frame with columns `conc` and `time` (and any others,
+#'   which are kept with their rows)
 #' @param start The start time of the interval
-#' @returns `ret` without its rows at `start` with a missing `conc`
+#' @returns `ret` without its rows at `start` with a missing `conc`; `ret`
+#'   unchanged when `start` is missing, which is invalid and identifies no rows
 #' @keywords Internal
 #' @noRd
 impute_drop_missing_start <- function(ret, start) {
+  if (anyNA(start)) {
+    return(ret)
+  }
   ret[!(ret$time %in% start & is.na(ret$conc)), , drop = FALSE]
 }
+
+# The imputation methods that treat a row at the start time with a missing
+# concentration as absent (with impute_drop_missing_start()).  Before one of
+# them runs in a chain, impute_conc_time() drops those rows with their
+# per-observation values, and the pooled sparse samples are compared without
+# them, so that the result is the one for data without those rows.
+impute_methods_missing_start_absent <-
+  c(
+    "PKNCA_impute_method_start_cmin",
+    "PKNCA_impute_method_start_predose",
+    "PKNCA_impute_method_start_predose_conc0"
+  )
 
 #' @eval pknca_rd_impute_method("PKNCA_impute_method_start_cmin")
 #' @export
@@ -209,7 +226,7 @@ PKNCA_impute_method_start_cmin <- function(conc, time, start, end, ..., options 
 }
 pknca_register_impute_method(
   fun = "PKNCA_impute_method_start_cmin",
-  description = "Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data)",
+  description = "Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data).",
   details =
     paste(
       "A row at the start time with a missing concentration is not a",

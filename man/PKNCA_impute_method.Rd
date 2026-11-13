@@ -73,7 +73,7 @@ Methods for imputation of data with PKNCA
 \itemize{
 \item \code{PKNCA_impute_method_start_conc0()}: Set the concentration at the start time to 0, even if a nonzero concentration exists at that time (usually used with single-dose data). Forcing the start concentration to zero is intentional:  an existing start-time value is replaced with 0, including a nonzero predose measurement shifted to the start time by \code{start_predose}, so the imputation chain \code{"start_predose,start_conc0"} gives the same result as \code{"start_conc0"} alone.  To carry a predose measurement to the start time, use \code{start_predose} without \code{start_conc0}.  When no observation exists at the start time, a new row with a concentration of 0 is added.
 
-\item \code{PKNCA_impute_method_start_cmin()}: Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data) A row at the start time with a missing concentration is not a measurement:  it is replaced by the imputed one.
+\item \code{PKNCA_impute_method_start_cmin()}: Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data). A row at the start time with a missing concentration is not a measurement:  it is replaced by the imputed one.
 
 \item \code{PKNCA_impute_method_start_predose()}: Shift a predose concentration to become the time zero concentration (only if a time zero concentration does not exist). The most recent predose sample with a measured concentration is shifted; samples with a missing concentration are skipped.  A row at the start time with a missing concentration is not a measurement:  it is replaced by the shifted one.
 

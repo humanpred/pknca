@@ -34,7 +34,7 @@ test_that("pknca_rd_impute_method writes the registered description and details"
     pknca_rd_impute_method("PKNCA_impute_method_start_cmin"),
     paste(
       "@describeIn PKNCA_impute_method",
-      "Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data)",
+      "Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data).",
       "A row at the start time with a missing concentration is not a measurement:  it is replaced by the imputed one."
     )
   )
@@ -75,7 +75,7 @@ test_that("the registry tables are markdown tables with one row per entry", {
   expect_true(
     paste(
       '| `"start_cmin"` |',
-      "Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data) |"
+      "Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data). |"
     ) %in% methods_table
   )
 })

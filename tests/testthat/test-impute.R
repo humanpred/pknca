@@ -1253,3 +1253,153 @@ test_that("pk.nca with start_predose_conc0 and a missing concentration at the st
   expect_equal(impute_test_auclast(d_conc, "start_cmin"), impute_test_auclast(d_conc[-1, ], "start_cmin"))
   expect_equal(impute_test_auclast(d_conc, "start_cmin"), 1836.33993274182 + 0.25 * 40 / 2)
 })
+
+test_that("pk.nca with chains of start imputations and a missing concentration at the start time", {
+  d_conc <-
+    data.frame(
+      id = 1, time = c(0, 0.25, 0.5, 1, 2, 4, 8, 12),
+      conc = c(NA, 40, 80, 130, 200, 240, 150, 60)
+    )
+  # start_predose drops the missing row and has no predose sample to shift, so
+  # start_conc0 adds 0 and start_cmin adds Cmin (40), as without the row
+  expect_equal(impute_test_auclast(d_conc, "start_predose,start_conc0"), 1836.33993274182)
+  expect_equal(impute_test_auclast(d_conc[-1, ], "start_predose,start_conc0"), 1836.33993274182)
+  expect_equal(impute_test_auclast(d_conc, "start_predose,start_cmin"), 1836.33993274182 + 0.25 * 40 / 2)
+  expect_equal(impute_test_auclast(d_conc[-1, ], "start_predose,start_cmin"), 1836.33993274182 + 0.25 * 40 / 2)
+})
+
+test_that("a missing start time identifies no row with a missing concentration", {
+  # A missing start is invalid:  the row with a missing time and concentration
+  # is not taken to be at the start
+  d <- data.frame(conc = c(NA, 1, NA), time = c(NA, 1, 2))
+  expect_equal(impute_drop_missing_start(d, start = NA), d)
+  expect_equal(
+    impute_drop_missing_start(d, start = 2),
+    d[1:2, ]
+  )
+  expect_equal(
+    impute_drop_missing_start(data.frame(conc = numeric(0), time = numeric(0)), start = 0),
+    data.frame(conc = numeric(0), time = numeric(0))
+  )
+})
+
+test_that("start imputations with a missing and a measured concentration at the start time", {
+  # The measured start concentration (7) stays, and nothing is imputed
+  conc <- c(NA, 7, 40, 80)
+  time <- c(0, 0, 1, 2)
+  expected <- data.frame(conc = c(7, 40, 80), time = c(0, 1, 2))
+  expect_equal(
+    PKNCA_impute_method_start_cmin(conc = conc, time = time, start = 0, end = 2),
+    expected,
+    ignore_attr = "row.names"
+  )
+  expect_equal(
+    PKNCA_impute_method_start_predose(
+      conc = conc, time = time, start = 0, end = 2, conc.group = c(5, conc), time.group = c(-0.05, time)
+    ),
+    expected,
+    ignore_attr = "row.names"
+  )
+  expect_equal(
+    PKNCA_impute_method_start_predose_conc0(
+      conc = conc, time = time, start = 0, end = 2, conc.group = c(5, conc), time.group = c(-0.05, time)
+    ),
+    expected,
+    ignore_attr = "row.names"
+  )
+})
+
+test_that("start imputations with a missing start concentration and a predose sample too early to shift", {
+  # The predose sample at -1 is beyond max_shift (0.05 * 2 = 0.1), so it is not
+  # shifted:  each method gives what it gives without the missing row
+  conc <- c(NA, 40, 80)
+  time <- c(0, 1, 2)
+  expect_equal(
+    PKNCA_impute_method_start_predose(
+      conc = conc, time = time, start = 0, end = 2, conc.group = c(5, conc), time.group = c(-1, time)
+    ),
+    PKNCA_impute_method_start_predose(
+      conc = conc[-1], time = time[-1], start = 0, end = 2, conc.group = c(5, conc[-1]), time.group = c(-1, time[-1])
+    ),
+    ignore_attr = "row.names"
+  )
+  expect_equal(
+    PKNCA_impute_method_start_predose(
+      conc = conc, time = time, start = 0, end = 2, conc.group = c(5, conc), time.group = c(-1, time)
+    ),
+    data.frame(conc = c(40, 80), time = c(1, 2)),
+    ignore_attr = "row.names"
+  )
+  expect_equal(
+    PKNCA_impute_method_start_predose_conc0(
+      conc = conc, time = time, start = 0, end = 2, conc.group = c(5, conc), time.group = c(-1, time)
+    ),
+    PKNCA_impute_method_start_predose_conc0(
+      conc = conc[-1], time = time[-1], start = 0, end = 2, conc.group = c(5, conc[-1]), time.group = c(-1, time[-1])
+    ),
+    ignore_attr = "row.names"
+  )
+  expect_equal(
+    PKNCA_impute_method_start_predose_conc0(
+      conc = conc, time = time, start = 0, end = 2, conc.group = c(5, conc), time.group = c(-1, time)
+    ),
+    data.frame(conc = c(0, 40, 80), time = c(0, 1, 2)),
+    ignore_attr = "row.names"
+  )
+  expect_equal(
+    PKNCA_impute_method_start_cmin(conc = conc, time = time, start = 0, end = 2),
+    PKNCA_impute_method_start_cmin(conc = conc[-1], time = time[-1], start = 0, end = 2),
+    ignore_attr = "row.names"
+  )
+})
+
+test_that("start_cmin with every concentration missing imputes nothing", {
+  expect_equal(
+    PKNCA_impute_method_start_cmin(conc = c(NA, NA, NA), time = c(0, 1, 2), start = 0, end = 2),
+    data.frame(conc = c(NA, NA), time = c(1, 2)),
+    ignore_attr = "row.names"
+  )
+  expect_equal(
+    PKNCA_impute_method_start_cmin(conc = c(NA, NA, NA), time = c(0, 1, 2), start = 0, end = 2),
+    PKNCA_impute_method_start_cmin(conc = c(NA, NA), time = c(1, 2), start = 0, end = 2),
+    ignore_attr = "row.names"
+  )
+})
+
+test_that("start imputations with zero rows", {
+  # Nothing to impute from:  start_cmin and start_predose add nothing, and
+  # start_predose_conc0 (like start_conc0) adds 0 at the start
+  empty <- data.frame(conc = numeric(0), time = numeric(0))
+  expect_equal(PKNCA_impute_method_start_cmin(conc = numeric(0), time = numeric(0), start = 0, end = 2), empty)
+  expect_equal(
+    PKNCA_impute_method_start_predose(
+      conc = numeric(0), time = numeric(0), start = 0, end = 2, conc.group = numeric(0), time.group = numeric(0)
+    ),
+    empty
+  )
+  expect_equal(
+    PKNCA_impute_method_start_predose_conc0(
+      conc = numeric(0), time = numeric(0), start = 0, end = 2, conc.group = numeric(0), time.group = numeric(0)
+    ),
+    data.frame(time = 0, conc = 0)
+  )
+  expect_equal(
+    PKNCA_impute_method_start_conc0(conc = numeric(0), time = numeric(0), start = 0),
+    data.frame(time = 0, conc = 0)
+  )
+})
+
+test_that("every method that treats a missing start concentration as absent is a registered method that does so", {
+  registered <- pknca_impute_methods()$fun
+  expect_true(all(impute_methods_missing_start_absent %in% registered))
+  conc <- c(NA, 40, 80)
+  time <- c(0, 1, 2)
+  for (current in impute_methods_missing_start_absent) {
+    expect_equal(
+      do.call(current, list(conc = conc, time = time, start = 0, end = 2, conc.group = c(5, conc), time.group = c(-0.05, time))),
+      do.call(current, list(conc = conc[-1], time = time[-1], start = 0, end = 2, conc.group = c(5, conc[-1]), time.group = c(-0.05, time[-1]))),
+      ignore_attr = "row.names",
+      info = current
+    )
+  }
+})

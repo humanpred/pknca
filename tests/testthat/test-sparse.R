@@ -1057,6 +1057,60 @@ test_that("a sparse AUC needs a time-0 concentration, measured or imputed as zer
   expect_true(all(grepl("Imputation: start_conc0", res_imputed$PPANMETH, fixed = TRUE)))
 })
 
+# The sparse auclast, aumclast, and their standard errors of `d_conc` with the
+# imputation `impute`
+sparse_test_impute_values <- function(d_conc, impute) {
+  params <- c("auclast", "aumclast")
+  d_intervals <- data.frame(start = 0, end = 24)
+  d_intervals[params] <- TRUE
+  res <-
+    as.data.frame(suppressMessages(suppressWarnings(pk.nca(
+      PKNCAdata(PKNCAconc(d_conc, conc ~ time | id, sparse = TRUE), intervals = d_intervals, impute = impute)
+    ))))
+  res <- res[res$PPTESTCD %in% c(params, paste0(params, "_se")), ]
+  stats::setNames(res$PPORRES, res$PPTESTCD)
+}
+
+test_that("a missing sample at the start time is no sample for the imputations that treat it as absent", {
+  d_base <-
+    data.frame(
+      id = 1:9,
+      conc = c(1.75, 2.2, 1.58, 4.63, 2.99, 1.52, 0.3, 0.0421, 0.231),
+      time = rep(c(1, 6, 24), each = 3)
+    )
+  # Three animals at time 0 whose samples are all missing, and one missing
+  # beside two measured zeros
+  d_all_missing <- rbind(data.frame(id = 101:103, conc = NA_real_, time = 0), d_base)
+  d_one_missing <- rbind(data.frame(id = 101:103, conc = c(NA, 0, 0), time = 0), d_base)
+  d_two_zero <- rbind(data.frame(id = 102:103, conc = 0, time = 0), d_base)
+  expected <- c(auclast = 42.286025, auclast_se = 10.3677, aumclast = 257.0128, aumclast_se = 64.1776)
+  # start_predose_conc0 adds a known zero at a time without samples, as without
+  # the missing rows
+  expect_equal(sparse_test_impute_values(d_all_missing, "start_predose_conc0"), expected, tolerance = 1e-5)
+  expect_equal(
+    sparse_test_impute_values(d_all_missing, "start_predose_conc0"),
+    sparse_test_impute_values(d_base, "start_predose_conc0")
+  )
+  # start_cmin adds a nonzero concentration, which the sparse estimators refuse,
+  # as without the missing rows
+  expect_error(sparse_test_impute_values(d_all_missing, "start_cmin"), class = "pknca_error_sparse_impute")
+  expect_error(sparse_test_impute_values(d_base, "start_cmin"), class = "pknca_error_sparse_impute")
+  # Beside measured zeros, nothing is imputed:  the result of the measured
+  # zeros
+  for (current in c("start_cmin", "start_predose", "start_predose_conc0")) {
+    expect_equal(sparse_test_impute_values(d_one_missing, current), expected, tolerance = 1e-5, info = current)
+    expect_equal(
+      sparse_test_impute_values(d_one_missing, current),
+      sparse_test_impute_values(d_two_zero, current),
+      info = current
+    )
+  }
+  # start_conc0 replaces each missing sample with 0 in place, which the sparse
+  # estimators refuse as a changed sample
+  expect_error(sparse_test_impute_values(d_all_missing, "start_conc0"), class = "pknca_error_sparse_impute")
+  expect_error(sparse_test_impute_values(d_one_missing, "start_conc0"), class = "pknca_error_sparse_impute")
+})
+
 test_that("as_sparse_pk() marks a time with only missing subjects as imputed", {
   sparse_pk <- as_sparse_pk(conc = c(0, 1, 2, 3), time = c(0, 1, 1, 2), subject = c(NA, 1, 2, 3))
   expect_equal(vapply(sparse_pk, `[[`, "imputed", FUN.VALUE = TRUE), c(TRUE, FALSE, FALSE))
