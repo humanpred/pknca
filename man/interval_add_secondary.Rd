@@ -54,7 +54,8 @@ The default of \code{NULL} writes nothing, so the \code{ref_vary} given to
 \code{\link[=PKNCAdata]{PKNCAdata()}} applies, and \code{character(0)} declares that no column may
 differ (overriding that default).}
 
-\item{...}{Ignored.}
+\item{...}{Not used; giving any argument here is an error
+(\code{pknca_error_unknown_argument}).}
 }
 \value{
 The input with the parameter requested and the linkage columns set,

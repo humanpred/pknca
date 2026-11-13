@@ -3414,3 +3414,23 @@ test_that("an empty data-level ref_vary is the same as none", {
   printed <- utils::capture.output(print(o_data))
   expect_false(any(grepl(pattern = "ref_vary", x = printed, fixed = TRUE)))
 })
+
+test_that("interval_add_secondary() rejects arguments it does not take", {
+  expect_error(
+    interval_add_secondary(
+      intervals_sec_bare, param = "clr.last", reference = data.frame(PCSPEC = "plasma"),
+      start = 0
+    ),
+    class = "pknca_error_unknown_argument",
+    regexp = "interval_add_secondary\\(\\): start\\..*target_groups"
+  )
+  o_data_bare <- PKNCAdata(o_conc_sec, intervals = intervals_sec_bare)
+  expect_error(
+    interval_add_secondary(
+      o_data_bare, param = "clr.last", reference = data.frame(PCSPEC = "plasma"),
+      refid = "plasma"
+    ),
+    class = "pknca_error_unknown_argument",
+    regexp = "^Unknown argument\\(s\\) to interval_add_secondary\\(\\): refid\\.$"
+  )
+})
