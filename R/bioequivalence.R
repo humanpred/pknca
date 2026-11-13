@@ -1452,7 +1452,9 @@ print.be_within_var <- function(x, ...) {
 #' subject must have a single sequence; otherwise `be_dataset()` stops with an
 #' error rather than letting a model drop those rows.  In a parallel design
 #' (one row per subject and endpoint) only the subject and treatment are
-#' checked, because the sequence and period enter no model.
+#' checked, because the sequence and period enter no model.  Such data need no
+#' period column: without one, they are a single period, `.period` is 1 for
+#' every row, and `columns$period` is `".period"`.
 #'
 #' Each covariate is copied to a standardized column named `.cov_<name>`
 #' (character columns become factors).  A covariate may not be one of the
@@ -1506,7 +1508,15 @@ be_dataset.default <- function(object, reference_col, reference_value,
   value_col <- value_unit_cols$value
   unit_col <- value_unit_cols$units
   subject <- .be_find_col(subject, data, c("USUBJID", "subject", "Subject", "ID", "id"), "subject")
-  period <- .be_find_col(period, data, c("period", "Period", "PERIOD", "PER", "per"), "period")
+  # Without a period column, data with one row per subject and endpoint (a
+  # parallel design) are a single period.
+  single_period <- .be_one_row_per_subject(data[data$PPTESTCD %in% endpoints, , drop = FALSE], subject)
+  period <-
+    .be_find_col(period, data, c("period", "Period", "PERIOD", "PER", "per"), "period", required = !single_period)
+  if (is.na(period)) {
+    period <- ".period"
+    data[[period]] <- 1L
+  }
   sequence <-
     .be_find_col(sequence, data, c("sequence", "Sequence", "SEQUENCE", "SEQ", "seq"), "sequence", required = FALSE)
   reference_value <- .be_check_reference(data, reference_col, reference_value)
@@ -1590,6 +1600,12 @@ be_dataset.default <- function(object, reference_col, reference_value,
   )
 }
 
+# TRUE when each subject has at most one row per endpoint (`PPTESTCD`) in
+# `data`, as in a parallel design
+.be_one_row_per_subject <- function(data, subject) {
+  !anyDuplicated(data[c(subject, "PPTESTCD")])
+}
+
 # The rows that define the study design: the distinct subject, sequence,
 # period, and treatment combinations (`cols`) of the requested endpoints'
 # rows, `data`.  Rows whose value is missing (`has_value` is FALSE) still
@@ -1610,7 +1626,7 @@ be_dataset.default <- function(object, reference_col, reference_value,
 # design (one row per subject and endpoint) the sequence and period do not
 # enter any model, so only the subject and treatment are checked.
 .be_check_design_cols <- function(data, subject, sequence, period, treatment) {
-  parallel <- nrow(data) == 0 || max(table(paste(data[[subject]], data$PPTESTCD))) <= 1
+  parallel <- .be_one_row_per_subject(data, subject)
   cols <-
     if (parallel) {
       c(subject, treatment)
@@ -2465,6 +2481,7 @@ be_fit_models <- function(object, reference_col, reference_value,
   params <- list()
   for (ep in ds$endpoints) {
     ds_ep <- ds$data[!is.na(ds$data$PPTESTCD) & ds$data$PPTESTCD == ep, , drop = FALSE]
+    .be_check_endpoint_subjects(ds_ep, ep)
     .be_check_endpoint_repeated(ds_ep, model_type, ep)
     fit <- be_fit_model_single(ds_ep, model_type, scaling = reg$scaling != "none")
     p <- be_extract_param(fit, ds_ep, alpha)
@@ -2490,6 +2507,22 @@ be_fit_models <- function(object, reference_col, reference_value,
     ds$design_rows, ds$columns$subject, ds$columns$sequence, ds$columns$period,
     ds$columns$treatment, ds$reference_value
   )
+}
+
+# Stop when an endpoint has fewer than two subjects: no model can separate the
+# subject from the residual variability, and the fitters would otherwise fail
+# with their own unclassed errors.
+.be_check_endpoint_subjects <- function(ds_ep, endpoint) {
+  n_subjects <- nlevels(droplevels(ds_ep$.subject))
+  if (n_subjects < 2) {
+    rlang::abort(
+      sprintf(
+        "Endpoint %s has %d subject(s); the bioequivalence comparison needs at least 2.",
+        endpoint, n_subjects
+      ),
+      class = c("pknca_error_be_too_few_subjects", "pknca_error_be_not_estimable")
+    )
+  }
 }
 
 # Stop when an endpoint has one measurement per subject but `model_type` needs
@@ -2797,6 +2830,8 @@ be_fit_models <- function(object, reference_col, reference_value,
 #' @param subject,sequence,period Column names for the subject, randomization
 #'   sequence, and period.  When `NULL` they are taken from the `PKNCAresults`
 #'   object or detected from common column names.  `sequence` may be absent.
+#'   `period` may be absent when each subject has one row per requested
+#'   endpoint (a parallel design), and the data are then a single period.
 #' @param design An optional [be_design()] object.  When `NULL`, the design is
 #'   classified from the subjects, periods, and treatments of the requested
 #'   endpoints, including administrations where an endpoint's value is missing.

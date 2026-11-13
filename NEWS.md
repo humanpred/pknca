@@ -730,6 +730,16 @@ the generated intervals:
   covariate missing only in rows of an endpoint that is not assessed is not an
   error.  (@billdenney)
 
+* `be_dataset()`, and so `be_assess()`, `be_compare()`, and `be_fit_models()`,
+  need no period column when each subject has one row per requested endpoint,
+  as in the results of a parallel study without a period grouping; the data are
+  then a single period (the `.period` column, 1 for every row) and the design is
+  classified as `"parallel"`.  When a subject has several rows of an endpoint,
+  the period column is still required.  An endpoint with fewer than two subjects
+  stops `be_assess()` and `be_fit_models()` with
+  `pknca_error_be_too_few_subjects` (also `pknca_error_be_not_estimable`)
+  before any model is fit, instead of the model's own error.  (@billdenney)
+
 * The expanding-limits frameworks of `be_assess()` widen only the endpoints
   their guidances allow (@billdenney).  The EMA and the GCC widen Cmax and keep
   AUC at 80.00-125.00%; Health Canada widens AUC and judges Cmax by its point

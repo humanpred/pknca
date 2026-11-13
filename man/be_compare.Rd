@@ -55,7 +55,9 @@ the regulator, and \code{heteroscedastic}.}
 
 \item{subject, sequence, period}{Column names for the subject, randomization
 sequence, and period.  When \code{NULL} they are taken from the \code{PKNCAresults}
-object or detected from common column names.  \code{sequence} may be absent.}
+object or detected from common column names.  \code{sequence} may be absent.
+\code{period} may be absent when each subject has one row per requested
+endpoint (a parallel design), and the data are then a single period.}
 
 \item{design}{An optional \code{\link[=be_design]{be_design()}} object.  When \code{NULL}, the design is
 classified from the subjects, periods, and treatments of the requested

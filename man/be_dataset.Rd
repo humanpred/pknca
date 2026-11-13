@@ -52,7 +52,9 @@ formulation.}
 
 \item{subject, sequence, period}{Column names for the subject, randomization
 sequence, and period.  When \code{NULL} they are taken from the \code{PKNCAresults}
-object or detected from common column names.  \code{sequence} may be absent.}
+object or detected from common column names.  \code{sequence} may be absent.
+\code{period} may be absent when each subject has one row per requested
+endpoint (a parallel design), and the data are then a single period.}
 
 \item{covariates}{An optional character vector of column names added to
 every model as additive fixed effects (numeric columns as linear terms,
@@ -97,7 +99,9 @@ missing in any row of the requested endpoints that is analyzed, and each
 subject must have a single sequence; otherwise \code{be_dataset()} stops with an
 error rather than letting a model drop those rows.  In a parallel design
 (one row per subject and endpoint) only the subject and treatment are
-checked, because the sequence and period enter no model.
+checked, because the sequence and period enter no model.  Such data need no
+period column: without one, they are a single period, \code{.period} is 1 for
+every row, and \code{columns$period} is \code{".period"}.
 
 Each covariate is copied to a standardized column named \verb{.cov_<name>}
 (character columns become factors).  A covariate may not be one of the

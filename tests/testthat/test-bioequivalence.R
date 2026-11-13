@@ -156,6 +156,65 @@ test_that("be_dataset checks only the subject and treatment for a parallel desig
   )
 })
 
+test_that("be_dataset needs no period column when each subject has one row per endpoint", {
+  d <- generate_be_parallel(effect = c(R = 0, T = log(1.10)), sd = c(R = 0.20, T = 0.30))
+  d_no_period <- d
+  d_no_period$period <- NULL
+  d_no_period <- rbind(d_no_period, transform(d_no_period, PPTESTCD = "cmax"))
+  ds <- be_dataset(d_no_period, reference_col = "treatment", reference_value = "R", endpoints = c("auclast", "cmax"))
+  expect_identical(ds$columns$period, ".period")
+  expect_identical(levels(ds$data$.period), "1")
+  expect_equal(nrow(ds$data), 2 * nrow(d))
+  expect_identical(.be_design_dataset(ds)$design, "parallel")
+  expect_identical(.be_design_dataset(ds)$n_periods, 1L)
+  # A single-period parallel study gives the same assessment with or without its
+  # period column.
+  skip_if_not_installed("emmeans")
+  d_no_period <- d[names(d) != "period"]
+  expect_equal(
+    be_assess(d_no_period, "treatment", "R", "auclast"),
+    be_assess(d, "treatment", "R", "auclast")
+  )
+  expect_equal(
+    be_assess(d_no_period, "treatment", "R", "auclast", model_type = "gls"),
+    be_assess(d, "treatment", "R", "auclast", model_type = "gls")
+  )
+})
+
+test_that("be_dataset needs a period column when a subject has several rows of an endpoint", {
+  d <- make_be_df()
+  d$period <- NULL
+  expect_error(
+    be_dataset(d, reference_col = "form", reference_value = "R", endpoints = "auclast"),
+    regexp = "Could not determine the period column; supply it explicitly (tried: period, Period, PERIOD, PER, per).",
+    fixed = TRUE,
+    class = "pknca_error_be_period_column_not_found"
+  )
+  # Repeated rows of an endpoint that was not requested do not need a period.
+  d_par <- generate_be_parallel()
+  d_par$period <- NULL
+  d_cmax <- transform(d_par, PPTESTCD = "cmax")
+  ds <- be_dataset(rbind(d_par, d_cmax, d_cmax), reference_col = "treatment", reference_value = "R", endpoints = "auclast")
+  expect_identical(ds$columns$period, ".period")
+})
+
+test_that("a comparison with one subject is an error before any model is fit", {
+  d <- make_be_df()
+  d_one <- d[d$subject == 1, ]
+  for (model_type in list(NULL, "lmer", "nlme", "anova", "isc")) {
+    expect_error(
+      be_assess(d_one, reference_col = "form", reference_value = "R", endpoints = "auclast", model_type = model_type),
+      regexp = "Endpoint auclast has 1 subject(s); the bioequivalence comparison needs at least 2.",
+      fixed = TRUE,
+      class = "pknca_error_be_too_few_subjects"
+    )
+  }
+  expect_error(
+    be_fit_models(d_one, reference_col = "form", reference_value = "R", endpoints = "auclast"),
+    class = "pknca_error_be_not_estimable"
+  )
+})
+
 test_that("be_dataset stops when a subject has more than one sequence", {
   d <- make_be_df()
   # Subject 2 is in sequence TR.
