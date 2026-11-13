@@ -1212,6 +1212,13 @@ the generated intervals:
 
 ## Bug fixes
 
+* `c0` (`pk.calc.c0()`) with no measured concentration (every concentration
+  missing, including a lone missing concentration at the dose time) is now
+  `NA` with the `pknca_warning_all_concentration_missing` warning, as `cmax`
+  is.  It was 0, because every method of the default order gave `NA` until
+  `set0`.  A `method` given explicitly with `set0` in it still returns 0, and
+  any measured concentration gives the value it did before (@billdenney).
+
 * Preferred units (`concu_pref`, `doseu_pref`, and the others) with unit
   columns whose units differ between groups no longer stop `PKNCAdata()` with
   "arguments imply differing number of rows: 1, 0" when some groups are

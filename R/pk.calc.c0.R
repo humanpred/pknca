@@ -17,6 +17,11 @@
 #'   \item{`cmin`}{Set c0 to cmin during the interval.  This method should usually be used for multiple-dose oral data and IV infusion data.}
 #'   \item{`set0`}{Set c0 to zero (regardless of any other data).  This method should usually be used first for single-dose oral data.}
 #' }
+#'
+#' With the default `method` and no measured concentration (every `conc` is
+#' `NA`), the result is `NA`:  the other methods need a measurement, and `set0`
+#' is not used to make up a C0.  Giving `method` explicitly with `set0` in it
+#' returns 0 in that case.
 #' @export
 pk.calc.c0 <- function(conc, time, time.dose=0,
                        method=c("c0", "logslope", "c1", "cmin", "set0"),
@@ -32,6 +37,12 @@ pk.calc.c0 <- function(conc, time, time.dose=0,
   } else if (time.dose > max(time)) {
     rlang::warn("time.dose is after all available data", class = "pknca_warning_timedose_after_data")
     return(structure(NA_real_, exclude = "dose time is after all available concentration data"))
+  }
+  if (missing(method) && all(is.na(conc))) {
+    # With no measured concentration, every method of the default order gives
+    # NA until set0, which would report a C0 of 0 that nothing measured.  A
+    # caller who lists set0 gets it.
+    return(NA_real_)
   }
   method <- match.arg(method, several.ok=TRUE)
   # Find the value

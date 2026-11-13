@@ -93,3 +93,53 @@ test_that("pk.calc.c0.method.cmin", {
   expect_equal(pk.calc.c0.method.cmin(c(0, 2, 1, 0.5), 0:3), 0)
   expect_equal(pk.calc.c0.method.cmin(c(2, NA, 0.5), 3:5, time.dose=3), 0.5)
 })
+
+test_that("pk.calc.c0 with no measured concentration is NA in the default order", {
+  # Every method but set0 needs a measurement, and set0 would make up a C0 of 0
+  expect_warning(
+    expect_equal(pk.calc.c0(conc = c(NA, NA, NA), time = 0:2), NA_real_),
+    class = "pknca_warning_all_concentration_missing"
+  )
+  # A lone missing concentration at the dose time
+  expect_warning(
+    expect_equal(pk.calc.c0(conc = NA_real_, time = 0), NA_real_),
+    class = "pknca_warning_all_concentration_missing"
+  )
+  # With set0 listed explicitly, it is used
+  expect_warning(
+    expect_equal(pk.calc.c0(conc = c(NA, NA), time = 0:1, method = "set0"), 0),
+    class = "pknca_warning_all_concentration_missing"
+  )
+  expect_warning(
+    expect_equal(
+      pk.calc.c0(conc = c(NA, NA), time = 0:1, method = c("c0", "logslope", "c1", "cmin", "set0")),
+      0
+    ),
+    class = "pknca_warning_all_concentration_missing"
+  )
+  # One measured concentration is enough for the default order:  c1 uses it
+  # after the missing one at the dose time, and a measured zero at the dose time
+  # is C0 through cmin
+  expect_equal(pk.calc.c0(conc = c(NA, 5), time = 0:1), 5)
+  expect_equal(pk.calc.c0(conc = c(0, NA), time = 0:1), 0)
+})
+
+test_that("c0 through pk.nca with no measured concentration is NA", {
+  d_conc <- data.frame(id = 1, time = 0:2, conc = NA_real_)
+  d_dose <- data.frame(id = 1, time = 0, dose = 1)
+  expect_warning(
+    o_data <-
+      PKNCAdata(
+        PKNCAconc(d_conc, conc ~ time | id),
+        PKNCAdose(d_dose, dose ~ time | id, route = "intravascular"),
+        intervals = data.frame(start = 0, end = 2, c0 = TRUE)
+      ),
+    class = "pknca_warning_all_concentration_missing"
+  )
+  expect_warning(
+    res <- as.data.frame(suppressMessages(pk.nca(o_data))),
+    class = "pknca_warning_all_concentration_missing"
+  )
+  expect_equal(res$PPTESTCD, "c0")
+  expect_equal(res$PPORRES, NA_real_)
+})
