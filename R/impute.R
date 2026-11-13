@@ -200,8 +200,9 @@ impute_drop_missing_start <- function(ret, start) {
 # The imputation methods that treat a row at the start time with a missing
 # concentration as absent (with impute_drop_missing_start()).  Before one of
 # them runs in a chain, impute_conc_time() drops those rows with their
-# per-observation values, and the pooled sparse samples are compared without
-# them, so that the result is the one for data without those rows.
+# per-observation values, so that the result is the one for data without those
+# rows.  (Pooled sparse samples missing at the start are dropped before any
+# imputation, in pk.nca.interval().)
 impute_methods_missing_start_absent <-
   c(
     "PKNCA_impute_method_start_cmin",

@@ -1480,11 +1480,14 @@ the generated intervals:
   row's other values (volume, duration, half-life inclusion and exclusion,
   and lloq) go with it, so the imputed start concentration has the values of
   an added one.  With sparse data, missing samples at the start time are no
-  samples:  when every sample there is missing, `start_predose_conc0` now
-  adds a known zero and gives the sparse AUCs, and `start_cmin` is refused
-  (`pknca_error_sparse_impute`), each as without those rows; both gave
-  missing AUCs before.  `start_conc0` already set the start concentration
-  to 0 (@billdenney).
+  samples, with any imputation:  when every sample there is missing,
+  `start_predose_conc0` and `start_conc0` now add a known zero and give the
+  sparse AUCs, and `start_cmin` is refused (`pknca_error_sparse_impute`),
+  each as without those rows (`start_predose_conc0` and `start_cmin` gave
+  missing AUCs before, and `start_conc0` was refused).  `start_conc0` with a
+  missing sample beside measured ones at the start was refused, and now gives
+  the result without the missing sample.  `start_conc0` already set the start
+  concentration to 0 (@billdenney).
 
 * Business functions (used for calculations of means, etc.) now return NA_real_
   for empty inputs rather than giving an error (#559).

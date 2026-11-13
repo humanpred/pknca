@@ -1119,11 +1119,12 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
     if ("lloq" %in% names(impute_data)) lloq <- impute_data$lloq
     conc <- impute_data$conc
     time <- impute_data$time
-    if (has_sparse_conc && any(impute_funs[[1]] %in% impute_methods_missing_start_absent)) {
-      # A missing sample at the start time is no sample for those methods, so
-      # the samples are imputed and compared (sparse_impute_zeros()) without
-      # it, before the whole chain:  the imputed samples are then those of
-      # the data without it
+    if (has_sparse_conc) {
+      # A missing sample at the start time is no sample, whatever the
+      # imputation, so the samples are imputed and compared
+      # (sparse_impute_zeros()) without it:  the imputed samples are those of
+      # the data without it.  The sparse estimators skip missing samples, so
+      # this changes no result that does not impute at the start.
       sparse_data <-
         impute_drop_missing_start(
           data.frame(conc = conc.sparse, time = time.sparse, subject = subject),
