@@ -10,7 +10,16 @@
 #' @param time.dosing Time of dosing
 #' @inheritParams clean.conc.blq
 #' @param \dots Discarded inputs to allow generic calls between tss methods.
-#' @details When `check` is `TRUE`, `subject` and `treatment` may not have
+#' @details The BLQ rules (`conc.blq`, see [clean.conc.blq()]) are applied to
+#'   each concentration-time profile on its own, sorted by time:  each subject
+#'   in each treatment (with `subject` and `treatment`), each subject (with
+#'   `subject`), each treatment (with `treatment`), or all the concentrations
+#'   (with neither).  So whether a BLQ concentration is first, middle, or last
+#'   (or before or after Tmax) depends only on its own profile, not on other
+#'   subjects or on the order of the rows.  The rows are returned in the order
+#'   given.
+#'
+#'   When `check` is `TRUE`, `subject` and `treatment` may not have
 #'   missing values (`pknca_error_tss_subject_na` and
 #'   `pknca_error_tss_treatment_na`).
 #'
@@ -70,40 +79,13 @@ pk.tss.data.prep <- function(conc, time, subject, treatment,
       class = "pknca_error_tss_duplicate_rows"
     )
   }
-  if (!missing(subject)) {
-    if (!missing(treatment)) {
-      ret <-
-        clean.conc.blq(
-          conc = conc, time = time,
-          conc.blq = conc.blq, conc.na = conc.na, options = options,
-          check = FALSE,
-          subject, treatment
-        )
-    } else {
-      ret <-
-        clean.conc.blq(
-          conc = conc, time = time,
-          conc.blq = conc.blq, conc.na = conc.na, options = options,
-          check = FALSE,
-          subject
-        )
-    }
-  } else if (missing(treatment)) {
-    ret <-
-      clean.conc.blq(
-        conc = conc, time = time,
-        conc.blq = conc.blq, conc.na = conc.na, options = options,
-        check = FALSE
-      )
-  } else {
-    ret <-
-      clean.conc.blq(
-        conc = conc, time = time,
-        conc.blq = conc.blq, conc.na = conc.na, options = options,
-        check = FALSE,
-        treatment
-      )
-  }
+  ret <-
+    tss_clean_blq_by_profile(
+      conc = conc, time = time,
+      subject = if (!missing(subject)) subject,
+      treatment = if (!missing(treatment)) treatment,
+      conc.blq = conc.blq, conc.na = conc.na, options = options
+    )
   if (missing(subject.dosing)) {
     # Shrink the data to just the predose data
     ret <- subset(ret, time %in% time.dosing)
@@ -139,6 +121,58 @@ pk.tss.data.prep <- function(conc, time, subject, treatment,
       ret$treatment <- factor(ret$treatment)
     }
   }
+  ret
+}
+
+#' Apply the BLQ rules to each concentration-time profile
+#'
+#' A profile is a subject's concentrations in a treatment (with `subject` and
+#' `treatment`), a subject's (with `subject` only), a treatment's (with
+#' `treatment` only), or all of them (with neither).  Each profile is sorted by
+#' time and cleaned with [clean.conc.blq()] on its own, so whether a BLQ
+#' concentration is first, middle, last, or before or after Tmax depends only
+#' on its own profile.
+#'
+#' @inheritParams pk.tss.data.prep
+#' @param subject,treatment The subject and treatment of each concentration,
+#'   or `NULL` when not given
+#' @returns The data frame of [clean.conc.blq()] for all profiles (columns
+#'   `conc`, `time`, and `subject` and `treatment` when given), with the rows
+#'   that it keeps in the order of the input and named by their positions in
+#'   it
+#' @keywords Internal
+#' @noRd
+tss_clean_blq_by_profile <- function(conc, time, subject, treatment, conc.blq, conc.na, options) {
+  cols <- list(subject = subject, treatment = treatment)
+  cols <- cols[!vapply(X = cols, FUN = is.null, FUN.VALUE = TRUE)]
+  profile <-
+    if (length(cols) == 0) {
+      rep(1L, length(conc))
+    } else {
+      interaction(cols, drop = TRUE, lex.order = TRUE)
+    }
+  pieces <- list()
+  for (current in unique(profile)) {
+    idx <- which(profile %in% current)
+    idx <- idx[order(time[idx])]
+    pieces[[length(pieces) + 1]] <-
+      do.call(
+        clean.conc.blq,
+        c(
+          list(
+            conc = conc[idx], time = time[idx],
+            conc.blq = conc.blq, conc.na = conc.na, options = options,
+            check = FALSE
+          ),
+          lapply(X = cols, FUN = `[`, idx),
+          list(.row = idx)
+        )
+      )
+  }
+  ret <- do.call(rbind, pieces)
+  ret <- ret[order(ret$.row), , drop = FALSE]
+  rownames(ret) <- ret$.row
+  ret$.row <- NULL
   ret
 }
 

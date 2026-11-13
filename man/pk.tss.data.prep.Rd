@@ -54,6 +54,15 @@ Clean up the time to steady-state parameters and return a data frame for use
 by the tss calculators.
 }
 \details{
+The BLQ rules (\code{conc.blq}, see \code{\link[=clean.conc.blq]{clean.conc.blq()}}) are applied to
+each concentration-time profile on its own, sorted by time:  each subject
+in each treatment (with \code{subject} and \code{treatment}), each subject (with
+\code{subject}), each treatment (with \code{treatment}), or all the concentrations
+(with neither).  So whether a BLQ concentration is first, middle, or last
+(or before or after Tmax) depends only on its own profile, not on other
+subjects or on the order of the rows.  The rows are returned in the order
+given.
+
 When \code{check} is \code{TRUE}, \code{subject} and \code{treatment} may not have
 missing values (\code{pknca_error_tss_subject_na} and
 \code{pknca_error_tss_treatment_na}).

@@ -1859,19 +1859,21 @@ test_that("a population, popind, or individual request with one subject is NA wi
 
 # BLQ rules ####
 
-test_that("BLQ rules are applied to all subjects' troughs pooled", {
-  # Subject 2's zero at time 2 is between the first (1) and last (3) positive
-  # troughs of the pooled data, so it is "middle" and dropped, though it is
-  # before subject 2's own first positive trough
+
+test_that("BLQ rules are applied to each subject's troughs", {
+  # Subject 2's zeros are before its own first positive trough, so they are
+  # "first" and kept, though subject 1 has positive troughs at those times
   expect_equal(
     pk.tss.data.prep(conc = c(0, 3, 5, 6, 0, 0, 0, 6), time = rep(0:3, 2), subject = rep(1:2, each = 4), time.dosing = 0:3),
-    structure(
-      data.frame(conc = c(0, 3, 5, 6, 0, 0, 6), time = c(0:3, 0, 1, 3), subject = factor(c(1, 1, 1, 1, 2, 2, 2))),
-      row.names = c(1:6, 8L)
-    )
+    data.frame(conc = c(0, 3, 5, 6, 0, 0, 0, 6), time = rep(0:3, 2), subject = factor(rep(1:2, each = 4)))
   )
-  # With rules by Tmax, the pooled Tmax is the first maximum in row order, so
-  # subject 2's zero at time 1 is kept or dropped by the order of the rows
+  # Each subject alone gives the same rows
+  expect_equal(
+    clean.conc.blq(conc = c(0, 0, 0, 6), time = 0:3)$time,
+    0:3
+  )
+  # With rules by Tmax, each subject's zeros are classed by its own Tmax (1 for
+  # subject 1, 2 for subject 2), whatever the order of the rows
   rule <- list(before.tmax = "drop", after.tmax = "keep")
   conc <- c(0, 6, 0, 0, 0, 6, 0, 0)
   time <- c(0, 1, 2, 3, 0, 2, 3, 1)
@@ -1879,8 +1881,8 @@ test_that("BLQ rules are applied to all subjects' troughs pooled", {
   expect_equal(
     pk.tss.data.prep(conc = conc, time = time, subject = subject, time.dosing = 0:3, conc.blq = rule),
     structure(
-      data.frame(conc = c(6, 0, 0, 6, 0, 0), time = c(1, 2, 3, 2, 3, 1), subject = factor(c(1, 1, 1, 2, 2, 2))),
-      row.names = c(2:4, 6:8)
+      data.frame(conc = c(6, 0, 0, 6, 0), time = c(1, 2, 3, 2, 3), subject = factor(c(1, 1, 1, 2, 2))),
+      row.names = c(2:4, 6:7)
     )
   )
   idx <- c(5:8, 1:4)
@@ -1889,6 +1891,63 @@ test_that("BLQ rules are applied to all subjects' troughs pooled", {
     structure(
       data.frame(conc = c(6, 0, 6, 0, 0), time = c(2, 3, 1, 2, 3), subject = factor(c(2, 2, 1, 1, 1))),
       row.names = c(2:3, 6:8)
+    )
+  )
+})
+
+test_that("BLQ rules are applied to each subject's troughs in each treatment", {
+  # A crossover subject:  positive troughs from time 1 with treatment A and
+  # from time 3 with treatment B, so B's zeros at times 1 and 2 are "first" in
+  # their own profile (the pooled data would make them "middle" and drop them)
+  d <-
+    data.frame(
+      subject = 1, treatment = rep(c("A", "B"), each = 4), time = rep(0:3, 2),
+      conc = c(0, 3, 5, 6, 0, 0, 0, 6)
+    )
+  expect_equal(
+    pk.tss.data.prep(conc = d$conc, time = d$time, subject = d$subject, treatment = d$treatment, time.dosing = 0:3),
+    data.frame(conc = d$conc, time = d$time, treatment = factor(d$treatment))
+  )
+  # A zero between two positive troughs of the same profile is still "middle"
+  # and dropped
+  expect_equal(
+    pk.tss.data.prep(
+      conc = c(0, 3, 0, 6, 0, 0, 0, 6), time = d$time, subject = d$subject, treatment = d$treatment, time.dosing = 0:3
+    ),
+    structure(
+      data.frame(conc = c(0, 3, 6, 0, 0, 0, 6), time = c(0, 1, 3, 0, 1, 2, 3), treatment = factor(rep(c("A", "B"), c(3, 4)))),
+      row.names = c(1:2, 4:8)
+    )
+  )
+})
+
+test_that("BLQ rules are applied to each treatment's troughs without subject, and to all troughs without either", {
+  # Without subject, the troughs of a treatment are one profile
+  expect_equal(
+    pk.tss.data.prep(
+      conc = c(0, 3, 5, 6, 0, 0, 0, 6), time = rep(0:3, 2), treatment = rep(c("A", "B"), each = 4), time.dosing = 0:3
+    ),
+    data.frame(conc = c(0, 3, 5, 6, 0, 0, 0, 6), time = rep(0:3, 2), treatment = factor(rep(c("A", "B"), each = 4)))
+  )
+  # Without subject or treatment, all the troughs are one profile, as
+  # clean.conc.blq() gives them
+  expect_equal(
+    pk.tss.data.prep(conc = c(0, 3, 0, 6), time = 0:3, time.dosing = 0:3),
+    clean.conc.blq(conc = c(0, 3, 0, 6), time = 0:3)
+  )
+})
+
+test_that("the BLQ rules per profile keep the input order of the rows", {
+  # Times out of order within a subject:  the rules see each profile sorted by
+  # time, and the rows come back in the order given, named by their positions
+  expect_equal(
+    pk.tss.data.prep(
+      conc = c(6, 0, 3, 0, 0, 5, 0, 6), time = c(3, 2, 1, 0, 0, 2, 1, 3), subject = rep(1:2, each = 4),
+      time.dosing = 0:3
+    ),
+    structure(
+      data.frame(conc = c(6, 3, 0, 0, 5, 0, 6), time = c(3, 1, 0, 0, 2, 1, 3), subject = factor(c(1, 1, 1, 2, 2, 2, 2))),
+      row.names = c(1L, 3:8)
     )
   )
 })

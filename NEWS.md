@@ -411,6 +411,23 @@ the generated intervals:
   * Through `pk.tss()`, the `level` argument is now also the confidence
     level of the monoexponential intervals (see New features).
 
+* The BLQ rules (`conc.blq`) of time to steady state are applied to each
+  subject's troughs (in each treatment) on their own, so which troughs are
+  fitted can change (@billdenney).  Before, they were applied to all
+  subjects' troughs pooled:  a subject's zero trough between the first and
+  last positive troughs of any subject was "middle" and, with the default
+  rules, dropped, even when it was before the subject's own first positive
+  trough (or after its last), where it is "first" (or "last") and kept.
+  With the rules by Tmax, the pooled Tmax was the first maximum in row
+  order, so the order of the rows changed which troughs were kept.  In
+  PKNCA's test data, with one subject's troughs at 1 to 3 hours below the
+  limit of quantification, that subject's zeros at 2 and 3 hours were
+  dropped and are now kept:  its individual Tss changes from 8.20 to 15.04
+  hours and the population Tss from 4.68 to 4.70.  Data whose only zero
+  troughs are at the first dose of every subject do not change.  Without
+  `subject`, each treatment's troughs are a profile, and without either,
+  all the troughs.
+
 ### New features
 
 * `pk.tss()`, `pk.tss.monoexponential()`, and `pk.tss.stepwise.linear()` say
