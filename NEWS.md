@@ -1212,6 +1212,16 @@ the generated intervals:
 
 ## Bug fixes
 
+* `aucint.inf.obs`, `aucint.inf.pred`, `aumcint.inf.obs`, and
+  `aumcint.inf.pred` over a finite interval that ends after Tlast, when the
+  half-life is missing, now give a `pknca_warning_aucint_halflife_missing`
+  warning saying that the value is that of `aucint.all` (or `aumcint.all`)
+  (#450, @billdenney).  The values do not change:  they were already the
+  AUCall-based ones (#508), which equal the AUClast-based ones unless a
+  concentration below the limit of quantification follows Tlast.  An interval
+  that ends at or before Tlast does not need the half-life and gives no
+  warning.
+
 * Preferred units (`concu_pref`, `doseu_pref`, and the others) with unit
   columns whose units differ between groups no longer stop `PKNCAdata()` with
   "arguments imply differing number of rows: 1, 0" when some groups are

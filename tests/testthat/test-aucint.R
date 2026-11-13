@@ -665,9 +665,20 @@ test_that("aucint.inf.* falls back to AUCall when the half-life is not estimable
     )
   o_conc <- PKNCAconc(d_conc, conc ~ time)
   o_data <- PKNCAdata(o_conc, intervals = intervals)
+  # Each AUCinf-based AUCint says that it is the AUCall-based one
   expect_warning(
-    o_nca <- suppressMessages(pk.nca(o_data)),
-    regexp = "Too few points for half-life calculation"
+    expect_warning(
+      expect_warning(
+        o_nca <- suppressMessages(pk.nca(o_data)),
+        regexp = "Too few points for half-life calculation"
+      ),
+      regexp = "aucint.inf.obs:  the half-life is missing, so aucint.all is returned",
+      fixed = TRUE,
+      class = "pknca_warning_aucint_halflife_missing"
+    ),
+    regexp = "aucint.inf.pred:  the half-life is missing, so aucint.all is returned",
+    fixed = TRUE,
+    class = "pknca_warning_aucint_halflife_missing"
   )
   res <- as.data.frame(o_nca)
   auc_all <- as.numeric(res$PPORRES[res$PPTESTCD %in% "aucint.all"])
@@ -680,6 +691,63 @@ test_that("aucint.inf.* falls back to AUCall when the half-life is not estimable
     )
     # Nothing that was excluded went into the result (#270)
     expect_equal(row$exclude, NA_character_, info = param)
+  }
+})
+
+# Whether the registered parameter `col` (an element of get.interval.cols())
+# integrates over an interval with pk.calc.aucint() or pk.calc.aumcint() and
+# takes the half-life
+aucint_test_uses_halflife <- function(col) {
+  is.character(col$FUN) &&
+    "lambda.z" %in% names(formals(get(col$FUN))) &&
+    any(c("pk.calc.aucint", "pk.calc.aumcint") %in% all.names(body(get(col$FUN))))
+}
+
+# Call the function of the registered parameter `name` with a missing
+# half-life and a Clast of 10, over `interval`
+aucint_test_call_no_halflife <- function(name, conc, time, interval) {
+  fun <- get.interval.cols()[[name]]$FUN
+  args <- list(conc = conc, time = time, start = interval[1], end = interval[2], lambda.z = NA_real_)
+  clast_arg <- intersect(c("clast.obs", "clast.pred"), names(formals(get(fun))))
+  args[[clast_arg]] <- 10
+  do.call(fun, args)
+}
+
+test_that("every AUCinf-based AUCint is the AUCall-based one, with a warning, when the half-life is missing", {
+  family <- names(get.interval.cols())[vapply(X = get.interval.cols(), FUN = aucint_test_uses_halflife, FUN.VALUE = TRUE)]
+  expect_setequal(family, c("aucint.inf.obs", "aucint.inf.pred", "aumcint.inf.obs", "aumcint.inf.pred"))
+  # Tlast is 24 and a BLQ sample follows at 30, so AUCall (with its triangle
+  # to 30) differs from AUClast
+  conc <- c(0, 50, 80, 70, 50, 35, 10, 0)
+  time <- c(0, 1, 2, 4, 8, 12, 24, 30)
+  expected_all <- c(aucint = 915.229654, aumcint = 8376.233537)
+  for (current in family) {
+    current_all <- sub(pattern = "\\.inf\\.(obs|pred)$", replacement = ".all", x = current)
+    value_all <- do.call(get.interval.cols()[[current_all]]$FUN, list(conc = conc, time = time, start = 0, end = 36))
+    expect_equal(as.numeric(value_all), unname(expected_all[sub("\\..*$", "", current)]), tolerance = 1e-6, info = current)
+    expect_warning(
+      value <- aucint_test_call_no_halflife(current, conc = conc, time = time, interval = c(0, 36)),
+      regexp = paste0(current, ":  the half-life is missing, so ", current_all, " is returned"),
+      fixed = TRUE,
+      class = "pknca_warning_aucint_halflife_missing"
+    )
+    expect_equal(as.numeric(value), as.numeric(value_all), info = current)
+    expect_equal(attr(value, "exclude"), "DO NOT EXCLUDE", info = current)
+    expect_equal(
+      attr(value, "method")[3], "Extrapolation: AUCall (half-life not estimable)",
+      info = current
+    )
+    # An interval that ends before Tlast does not need the half-life:  no
+    # warning, and the AUClast-based value
+    expect_no_warning(
+      value_within <- aucint_test_call_no_halflife(current, conc = conc, time = time, interval = c(0, 12))
+    )
+    current_last <- sub(pattern = "\\.inf\\.(obs|pred)$", replacement = ".last", x = current)
+    expect_equal(
+      as.numeric(value_within),
+      as.numeric(do.call(get.interval.cols()[[current_last]]$FUN, list(conc = conc, time = time, start = 0, end = 12))),
+      info = current
+    )
   }
 })
 

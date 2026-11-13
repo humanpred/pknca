@@ -32,7 +32,10 @@
 #'   \item{`AUCinf`}{is extrapolated with `lambda.z` (in other words, with the
 #'     half-life), always using the logarithmic trapezoidal rule to align with
 #'     the exponential decay that the half-life describes.  When `lambda.z` is
-#'     not estimable and the interval is finite, `AUCall` is used instead.}
+#'     not estimable and the interval is finite, `AUCall` is used instead,
+#'     and the `aucint.inf.*` and `aumcint.inf.*` parameters say so with a
+#'     `pknca_warning_aucint_halflife_missing` warning:  their value is that
+#'     of `aucint.all` (or `aumcint.all`).}
 #' }
 #'
 #' When the interval ends at or before Tlast, no extrapolation happens and
@@ -364,7 +367,7 @@ pk.calc.auxcint <- function(conc, time,
     } else if (!extrapolates) {
       "none"
     } else if (auc.type %in% "AUCinf") {
-      "AUCall (half-life not estimable)"
+      pknca_extrap_method_halflife_missing
     } else {
       auc.type
     }
@@ -394,6 +397,31 @@ pk.calc.auxcint <- function(conc, time,
 # spelling it out.
 pknca_extrap_method_prefix <- "Extrapolation: "
 pknca_extrap_method_halflife <- "half-life"
+# An AUCinf-based AUCint whose interval reaches past Tlast without a half-life:
+# the region after Tlast is the AUCall one (see aucint_warn_halflife_missing())
+pknca_extrap_method_halflife_missing <- "AUCall (half-life not estimable)"
+
+#' Warn when an AUCinf-based AUCint was calculated as the AUCall-based one
+#'
+#' @param ret The result of [pk.calc.auxcint()] with `auc.type = "AUCinf"`
+#' @param parameter,parameter_all The name of the parameter calculated and of
+#'   the AUCall-based parameter whose value it has
+#' @returns `ret`, after a `pknca_warning_aucint_halflife_missing` warning when
+#'   the half-life was needed after Tlast and was missing
+#' @keywords Internal
+#' @noRd
+aucint_warn_halflife_missing <- function(ret, parameter, parameter_all) {
+  if (paste0(pknca_extrap_method_prefix, pknca_extrap_method_halflife_missing) %in% attr(ret, "method")) {
+    rlang::warn(
+      sprintf(
+        "%s:  the half-life is missing, so %s is returned (the part of the interval after Tlast is not extrapolated with the half-life)",
+        parameter, parameter_all
+      ),
+      class = "pknca_warning_aucint_halflife_missing"
+    )
+  }
+  ret
+}
 
 #' @describeIn pk.calc.auxcint Calculate AUC over an interval
 #' @export
@@ -451,13 +479,15 @@ pk.calc.aucint.inf.obs <- function(conc, time, start=NULL, end=NULL, time.dose, 
                                    ..., options=list()) {
   if (missing(time.dose))
     time.dose <- NULL
-  pk.calc.aucint(conc=conc, time=time,
-                 start=start, end=end,
-                 time.dose=time.dose,
-                 route=route, duration.dose=duration.dose,
-                 lambda.z=lambda.z, clast=clast.obs,
-                 options=options, ...,
-                 auc.type="AUCinf")
+  ret <-
+    pk.calc.aucint(conc=conc, time=time,
+                   start=start, end=end,
+                   time.dose=time.dose,
+                   route=route, duration.dose=duration.dose,
+                   lambda.z=lambda.z, clast=clast.obs,
+                   options=options, ...,
+                   auc.type="AUCinf")
+  aucint_warn_halflife_missing(ret, parameter = "aucint.inf.obs", parameter_all = "aucint.all")
 }
 
 pknca_concept(pk.calc.aucint.inf.obs) <- "auc"
@@ -470,13 +500,15 @@ pk.calc.aucint.inf.pred <- function(conc, time, start=NULL, end=NULL, time.dose,
   if (missing(time.dose)) {
     time.dose <- NULL
   }
-  pk.calc.aucint(conc=conc, time=time,
-                 start=start, end=end,
-                 time.dose=time.dose,
-                 route=route, duration.dose=duration.dose,
-                 lambda.z=lambda.z, clast=clast.pred,
-                 options=options, ...,
-                 auc.type="AUCinf")
+  ret <-
+    pk.calc.aucint(conc=conc, time=time,
+                   start=start, end=end,
+                   time.dose=time.dose,
+                   route=route, duration.dose=duration.dose,
+                   lambda.z=lambda.z, clast=clast.pred,
+                   options=options, ...,
+                   auc.type="AUCinf")
+  aucint_warn_halflife_missing(ret, parameter = "aucint.inf.pred", parameter_all = "aucint.all")
 }
 
 pknca_concept(pk.calc.aucint.inf.pred) <- "auc"
@@ -599,13 +631,15 @@ pk.calc.aumcint.inf.obs <- function(conc, time, start=NULL, end=NULL, time.dose,
                                     ..., options=list()) {
   if (missing(time.dose))
     time.dose <- NULL
-  pk.calc.aumcint(conc=conc, time=time,
-                  start=start, end=end,
-                  time.dose=time.dose,
-                  route=route, duration.dose=duration.dose,
-                  lambda.z=lambda.z, clast=clast.obs,
-                  options=options, ...,
-                  auc.type="AUCinf")
+  ret <-
+    pk.calc.aumcint(conc=conc, time=time,
+                    start=start, end=end,
+                    time.dose=time.dose,
+                    route=route, duration.dose=duration.dose,
+                    lambda.z=lambda.z, clast=clast.obs,
+                    options=options, ...,
+                    auc.type="AUCinf")
+  aucint_warn_halflife_missing(ret, parameter = "aumcint.inf.obs", parameter_all = "aumcint.all")
 }
 
 pknca_concept(pk.calc.aumcint.inf.obs) <- "aumc"
@@ -618,13 +652,15 @@ pk.calc.aumcint.inf.pred <- function(conc, time, start=NULL, end=NULL, time.dose
                                      ..., options=list()) {
   if (missing(time.dose))
     time.dose <- NULL
-  pk.calc.aumcint(conc=conc, time=time,
-                  start=start, end=end,
-                  time.dose=time.dose,
-                  route=route, duration.dose=duration.dose,
-                  lambda.z=lambda.z, clast=clast.pred,
-                  options=options, ...,
-                  auc.type="AUCinf")
+  ret <-
+    pk.calc.aumcint(conc=conc, time=time,
+                    start=start, end=end,
+                    time.dose=time.dose,
+                    route=route, duration.dose=duration.dose,
+                    lambda.z=lambda.z, clast=clast.pred,
+                    options=options, ...,
+                    auc.type="AUCinf")
+  aucint_warn_halflife_missing(ret, parameter = "aumcint.inf.pred", parameter_all = "aumcint.all")
 }
 
 pknca_concept(pk.calc.aumcint.inf.pred) <- "aumc"

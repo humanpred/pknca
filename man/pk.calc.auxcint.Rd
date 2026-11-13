@@ -260,7 +260,10 @@ below-the-limit-of-quantification measurement and zero after that.}
 \item{\code{AUCinf}}{is extrapolated with \code{lambda.z} (in other words, with the
 half-life), always using the logarithmic trapezoidal rule to align with
 the exponential decay that the half-life describes.  When \code{lambda.z} is
-not estimable and the interval is finite, \code{AUCall} is used instead.}
+not estimable and the interval is finite, \code{AUCall} is used instead,
+and the \verb{aucint.inf.*} and \verb{aumcint.inf.*} parameters say so with a
+\code{pknca_warning_aucint_halflife_missing} warning:  their value is that
+of \code{aucint.all} (or \code{aumcint.all}).}
 }
 
 When the interval ends at or before Tlast, no extrapolation happens and
