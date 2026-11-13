@@ -37,7 +37,26 @@ utils::globalVariables(".")
 
 .onLoad <- function(...) { # nocov start
   if (requireNamespace("units", quietly = TRUE)) {
-    # Allow "fraction" to be used as a unit for fraction excreted
-    units::install_unit(symbol = "fraction", def = "1")
+    pknca_install_units()
   }
 } # nocov end
+
+#' Add the units that PKNCA accepts beyond those of udunits
+#'
+#' Adds `"fraction"` (a dimensionless unit, for fraction excreted) and `"mcg"`
+#' (an alias of `"ug"`, the spelling clinical data commonly use) to the
+#' `units` package.  `units::install_unit()` changes the udunits database of the
+#' R session, so these units are also available to every other package that uses
+#' `units` once PKNCA is loaded.  Installing a unit again with the same
+#' definition does nothing, and `"mcg"` is not installed when udunits already
+#' defines it.
+#'
+#' @returns `NULL`, invisibly
+#' @keywords Internal
+pknca_install_units <- function() {
+  units::install_unit(symbol = "fraction", def = "1")
+  if (!units::ud_are_convertible("mcg", "ug")) {
+    units::install_unit(symbol = "mcg", def = "ug")
+  }
+  invisible(NULL)
+}
