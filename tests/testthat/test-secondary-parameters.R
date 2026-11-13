@@ -1126,6 +1126,86 @@ test_that("interval_add_secondary() creates one reference per test interval", {
   expect_equal(intervals_linked$clr.last_ref, c("ref1", "ref2", NA, NA))
 })
 
+# Automatically generated intervals have one row per subject and dosing
+# interval, so `reference = data.frame(start = 0, end = 12)` matches one row per
+# subject; each subject's later interval must take its own subject's reference,
+# since the calculation reads the group values of the row it points at.
+#   linear auclast, subject 1:  0-12 = (0+10)/2*2 + (10+2)/2*10 = 70
+#                               12-24 = (2+12)/2*2 + (12+4)/2*10 = 94
+#   subject 2:                  0-12 = (0+20)/2*2 + (20+2)/2*10 = 130
+test_that("interval_add_secondary() links generated per-subject intervals to their own subject", {
+  d_conc_md <-
+    data.frame(
+      subject = rep(1:2, each = 5),
+      time = rep(c(0, 2, 12, 14, 24), 2),
+      conc = c(0, 10, 2, 12, 4, 0, 20, 2, 12, 4)
+    )
+  d_dose_md <- data.frame(subject = rep(1:2, each = 2), time = rep(c(0, 12), 2), dose = 1)
+  o_data_md <-
+    PKNCAdata(
+      PKNCAconc(d_conc_md, conc~time|subject), PKNCAdose(d_dose_md, dose~time|subject),
+      options = list(auc.method = "linear")
+    )
+  # The generated intervals are a tibble without an `interval_id` column
+  expect_s3_class(o_data_md$intervals, "tbl_df")
+  expect_false("interval_id" %in% names(o_data_md$intervals))
+  expect_no_warning(
+    o_data_linked <-
+      interval_add_secondary(
+        o_data_md, param = "ratio.auclast", reference = data.frame(start = 0, end = 12)
+      )
+  )
+  expect_equal(o_data_linked$intervals$subject, c(1L, 1L, 2L, 2L))
+  expect_equal(o_data_linked$intervals$start, c(0, 12, 0, 12))
+  expect_equal(o_data_linked$intervals$interval_id, c("ref1", NA, "ref2", NA))
+  expect_equal(o_data_linked$intervals$ratio.auclast_ref, c(NA, "ref1", NA, "ref2"))
+  expect_equal(o_data_linked$intervals$ratio.auclast, c(FALSE, TRUE, FALSE, TRUE))
+  d_res <- suppressWarnings(as.data.frame(pk.nca(o_data_linked)))
+  d_ratio <- d_res[d_res$PPTESTCD %in% "ratio.auclast", ]
+  expect_equal(d_ratio$subject, 1:2)
+  expect_equal(d_ratio$PPORRES, c(94/70, 94/130))
+})
+
+# A group column named in `ref_vary` may differ between the interval and its
+# reference, so it does not take part in choosing among the reference rows:  in
+# this crossover subject 1 received the reference in period 1 and subject 2 in
+# period 2, and each test profile takes its own subject's reference.
+test_that("interval_add_secondary() picks the subject's own reference across varying groups", {
+  d_conc_xo <-
+    data.frame(
+      subject = rep(1:2, each = 6),
+      period = rep(rep(1:2, each = 3), 2),
+      treatment = c(rep(c("ref", "test"), each = 3), rep(c("test", "ref"), each = 3)),
+      time = 0:2,
+      conc = c(0, 10, 5, 0, 6, 3, 0, 9, 4, 0, 20, 8)
+    )
+  d_dose_xo <- unique(d_conc_xo[, c("subject", "period", "treatment")])
+  d_dose_xo$time <- 0
+  d_dose_xo$dose <- 1
+  o_data_xo <-
+    PKNCAdata(
+      PKNCAconc(d_conc_xo, conc~time|treatment+period+subject),
+      PKNCAdose(d_dose_xo, dose~time|treatment+period+subject),
+      intervals =
+        data.frame(
+          subject = c(1, 1, 2, 2), period = c(1, 2, 1, 2),
+          treatment = c("ref", "test", "test", "ref"),
+          start = 0, end = Inf, cmax = TRUE
+        )
+    )
+  o_data_linked <-
+    interval_add_secondary(
+      o_data_xo, param = "ratio.cmax", reference = data.frame(treatment = "ref"),
+      ref_vary = "period"
+    )
+  expect_equal(o_data_linked$intervals$interval_id, c("ref1", NA, NA, "ref2"))
+  expect_equal(o_data_linked$intervals$ratio.cmax_ref, c(NA, "ref1", "ref2", NA))
+  d_res <- as.data.frame(pk.nca(o_data_linked))
+  d_ratio <- d_res[d_res$PPTESTCD %in% "ratio.cmax", ]
+  expect_equal(d_ratio$subject, c(1, 2))
+  expect_equal(d_ratio$PPORRES, c(6/10, 9/20))
+})
+
 # A created reference row is a new interval:  it carries the columns of the
 # intervals it was built from but none of their bookkeeping
 test_that("a created reference interval takes no identifier or imputation of its own", {
