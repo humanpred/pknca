@@ -1214,8 +1214,9 @@ the generated intervals:
 
 * `c0` (`pk.calc.c0()`) with no measured concentration (every concentration
   missing, including a lone missing concentration at the dose time) is now
-  `NA` with the `pknca_warning_all_concentration_missing` warning, as `cmax`
-  is.  It was 0, because every method of the default order gave `NA` until
+  `NA`, as `cmax` is, with the `pknca_warning_all_concentration_missing`
+  warning when the inputs are checked (`check = TRUE`, the default, and
+  through `pk.nca()`).  It was 0, because every method of the default order gave `NA` until
   `set0`.  A `method` given explicitly with `set0` in it still returns 0, and
   any measured concentration gives the value it did before (@billdenney).
 

@@ -143,3 +143,27 @@ test_that("c0 through pk.nca with no measured concentration is NA", {
   expect_equal(res$PPTESTCD, "c0")
   expect_equal(res$PPORRES, NA_real_)
 })
+
+test_that("pk.calc.c0 with no measured concentration and check = FALSE is NA without a warning", {
+  # The all-missing warning comes from the checks of the inputs
+  expect_no_warning(
+    expect_equal(pk.calc.c0(conc = c(NA, NA), time = c(13, 16), time.dose = 12, check = FALSE), NA_real_)
+  )
+  expect_equal(pk.calc.c0(conc = c(NA, NA), time = c(13, 16), time.dose = 12, method = "set0", check = FALSE), 0)
+})
+
+test_that("aucivint is unchanged when every concentration after the bolus is missing", {
+  # pk.calc.auciv.int() calls pk.calc.c0() in the default order on the
+  # concentrations after the bolus once they are cleaned, and cleaning drops
+  # missing ones (or replaces them with a number), so it never sees an
+  # all-missing profile:  the interval has no concentration after the bolus
+  conc <- c(0, 20, 16, 13, 8, 5, NA, NA, NA)
+  time <- c(0, 1, 2, 4, 8, 12, 13, 16, 24)
+  expect_equal(
+    pk.calc.auciv.int(
+      conc = conc, time = time, start = 12, end = 24, time.dose = c(0, 12),
+      route = "intravascular", duration.dose = 0, auc = 100
+    ),
+    structure(NA_real_, exclude = "No concentration after the IV bolus dose in the interval")
+  )
+})
