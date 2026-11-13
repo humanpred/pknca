@@ -22,8 +22,9 @@
 #'   When `check` is `TRUE`, `subject` and `treatment` may not have
 #'   missing values (`pknca_error_tss_subject_na` and
 #'   `pknca_error_tss_treatment_na`).  When `check` is `FALSE`, they are not
-#'   checked, and a missing subject or treatment is a value of its own for the
-#'   BLQ rules:  the rows without a subject in a treatment are one profile.
+#'   checked, and a missing subject or treatment (`NA` or `NaN` alike) is a
+#'   value of its own for the BLQ rules:  the rows without a subject in a
+#'   treatment are one profile, apart from those in another treatment.
 #'
 #'   When `subject` is given and `check` is `TRUE`, two records for the same
 #'   subject, treatment (if given), and time are an error
@@ -149,9 +150,9 @@ tss_clean_blq_by_profile <- function(conc, time, subject, treatment, conc.blq, c
   cols <- cols[!vapply(X = cols, FUN = is.null, FUN.VALUE = TRUE)]
   # Profiles are keyed by the integer code of each column's value, so values
   # that would paste to the same label (subject "1.A" in treatment "B" and
-  # subject "1" in treatment "A.B") stay apart.  A missing value is matched to
-  # itself, so it is one more value (possible only with `check = FALSE`).
-  codes <- Map(f = match, x = cols, table = lapply(X = cols, FUN = unique))
+  # subject "1" in treatment "A.B") stay apart.  Missing values (NA and NaN
+  # alike) are one more value (possible only with `check = FALSE`).
+  codes <- lapply(X = cols, FUN = tss_profile_code)
   key <-
     if (length(codes) == 0) {
       rep("", length(conc))
@@ -186,6 +187,19 @@ tss_clean_blq_by_profile <- function(conc, time, subject, treatment, conc.blq, c
   rownames(ret) <- ret$.row
   ret$.row <- NULL
   ret
+}
+
+#' The integer code of each value of a profile column
+#'
+#' @param x A subject or treatment column
+#' @returns An integer for each element of `x`, the same for equal values, with
+#'   every missing value (`NA` or `NaN`) coded 0
+#' @keywords Internal
+#' @noRd
+tss_profile_code <- function(x) {
+  code <- match(x, unique(x))
+  code[is.na(x)] <- 0L
+  code
 }
 
 #' Compute the time to steady-state (tss)

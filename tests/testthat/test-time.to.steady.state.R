@@ -2123,4 +2123,39 @@ test_that("with check = FALSE, a missing subject is a value of its own for the B
       row.names = c(1:2, 4:8)
     )
   )
+  # The rows without a subject in treatment A (positive from time 3) and in B
+  # (positive from time 1) are two profiles, so A's zero at time 2 is "first"
+  # and kept (pooled with B's, it would be "middle" and dropped)
+  d <-
+    data.frame(
+      subject = rep(c(1, 1, 1, 1, NA, NA, NA, NA), 2),
+      treatment = rep(c("A", "B"), each = 8),
+      time = rep(0:3, 4),
+      conc = c(0, 0, 0, 6, 0, 0, 0, 6, 0, 0, 0, 6, 0, 7, 0, 8)
+    )
+  expect_equal(
+    pk.tss.data.prep(
+      conc = d$conc, time = d$time, subject = d$subject, treatment = d$treatment, time.dosing = 0:3, check = FALSE
+    ),
+    structure(
+      data.frame(
+        conc = d$conc[-15], time = d$time[-15],
+        subject = factor(d$subject[-15]), treatment = factor(d$treatment[-15])
+      ),
+      row.names = c(1:14, 16L)
+    )
+  )
+  # NaN is missing as NA is:  the rows with NA and NaN subjects are one profile,
+  # so the NA rows' zero at time 2 is "middle" (after the NaN rows' 7 at time
+  # 1) and dropped
+  expect_equal(
+    pk.tss.data.prep(
+      conc = c(0, 0, 0, 6, 0, 7, 0, 8), time = rep(0:3, 2), subject = rep(c(NA, NaN), each = 4),
+      time.dosing = 0:3, check = FALSE
+    ),
+    structure(
+      data.frame(conc = c(0, 0, 6, 0, 7, 8), time = c(0, 1, 3, 0, 1, 3), subject = factor(rep(c(NA, NaN), each = 3))),
+      row.names = c(1:2, 4:6, 8L)
+    )
+  )
 })

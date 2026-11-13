@@ -66,8 +66,9 @@ given.
 When \code{check} is \code{TRUE}, \code{subject} and \code{treatment} may not have
 missing values (\code{pknca_error_tss_subject_na} and
 \code{pknca_error_tss_treatment_na}).  When \code{check} is \code{FALSE}, they are not
-checked, and a missing subject or treatment is a value of its own for the
-BLQ rules:  the rows without a subject in a treatment are one profile.
+checked, and a missing subject or treatment (\code{NA} or \code{NaN} alike) is a
+value of its own for the BLQ rules:  the rows without a subject in a
+treatment are one profile, apart from those in another treatment.
 
 When \code{subject} is given and \code{check} is \code{TRUE}, two records for the same
 subject, treatment (if given), and time are an error
