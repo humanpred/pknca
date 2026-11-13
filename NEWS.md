@@ -735,10 +735,15 @@ the generated intervals:
   as in the results of a parallel study without a period grouping; the data are
   then a single period (the `.period` column, 1 for every row) and the design is
   classified as `"parallel"`.  When a subject has several rows of an endpoint,
-  the period column is still required.  An endpoint with fewer than two subjects
-  stops `be_assess()` and `be_fit_models()` with
-  `pknca_error_be_too_few_subjects` (also `pknca_error_be_not_estimable`)
-  before any model is fit, instead of the model's own error.  (@billdenney)
+  the period column is still required.  An endpoint that cannot give a
+  comparison stops `be_fit_model_single()`, and so `be_assess()` and
+  `be_fit_models()`, with an error of class `pknca_error_be_not_estimable`
+  instead of the model's own unclassed error:  before any model is fit,
+  `pknca_error_be_too_few_subjects` for fewer than two subjects and
+  `pknca_error_be_single_treatment` without values for both the reference and a
+  test formulation; and `pknca_error_be_lmer_failed`, with the `lme4` error as
+  its parent, when `lme4::lmer()` cannot fit the mixed model (such as a 2x2
+  crossover of two subjects).  (@billdenney)
 
 * The expanding-limits frameworks of `be_assess()` widen only the endpoints
   their guidances allow (@billdenney).  The EMA and the GCC widen Cmax and keep

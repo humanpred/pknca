@@ -196,6 +196,19 @@ test_that("be_dataset needs a period column when a subject has several rows of a
   d_cmax <- transform(d_par, PPTESTCD = "cmax")
   ds <- be_dataset(rbind(d_par, d_cmax, d_cmax), reference_col = "treatment", reference_value = "R", endpoints = "auclast")
   expect_identical(ds$columns$period, ".period")
+  # A second row of a requested endpoint needs a period even when its value is
+  # missing, since the row still shows a repeated administration.
+  d_na <- d_par[1, ]
+  d_na$PPORRES <- NA
+  expect_error(
+    be_dataset(rbind(d_par, d_na), reference_col = "treatment", reference_value = "R", endpoints = "auclast"),
+    class = "pknca_error_be_period_column_not_found"
+  )
+  # A `.period` column of the data is replaced, as are the other standardized
+  # columns.
+  d_par$.period <- "A"
+  ds <- be_dataset(d_par, reference_col = "treatment", reference_value = "R", endpoints = "auclast")
+  expect_identical(levels(ds$data$.period), "1")
 })
 
 test_that("a comparison with one subject is an error before any model is fit", {
@@ -211,7 +224,67 @@ test_that("a comparison with one subject is an error before any model is fit", {
   }
   expect_error(
     be_fit_models(d_one, reference_col = "form", reference_value = "R", endpoints = "auclast"),
+    regexp = "Endpoint auclast has 1 subject(s); the bioequivalence comparison needs at least 2.",
+    fixed = TRUE,
     class = "pknca_error_be_not_estimable"
+  )
+  # The exported single-endpoint fitter checks too, for every model type.
+  ds_ep <- be_dataset(d_one, reference_col = "form", reference_value = "R", endpoints = "auclast")$data
+  for (model_type in c("lmer", "nlme", "anova", "isc", "gls")) {
+    expect_error(
+      be_fit_model_single(ds_ep, model_type = model_type),
+      regexp = "Endpoint auclast has 1 subject(s); the bioequivalence comparison needs at least 2.",
+      fixed = TRUE,
+      class = "pknca_error_be_too_few_subjects"
+    )
+  }
+})
+
+test_that("an endpoint with values for only one treatment is an error before any model is fit", {
+  d <- generate_be_parallel(effect = c(R = 0, T = log(1.10)), sd = c(R = 0.20, T = 0.30))
+  d_cmax <- transform(d[d$treatment == "R", ], PPTESTCD = "cmax")
+  expect_error(
+    be_assess(rbind(d, d_cmax), "treatment", "R", c("auclast", "cmax")),
+    regexp = "Endpoint cmax has values only for R; the bioequivalence comparison needs the reference (R) and a test formulation.",
+    fixed = TRUE,
+    class = "pknca_error_be_single_treatment"
+  )
+  d_cmax <- transform(d[d$treatment == "T", ], PPTESTCD = "cmax")
+  expect_error(
+    be_assess(rbind(d, d_cmax), "treatment", "R", c("auclast", "cmax")),
+    regexp = "Endpoint cmax has values only for T; the bioequivalence comparison needs the reference (R) and a test formulation.",
+    fixed = TRUE,
+    class = "pknca_error_be_not_estimable"
+  )
+})
+
+test_that("a mixed model that lme4 cannot fit is a comparison that cannot be estimated", {
+  skip_if_not_installed("lme4")
+  skip_if_not_installed("lmerTest")
+  # A 2x2 crossover with two subjects has as many observations as fixed effects.
+  d_two <- make_be_df()[1:4, ]
+  err <- expect_error(
+    be_assess(d_two, reference_col = "form", reference_value = "R", endpoints = "auclast"),
+    regexp = "The mixed model (lme4::lmer()) for endpoint auclast could not be fit, so the comparison cannot be estimated.",
+    fixed = TRUE,
+    class = "pknca_error_be_lmer_failed"
+  )
+  expect_s3_class(err, "pknca_error_be_not_estimable")
+  expect_identical(conditionMessage(err$parent), "objective in x0 returns NA")
+  # be_compare() raises it when every framework fails with it.
+  expect_error(
+    expect_warning(
+      be_compare(d_two, reference_col = "form", reference_value = "R", endpoints = "auclast", regulators = "ABE"),
+      class = "pknca_warning_be_skipped_framework"
+    ),
+    class = "pknca_error_be_not_estimable"
+  )
+  # The classed errors of the model formula keep their own class.
+  d <- make_be_df()
+  d$ARM <- d$form
+  expect_error(
+    be_assess(d, reference_col = "form", reference_value = "R", endpoints = "auclast", covariates = "ARM"),
+    class = "pknca_error_be_covariate_aliased"
   )
 })
 

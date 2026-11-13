@@ -1893,11 +1893,16 @@ print.be_dataset <- function(x, ...) {
 #'   `model`, (for lmer/anova/isc) `ref_var`/`test_var` within-formulation
 #'   ANOVA variances, and (for isc with repeated measures) `fda`, the FDA
 #'   mixed-model estimates.  The endpoint's measurement units are attached as a `units`
-#'   attribute (`NULL` when not provided).
+#'   attribute (`NULL` when not provided).  An endpoint with fewer than two
+#'   subjects, or without values for both the reference and a test
+#'   formulation, stops with an error of class `pknca_error_be_not_estimable`
+#'   before any model is fit, as does a mixed model that `lme4::lmer()` cannot
+#'   fit (with the `lme4` error as its parent).
 #' @family Bioequivalence
 #' @export
 be_fit_model_single <- function(ds_ep, model_type = c("lmer", "nlme", "anova", "isc", "gls"), scaling = TRUE) {
   model_type <- match.arg(model_type)
+  .be_check_endpoint_estimable(ds_ep)
   fit <-
     switch(
       model_type,
@@ -1939,8 +1944,29 @@ be_fit_model_lmer <- function(ds_ep, scaling = TRUE) {
       class = "pknca_error_be_missing_lme4"
     )
   }
-  model <- lmerTest::lmer(.be_model_formula(ds_ep, random = TRUE), data = ds_ep)
+  model <- tryCatch(lmerTest::lmer(.be_model_formula(ds_ep, random = TRUE), data = ds_ep), error = identity)
+  if (inherits(model, "error")) {
+    .be_abort_lmer_failed(model, ds_ep)
+  }
   c(list(model = model), .be_fit_within(ds_ep, scaling))
+}
+
+# Re-raise an error from fitting the mixed model of one endpoint (`ds_ep`) as a
+# comparison that cannot be estimated, with the lme4 error as its parent.  The
+# classed PKNCA errors of the model formula (such as an aliased covariate) are
+# raised as they are.
+.be_abort_lmer_failed <- function(cnd, ds_ep) {
+  if (any(startsWith(class(cnd), "pknca_error_"))) {
+    stop(cnd)
+  }
+  rlang::abort(
+    sprintf(
+      "The mixed model (lme4::lmer()) for endpoint %s could not be fit, so the comparison cannot be estimated.",
+      paste(unique(as.character(ds_ep$PPTESTCD)), collapse = ", ")
+    ),
+    class = c("pknca_error_be_lmer_failed", "pknca_error_be_not_estimable"),
+    parent = cnd
+  )
 }
 
 # Internal fitter dispatched by be_fit_model_single().
@@ -2481,7 +2507,7 @@ be_fit_models <- function(object, reference_col, reference_value,
   params <- list()
   for (ep in ds$endpoints) {
     ds_ep <- ds$data[!is.na(ds$data$PPTESTCD) & ds$data$PPTESTCD == ep, , drop = FALSE]
-    .be_check_endpoint_subjects(ds_ep, ep)
+    .be_check_endpoint_estimable(ds_ep)
     .be_check_endpoint_repeated(ds_ep, model_type, ep)
     fit <- be_fit_model_single(ds_ep, model_type, scaling = reg$scaling != "none")
     p <- be_extract_param(fit, ds_ep, alpha)
@@ -2509,10 +2535,13 @@ be_fit_models <- function(object, reference_col, reference_value,
   )
 }
 
-# Stop when an endpoint has fewer than two subjects: no model can separate the
-# subject from the residual variability, and the fitters would otherwise fail
-# with their own unclassed errors.
-.be_check_endpoint_subjects <- function(ds_ep, endpoint) {
+# Stop when the data of one endpoint (`ds_ep`, from be_dataset()) cannot give a
+# comparison, before any model is fit: fewer than two subjects (no model
+# separates the subject from the residual variability), or no value for the
+# reference or for any test formulation.  The fitters would otherwise fail with
+# their own unclassed errors.
+.be_check_endpoint_estimable <- function(ds_ep) {
+  endpoint <- paste(unique(as.character(ds_ep$PPTESTCD)), collapse = ", ")
   n_subjects <- nlevels(droplevels(ds_ep$.subject))
   if (n_subjects < 2) {
     rlang::abort(
@@ -2521,6 +2550,17 @@ be_fit_models <- function(object, reference_col, reference_value,
         endpoint, n_subjects
       ),
       class = c("pknca_error_be_too_few_subjects", "pknca_error_be_not_estimable")
+    )
+  }
+  reference_value <- levels(ds_ep$.trt)[1]
+  present <- unique(as.character(ds_ep$.trt))
+  if (!(reference_value %in% present) || length(setdiff(present, reference_value)) == 0) {
+    rlang::abort(
+      sprintf(
+        "Endpoint %s has values only for %s; the bioequivalence comparison needs the reference (%s) and a test formulation.",
+        endpoint, paste(sort(present), collapse = ", "), reference_value
+      ),
+      class = c("pknca_error_be_single_treatment", "pknca_error_be_not_estimable")
     )
   }
 }

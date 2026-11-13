@@ -28,7 +28,11 @@ An object of class \code{be_fit}: a list with \code{model_type}, the fitted
 \code{model}, (for lmer/anova/isc) \code{ref_var}/\code{test_var} within-formulation
 ANOVA variances, and (for isc with repeated measures) \code{fda}, the FDA
 mixed-model estimates.  The endpoint's measurement units are attached as a \code{units}
-attribute (\code{NULL} when not provided).
+attribute (\code{NULL} when not provided).  An endpoint with fewer than two
+subjects, or without values for both the reference and a test
+formulation, stops with an error of class \code{pknca_error_be_not_estimable}
+before any model is fit, as does a mixed model that \code{lme4::lmer()} cannot
+fit (with the \code{lme4} error as its parent).
 }
 \description{
 \code{be_fit_model_single()} fits the average-BE model for a single endpoint and
