@@ -761,7 +761,7 @@ test_that("every exported imputation method is registered, and only those", {
   methods <- pknca_impute_methods()
   exported <- sort(grep("^PKNCA_impute_method_", getNamespaceExports("PKNCA"), value = TRUE))
   expect_equal(sort(methods$fun), exported)
-  expect_named(methods, c("method", "fun", "description", "arguments"))
+  expect_named(methods, c("method", "fun", "description", "drop_missing_start", "arguments"))
   expect_equal(methods$method, sort(methods$method))
   expect_equal(methods$fun, paste0("PKNCA_impute_method_", methods$method))
   # Every method resolves the way imputation strings are resolved
@@ -1266,6 +1266,30 @@ test_that("pk.nca with chains of start imputations and a missing concentration a
   expect_equal(impute_test_auclast(d_conc[-1, ], "start_predose,start_conc0"), 1836.33993274182)
   expect_equal(impute_test_auclast(d_conc, "start_predose,start_cmin"), 1836.33993274182 + 0.25 * 40 / 2)
   expect_equal(impute_test_auclast(d_conc[-1, ], "start_predose,start_cmin"), 1836.33993274182 + 0.25 * 40 / 2)
+  # The start observation of each chain takes the values of an added one, not
+  # those of the missing row (volume 9, both half-life flags, lloq 9), with and
+  # without a predose sample to shift
+  args <-
+    list(
+      conc = c(NA, 40, 80), time = c(0, 1, 2), volume = c(9, 1, 1), duration.conc = c(9, 1, 1),
+      include_half.life = c(TRUE, FALSE, TRUE), exclude_half.life = c(TRUE, FALSE, FALSE), lloq = c(9, 1, 1)
+    )
+  added <- list(volume = 0, duration.conc = NA_real_, include_half.life = NA, exclude_half.life = NA, lloq = 1)
+  chains <-
+    list(
+      c("PKNCA_impute_method_start_predose", "PKNCA_impute_method_start_conc0"),
+      c("PKNCA_impute_method_start_predose", "PKNCA_impute_method_start_cmin")
+    )
+  for (current in chains) {
+    for (predose in c(TRUE, FALSE)) {
+      result <- do.call(impute_test_obs_chain, c(list(impute_funs = current, predose = predose, end = 2), args))
+      expect_equal(
+        as.list(result[1, c("volume", "duration.conc", "include_half.life", "exclude_half.life", "lloq")]),
+        added,
+        info = paste(c(current, predose), collapse = " ")
+      )
+    }
+  }
 })
 
 test_that("a missing start time identifies no row with a missing concentration", {
@@ -1307,6 +1331,25 @@ test_that("start imputations with a missing and a measured concentration at the 
     expected,
     ignore_attr = "row.names"
   )
+  # The measured start observation keeps its own values (volume 3, lloq 3),
+  # not those of the missing one (volume 9, lloq 9)
+  methods <- c("PKNCA_impute_method_start_cmin", "PKNCA_impute_method_start_predose", "PKNCA_impute_method_start_predose_conc0")
+  for (current in methods) {
+    expect_equal(
+      impute_test_obs_chain(
+        impute_funs = current, conc = conc, time = time,
+        volume = c(9, 3, 1, 1), duration.conc = c(9, 3, 1, 1),
+        include_half.life = c(TRUE, FALSE, TRUE, TRUE), exclude_half.life = c(TRUE, FALSE, FALSE, FALSE),
+        lloq = c(9, 3, 1, 1), predose = TRUE, end = 2
+      ),
+      data.frame(
+        conc = c(7, 40, 80), time = c(0, 1, 2), volume = c(3, 1, 1), duration.conc = c(3, 1, 1),
+        include_half.life = c(FALSE, TRUE, TRUE), exclude_half.life = c(FALSE, FALSE, FALSE), lloq = c(3, 1, 1)
+      ),
+      ignore_attr = "row.names",
+      info = current
+    )
+  }
 })
 
 test_that("start imputations with a missing start concentration and a predose sample too early to shift", {
@@ -1351,6 +1394,33 @@ test_that("start imputations with a missing start concentration and a predose sa
     PKNCA_impute_method_start_cmin(conc = conc[-1], time = time[-1], start = 0, end = 2),
     ignore_attr = "row.names"
   )
+  # With the per-observation values, each is also the result without the row
+  args <-
+    list(
+      conc = conc, time = time, volume = c(9, 1, 1), duration.conc = c(9, 1, 1),
+      include_half.life = c(TRUE, FALSE, TRUE), exclude_half.life = c(TRUE, FALSE, FALSE), lloq = c(9, 1, 1)
+    )
+  args_absent <- lapply(X = args, FUN = `[`, -1)
+  methods <- c("PKNCA_impute_method_start_cmin", "PKNCA_impute_method_start_predose", "PKNCA_impute_method_start_predose_conc0")
+  for (current in methods) {
+    expect_equal(
+      do.call(impute_test_obs_chain, c(list(impute_funs = current, predose = TRUE, predose_time = -1, end = 2), args)),
+      do.call(impute_test_obs_chain, c(list(impute_funs = current, predose = TRUE, predose_time = -1, end = 2), args_absent)),
+      ignore_attr = "row.names",
+      info = current
+    )
+  }
+  expect_equal(
+    do.call(
+      impute_test_obs_chain,
+      c(list(impute_funs = "PKNCA_impute_method_start_predose_conc0", predose = TRUE, predose_time = -1, end = 2), args)
+    ),
+    data.frame(
+      conc = c(0, 40, 80), time = c(0, 1, 2), volume = c(0, 1, 1), duration.conc = c(NA, 1, 1),
+      include_half.life = c(NA, FALSE, TRUE), exclude_half.life = c(NA, FALSE, FALSE), lloq = c(1, 1, 1)
+    ),
+    ignore_attr = "row.names"
+  )
 })
 
 test_that("start_cmin with every concentration missing imputes nothing", {
@@ -1362,6 +1432,19 @@ test_that("start_cmin with every concentration missing imputes nothing", {
   expect_equal(
     PKNCA_impute_method_start_cmin(conc = c(NA, NA, NA), time = c(0, 1, 2), start = 0, end = 2),
     PKNCA_impute_method_start_cmin(conc = c(NA, NA), time = c(1, 2), start = 0, end = 2),
+    ignore_attr = "row.names"
+  )
+  # The rows left keep their own values
+  expect_equal(
+    impute_test_obs_chain(
+      impute_funs = "PKNCA_impute_method_start_cmin", conc = c(NA, NA, NA), time = c(0, 1, 2),
+      volume = c(9, 1, 2), duration.conc = c(9, 1, 2), include_half.life = c(TRUE, FALSE, TRUE),
+      exclude_half.life = c(TRUE, FALSE, FALSE), lloq = c(9, 1, 2), predose = FALSE, end = 2
+    ),
+    data.frame(
+      conc = c(NA, NA), time = c(1, 2), volume = c(1, 2), duration.conc = c(1, 2),
+      include_half.life = c(FALSE, TRUE), exclude_half.life = c(FALSE, FALSE), lloq = c(1, 2)
+    ),
     ignore_attr = "row.names"
   )
 })
@@ -1387,19 +1470,56 @@ test_that("start imputations with zero rows", {
     PKNCA_impute_method_start_conc0(conc = numeric(0), time = numeric(0), start = 0),
     data.frame(time = 0, conc = 0)
   )
+  # The added start observation takes the fill values
+  expect_equal(
+    impute_test_obs_chain(
+      impute_funs = "PKNCA_impute_method_start_predose_conc0", conc = numeric(0), time = numeric(0),
+      volume = numeric(0), duration.conc = numeric(0), include_half.life = logical(0),
+      exclude_half.life = logical(0), lloq = numeric(0), predose = FALSE, end = 2
+    ),
+    data.frame(
+      conc = 0, time = 0, volume = 0, duration.conc = NA_real_,
+      include_half.life = NA, exclude_half.life = NA, lloq = NA_real_
+    ),
+    ignore_attr = "row.names"
+  )
 })
 
-test_that("every method that treats a missing start concentration as absent is a registered method that does so", {
-  registered <- pknca_impute_methods()$fun
-  expect_true(all(impute_methods_missing_start_absent %in% registered))
-  conc <- c(NA, 40, 80)
-  time <- c(0, 1, 2)
-  for (current in impute_methods_missing_start_absent) {
-    expect_equal(
-      do.call(current, list(conc = conc, time = time, start = 0, end = 2, conc.group = c(5, conc), time.group = c(-0.05, time))),
-      do.call(current, list(conc = conc[-1], time = time[-1], start = 0, end = 2, conc.group = c(5, conc[-1]), time.group = c(-0.05, time[-1]))),
-      ignore_attr = "row.names",
+test_that("the registered methods that drop a missing start give the result without that row", {
+  methods <- pknca_impute_methods()
+  # The three start methods declare it in their registration
+  expect_equal(
+    methods$method[methods$drop_missing_start],
+    c("start_cmin", "start_predose", "start_predose_conc0")
+  )
+  # Every method that declares it gives, with its per-observation values, the
+  # result for the data without the row, with and without a predose sample;
+  # its documentation says so
+  args <-
+    list(
+      conc = c(NA, 40, 80), time = c(0, 1, 2), volume = c(9, 1, 1), duration.conc = c(9, 1, 1),
+      include_half.life = c(TRUE, FALSE, TRUE), exclude_half.life = c(TRUE, FALSE, FALSE), lloq = c(9, 1, 1)
+    )
+  args_absent <- lapply(X = args, FUN = `[`, -1)
+  for (current in methods$fun[methods$drop_missing_start]) {
+    for (predose in c(TRUE, FALSE)) {
+      expect_equal(
+        do.call(impute_test_obs_chain, c(list(impute_funs = current, predose = predose, end = 2), args)),
+        do.call(impute_test_obs_chain, c(list(impute_funs = current, predose = predose, end = 2), args_absent)),
+        ignore_attr = "row.names",
+        info = paste(current, predose)
+      )
+    }
+    expect_true(
+      grepl("it is dropped, with its other per-observation values", pknca_rd_impute_method(current), fixed = TRUE),
       info = current
     )
   }
+  # A method that does not declare it gets no such sentence
+  expect_false(grepl("it is dropped", pknca_rd_impute_method("PKNCA_impute_method_start_conc0"), fixed = TRUE))
+  expect_false(impute_method_drops_missing_start("PKNCA_impute_method_not_registered"))
+  expect_error(
+    pknca_register_impute_method(fun = "PKNCA_impute_method_x", description = "x", drop_missing_start = NA),
+    regexp = "drop_missing_start"
+  )
 })

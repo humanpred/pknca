@@ -540,7 +540,7 @@ impute_conc_time <- function(impute_funs, conc, time, start, end,
     impute_data <- cbind(impute_data, obs_values)
   }
   for (current_fun_nm in impute_funs) {
-    if (current_fun_nm %in% impute_methods_missing_start_absent) {
+    if (impute_method_drops_missing_start(current_fun_nm)) {
       # The method treats a missing start concentration as no row, so the
       # row's per-observation values leave with it, and the lloq of an added
       # observation is the one of the rows left, as when it is not given
@@ -1133,8 +1133,6 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       conc.sparse <- sparse_data$conc
       time.sparse <- sparse_data$time
       subject <- sparse_data$subject
-    }
-    if (has_sparse_conc) {
       impute_sparse <-
         impute_conc_time(
           impute_funs=impute_funs[[1]], conc=conc.sparse, time=time.sparse,

@@ -35,7 +35,7 @@ test_that("pknca_rd_impute_method writes the registered description and details"
     paste(
       "@describeIn PKNCA_impute_method",
       "Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data).",
-      "A row at the start time with a missing concentration is not a measurement:  it is replaced by the imputed one."
+      "A row at the start time with a missing concentration is not a measurement:  it is dropped, with its other per-observation values, before this method runs, so the result is the one for the data without that row."
     )
   )
   expect_equal(
@@ -44,7 +44,7 @@ test_that("pknca_rd_impute_method writes the registered description and details"
       "@describeIn PKNCA_impute_method",
       "Shift a predose concentration to become the time zero concentration (only if a time zero concentration does not exist).",
       "The most recent predose sample with a measured concentration is shifted; samples with a missing concentration are skipped.",
-      " A row at the start time with a missing concentration is not a measurement:  it is replaced by the shifted one."
+      "A row at the start time with a missing concentration is not a measurement:  it is dropped, with its other per-observation values, before this method runs, so the result is the one for the data without that row."
     )
   )
   expect_error(

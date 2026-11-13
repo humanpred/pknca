@@ -1286,23 +1286,6 @@ test_that("impute_conc_time carries every per-observation value with its observa
   )
 })
 
-# impute_conc_time() for one profile with its per-observation values, as
-# pk.nca.interval() calls it; `conc.group` and `time.group` add a predose sample
-# at -0.05 to the profile when `predose` is TRUE
-impute_test_obs_chain <- function(impute_funs, conc, time, volume, duration.conc, include_half.life,
-                                  exclude_half.life, lloq, predose) {
-  obs <-
-    impute_obs_values(
-      time = time, volume = volume, duration.conc = duration.conc,
-      include_half.life = include_half.life, exclude_half.life = exclude_half.life, lloq = lloq
-    )
-  impute_conc_time(
-    impute_funs = impute_funs, conc = conc, time = time, start = 0, end = 4,
-    conc.group = c(if (predose) 5, conc), time.group = c(if (predose) -0.05, time), options = list(),
-    obs_values = obs$values, obs_fill = obs$fill
-  )
-}
-
 test_that("impute_conc_time gives a missing start row's values to no observation with the methods that treat it as absent", {
   # The missing start row carries values unlike the others' (volume 9, both
   # half-life flags, lloq 9); without it, the lloq of the profile is constant

@@ -134,15 +134,23 @@ NULL
 #' @param fun The name of the exported method function
 #' @param description The one-line description
 #' @param details Further documentation, following the description
+#' @param drop_missing_start Does the method treat a row at the start of the
+#'   interval with a missing concentration as absent?  When `TRUE`, such rows
+#'   are dropped, with their per-observation values (volume, duration,
+#'   half-life inclusion and exclusion, and lloq), before the method runs in an
+#'   imputation chain, so an observation it adds at the start takes the values
+#'   of an added observation, as when the row is not given.  The method's
+#'   documentation says so (see [pknca_rd_impute_method()]).
 #' @returns `NULL`, invisibly
 #' @keywords Internal
 #' @noRd
-pknca_register_impute_method <- function(fun, description, details = NULL) {
+pknca_register_impute_method <- function(fun, description, details = NULL, drop_missing_start = FALSE) {
   checkmate::assert_string(fun, pattern = "^PKNCA_impute_method_")
   checkmate::assert_string(description, min.chars = 1)
   checkmate::assert_string(details, min.chars = 1, null.ok = TRUE)
+  checkmate::assert_flag(drop_missing_start)
   current <- get("impute_methods", envir = .PKNCAEnv)
-  current[[fun]] <- list(description = description, details = details)
+  current[[fun]] <- list(description = description, details = details, drop_missing_start = drop_missing_start)
   assign("impute_methods", current, envir = .PKNCAEnv)
   invisible(NULL)
 }
@@ -197,18 +205,18 @@ impute_drop_missing_start <- function(ret, start) {
   ret[!(ret$time %in% start & is.na(ret$conc)), , drop = FALSE]
 }
 
-# The imputation methods that treat a row at the start time with a missing
-# concentration as absent (with impute_drop_missing_start()).  Before one of
-# them runs in a chain, impute_conc_time() drops those rows with their
-# per-observation values, so that the result is the one for data without those
-# rows.  (Pooled sparse samples missing at the start are dropped before any
-# imputation, in pk.nca.interval().)
-impute_methods_missing_start_absent <-
-  c(
-    "PKNCA_impute_method_start_cmin",
-    "PKNCA_impute_method_start_predose",
-    "PKNCA_impute_method_start_predose_conc0"
-  )
+#' Does an imputation method treat a missing start concentration as absent?
+#'
+#' @param fun The function name of the method
+#' @returns The `drop_missing_start` of its registration (see
+#'   `pknca_register_impute_method()`), or `FALSE` for a method that is not
+#'   registered
+#' @keywords Internal
+#' @noRd
+impute_method_drops_missing_start <- function(fun) {
+  registered <- get("impute_methods", envir = .PKNCAEnv)[[fun]]
+  isTRUE(registered$drop_missing_start)
+}
 
 #' @eval pknca_rd_impute_method("PKNCA_impute_method_start_cmin")
 #' @export
@@ -228,11 +236,7 @@ PKNCA_impute_method_start_cmin <- function(conc, time, start, end, ..., options 
 pknca_register_impute_method(
   fun = "PKNCA_impute_method_start_cmin",
   description = "Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data).",
-  details =
-    paste(
-      "A row at the start time with a missing concentration is not a",
-      "measurement:  it is replaced by the imputed one."
-    )
+  drop_missing_start = TRUE
 )
 
 #' @eval pknca_rd_impute_method("PKNCA_impute_method_start_predose")
@@ -279,10 +283,9 @@ pknca_register_impute_method(
   details =
     paste(
       "The most recent predose sample with a measured concentration is shifted;",
-      "samples with a missing concentration are skipped.  A row at the start",
-      "time with a missing concentration is not a measurement:  it is replaced",
-      "by the shifted one."
-    )
+      "samples with a missing concentration are skipped."
+    ),
+  drop_missing_start = TRUE
 )
 
 #' @eval pknca_rd_impute_method("PKNCA_impute_method_start_predose_conc0")
@@ -316,10 +319,9 @@ pknca_register_impute_method(
       "time of an intravenous bolus dose is the C0 for that dose, and",
       '`start_conc0` would replace it with 0.  The chain',
       '`"start_predose,start_conc0"` cannot express this, because `start_conc0`',
-      "overwrites whatever `start_predose` shifted.  A row at the start time",
-      "with a missing concentration is not a measurement:  the start",
-      "concentration is imputed as if the row were absent."
-    )
+      "overwrites whatever `start_predose` shifted."
+    ),
+  drop_missing_start = TRUE
 )
 
 #' @eval pknca_rd_impute_method("PKNCA_impute_method_end_conc_drop")
@@ -358,6 +360,9 @@ pknca_register_impute_method(
 #'   \item{fun}{The function name (for example,
 #'   `"PKNCA_impute_method_start_conc0"`)}
 #'   \item{description}{The one-line description}
+#'   \item{drop_missing_start}{`TRUE` when the method treats a row at the
+#'   start of the interval with a missing concentration as absent:  the row is
+#'   dropped, with its other per-observation values, before the method runs}
 #'   \item{arguments}{A list column of data.frames with one row per argument
 #'   and the columns `argument` and `default` (the deparsed default, or `NA`
 #'   when there is none)}
@@ -377,6 +382,7 @@ pknca_impute_methods <- function() {
     method = methods[ord],
     fun = funs,
     description = vapply(X = registry[funs], FUN = "[[", "description", FUN.VALUE = "", USE.NAMES = FALSE),
+    drop_missing_start = vapply(X = funs, FUN = impute_method_drops_missing_start, FUN.VALUE = TRUE, USE.NAMES = FALSE),
     arguments = lapply(X = funs, FUN = pknca_function_arguments)
   )
 }

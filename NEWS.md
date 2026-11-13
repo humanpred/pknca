@@ -1471,23 +1471,36 @@ the generated intervals:
 
 * The `start_predose_conc0`, `start_predose`, and `start_cmin` imputation
   methods treat a row at the start time with a missing concentration as no
-  measurement, as they treat no row.  They tested only whether a row existed
-  at the start time, so a missing concentration there stopped the imputation
-  and was then dropped:  a profile sampled from 0.25 with a missing
-  concentration at 0 gave a missing AUClast from 0 with `start_predose_conc0`
-  ("Requesting an AUC range starting (0) before the first measurement (0.25)
-  is not allowed"), and now gives the value it gives without the row.  The
-  row's other values (volume, duration, half-life inclusion and exclusion,
-  and lloq) go with it, so the imputed start concentration has the values of
-  an added one.  With sparse data, missing samples at the start time are no
-  samples, with any imputation:  when every sample there is missing,
-  `start_predose_conc0` and `start_conc0` now add a known zero and give the
-  sparse AUCs, and `start_cmin` is refused (`pknca_error_sparse_impute`),
-  each as without those rows (`start_predose_conc0` and `start_cmin` gave
-  missing AUCs before, and `start_conc0` was refused).  `start_conc0` with a
-  missing sample beside measured ones at the start was refused, and now gives
-  the result without the missing sample.  `start_conc0` already set the start
-  concentration to 0 (@billdenney).
+  measurement, as they treat no row (@billdenney).  They tested only whether a
+  row existed at the start time, so a missing concentration there stopped the
+  imputation and was then dropped.  Each result is now the one for the data
+  without that row.  The results that change:
+  * A profile sampled from 0.25 h with a missing concentration at 0 (AUClast
+    from 0 to infinity) was `NA` ("Requesting an AUC range starting (0)
+    before the first measurement (0.25) is not allowed") with
+    `start_predose_conc0`, `start_cmin`, `"start_predose,start_cmin"`, and
+    `start_predose` with a predose sample to shift.  It is now 1836.34 with
+    `start_predose_conc0`, 1841.34 with `start_cmin` and
+    `"start_predose,start_cmin"` (the start is Cmin, 40), and the AUC from
+    the shifted predose concentration with `start_predose`.
+  * The row's other values (volume, duration, half-life inclusion and
+    exclusion, and lloq) go with it, so the imputed start concentration has
+    the values of an added observation.  The amount excreted of a urine
+    profile with a volume of 9 on the missing row was `NA` with `start_cmin`
+    and is 70, the value without the row; the imputed Cmin (10) is not given
+    that volume, which would make it 160.
+  * With sparse data, missing samples at the start time are no samples, with
+    any imputation.  When every sample there is missing,
+    `start_predose_conc0` and `start_conc0` add a known zero and give the
+    sparse AUCs, and `start_cmin` is refused (`pknca_error_sparse_impute`),
+    each as without those rows (`start_predose_conc0` and `start_cmin` gave
+    missing AUCs, and `start_conc0` was refused).  `start_conc0` with a
+    missing sample beside measured ones at the start was refused and now
+    gives the result without the missing sample.
+  * `start_conc0` already set the start concentration to 0, and is unchanged
+    with dense data.
+  * `pknca_impute_methods()` gains a `drop_missing_start` column saying which
+    methods treat a missing start concentration as absent.
 
 * Business functions (used for calculations of means, etc.) now return NA_real_
   for empty inputs rather than giving an error (#559).

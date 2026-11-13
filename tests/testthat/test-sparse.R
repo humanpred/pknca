@@ -1071,6 +1071,20 @@ sparse_test_impute_values <- function(d_conc, impute) {
   stats::setNames(res$PPORRES, res$PPTESTCD)
 }
 
+# Every result (parameter, value, and exclusion, sorted by parameter) of the
+# sparse `d_conc` over 0 to 12 with the imputation `impute`
+sparse_test_impute_all <- function(d_conc, impute) {
+  d_intervals <-
+    data.frame(start = 0, end = 12, auclast = TRUE, cmax = TRUE, count.conc = TRUE, count.conc.measured = TRUE)
+  res <-
+    as.data.frame(suppressWarnings(suppressMessages(pk.nca(
+      PKNCAdata(PKNCAconc(d_conc, conc ~ time | id, sparse = TRUE), intervals = d_intervals, impute = impute)
+    ))))
+  res <- as.data.frame(res[order(res$PPTESTCD), c("PPTESTCD", "PPORRES", "exclude")])
+  rownames(res) <- NULL
+  res
+}
+
 test_that("a missing sample at the start time is no sample for the start imputations", {
   d_base <-
     data.frame(
@@ -1148,6 +1162,26 @@ test_that("a missing sample at the start time is no sample for the start imputat
   # end_conc_drop drops the samples at the end, which is refused either way
   expect_error(sparse_test_impute_values(d_one_missing, "end_conc_drop"), class = "pknca_error_sparse_impute")
   expect_error(sparse_test_impute_values(d_two_zero, "end_conc_drop"), class = "pknca_error_sparse_impute")
+  # Directly:  without imputation, and with an imputation that changes nothing
+  # (end_conc_drop with no sample at the end), every result, the counts
+  # included, is the same with and without the missing start sample
+  for (current in c(NA, "end_conc_drop")) {
+    expect_equal(
+      sparse_test_impute_all(d_one_missing, current),
+      sparse_test_impute_all(d_two_zero, current),
+      info = current
+    )
+  }
+  expect_equal(
+    sparse_test_impute_all(d_one_missing, NA),
+    data.frame(
+      PPTESTCD = c("auclast", "auclast_df", "auclast_se", "cmax", "count.conc", "count.conc.measured"),
+      PPORRES = c(13.146667, 2.243333, 2.313108, 3.046667, 3, 2),
+      exclude = NA_character_
+    ),
+    tolerance = 1e-6,
+    ignore_attr = "row.names"
+  )
 })
 
 test_that("as_sparse_pk() marks a time with only missing subjects as imputed", {

@@ -15,6 +15,9 @@ columns:
 \item{fun}{The function name (for example,
 \code{"PKNCA_impute_method_start_conc0"})}
 \item{description}{The one-line description}
+\item{drop_missing_start}{\code{TRUE} when the method treats a row at the
+start of the interval with a missing concentration as absent:  the row is
+dropped, with its other per-observation values, before the method runs}
 \item{arguments}{A list column of data.frames with one row per argument
 and the columns \code{argument} and \code{default} (the deparsed default, or \code{NA}
 when there is none)}
