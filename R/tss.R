@@ -21,7 +21,9 @@
 #'
 #'   When `check` is `TRUE`, `subject` and `treatment` may not have
 #'   missing values (`pknca_error_tss_subject_na` and
-#'   `pknca_error_tss_treatment_na`).
+#'   `pknca_error_tss_treatment_na`).  When `check` is `FALSE`, they are not
+#'   checked, and a missing subject or treatment is a value of its own for the
+#'   BLQ rules:  the rows without a subject in a treatment are one profile.
 #'
 #'   When `subject` is given and `check` is `TRUE`, two records for the same
 #'   subject, treatment (if given), and time are an error
@@ -145,15 +147,25 @@ pk.tss.data.prep <- function(conc, time, subject, treatment,
 tss_clean_blq_by_profile <- function(conc, time, subject, treatment, conc.blq, conc.na, options) {
   cols <- list(subject = subject, treatment = treatment)
   cols <- cols[!vapply(X = cols, FUN = is.null, FUN.VALUE = TRUE)]
-  profile <-
-    if (length(cols) == 0) {
-      rep(1L, length(conc))
+  # Profiles are keyed by the integer code of each column's value, so values
+  # that would paste to the same label (subject "1.A" in treatment "B" and
+  # subject "1" in treatment "A.B") stay apart.  A missing value is matched to
+  # itself, so it is one more value (possible only with `check = FALSE`).
+  codes <- Map(f = match, x = cols, table = lapply(X = cols, FUN = unique))
+  key <-
+    if (length(codes) == 0) {
+      rep("", length(conc))
     } else {
-      interaction(cols, drop = TRUE, lex.order = TRUE)
+      do.call(paste, unname(codes))
     }
+  rows_by_profile <- split(seq_along(conc), factor(key, levels = unique(key)))
+  if (length(rows_by_profile) == 0) {
+    # Zero rows of input:  clean one empty profile so that the columns of
+    # clean.conc.blq() are returned
+    rows_by_profile <- list(integer(0))
+  }
   pieces <- list()
-  for (current in unique(profile)) {
-    idx <- which(profile %in% current)
+  for (idx in rows_by_profile) {
     idx <- idx[order(time[idx])]
     pieces[[length(pieces) + 1]] <-
       do.call(

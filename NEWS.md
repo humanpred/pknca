@@ -424,9 +424,10 @@ the generated intervals:
   limit of quantification, that subject's zeros at 2 and 3 hours were
   dropped and are now kept:  its individual Tss changes from 8.20 to 15.04
   hours and the population Tss from 4.68 to 4.70.  Data whose only zero
-  troughs are at the first dose of every subject do not change.  Without
-  `subject`, each treatment's troughs are a profile, and without either,
-  all the troughs.
+  troughs are at the first dose of every subject do not change.  A subject
+  whose troughs are all zero keeps them all with the default rules, as
+  `clean.conc.blq()` does for one profile.  Without `subject`, each
+  treatment's troughs are a profile, and without either, all the troughs.
 
 ### New features
 

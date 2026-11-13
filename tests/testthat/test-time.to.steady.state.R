@@ -1857,6 +1857,65 @@ test_that("a population, popind, or individual request with one subject is NA wi
   expect_equal(est$status, c("estimated", "insufficient_data"))
 })
 
+test_that("several dosed subjects with troughs for only one are NA with insufficient data", {
+  # Every subject of treatment A is dosed at each dose time, but only subject 1
+  # is sampled at the dose times (the others an hour later), so one subject is
+  # left after the troughs are selected
+  d <- tss_test_theoph()
+  d <- d[d$treatment == "A", ]
+  other <- d$Subject != "1"
+  d$time[other] <- d$time[other] + 1
+  dose_subjects <- unique(d$Subject)
+  msg <- "Cannot give 'population', 'popind', or 'individual' output without multiple subjects of data"
+  expected_est <-
+    data.frame(
+      type = "monoexponential", output = "population", treatment = NA_character_, subject = NA_character_,
+      estimate = NA_real_, lower = NA_real_, upper = NA_real_, level = 0.95,
+      status = "insufficient_data", fit_warning = NA_character_, message = msg
+    )
+  # With subject.dosing for every subject, and with time.dosing only
+  fits <-
+    list(
+      tss_test_with_warnings(
+        pk.tss(
+          conc = d$conc, time = d$time, subject = d$Subject,
+          subject.dosing = rep(dose_subjects, each = 14),
+          time.dosing = rep(tss_test_dose_times(), length(dose_subjects)),
+          type = "monoexponential", output = "population"
+        )
+      ),
+      tss_test_with_warnings(
+        pk.tss(
+          conc = d$conc, time = d$time, subject = d$Subject, time.dosing = tss_test_dose_times(),
+          type = "monoexponential", output = "population"
+        )
+      )
+    )
+  for (current in fits) {
+    expect_equal(tss_test_warning_classes(current), "pknca_warning_tss_output_no_subjects")
+    expect_equal(vapply(current$warnings, conditionMessage, ""), msg)
+    expect_equal(current$value, data.frame(tss.monoexponential.population = NA_real_), ignore_attr = "estimates")
+    expect_equal(tss_test_check_estimates(current$value), expected_est)
+  }
+  # With both types, stepwise linear is still estimated from subject 1's
+  # troughs
+  both <-
+    tss_test_with_warnings(
+      pk.tss(conc = d$conc, time = d$time, subject = d$Subject, time.dosing = tss_test_dose_times(), output = "population")
+    )
+  expect_equal(tss_test_warning_classes(both), "pknca_warning_tss_output_no_subjects")
+  expect_equal(
+    both$value,
+    data.frame(tss.monoexponential.population = NA_real_, tss.stepwise.linear = 60),
+    ignore_attr = "estimates"
+  )
+  est <- tss_test_check_estimates(both$value)
+  expect_equal(est[1, ], expected_est)
+  expect_equal(est$type[2], "stepwise.linear")
+  expect_equal(est$estimate[2], 60)
+  expect_equal(est$status[2], "estimated")
+})
+
 # BLQ rules ####
 
 
@@ -1867,10 +1926,10 @@ test_that("BLQ rules are applied to each subject's troughs", {
     pk.tss.data.prep(conc = c(0, 3, 5, 6, 0, 0, 0, 6), time = rep(0:3, 2), subject = rep(1:2, each = 4), time.dosing = 0:3),
     data.frame(conc = c(0, 3, 5, 6, 0, 0, 0, 6), time = rep(0:3, 2), subject = factor(rep(1:2, each = 4)))
   )
-  # Each subject alone gives the same rows
+  # Subject 2 alone gives the same rows
   expect_equal(
-    clean.conc.blq(conc = c(0, 0, 0, 6), time = 0:3)$time,
-    0:3
+    pk.tss.data.prep(conc = c(0, 0, 0, 6), time = 0:3, subject = rep(2, 4), time.dosing = 0:3),
+    data.frame(conc = c(0, 0, 0, 6), time = 0:3)
   )
   # With rules by Tmax, each subject's zeros are classed by its own Tmax (1 for
   # subject 1, 2 for subject 2), whatever the order of the rows
@@ -1948,6 +2007,120 @@ test_that("the BLQ rules per profile keep the input order of the rows", {
     structure(
       data.frame(conc = c(6, 3, 0, 0, 5, 0, 6), time = c(3, 1, 0, 0, 2, 1, 3), subject = factor(c(1, 1, 1, 2, 2, 2, 2))),
       row.names = c(1L, 3:8)
+    )
+  )
+})
+
+test_that("subject and treatment values that paste to the same label are separate profiles", {
+  # Subject "1.A" in treatment "B" and subject "1" in treatment "A.B" would both
+  # be "1.A.B":  pooled, the first profile's zero at time 2 would be "middle"
+  # and dropped; on its own, it is "first" and kept
+  expect_equal(
+    pk.tss.data.prep(
+      conc = c(0, 0, 0, 6, 0, 3, 5, 6), time = rep(0:3, 2),
+      subject = rep(c("1.A", "1"), each = 4), treatment = rep(c("B", "A.B"), each = 4),
+      time.dosing = 0:3
+    ),
+    data.frame(
+      conc = c(0, 0, 0, 6, 0, 3, 5, 6), time = rep(0:3, 2),
+      subject = factor(rep(c("1.A", "1"), each = 4)), treatment = factor(rep(c("B", "A.B"), each = 4))
+    )
+  )
+  # The same with a numeric subject (1.1 in treatment "2" and 1 in "1.2")
+  expect_equal(
+    pk.tss.data.prep(
+      conc = c(0, 0, 0, 6, 0, 3, 5, 6), time = rep(0:3, 2),
+      subject = rep(c(1.1, 1), each = 4), treatment = rep(c("2", "1.2"), each = 4),
+      time.dosing = 0:3
+    ),
+    data.frame(
+      conc = c(0, 0, 0, 6, 0, 3, 5, 6), time = rep(0:3, 2),
+      subject = factor(rep(c("1.1", "1"), each = 4)), treatment = factor(rep(c("2", "1.2"), each = 4))
+    )
+  )
+})
+
+test_that("BLQ rules per profile with a factor subject and with a profile whose rows are all dropped", {
+  # A factor subject is kept as given, with its unused levels; subject 3's
+  # concentrations are all missing, so its profile is dropped
+  subject <- factor(rep(c("1", "2", "3"), each = 4), levels = c("1", "2", "3", "4"))
+  expect_equal(
+    pk.tss.data.prep(
+      conc = c(0, 3, 5, 6, 0, 0, 0, 6, NA, NA, NA, NA), time = rep(0:3, 3), subject = subject, time.dosing = 0:3
+    ),
+    data.frame(
+      conc = c(0, 3, 5, 6, 0, 0, 0, 6), time = rep(0:3, 2),
+      subject = factor(rep(c("1", "2"), each = 4), levels = c("1", "2", "3", "4"))
+    )
+  )
+  # Subject 3's troughs are all BLQ:  dropped with conc.blq = "drop", and kept
+  # with the default rules, as clean.conc.blq() gives them for that subject
+  # alone
+  conc <- c(1, 3, 5, 6, 2, 1, 1, 6, 0, 0, 0, 0)
+  expect_equal(
+    pk.tss.data.prep(conc = conc, time = rep(0:3, 3), subject = subject, time.dosing = 0:3, conc.blq = "drop"),
+    data.frame(conc = conc[1:8], time = rep(0:3, 2), subject = factor(rep(c("1", "2"), each = 4), levels = c("1", "2", "3", "4")))
+  )
+  expect_equal(
+    pk.tss.data.prep(conc = conc, time = rep(0:3, 3), subject = subject, time.dosing = 0:3),
+    data.frame(conc = conc, time = rep(0:3, 3), subject = subject)
+  )
+  expect_equal(clean.conc.blq(conc = c(0, 0, 0, 0), time = 0:3)$time, 0:3)
+})
+
+test_that("zero rows of input give zero rows with the columns given", {
+  expect_equal(
+    pk.tss.data.prep(conc = numeric(0), time = numeric(0), time.dosing = 0:3, check = FALSE),
+    data.frame(conc = numeric(0), time = numeric(0))
+  )
+  expect_equal(
+    pk.tss.data.prep(
+      conc = numeric(0), time = numeric(0), subject = character(0), treatment = character(0), time.dosing = 0:3,
+      check = FALSE
+    ),
+    data.frame(conc = numeric(0), time = numeric(0), subject = factor(character(0)), treatment = factor(character(0)))
+  )
+  # With check = TRUE, the empty data are warned about and then give the same
+  ret <-
+    tss_test_with_warnings(
+      pk.tss.data.prep(conc = numeric(0), time = numeric(0), subject = character(0), time.dosing = 0:3)
+    )
+  expect_equal(
+    vapply(ret$warnings, conditionMessage, ""),
+    c("No concentration data given", "No time data given")
+  )
+  expect_equal(ret$value, data.frame(conc = numeric(0), time = numeric(0), subject = factor(character(0))))
+  # pk.tss() has insufficient data
+  fit <-
+    suppressWarnings(
+      pk.tss(conc = numeric(0), time = numeric(0), time.dosing = 0:3, type = "stepwise.linear")
+    )
+  expect_equal(fit, data.frame(tss.stepwise.linear = NA_real_), ignore_attr = "estimates")
+  expect_equal(tss_test_check_estimates(fit)$status, "insufficient_data")
+})
+
+test_that("with check = FALSE, a missing subject is a value of its own for the BLQ rules", {
+  # The rows without a subject (times 1 and 2) are one profile, of zeros only,
+  # so they are kept; subjects 1 and 2 have no zero between positive troughs
+  expect_equal(
+    pk.tss.data.prep(
+      conc = c(0, 3, 0, 6, 0, 0, 0, 6), time = rep(0:3, 2), subject = c(1, 1, NA, 1, 2, NA, 2, 2),
+      time.dosing = 0:3, check = FALSE
+    ),
+    data.frame(conc = c(0, 3, 0, 6, 0, 0, 0, 6), time = rep(0:3, 2), subject = factor(c(1, 1, NA, 1, 2, NA, 2, 2)))
+  )
+  # A missing treatment likewise:  subject 2's rows are one profile
+  expect_equal(
+    pk.tss.data.prep(
+      conc = c(0, 3, 0, 6, 0, 0, 0, 6), time = rep(0:3, 2), subject = rep(1:2, each = 4),
+      treatment = rep(c("A", NA), each = 4), time.dosing = 0:3, check = FALSE
+    ),
+    structure(
+      data.frame(
+        conc = c(0, 3, 6, 0, 0, 0, 6), time = c(0, 1, 3, 0:3),
+        subject = factor(rep(1:2, c(3, 4))), treatment = factor(rep(c("A", NA), c(3, 4)))
+      ),
+      row.names = c(1:2, 4:8)
     )
   )
 })
