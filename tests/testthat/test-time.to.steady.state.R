@@ -1856,3 +1856,39 @@ test_that("a population, popind, or individual request with one subject is NA wi
   expect_equal(est$output, c("single", "population"))
   expect_equal(est$status, c("estimated", "insufficient_data"))
 })
+
+# BLQ rules ####
+
+test_that("BLQ rules are applied to all subjects' troughs pooled", {
+  # Subject 2's zero at time 2 is between the first (1) and last (3) positive
+  # troughs of the pooled data, so it is "middle" and dropped, though it is
+  # before subject 2's own first positive trough
+  expect_equal(
+    pk.tss.data.prep(conc = c(0, 3, 5, 6, 0, 0, 0, 6), time = rep(0:3, 2), subject = rep(1:2, each = 4), time.dosing = 0:3),
+    structure(
+      data.frame(conc = c(0, 3, 5, 6, 0, 0, 6), time = c(0:3, 0, 1, 3), subject = factor(c(1, 1, 1, 1, 2, 2, 2))),
+      row.names = c(1:6, 8L)
+    )
+  )
+  # With rules by Tmax, the pooled Tmax is the first maximum in row order, so
+  # subject 2's zero at time 1 is kept or dropped by the order of the rows
+  rule <- list(before.tmax = "drop", after.tmax = "keep")
+  conc <- c(0, 6, 0, 0, 0, 6, 0, 0)
+  time <- c(0, 1, 2, 3, 0, 2, 3, 1)
+  subject <- rep(1:2, each = 4)
+  expect_equal(
+    pk.tss.data.prep(conc = conc, time = time, subject = subject, time.dosing = 0:3, conc.blq = rule),
+    structure(
+      data.frame(conc = c(6, 0, 0, 6, 0, 0), time = c(1, 2, 3, 2, 3, 1), subject = factor(c(1, 1, 1, 2, 2, 2))),
+      row.names = c(2:4, 6:8)
+    )
+  )
+  idx <- c(5:8, 1:4)
+  expect_equal(
+    pk.tss.data.prep(conc = conc[idx], time = time[idx], subject = subject[idx], time.dosing = 0:3, conc.blq = rule),
+    structure(
+      data.frame(conc = c(6, 0, 6, 0, 0), time = c(2, 3, 1, 2, 3), subject = factor(c(2, 2, 1, 1, 1))),
+      row.names = c(2:3, 6:8)
+    )
+  )
+})
