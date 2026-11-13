@@ -1092,6 +1092,93 @@ test_that("dose regimen warnings of a group are given even when the group errors
   expect_equal(ret, "value")
 })
 
+# Every warning raised while a group's intervals are chosen names the group, as
+# the dose regimen warnings do
+test_that("warnings from choosing a group's intervals name the group", {
+  # No tau can be found from doses at 0, 5, and 17
+  d_conc_irregular <-
+    data.frame(
+      subject = 1,
+      time = c(0, 1, 2, 5, 6, 7, 17, 18, 20, 30),
+      conc = c(0, 5, 3, 2, 6, 4, 2, 6, 4, 1)
+    )
+  d_dose_irregular <- data.frame(subject = 1, time = c(0, 5, 17), dose = 1)
+  warnings_no_tau <-
+    testthat::capture_warnings(
+      PKNCAdata(
+        PKNCAconc(d_conc_irregular, conc~time|subject),
+        PKNCAdose(d_dose_irregular, dose~time|subject)
+      )
+    )
+  expect_equal(
+    warnings_no_tau,
+    "subject=1: The dosing interval could not be determined from the dose times, so no interval was generated for one dosing interval after the last dose"
+  )
+  expect_warning(
+    PKNCAdata(
+      PKNCAconc(d_conc_irregular, conc~time|subject),
+      PKNCAdose(d_dose_irregular, dose~time|subject)
+    ),
+    class = "pknca_warning_no_tau_for_intervals"
+  )
+  # A subject with concentrations but no doses
+  d_conc_nodose <- rbind(d_conc_irregular, transform(d_conc_irregular, subject = 2))
+  warnings_nodose <-
+    testthat::capture_warnings(
+      PKNCAdata(
+        PKNCAconc(d_conc_nodose, conc~time|subject),
+        PKNCAdose(d_dose_irregular, dose~time|subject)
+      )
+    )
+  expect_equal(
+    warnings_nodose,
+    c(
+      "subject=1: The dosing interval could not be determined from the dose times, so no interval was generated for one dosing interval after the last dose",
+      "subject=2: No dose times are available, so no intervals can be generated",
+      "subject=2: No intervals generated likely due to limited concentration data"
+    )
+  )
+  # More than one route in the group
+  d_conc_routes <-
+    data.frame(subject = 1, time = c(0, 1, 2, 12, 13, 14, 24), conc = c(0, 5, 3, 2, 6, 4, 2))
+  d_dose_routes <-
+    data.frame(
+      subject = 1, time = c(0, 12), dose = 1, route = c("intravascular", "extravascular")
+    )
+  expect_warning(
+    PKNCAdata(
+      PKNCAconc(d_conc_routes, conc~time|subject),
+      PKNCAdose(d_dose_routes, dose~time|subject, route = "route")
+    ),
+    regexp = "^subject=1: More than one dosing route in a group \\(intravascular, extravascular\\)",
+    class = "pknca_warning_multiple_dose_routes"
+  )
+})
+
+# A group's interval selection giving a PKNCA warning outside the dose regimen
+# class and a warning from outside PKNCA
+group_warned_other <- function() {
+  rlang::warn("other pknca warning", class = "pknca_warning_test_other")
+  warning("base warning")
+  "value"
+}
+
+test_that("only interval selection gathers every PKNCA warning of a group", {
+  # Interval selection prefixes the PKNCA warning; the other passes unchanged
+  warnings <-
+    testthat::capture_warnings(
+      ret <- pknca_with_regimen_warnings(group_warned_other(), prefix = "g: ")
+    )
+  expect_equal(warnings, c("base warning", "g: other pknca warning"))
+  expect_equal(ret, "value")
+  # The calculation (pk.nca()) gathers only the dose regimen warnings
+  collector <- pknca_regimen_warning_collector()
+  warnings <-
+    testthat::capture_warnings(pknca_collect_regimen_warnings(group_warned_other(), collector))
+  expect_equal(warnings, c("other pknca warning", "base warning"))
+  expect_equal(length(collector$conditions), 0)
+})
+
 test_that("find.tau takes times without a unit to be hours", {
   # A dose two hours late is once-daily dosing, not a 25 hour interval
   expect_no_warning(tau_late <- find.tau(c(0, 24, 50)))

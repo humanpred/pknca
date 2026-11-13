@@ -1560,6 +1560,14 @@ the generated intervals:
   `target_groups = data.frame(start = 0, end = 12)`, which the error message
   suggests.  (@billdenney)
 
+* Every warning raised while `PKNCAdata()` generates a group's intervals now
+  starts with the group (`"subject=1: "`), as the dose regimen warnings already
+  did.  `pknca_warning_no_tau_for_intervals` (no dosing interval could be found
+  from the dose times), `pknca_warning_no_dose_times_for_group` (a group with
+  concentrations but no doses), and `pknca_warning_multiple_dose_routes` did
+  not say which group they were about, and each is now given once per
+  group.  (@billdenney)
+
 ## Other changes
 
 * The sparse AUC vignette and the help of `var_sparse_auc()` and
