@@ -43,6 +43,11 @@
 #'   same dose is given in every interval.  When given as a two-sided
 #'   formula, both the dose amount and time are used directly from the
 #'   data.
+#'
+#'   A negative dose amount is an error (`pknca_error_dose_negative`, naming
+#'   the rows), here and again in [pk.nca()] for a dose made negative later
+#'   (for example by `mutate()`).  A zero or missing amount is allowed, and a
+#'   row excluded with `exclude` is not checked.
 #' @family PKNCA objects
 #' @export
 PKNCAdose <- function(data, ...)
@@ -152,6 +157,7 @@ PKNCAdose.data.frame <- function(data, formula, route, rate, duration,
       class = "pknca_error_partial_missing_indepvar"
     )
   }
+  assert_dose_not_negative(ret)
   if (length(parsed_form$time) == 1 && inherits(data[[parsed_form$time]], "Date")) {
     pknca_warn_date_time(time_col = parsed_form$time, data_type = "dose")
   }
@@ -291,6 +297,41 @@ getDepVar.PKNCAdose <- function(x, ...) {
   } else {
     as.data.frame(x)[, dose_col]
   }
+}
+
+#' Require that no dose amount is negative
+#'
+#' A negative dose amount is invalid input.  A zero amount and a missing
+#' amount are allowed, and an excluded row is not checked, as for the dose
+#' times.
+#'
+#' @param object A PKNCAdose object
+#' @returns `object`, invisibly, or the error `pknca_error_dose_negative`
+#'   naming the first rows of the dose data with a negative amount and their
+#'   count
+#' @keywords Internal
+#' @noRd
+assert_dose_not_negative <- function(object) {
+  dose <- getDepVar.PKNCAdose(object)
+  if (!is.numeric(dose)) {
+    return(invisible(object))
+  }
+  # The plain numbers, so that a units column needs no method
+  values <- as.numeric(dose)
+  rows <- which(!is.na(values) & values < 0 & is.na(normalize_exclude(object)))
+  if (length(rows) > 0) {
+    rlang::abort(
+      sprintf(
+        "Dose amounts (column '%s') must not be negative; %d row(s) of the dose data are: %s%s",
+        object$columns$dose,
+        length(rows),
+        paste(utils::head(rows, 5), collapse = ", "),
+        if (length(rows) > 5) ", ..." else ""
+      ),
+      class = "pknca_error_dose_negative"
+    )
+  }
+  invisible(object)
 }
 
 #' @export

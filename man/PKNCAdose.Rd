@@ -88,6 +88,11 @@ per group.  When the right side is missing, PKNCA assumes that the
 same dose is given in every interval.  When given as a two-sided
 formula, both the dose amount and time are used directly from the
 data.
+
+A negative dose amount is an error (\code{pknca_error_dose_negative}, naming
+the rows), here and again in \code{\link[=pk.nca]{pk.nca()}} for a dose made negative later
+(for example by \code{mutate()}).  A zero or missing amount is allowed, and a
+row excluded with \code{exclude} is not checked.
 }
 \seealso{
 Other PKNCA objects:
