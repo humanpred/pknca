@@ -139,12 +139,16 @@ choose_interval_method <- function(conc, time, tlast, method, auc.type, options)
     # We only need tmax for lin-log, and it is always recalculated to prevent
     # potential issues where tmax may be relative to the start of an interval vs
     # relative to absolute time.
-    tmax <- pk.calc.tmax(conc = conc, time = time, options = options)
+    # check = FALSE: aucint integrates from both clast.obs and clast.pred at
+    # tlast, so time may be duplicated.
+    tmax <- pk.calc.tmax(conc = conc, time = time, options = options, check = FALSE)
     mask_pre_tmax <- time[idx_2] <= tmax
     mask_post_tmax <- !mask_pre_tmax
     mask_zero_start_end <- conc[idx_1] %in% 0 | conc[idx_2] %in% 0
-    mask_linear <- mask_pre_tmax | mask_zero_start_end
-    mask_log <- mask_post_tmax & !mask_zero_start_end
+    # The log trapezoid is 0/0 for equal concentrations; its limit is linear.
+    mask_equal <- conc[idx_1] == conc[idx_2]
+    mask_linear <- mask_pre_tmax | mask_zero_start_end | mask_equal
+    mask_log <- mask_post_tmax & !mask_zero_start_end & !mask_equal
     ret[c(mask_linear, FALSE)] <- "linear"
     ret[c(mask_log, FALSE)] <- "log"
   } else {

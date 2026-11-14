@@ -748,6 +748,15 @@ test_that("AUC with a single concentration measured should return NA (fix #176)"
   )
 })
 
+test_that("lin-log integrates equal concentrations after Tmax linearly (#720)", {
+  # 0-1 and 1-2 linear, 2-3 log
+  expect_equal(
+    pk.calc.auc.last(c(0, 10, 10, 5), 0:3, method = "lin-log"),
+    5 + 10 + 5 / log(2),
+    ignore_attr = TRUE
+  )
+})
+
 test_that("pk.calc.auc and wrappers: method attribute is set and propagated", {
 
   auc_params <- c(

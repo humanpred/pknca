@@ -241,6 +241,26 @@ test_that("choose_interval_method", {
       "zero"
     )
   )
+  # lin-log: equal concentrations after Tmax are linear; a rise after Tmax is
+  # still log (#720)
+  expect_equal(
+    choose_interval_method(
+      conc = c(0, 10, 10, 5, 5, 8, 4),
+      time = 0:6,
+      method = "lin-log", auc.type = "AUClast", options = list()
+    ),
+    c("linear", "linear", "log", "linear", "log", "log", "zero")
+  )
+  # lin-log allows duplicated times (aucint with clast.pred, #720)
+  expect_equal(
+    choose_interval_method(
+      conc = c(0, 10, 5, 4.5, 1),
+      time = c(0, 1, 2, 2, 10),
+      tlast = 10,
+      method = "lin-log", auc.type = "AUClast", options = list()
+    ),
+    c("linear", "log", "log", "log", "zero")
+  )
 })
 
 test_that("choose_interval_method errors when tlast is found multiple times", {

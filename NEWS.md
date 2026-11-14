@@ -1212,6 +1212,11 @@ the generated intervals:
 
 ## Bug fixes
 
+* `"lin-log"` AUC and AUMC are no longer `NaN` when two consecutive
+  concentrations after Tmax are equal, and `"lin-log"` interval AUCs ending
+  after Tlast (e.g. `aucint.inf.pred`) no longer stop with "Contains duplicated
+  values" (@kawasakin, #720).
+
 * Preferred units (`concu_pref`, `doseu_pref`, and the others) with unit
   columns whose units differ between groups no longer stop `PKNCAdata()` with
   "arguments imply differing number of rows: 1, 0" when some groups are

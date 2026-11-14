@@ -1292,6 +1292,22 @@ test_that("aucint.inf.* do not use the half-life for an interpolated start befor
   expect_equal(attr(auc, "exclude"), "DO NOT EXCLUDE")
 })
 
+test_that("lin-log aucint.inf.pred over an interval ending after Tlast is calculated (#720)", {
+  d <- data.frame(
+    ID = 1, time = c(0, 1, 2, 4, 8, 12, 24, 48),
+    conc = c(0, 10, 8, 6, 4, 2.5, 1, 0.2)
+  )
+  o <- PKNCAdata(
+    PKNCAconc(d, conc ~ time | ID),
+    PKNCAdose(data.frame(ID = 1, time = 0, dose = 1), dose ~ time | ID),
+    intervals = data.frame(start = 0, end = 72, aucint.inf.pred = TRUE),
+    options = list(auc.method = "lin-log")
+  )
+  r <- as.data.frame(pk.nca(o))
+  # Same as "lin up/log down": the profile only falls after Tmax
+  expect_equal(r$PPORRES[r$PPTESTCD == "aucint.inf.pred"], 94.23102, tolerance = 1e-6)
+})
+
 test_that("aucint over an IV multiple-dose interval ending at the next dose does not warn", {
   conc <- c(9, 8, 6, 4, 2.8)
   time <- c(0.5, 1, 2, 4, 6)
