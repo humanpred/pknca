@@ -1469,9 +1469,10 @@ the generated intervals:
   measured concentration is shifted instead, as long as it is within
   `max_shift` (#361).
 
-* The `start_predose_conc0`, `start_predose`, and `start_cmin` imputation
-  methods treat a row at the start time with a missing concentration as no
-  measurement, as they treat no row (@billdenney).  They tested only whether a
+* The `start_predose_conc0`, `start_predose`, `start_cmin`, and
+  `start_conc0` imputation methods treat a row at the start time with a
+  missing concentration as no measurement, as they treat no row
+  (@billdenney).  They tested only whether a
   row existed at the start time, so a missing concentration there stopped the
   imputation and was then dropped.  Each result is now the one for the data
   without that row.  The results that change:
@@ -1497,8 +1498,11 @@ the generated intervals:
     missing AUCs, and `start_conc0` was refused).  `start_conc0` with a
     missing sample beside measured ones at the start was refused and now
     gives the result without the missing sample.
-  * `start_conc0` already set the start concentration to 0, and is unchanged
-    with dense data.
+  * `start_conc0` already set a missing start concentration to 0.  It now
+    follows the same rule:  the row is dropped and the 0 is added with the
+    values of an added observation, so a volume or a half-life flag on the
+    missing row no longer reaches it.  A measured start concentration is
+    still replaced with 0 in place.
   * `pknca_impute_methods()` gains a `drop_missing_start` column saying which
     methods treat a missing start concentration as absent.
 

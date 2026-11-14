@@ -1335,10 +1335,28 @@ test_that("impute_conc_time gives a missing start row's values to no observation
     ),
     ignore_attr = "row.names"
   )
-  # start_conc0 replaces the missing concentration in place, so the row keeps
-  # its values
+  # start_conc0 likewise:  the missing row is dropped and its zero is added
+  # with the values of an added observation
   expect_equal(
     do.call(impute_test_obs_chain, c(list(impute_funs = "PKNCA_impute_method_start_conc0", predose = FALSE), args)),
+    data.frame(
+      conc = c(0, 40, 80, 130), time = c(0, 1, 2, 4), volume = c(0, 1, 1, 1), duration.conc = c(NA, 1, 1, 1),
+      include_half.life = c(NA, FALSE, TRUE, TRUE), exclude_half.life = c(NA, FALSE, FALSE, FALSE),
+      lloq = c(1, 1, 1, 1)
+    ),
+    ignore_attr = "row.names"
+  )
+  expect_equal(
+    do.call(impute_test_obs_chain, c(list(impute_funs = "PKNCA_impute_method_start_conc0", predose = FALSE), args)),
+    do.call(impute_test_obs_chain, c(list(impute_funs = "PKNCA_impute_method_start_conc0", predose = FALSE), args_absent)),
+    ignore_attr = "row.names"
+  )
+  # A measured start concentration is still replaced with 0 in place, so it
+  # keeps its values
+  args_measured <- args
+  args_measured$conc[1] <- 7
+  expect_equal(
+    do.call(impute_test_obs_chain, c(list(impute_funs = "PKNCA_impute_method_start_conc0", predose = FALSE), args_measured)),
     data.frame(
       conc = c(0, 40, 80, 130), time = c(0, 1, 2, 4), volume = c(9, 1, 1, 1), duration.conc = c(9, 1, 1, 1),
       include_half.life = c(TRUE, FALSE, TRUE, TRUE), exclude_half.life = c(TRUE, FALSE, FALSE, FALSE),

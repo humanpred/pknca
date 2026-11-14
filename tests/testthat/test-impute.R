@@ -1487,10 +1487,10 @@ test_that("start imputations with zero rows", {
 
 test_that("the registered methods that drop a missing start give the result without that row", {
   methods <- pknca_impute_methods()
-  # The three start methods declare it in their registration
+  # The four start methods declare it in their registration
   expect_equal(
     methods$method[methods$drop_missing_start],
-    c("start_cmin", "start_predose", "start_predose_conc0")
+    c("start_cmin", "start_conc0", "start_predose", "start_predose_conc0")
   )
   # Every method that declares it gives, with its per-observation values, the
   # result for the data without the row, with and without a predose sample;
@@ -1516,7 +1516,7 @@ test_that("the registered methods that drop a missing start give the result with
     )
   }
   # A method that does not declare it gets no such sentence
-  expect_false(grepl("it is dropped", pknca_rd_impute_method("PKNCA_impute_method_start_conc0"), fixed = TRUE))
+  expect_false(grepl("it is dropped", pknca_rd_impute_method("PKNCA_impute_method_end_conc_drop"), fixed = TRUE))
   expect_false(impute_method_drops_missing_start("PKNCA_impute_method_not_registered"))
   expect_error(
     pknca_register_impute_method(fun = "PKNCA_impute_method_x", description = "x", drop_missing_start = NA),

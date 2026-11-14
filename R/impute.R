@@ -161,8 +161,8 @@ pknca_register_impute_method <- function(fun, description, details = NULL, drop_
 #' @param ... ignored
 #' @export
 PKNCA_impute_method_start_conc0 <- function(conc, time, start=0, ..., options = list()) {
-  ret <- data.frame(conc = conc, time = time)
-  mask_start <- time %in% start
+  ret <- impute_drop_missing_start(data.frame(conc = conc, time = time), start = start)
+  mask_start <- ret$time %in% start
   if (any(mask_start)) {
     ret$conc[mask_start] <- 0
   } else {
@@ -183,7 +183,8 @@ pknca_register_impute_method(
       '`"start_conc0"` alone.  To carry a predose measurement to the start time,',
       "use `start_predose` without `start_conc0`.  When no observation exists at",
       "the start time, a new row with a concentration of 0 is added."
-    )
+    ),
+  drop_missing_start = TRUE
 )
 
 #' Drop the rows at the start time that have a missing concentration
