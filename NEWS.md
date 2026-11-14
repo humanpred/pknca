@@ -1217,14 +1217,22 @@ the generated intervals:
   `aucivlast` does, so they equal `aucint.*` and `aumcint.*` and the percent
   back-extrapolated (`aucivpbext.int.last`, `aucivpbext.int.all`) is 0
   (@billdenney).  They back-extrapolated C0 from the concentrations after the
-  dose, so `aucivpbext.int.last` stopped `pk.nca()` with "Please report a bug
-  ... `auciv must be >= auc`" when the measured value was above that C0 (20
-  against 19.69 for a bolus profile of 20, 16, 13, ... at 0, 1, 2, ... hours,
-  with `aucint.last` 90.39), and was a small positive percent when it was
-  below.  After an earlier dose the measured value is still the trough; a
-  trough above the back-extrapolated C0 now gives a missing percent
-  back-extrapolated with the reason and a
-  `pknca_warning_auciv_pbext_negative` warning, in place of the error.
+  dose instead.  The results that change, for a bolus profile of 20, 16, 13, 8,
+  3.5, 1.5, and 0.1 at 0, 1, 2, 4, 8, 12, and 24 hours:
+  * With the measured value above the back-extrapolated C0 (20 against 19.69),
+    `aucivpbext.int.last` stopped `pk.nca()` with "Please report a bug ...
+    `auciv must be >= auc`".  `aucivint.last` is now 90.39018, the
+    `aucint.last`, and the percent is 0.  The same holds over an interval that
+    ends at the next dose.
+  * With the measured value below it (19), `aucivint.last` moves from 90.24681
+    to 89.92156 and `aumcivint.last` from 403.24728 to 403.14225, with the
+    `.all` and `.inf` forms, and `aucivpbext.int.last` from 0.36 to 0.
+  * After an earlier dose the measured value is still the trough.  A trough
+    above the back-extrapolated C0 now gives a missing percent
+    back-extrapolated with the reason "The concentration measured at the dose
+    time is above C0" and a `pknca_warning_auciv_pbext_negative` warning, in
+    place of the error.  `pk.calc.auciv_pbext()` treats an `auciv` below `auc`
+    by no more than floating-point noise as 0 percent.
 
 * Preferred units (`concu_pref`, `doseu_pref`, and the others) with unit
   columns whose units differ between groups no longer stop `PKNCAdata()` with

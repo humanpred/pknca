@@ -523,10 +523,17 @@ add.interval.col(
 #'   requires a measured concentration at time 0; without one, `auc` does not
 #'   describe the observed part of `auciv` (it either cannot be calculated or,
 #'   for the `aucint` family, already extrapolates back to time 0 with
-#'   `conc.origin`), so `NA` is returned.  When `auciv` is less than `auc` (a
-#'   trough measured at the dose time above the back-extrapolated C0, which
-#'   only the interval forms can give after an earlier dose), the result is
-#'   `NA` with that reason and a `pknca_warning_auciv_pbext_negative` warning.
+#'   `conc.origin`), so `NA` is returned.
+#'
+#'   When `auciv` is less than `auc` beyond a relative tolerance of
+#'   `sqrt(.Machine$double.eps)`, the concentration measured at the dose time is
+#'   above the C0 that `auciv` used, and the result is `NA` with that reason and
+#'   a `pknca_warning_auciv_pbext_negative` warning; within the tolerance, the
+#'   result is 0.  In [pk.nca()] only the interval forms give this, after an
+#'   earlier dose, where the measured value is the trough and C0 is
+#'   back-extrapolated.  The other forms use a nonzero measured value at the
+#'   dose time as C0 (the first method of [pk.calc.c0()]), so they reach it only
+#'   when called directly with an `auciv` from a lower `c0`.
 #' @param auc The AUC calculated without C0 back-extrapolation 
 #' @param auciv The AUC calculated using `c0`
 #' @returns `pk.calc.auciv_pctbackextrap`: The AUC percent back-extrapolated
@@ -552,21 +559,24 @@ pk.calc.auciv_pbext <- function(conc, time, auc, auciv, ..., options = list(), c
     )
   }
   if (!is.na(auciv) && !is.na(auc) && auciv < auc) {
-    # Only an interval form can give this:  the AUC without back-extrapolation
-    # starts from the trough measured at the dose time, and the trough is above
-    # the back-extrapolated C0
+    if (isTRUE(all.equal(auciv, auc, tolerance = sqrt(.Machine$double.eps)))) {
+      # Floating-point noise in two equal AUCs:  nothing is back-extrapolated
+      return(0)
+    }
+    # The AUC without C0 starts from the concentration measured at the dose
+    # time, and that concentration is above the C0 that auciv used
     rlang::warn(
       paste(
-        "The AUC with C0 back-extrapolated is less than the AUC without it:  the",
-        "concentration measured at the dose time is above the back-extrapolated C0,",
-        "so the percent back-extrapolated is not calculated"
+        "The AUC with C0 is less than the AUC without it:  the concentration",
+        "measured at the dose time is above C0, so the percent back-extrapolated",
+        "is not calculated"
       ),
       class = "pknca_warning_auciv_pbext_negative"
     )
     return(
       structure(
         NA_real_,
-        exclude = "The concentration measured at the dose time is above the back-extrapolated C0"
+        exclude = "The concentration measured at the dose time is above C0"
       )
     )
   }
