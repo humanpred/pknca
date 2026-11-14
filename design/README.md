@@ -12,6 +12,7 @@ This directory contains internal design review documents for the PKNCA package. 
 | [04-code-clarity.md](04-code-clarity.md) | Confusing sections, naming inconsistencies, underdocumented internals |
 | [05-future-work.md](05-future-work.md) | Design decisions worth reconsidering, deprecation candidates, breaking changes for v1.0 |
 | [06-potential-bugs.md](06-potential-bugs.md) | Potential bugs, edge cases, and logic issues found during code review |
+| [registry-rules-plan.md](registry-rules-plan.md) | Ratios and metabolite ratios by rule, molar ratios through units, historical parameter names, and SE/DF companions (decisions of 2026-11-13) |
 
 ## Audit Date
 
