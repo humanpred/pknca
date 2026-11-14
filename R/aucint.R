@@ -417,11 +417,13 @@ pknca_extrap_method_halflife_missing <- "AUCall (half-life not estimable)"
 
 #' Say that an AUCinf-based AUCint needed the half-life and it is missing
 #'
-#' The `aucint.inf.*` and `aumcint.inf.*` parameters give the warning again
-#' with their own name (see `aucint_rename_halflife_missing()`).
+#' [pk.calc.aumcint()] gives the warning again for the AUMC, and the
+#' `aucint.inf.*` and `aumcint.inf.*` parameters give it again with their own
+#' name (see `aucint_rename_halflife_missing()`).
 #'
 #' @param reason Where the half-life was needed:  `"after_tlast"` (a finite
-#'   interval past Tlast, which is then the AUCall-based one), `"infinite"`
+#'   interval past Tlast, which is then calculated as the AUCall-based one
+#'   is), `"infinite"`
 #'   (an interval to infinity, which is then `NA`), or `"start"` (the
 #'   concentration at the start of the interval, past the Tlast of the profile
 #'   before the dose)
@@ -441,8 +443,11 @@ aucint_signal_halflife_missing <- function(reason) {
 #'
 #' @inheritParams aucint_signal_halflife_missing
 #' @param parameter,parameter_all The parameter calculated and the AUCall-based
-#'   one whose value it has
-#' @returns The message
+#'   one it is then calculated as
+#' @returns The message.  The `"after_tlast"` message says how the value is
+#'   calculated, not what it is:  the warning is given before the value is
+#'   known, and the value can still be `NA` for another reason (for example a
+#'   concentration at the start of the interval that cannot be estimated).
 #' @keywords Internal
 #' @noRd
 aucint_halflife_missing_message <- function(reason, parameter, parameter_all) {
@@ -450,7 +455,7 @@ aucint_halflife_missing_message <- function(reason, parameter, parameter_all) {
     reason,
     after_tlast =
       sprintf(
-        "%s:  the half-life is missing, so %s is returned (the part of the interval after Tlast is not extrapolated with the half-life)",
+        "%s:  the half-life is missing, so the part of the interval after Tlast is not extrapolated with it, and the result is calculated as %s is",
         parameter, parameter_all
       ),
     infinite =
@@ -648,12 +653,18 @@ add.interval.col("aucint.inf.pred",
 #' @describeIn pk.calc.auxcint Calculate AUMC over an interval
 #' @export
 pk.calc.aumcint <- function(conc, time, ..., options=list()) {
-  pk.calc.auxcint(
-    conc = conc, time = time, ...,
-    options = options,
-    fun_linear = aumcintegrate_linear,
-    fun_log = aumcintegrate_log,
-    fun_inf = aumcintegrate_inf
+  # pk.calc.auxcint() names the AUC in its warning; this is the AUMC
+  withCallingHandlers(
+    pk.calc.auxcint(
+      conc = conc, time = time, ...,
+      options = options,
+      fun_linear = aumcintegrate_linear,
+      fun_log = aumcintegrate_log,
+      fun_inf = aumcintegrate_inf
+    ),
+    pknca_warning_aucint_halflife_missing = function(cnd) {
+      aucint_rename_halflife_missing(cnd, parameter = "The AUMCinf-based AUMCint", parameter_all = "the AUMCall-based one")
+    }
   )
 }
 

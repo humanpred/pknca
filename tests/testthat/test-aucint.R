@@ -139,7 +139,7 @@ test_that("AUCint falls back to AUCall over a dose when the half-life is not est
         lambda.z = NA,
         auc.type = "AUCinf"
       ),
-    regexp = "The AUCinf-based AUCint:  the half-life is missing, so the AUCall-based one is returned",
+    regexp = "The AUCinf-based AUCint:  the half-life is missing, so the part of the interval after Tlast is not extrapolated with it, and the result is calculated as the AUCall-based one is",
     fixed = TRUE,
     class = "pknca_warning_aucint_halflife_missing"
   )
@@ -678,11 +678,11 @@ test_that("aucint.inf.* falls back to AUCall when the half-life is not estimable
         o_nca <- suppressMessages(pk.nca(o_data)),
         regexp = "Too few points for half-life calculation"
       ),
-      regexp = "aucint.inf.obs:  the half-life is missing, so aucint.all is returned",
+      regexp = "aucint.inf.obs:  the half-life is missing, so the part of the interval after Tlast is not extrapolated with it, and the result is calculated as aucint.all is",
       fixed = TRUE,
       class = "pknca_warning_aucint_halflife_missing"
     ),
-    regexp = "aucint.inf.pred:  the half-life is missing, so aucint.all is returned",
+    regexp = "aucint.inf.pred:  the half-life is missing, so the part of the interval after Tlast is not extrapolated with it, and the result is calculated as aucint.all is",
     fixed = TRUE,
     class = "pknca_warning_aucint_halflife_missing"
   )
@@ -702,7 +702,11 @@ test_that("aucint.inf.* falls back to AUCall when the half-life is not estimable
 
 # Whether the registered parameter `col` (an element of get.interval.cols())
 # integrates over an interval with pk.calc.aucint() or pk.calc.aumcint() and
-# takes the half-life
+# takes the half-life.  Two limits:  the call must be in the body of the
+# parameter's own function, so a parameter that reaches the integrator through
+# a helper is not seen; and the test below derives the `.all` and `.last` names
+# from the `.inf.obs` or `.inf.pred` name with a regular expression, so a
+# member named otherwise needs its own case there.
 aucint_test_uses_halflife <- function(col) {
   is.character(col$FUN) &&
     "lambda.z" %in% names(formals(get(col$FUN))) &&
@@ -736,7 +740,7 @@ test_that("every AUCinf-based AUCint is the AUCall-based one, with a warning, wh
     expect_equal(as.numeric(value_all), unname(expected_all[sub("\\..*$", "", current)]), tolerance = 1e-6, info = current)
     expect_warning(
       value <- aucint_test_call_no_halflife(current, conc = conc, time = time, interval = c(0, 36)),
-      regexp = paste0(current, ":  the half-life is missing, so ", current_all, " is returned"),
+      regexp = paste0(current, ":  the half-life is missing, so the part of the interval after Tlast is not extrapolated with it, and the result is calculated as ", current_all, " is"),
       fixed = TRUE,
       class = "pknca_warning_aucint_halflife_missing"
     )
@@ -796,6 +800,88 @@ test_that("every AUCinf-based AUCint is the AUCall-based one, with a warning, wh
       aucint_test_call_no_halflife(current, conc = c(50, 80, 70, 50), time = c(1, 2, 4, 8), interval = c(0, 4), time.dose = 0)
     )
   }
+})
+
+# The value of `expr` and the warnings it gives, each muffled
+aucint_test_warnings <- function(expr) {
+  acc <- new.env(parent = emptyenv())
+  acc$warnings <- list()
+  value <-
+    withCallingHandlers(
+      expr,
+      warning = function(w) {
+        acc$warnings[[length(acc$warnings) + 1]] <- w
+        invokeRestart("muffleWarning")
+      }
+    )
+  list(value = value, warnings = acc$warnings)
+}
+
+# The messages of the warnings that `expr` gives
+aucint_test_messages <- function(expr) {
+  vapply(X = aucint_test_warnings(expr)$warnings, FUN = conditionMessage, FUN.VALUE = "")
+}
+
+test_that("the half-life warning says how the value is calculated, which holds when the value is NA for another reason", {
+  # The interval starts at the second dose with no profile before it to
+  # estimate the start concentration from, so the value is NA whatever the
+  # extrapolation after Tlast; the half-life warning is given before that is
+  # known
+  args <-
+    list(
+      conc = c(5, 2), time = c(13, 14), start = 12, end = 18,
+      time.dose = c(0, 12), lambda.z = NA, clast.obs = 2
+    )
+  caught <- aucint_test_warnings(do.call(pk.calc.aucint.inf.obs, args))
+  value <- caught$value
+  warnings <- caught$warnings
+  expect_equal(as.numeric(value), NA_real_)
+  expect_equal(
+    vapply(X = warnings, FUN = function(w) class(w)[1], FUN.VALUE = ""),
+    c(
+      "pknca_warning_aucint_halflife_missing", "pknca_warning_interp_extrap_conc_dose",
+      "pknca_warning_missing_interpolated_concentrations"
+    )
+  )
+  expect_equal(
+    conditionMessage(warnings[[1]]),
+    "aucint.inf.obs:  the half-life is missing, so the part of the interval after Tlast is not extrapolated with it, and the result is calculated as aucint.all is"
+  )
+  # aucint.all is NA in the same way
+  expect_equal(
+    as.numeric(suppressWarnings(do.call(pk.calc.aucint.all, args[c("conc", "time", "start", "end", "time.dose")]))),
+    NA_real_
+  )
+})
+
+test_that("the half-life warning names the AUMC for an AUMC, once", {
+  conc <- c(0, 50, 80, 70, 50, 35, 10, 0)
+  time <- c(0, 1, 2, 4, 8, 12, 24, 30)
+  expect_equal(
+    aucint_test_messages(
+      pk.calc.aumcint(conc = conc, time = time, interval = c(0, 36), lambda.z = NA, auc.type = "AUCinf")
+    ),
+    "The AUMCinf-based AUMCint:  the half-life is missing, so the part of the interval after Tlast is not extrapolated with it, and the result is calculated as the AUMCall-based one is"
+  )
+  expect_equal(
+    aucint_test_messages(
+      pk.calc.aumcint(conc = conc, time = time, interval = c(0, Inf), lambda.z = NA, auc.type = "AUCinf")
+    ),
+    "The AUMCinf-based AUMCint:  the half-life is missing, and an interval to infinity has no finite fallback, so NA is returned"
+  )
+  expect_equal(
+    aucint_test_messages(
+      pk.calc.aucint(conc = conc, time = time, interval = c(0, 36), lambda.z = NA, auc.type = "AUCinf")
+    ),
+    "The AUCinf-based AUCint:  the half-life is missing, so the part of the interval after Tlast is not extrapolated with it, and the result is calculated as the AUCall-based one is"
+  )
+  # The parameter's own name replaces the AUMC's, with one warning
+  expect_equal(
+    aucint_test_messages(
+      pk.calc.aumcint.inf.obs(conc = conc, time = time, start = 0, end = 36, lambda.z = NA, clast.obs = 10)
+    ),
+    "aumcint.inf.obs:  the half-life is missing, so the part of the interval after Tlast is not extrapolated with it, and the result is calculated as aumcint.all is"
+  )
 })
 
 test_that("pk.calc.aucint and wrappers: method attribute is set and propagated", {
