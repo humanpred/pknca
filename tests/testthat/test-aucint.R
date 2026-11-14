@@ -128,15 +128,21 @@ test_that("AUCint gives the same value when no interpolation/extrapolation is re
 test_that("AUCint falls back to AUCall over a dose when the half-life is not estimable (#508)", {
   concdata <- data.frame(conc = c(8, 4, 2, 1), time = 0:3)
 
-  over_dose <-
-    pk.calc.aucint(
-      conc = concdata$conc,
-      time = concdata$time,
-      interval = c(0, 4),
-      time.dose = 1.5,
-      lambda.z = NA,
-      auc.type = "AUCinf"
-    )
+  # Called directly, the warning names the AUCinf-based AUCint
+  expect_warning(
+    over_dose <-
+      pk.calc.aucint(
+        conc = concdata$conc,
+        time = concdata$time,
+        interval = c(0, 4),
+        time.dose = 1.5,
+        lambda.z = NA,
+        auc.type = "AUCinf"
+      ),
+    regexp = "The AUCinf-based AUCint:  the half-life is missing, so the AUCall-based one is returned",
+    fixed = TRUE,
+    class = "pknca_warning_aucint_halflife_missing"
+  )
   # The dose at 1.5 is within the interval, so nothing is estimated there and
   # the measured concentrations on either side of it are integrated.  With no
   # half-life to extrapolate with, the region after tlast is AUCall, which is
@@ -705,9 +711,12 @@ aucint_test_uses_halflife <- function(col) {
 
 # Call the function of the registered parameter `name` with a missing
 # half-life and a Clast of 10, over `interval`
-aucint_test_call_no_halflife <- function(name, conc, time, interval) {
+aucint_test_call_no_halflife <- function(name, conc, time, interval, time.dose = NULL) {
   fun <- get.interval.cols()[[name]]$FUN
   args <- list(conc = conc, time = time, start = interval[1], end = interval[2], lambda.z = NA_real_)
+  if (!is.null(time.dose)) {
+    args$time.dose <- time.dose
+  }
   clast_arg <- intersect(c("clast.obs", "clast.pred"), names(formals(get(fun))))
   args[[clast_arg]] <- 10
   do.call(fun, args)
@@ -747,6 +756,44 @@ test_that("every AUCinf-based AUCint is the AUCall-based one, with a warning, wh
       as.numeric(value_within),
       as.numeric(do.call(get.interval.cols()[[current_last]]$FUN, list(conc = conc, time = time, start = 0, end = 12))),
       info = current
+    )
+    # An interval to infinity has no finite fallback:  NA, with the warning
+    expect_warning(
+      value_inf <- aucint_test_call_no_halflife(current, conc = conc, time = time, interval = c(0, Inf)),
+      regexp = paste0(current, ":  the half-life is missing, and an interval to infinity has no finite fallback, so NA is returned"),
+      fixed = TRUE,
+      class = "pknca_warning_aucint_halflife_missing"
+    )
+    expect_equal(value_inf, structure(NA_real_, exclude = "the half-life is NA"), info = current)
+    # The concentration at the start of an interval that starts at a dose
+    # without a sample there (doses at 0 and 12, interval 12 to 18) is past the
+    # Tlast of the profile before the dose, where the half-life would
+    # extrapolate it:  the warning, and the AUCall-based value, unchanged
+    conc_md <- c(0, 50, 80, 70, 50, 90, 100, 80, 60)
+    time_md <- c(0, 1, 2, 4, 8, 13, 14, 16, 18)
+    expect_warning(
+      value_start <-
+        aucint_test_call_no_halflife(current, conc = conc_md, time = time_md, interval = c(12, 18), time.dose = c(0, 12)),
+      regexp = paste0(current, ":  the half-life is missing, so the concentration at the start of the interval"),
+      fixed = TRUE,
+      class = "pknca_warning_aucint_halflife_missing"
+    )
+    value_start_all <-
+      do.call(
+        get.interval.cols()[[current_all]]$FUN,
+        list(conc = conc_md, time = time_md, start = 12, end = 18, time.dose = c(0, 12))
+      )
+    expect_equal(as.numeric(value_start), as.numeric(value_start_all), info = current)
+    expect_equal(
+      as.numeric(value_start),
+      unname(c(aucint = 458.299201, aumcint = 1409.663714)[sub("\\..*$", "", current)]),
+      tolerance = 1e-6,
+      info = current
+    )
+    # The first dose has no profile before it, so a missing start concentration
+    # needs no half-life:  no warning
+    expect_no_warning(
+      aucint_test_call_no_halflife(current, conc = c(50, 80, 70, 50), time = c(1, 2, 4, 8), interval = c(0, 4), time.dose = 0)
     )
   }
 })
@@ -1172,20 +1219,27 @@ test_that("AUCint is NA when nothing was measured before the dose after the inte
 test_that("aucint.inf.* is NA over an infinite interval without a half-life (#508)", {
   conc <- c(8, 4, 2, 1)
   time <- 0:3
-  # An unbounded tail cannot fall back to AUCall, so there is nothing to report
-  expect_equal(
-    pk.calc.aucint.inf.obs(
-      conc = conc, time = time, start = 0, end = Inf,
-      clast.obs = 1, lambda.z = NA
+  # An unbounded tail cannot fall back to AUCall, so the result is NA, and the
+  # warning says why
+  expect_warning(
+    expect_equal(
+      pk.calc.aucint.inf.obs(
+        conc = conc, time = time, start = 0, end = Inf,
+        clast.obs = 1, lambda.z = NA
+      ),
+      structure(NA_real_, exclude = "the half-life is NA")
     ),
-    structure(NA_real_, exclude = "the half-life is NA")
+    class = "pknca_warning_aucint_halflife_missing"
   )
-  expect_equal(
-    pk.calc.aucint.inf.pred(
-      conc = conc, time = time, start = 0, end = Inf,
-      clast.pred = NA_real_, lambda.z = NA
+  expect_warning(
+    expect_equal(
+      pk.calc.aucint.inf.pred(
+        conc = conc, time = time, start = 0, end = Inf,
+        clast.pred = NA_real_, lambda.z = NA
+      ),
+      structure(NA_real_, exclude = "the half-life is NA")
     ),
-    structure(NA_real_, exclude = "the half-life is NA")
+    class = "pknca_warning_aucint_halflife_missing"
   )
 })
 

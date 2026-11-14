@@ -260,10 +260,9 @@ below-the-limit-of-quantification measurement and zero after that.}
 \item{\code{AUCinf}}{is extrapolated with \code{lambda.z} (in other words, with the
 half-life), always using the logarithmic trapezoidal rule to align with
 the exponential decay that the half-life describes.  When \code{lambda.z} is
-not estimable and the interval is finite, \code{AUCall} is used instead,
-and the \verb{aucint.inf.*} and \verb{aumcint.inf.*} parameters say so with a
-\code{pknca_warning_aucint_halflife_missing} warning:  their value is that
-of \code{aucint.all} (or \code{aumcint.all}).}
+not estimable and the interval is finite, \code{AUCall} is used instead;
+over an interval to infinity there is no finite fallback, and the
+result is \code{NA}.}
 }
 
 When the interval ends at or before Tlast, no extrapolation happens and
@@ -273,6 +272,13 @@ that starts the interval, when it was not measured) is past the Tlast of that
 profile, so \code{AUCinf} extrapolates it with \code{lambda.z} wherever the interval
 ends.  The extrapolation that was used is reported in the method (\code{PPANMETH})
 column.
+
+Whenever \code{AUCinf} needs \code{lambda.z} and it is not estimable (after Tlast, over
+an interval to infinity, or for that concentration at \code{start}), a
+\code{pknca_warning_aucint_halflife_missing} warning says so; the
+\verb{aucint.inf.*} and \verb{aumcint.inf.*} parameters give it with their own name.
+Their value is that of \code{aucint.all} (or \code{aumcint.all}) over a finite
+interval, and \code{NA} over an interval to infinity.
 }
 
 \section{The time origin of the AUMC}{
