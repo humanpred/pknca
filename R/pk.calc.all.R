@@ -534,13 +534,14 @@ remap_sparse_sources <- function(arglist) {
 # of each column for an observation that imputation adds.
 impute_conc_time <- function(impute_funs, conc, time, start, end,
                              conc.group, time.group, options,
+                             drop_missing_start,
                              obs_values = NULL, obs_fill = list()) {
   impute_data <- data.frame(conc=conc, time=time)
   if (!is.null(obs_values)) {
     impute_data <- cbind(impute_data, obs_values)
   }
   for (current_fun_nm in impute_funs) {
-    if (impute_method_drops_missing_start(current_fun_nm)) {
+    if (drop_missing_start && impute_method_drops_missing_start(current_fun_nm)) {
       # The method treats a missing start concentration as no row, so the
       # row's per-observation values leave with it, and the lloq of an added
       # observation is the one of the rows left, as when it is not given
@@ -1097,6 +1098,10 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   impute_funs <- PKNCA_impute_fun_list(impute_method)
   stopifnot(length(impute_funs) == 1)
   if (!all(is.na(impute_funs[[1]]))) {
+    # PKNCA's start methods treat a missing start concentration as no row only
+    # when missing concentrations are dropped.  A numeric conc.na is the value
+    # of a missing concentration, so the row stays and the methods see it.
+    drop_missing_start <- PKNCA.choose.option(name = "conc.na", options = options) %in% "drop"
     # Imputation may add or drop observations (at the start or end of the
     # interval), and every per-observation value follows its observation
     obs <-
@@ -1110,6 +1115,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
         impute_funs=impute_funs[[1]], conc=conc, time=time,
         start=interval$start[1], end=interval$end[1],
         conc.group=conc.group, time.group=time.group, options=options,
+        drop_missing_start = drop_missing_start,
         obs_values = obs$values, obs_fill = obs$fill
       )
     if ("volume" %in% names(impute_data)) volume <- impute_data$volume
@@ -1120,24 +1126,28 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
     conc <- impute_data$conc
     time <- impute_data$time
     if (has_sparse_conc) {
-      # A missing sample at the start time is no sample, whatever the
-      # imputation, so the samples are imputed and compared
-      # (sparse_impute_zeros()) without it:  the imputed samples are those of
-      # the data without it.  The sparse estimators skip missing samples, so
-      # this changes no result that does not impute at the start.
-      sparse_data <-
-        impute_drop_missing_start(
-          data.frame(conc = conc.sparse, time = time.sparse, subject = subject),
-          start = interval$start[1]
-        )
-      conc.sparse <- sparse_data$conc
-      time.sparse <- sparse_data$time
-      subject <- sparse_data$subject
+      if (drop_missing_start) {
+        # A missing sample at the start time is no sample, whatever the
+        # imputation, so the samples are imputed and compared
+        # (sparse_impute_zeros()) without it:  the imputed samples are those
+        # of the data without it.  The sparse estimators skip missing samples
+        # (as_sparse_pk(), whatever conc.na is), so this changes no result that
+        # does not impute at the start.
+        sparse_data <-
+          impute_drop_missing_start(
+            data.frame(conc = conc.sparse, time = time.sparse, subject = subject),
+            start = interval$start[1]
+          )
+        conc.sparse <- sparse_data$conc
+        time.sparse <- sparse_data$time
+        subject <- sparse_data$subject
+      }
       impute_sparse <-
         impute_conc_time(
           impute_funs=impute_funs[[1]], conc=conc.sparse, time=time.sparse,
           start=interval$start[1], end=interval$end[1],
-          conc.group=conc.sparse.group, time.group=time.sparse.group, options=options
+          conc.group=conc.sparse.group, time.group=time.sparse.group, options=options,
+          drop_missing_start = drop_missing_start
         )
       # An imputed zero at a time without samples is known and enters the
       # sparse estimators with a missing subject.  Any other imputed value has

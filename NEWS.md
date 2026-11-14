@@ -1469,27 +1469,47 @@ the generated intervals:
   measured concentration is shifted instead, as long as it is within
   `max_shift` (#361).
 
-* The `start_predose_conc0`, `start_predose`, `start_cmin`, and
-  `start_conc0` imputation methods treat a row at the start time with a
-  missing concentration as no measurement, as they treat no row
-  (@billdenney).  They tested only whether a
-  row existed at the start time, so a missing concentration there stopped the
-  imputation and was then dropped.  Each result is now the one for the data
-  without that row.  The results that change:
-  * A profile sampled from 0.25 h with a missing concentration at 0 (AUClast
-    from 0 to infinity) was `NA` ("Requesting an AUC range starting (0)
-    before the first measurement (0.25) is not allowed") with
-    `start_predose_conc0`, `start_cmin`, `"start_predose,start_cmin"`, and
-    `start_predose` with a predose sample to shift.  It is now 1836.34 with
-    `start_predose_conc0`, 1841.34 with `start_cmin` and
-    `"start_predose,start_cmin"` (the start is Cmin, 40), and the AUC from
-    the shifted predose concentration with `start_predose`.
-  * The row's other values (volume, duration, half-life inclusion and
-    exclusion, and `lloq`) go with it, so the imputed start concentration has
-    the values of an added observation.  The amount excreted of a urine
-    profile with a volume of 9 on the missing row was `NA` with `start_cmin`
-    and is 70, the value without the row; the imputed Cmin (10) is not given
-    that volume, which would make it 160.
+* With the `conc.na` option `"drop"` (the default), the `start_predose_conc0`,
+  `start_predose`, `start_cmin`, and `start_conc0` imputation methods treat a
+  row at the start time with a missing concentration as no measurement, as
+  they treat no row (@billdenney).  They tested only whether a row existed at
+  the start time, so a missing concentration there stopped the imputation and
+  was then dropped.  Each result is now the one for the data without that row.
+  With a numeric `conc.na`, that number is the missing concentration, the row
+  stays, and every result is as before.  A row with a collection volume (urine
+  or feces) stays too, so the amount excreted stays missing (see below).  A
+  user's own imputation method and `end_conc_drop` receive the row unchanged,
+  and the methods called directly see the row as it is given.  The results
+  that change, at `conc.na = "drop"`:
+  * For a profile sampled from 0.25 h with a missing concentration at 0 (from
+    0 to infinity) with `start_predose_conc0`, `start_cmin`, or
+    `"start_predose,start_cmin"` (and with `start_predose` when it has a
+    predose sample to shift), these were `NA` ("Requesting an AUC range
+    starting (0) before the first measurement (0.25) is not allowed") and are
+    now calculated:  `auclast`, `aucall`, `aumclast`, `aumcall`, and their
+    `.dn` forms; `cav`, `cav.last`, `cav.all`, and their `.dn` forms;
+    `cl.last` and `cl.all`; `kel.last`, `kel.all`, and `kel.iv.last`;
+    `mrt.last`, `mrt.all`, and `mrt.iv.last`; `thalf.eff.last`,
+    `thalf.eff.all`, and `thalf.eff.iv.last`; `vss.last`, `vss.all`, and
+    `vss.iv.last`; and `aucivpbext.last` and `aucivpbext.all`.  AUClast is
+    1836.34 with `start_predose_conc0`, 1841.34 with `start_cmin` and
+    `"start_predose,start_cmin"` (the start is Cmin, 40), and 1836.96 with
+    `start_predose` shifting a predose concentration of 5.
+  * With the same methods, `cstart` and `ceoi` were `NA` and are now the
+    imputed start concentration (40, 0, or the shifted predose
+    concentration), and `aucabove.predose.all` was `NA` ("Missing
+    concentration to be above") and is now calculated.
+  * With the same methods, results that were calculated without the start
+    now count the imputed start observation:  `count.conc` (7 to 8),
+    `count.conc.measured` (7 to 8 when the imputed start is not 0), `tfirst`
+    and `tmin` (0.25 to 0), and, with an imputed 0 or a shifted predose
+    concentration, `cmin`, `cmin.dn`, and `swing`.  With a shifted predose
+    concentration, `c0` is that concentration (5 in place of 40), and the IV
+    results move with it:  `aucivlast`, `aucivall`, `cl.iv.last`, `cl.iv.all`,
+    `kel.iv.all`, `mrt.iv.all`, `thalf.eff.iv.all`, and `vss.iv.all`.
+  * The row's other values (duration, half-life inclusion and exclusion, and
+    `lloq`) go with it, so the imputed start concentration has the values of
+    an added observation.
   * With sparse data, missing samples at the start time are no samples, with
     any imputation.  When every sample there is missing,
     `start_predose_conc0` and `start_conc0` add a known zero and give the
@@ -1497,14 +1517,23 @@ the generated intervals:
     each as without those rows (`start_predose_conc0` and `start_cmin` gave
     missing AUCs, and `start_conc0` was refused).  `start_conc0` with a
     missing sample beside measured ones at the start was refused and now
-    gives the result without the missing sample.
+    gives the result without the missing sample.  The sparse estimators skip
+    missing samples whatever `conc.na` is, as before.
   * `start_conc0` already set a missing start concentration to 0.  It now
     follows the same rule:  the row is dropped and the 0 is added with the
-    values of an added observation, so a volume or a half-life flag on the
-    missing row no longer reaches it.  A measured start concentration is
-    still replaced with 0 in place.
+    values of an added observation, so a half-life flag on the missing row no
+    longer reaches it.  A measured start concentration, and a missing one in a
+    collection with a volume, are still replaced with 0 in place, so such a
+    collection counts as an amount of zero.
   * `pknca_impute_methods()` gains a `drop_missing_start` column saying which
     methods treat a missing start concentration as absent.
+
+* The amount excreted (`ae`), the excretion rates (`ertlst`, `ermax`,
+  `ertmax`, `erlst`), and the parameters calculated from them (`fe`, `erint`,
+  `clr.*`) add "At least one concentration associated with a collection volume
+  was missing" to their exclusion when a collection has a volume and no
+  concentration, beside the existing "1 of 4 concentrations are missing"
+  (@billdenney).  No value changes.
 
 * Business functions (used for calculations of means, etc.) now return NA_real_
   for empty inputs rather than giving an error (#559).

@@ -138,8 +138,10 @@ NULL
 #'   interval with a missing concentration as absent?  When `TRUE`, such rows
 #'   are dropped, with their per-observation values (volume, duration,
 #'   half-life inclusion and exclusion, and lloq), before the method runs in an
-#'   imputation chain, so an observation it adds at the start takes the values
-#'   of an added observation, as when the row is not given.  The method's
+#'   imputation chain of [pk.nca()] with the `conc.na` option `"drop"`, so an
+#'   observation it adds at the start takes the values of an added
+#'   observation, as when the row is not given.  With a numeric `conc.na` the
+#'   row stays, and the method itself never drops it.  The method's
 #'   documentation says so (see [pknca_rd_impute_method()]).
 #' @returns `NULL`, invisibly
 #' @keywords Internal
@@ -161,7 +163,7 @@ pknca_register_impute_method <- function(fun, description, details = NULL, drop_
 #' @param ... ignored
 #' @export
 PKNCA_impute_method_start_conc0 <- function(conc, time, start=0, ..., options = list()) {
-  ret <- impute_drop_missing_start(data.frame(conc = conc, time = time), start = start)
+  ret <- data.frame(conc = conc, time = time)
   mask_start <- ret$time %in% start
   if (any(mask_start)) {
     ret$conc[mask_start] <- 0
@@ -182,7 +184,11 @@ pknca_register_impute_method(
       'imputation chain `"start_predose,start_conc0"` gives the same result as',
       '`"start_conc0"` alone.  To carry a predose measurement to the start time,',
       "use `start_predose` without `start_conc0`.  When no observation exists at",
-      "the start time, a new row with a concentration of 0 is added."
+      "the start time, a new row with a concentration of 0 is added.  A missing",
+      "concentration at the start time is set to 0 as well, so a urine or feces",
+      "collection at the start whose concentration is missing counts as an",
+      "amount of zero, where the other start methods leave the amount excreted",
+      "missing."
     ),
   drop_missing_start = TRUE
 )
@@ -190,20 +196,28 @@ pknca_register_impute_method(
 #' Drop the rows at the start time that have a missing concentration
 #'
 #' A missing concentration is not a measurement, so an imputation that adds a
-#' start concentration when there is none treats such a row as absent.
+#' start concentration when there is none treats such a row as absent.  A row
+#' with a collection volume (urine or feces) is a collection whose amount is
+#' unknown, so it stays:  the amount excreted stays missing rather than leaving
+#' the collection out of the sum.
 #'
-#' @param ret A data frame with columns `conc` and `time` (and any others,
-#'   which are kept with their rows)
+#' @param ret A data frame with columns `conc` and `time`, and optionally
+#'   `volume` (any other columns are kept with their rows)
 #' @param start The start time of the interval
-#' @returns `ret` without its rows at `start` with a missing `conc`; `ret`
-#'   unchanged when `start` is missing, which is invalid and identifies no rows
+#' @returns `ret` without its rows at `start` with a missing `conc` (and no
+#'   `volume`); `ret` unchanged when `start` is missing, which is invalid and
+#'   identifies no rows
 #' @keywords Internal
 #' @noRd
 impute_drop_missing_start <- function(ret, start) {
   if (anyNA(start)) {
     return(ret)
   }
-  ret[!(ret$time %in% start & is.na(ret$conc)), , drop = FALSE]
+  drop <- ret$time %in% start & is.na(ret$conc)
+  if ("volume" %in% names(ret)) {
+    drop <- drop & is.na(ret$volume)
+  }
+  ret[!drop, , drop = FALSE]
 }
 
 #' Does an imputation method treat a missing start concentration as absent?
@@ -222,7 +236,7 @@ impute_method_drops_missing_start <- function(fun) {
 #' @eval pknca_rd_impute_method("PKNCA_impute_method_start_cmin")
 #' @export
 PKNCA_impute_method_start_cmin <- function(conc, time, start, end, ..., options = list()) {
-  ret <- impute_drop_missing_start(data.frame(conc = conc, time = time), start = start)
+  ret <- data.frame(conc = conc, time = time)
   mask_start <- ret$time %in% start
   if (!any(mask_start)) {
     all_concs <- conc[start <= time & time <= end]
@@ -248,7 +262,7 @@ pknca_register_impute_method(
 #' @inheritParams pk.nca.interval
 #' @export
 PKNCA_impute_method_start_predose <- function(conc, time, start, end, conc.group, time.group, ..., max_shift = NA_real_, options = list()) {
-  ret <- impute_drop_missing_start(data.frame(conc = conc, time = time), start = start)
+  ret <- data.frame(conc = conc, time = time)
   if (is.na(max_shift)) {
     if (is.infinite(end)) {
       # A measurement at an unknown time cannot bound the shift window, so
