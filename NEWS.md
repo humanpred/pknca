@@ -1212,6 +1212,20 @@ the generated intervals:
 
 ## Bug fixes
 
+* `aucivint.*` and `aumcivint.*` over an interval that starts at the first
+  dose now use a nonzero concentration measured at the dose time as C0, as
+  `aucivlast` does, so they equal `aucint.*` and `aumcint.*` and the percent
+  back-extrapolated (`aucivpbext.int.last`, `aucivpbext.int.all`) is 0
+  (@billdenney).  They back-extrapolated C0 from the concentrations after the
+  dose, so `aucivpbext.int.last` stopped `pk.nca()` with "Please report a bug
+  ... `auciv must be >= auc`" when the measured value was above that C0 (20
+  against 19.69 for a bolus profile of 20, 16, 13, ... at 0, 1, 2, ... hours,
+  with `aucint.last` 90.39), and was a small positive percent when it was
+  below.  After an earlier dose the measured value is still the trough; a
+  trough above the back-extrapolated C0 now gives a missing percent
+  back-extrapolated with the reason and a
+  `pknca_warning_auciv_pbext_negative` warning, in place of the error.
+
 * Preferred units (`concu_pref`, `doseu_pref`, and the others) with unit
   columns whose units differ between groups no longer stop `PKNCAdata()` with
   "arguments imply differing number of rows: 1, 0" when some groups are

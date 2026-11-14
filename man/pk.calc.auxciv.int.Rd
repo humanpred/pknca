@@ -84,9 +84,13 @@ interval to the first concentration after the dose is replaced by the one
 starting from \eqn{C_0}, which is back-extrapolated with the methods of
 \code{\link[=pk.calc.c0]{pk.calc.c0()}} from the concentrations after the dose that are within the
 interval and before the next dose (with BLQ and missing concentrations
-handled as the AUCint handles them).  A concentration measured at the dose
-time is taken to be measured before the dose, as for
-\code{\link[=interp.extrap.conc.dose]{interp.extrap.conc.dose()}}, so it is not used as \eqn{C_0}.
+handled as the AUCint handles them).  After an earlier dose, a
+concentration measured at the dose time is taken to be measured before the
+dose (the trough), as for \code{\link[=interp.extrap.conc.dose]{interp.extrap.conc.dose()}}, so it is not used as
+\eqn{C_0}.  At the first dose there is no profile before it, so a nonzero
+concentration measured at the dose time is \eqn{C_0}, as for
+\code{\link[=pk.calc.c0]{pk.calc.c0()}} and \code{aucivlast}:  the AUXCint already starts from it and is
+returned unchanged.
 
 An interval that starts at an IV infusion has nothing to back-extrapolate,
 so the AUXCint is returned unchanged; an interval that does not start at an

@@ -245,10 +245,80 @@ test_that("pk.calc.auciv_pbext handles edge cases correctly", {
   # 100% back-extrapolation (auc = 0, auciv > 0)
   expect_equal(pk.calc.auciv_pbext(conc = c(0, 1), time = c(0, 1), auc = 0, auciv = 5), 100)
   
-  # auciv < auc must raise an error — not a valid physical scenario
-  expect_error(
-    pk.calc.auciv_pbext(conc = c(0, 1), time = c(0, 1), auc = 5, auciv = 3),
-    regexp = "(?i)auciv must be >= auc"
+  # auciv < auc is a trough above the back-extrapolated C0:  NA with the reason,
+  # and a warning
+  expect_warning(
+    expect_equal(
+      pk.calc.auciv_pbext(conc = c(0, 1), time = c(0, 1), auc = 5, auciv = 3),
+      structure(NA_real_, exclude = "The concentration measured at the dose time is above the back-extrapolated C0")
+    ),
+    class = "pknca_warning_auciv_pbext_negative"
+  )
+})
+
+# auclast, aucint.last, aucivlast, aucivint.last, and their percents
+# back-extrapolated (and the AUMC forms) for one IV bolus profile over 0 to 24
+auciv_test_dose_time <- function(d_conc) {
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time),
+      PKNCAdose(data.frame(time = 0, dose = 1), dose ~ time, route = "intravascular"),
+      intervals =
+        data.frame(
+          start = 0, end = 24, auclast = TRUE, aucint.last = TRUE, aucivlast = TRUE, aucivint.last = TRUE,
+          aucivpbext.last = TRUE, aucivpbext.int.last = TRUE, aumcint.last = TRUE, aumcivint.last = TRUE
+        )
+    )
+  res <- as.data.frame(suppressMessages(pk.nca(o_data)))
+  stats::setNames(res$PPORRES, res$PPTESTCD)
+}
+
+test_that("at the first dose, a nonzero concentration measured at the dose time is C0 for the interval forms", {
+  # The first dose has no profile before it, so the measured 20 is C0, as it is
+  # for aucivlast:  the IV AUCint is the AUCint, and nothing is
+  # back-extrapolated (the back-extrapolated C0 would be 19.69)
+  d_conc <- data.frame(time = c(0, 1, 2, 4, 8, 12, 24), conc = c(20, 16, 13, 8, 3.5, 1.5, 0.1))
+  value <- auciv_test_dose_time(d_conc)
+  expect_equal(unname(value["aucint.last"]), 90.39018, tolerance = 1e-6)
+  expect_equal(unname(value["aucivint.last"]), unname(value["aucint.last"]))
+  expect_equal(unname(value["aucivlast"]), unname(value["aucint.last"]))
+  expect_equal(unname(value["aucivpbext.int.last"]), 0)
+  expect_equal(unname(value["aucivpbext.last"]), 0)
+  expect_equal(unname(value["aumcivint.last"]), unname(value["aumcint.last"]))
+  # A measured value below the back-extrapolated C0 is C0 too
+  d_conc$conc[1] <- 19
+  value <- auciv_test_dose_time(d_conc)
+  expect_equal(unname(value["aucivint.last"]), unname(value["aucint.last"]))
+  expect_equal(unname(value["aucivpbext.int.last"]), 0)
+  # A measured zero is not C0 (as for pk.calc.c0()):  C0 is back-extrapolated
+  d_conc$conc[1] <- 0
+  value <- auciv_test_dose_time(d_conc)
+  expect_equal(unname(value["aucivint.last"]), unname(value["aucivlast"]))
+  expect_equal(unname(value["aucivpbext.int.last"]), unname(value["aucivpbext.last"]))
+  expect_gt(unname(value["aucivint.last"]), unname(value["aucint.last"]))
+})
+
+test_that("after an earlier dose, a trough above the back-extrapolated C0 gives a missing percent back-extrapolated", {
+  # The trough measured at 12 (10) is above the C0 back-extrapolated from 13
+  # and 14 (5 and 4.5), so the IV AUCint is below the AUCint
+  d_conc <- data.frame(time = c(0, 1, 2, 4, 8, 12, 13, 14, 16, 24), conc = c(0, 16, 13, 8, 3.5, 10, 5, 4.5, 3, 1))
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time),
+      PKNCAdose(data.frame(time = c(0, 12), dose = 1), dose ~ time, route = "intravascular"),
+      intervals = data.frame(start = 12, end = 24, aucint.last = TRUE, aucivint.last = TRUE, aucivpbext.int.last = TRUE)
+    )
+  expect_warning(
+    res <- as.data.frame(suppressMessages(pk.nca(o_data))),
+    class = "pknca_warning_auciv_pbext_negative"
+  )
+  value <- stats::setNames(res$PPORRES, res$PPTESTCD)
+  exclude <- stats::setNames(res$exclude, res$PPTESTCD)
+  expect_lt(unname(value["aucivint.last"]), unname(value["aucint.last"]))
+  expect_equal(unname(value["aucivpbext.int.last"]), NA_real_)
+  expect_equal(
+    unname(exclude["aucivpbext.int.last"]),
+    "The concentration measured at the dose time is above the back-extrapolated C0"
   )
 })
 

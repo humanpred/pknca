@@ -134,7 +134,10 @@ The calculation for back-extrapolation is \code{100*(1 - auc/auciv)}.  It
 requires a measured concentration at time 0; without one, \code{auc} does not
 describe the observed part of \code{auciv} (it either cannot be calculated or,
 for the \code{aucint} family, already extrapolates back to time 0 with
-\code{conc.origin}), so \code{NA} is returned.
+\code{conc.origin}), so \code{NA} is returned.  When \code{auciv} is less than \code{auc} (a
+trough measured at the dose time above the back-extrapolated C0, which
+only the interval forms can give after an earlier dose), the result is
+\code{NA} with that reason and a \code{pknca_warning_auciv_pbext_negative} warning.
 }
 \section{Functions}{
 \itemize{
