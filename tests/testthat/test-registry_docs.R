@@ -198,18 +198,18 @@ test_that("the installed help has the registered descriptions as they are writte
     expect_true(grepl(pattern = current_description, x = rules_section, fixed = TRUE), info = current_description)
   }
 
-  # Imputation methods:  the description and details, and the table.  The
-  # details' only markup is code, which the installed Rd keeps without the
+  # Imputation methods:  the text the registration generates (description,
+  # details, and any sentence from the registration's flags), and the table.
+  # The details' only markup is code, which the installed Rd keeps without the
   # spaces around it, so these are compared without markup or white space.
   methods <- pknca_impute_methods()
-  registry <- get("impute_methods", envir = .PKNCAEnv)
   expected_methods <-
-    vapply(
-      X = methods$fun,
-      FUN = function(fun) {
-        gsub(pattern = "[`[:space:]]", replacement = "", x = paste(registry[[fun]]$description, registry[[fun]]$details))
-      },
-      FUN.VALUE = ""
+    gsub(
+      pattern = "[`[:space:]]", replacement = "",
+      x = sub(
+        pattern = "^@describeIn PKNCA_impute_method ", replacement = "",
+        x = vapply(X = methods$fun, FUN = pknca_rd_impute_method, FUN.VALUE = "")
+      )
     )
   documented_methods <- rd_function_descriptions(rd[["PKNCA_impute_method.Rd"]])
   expect_equal(

@@ -1484,7 +1484,7 @@ the generated intervals:
     `"start_predose,start_cmin"` (the start is Cmin, 40), and the AUC from
     the shifted predose concentration with `start_predose`.
   * The row's other values (volume, duration, half-life inclusion and
-    exclusion, and lloq) go with it, so the imputed start concentration has
+    exclusion, and `lloq`) go with it, so the imputed start concentration has
     the values of an added observation.  The amount excreted of a urine
     profile with a volume of 9 on the missing row was `NA` with `start_cmin`
     and is 70, the value without the row; the imputed Cmin (10) is not given
