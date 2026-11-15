@@ -515,8 +515,8 @@ generate_missing_messages <- function(a, b,
 
 # The missing-data messages of a collection's concentrations and volumes (see
 # generate_missing_messages()), with one more when a collection has a volume
-# but its concentration is missing:  the amount in that collection is unknown,
-# so it stays out of no sum quietly
+# but its concentration is missing:  the amount in that collection is
+# unknown, and this reason says so
 urine_missing_messages <- function(conc, volume) {
   ret <- generate_missing_messages(conc, volume, name_a = "concentrations", name_b = "volumes")
   if (any(is.na(conc) & !is.na(volume))) {

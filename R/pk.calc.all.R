@@ -531,7 +531,12 @@ remap_sparse_sources <- function(arglist) {
 # per-observation values (one row per element of `conc`; see
 # impute_obs_values()), which follow their observation through each step and
 # are returned as columns after `conc` and `time`; `obs_fill` gives the value
-# of each column for an observation that imputation adds.
+# of each column for an observation that imputation adds.  With
+# `drop_missing_start` TRUE (the `conc.na` option is "drop"), the rows at the
+# start time with a missing concentration are dropped, with their values,
+# right before the first PKNCA start method that registers
+# `drop_missing_start` (see pknca_register_impute_method()); a user's method
+# and the methods before it in the chain receive them.
 impute_conc_time <- function(impute_funs, conc, time, start, end,
                              conc.group, time.group, options,
                              drop_missing_start,
@@ -1126,13 +1131,19 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
     conc <- impute_data$conc
     time <- impute_data$time
     if (has_sparse_conc) {
-      if (drop_missing_start) {
-        # A missing sample at the start time is no sample, whatever the
-        # imputation, so the samples are imputed and compared
-        # (sparse_impute_zeros()) without it:  the imputed samples are those
-        # of the data without it.  The sparse estimators skip missing samples
-        # (as_sparse_pk(), whatever conc.na is), so this changes no result that
-        # does not impute at the start.
+      impute_sparse <-
+        impute_conc_time(
+          impute_funs=impute_funs[[1]], conc=conc.sparse, time=time.sparse,
+          start=interval$start[1], end=interval$end[1],
+          conc.group=conc.sparse.group, time.group=time.sparse.group, options=options,
+          drop_missing_start = drop_missing_start
+        )
+      if (drop_missing_start && any(vapply(X = impute_funs[[1]], FUN = impute_method_drops_missing_start, FUN.VALUE = TRUE))) {
+        # A start method in the chain dropped the missing samples at the start
+        # time (impute_conc_time()), so the imputed samples are compared
+        # (sparse_impute_zeros()) with the samples without them.  The sparse
+        # estimators skip missing samples (as_sparse_pk(), whatever conc.na
+        # is), so this changes no result that does not impute at the start.
         sparse_data <-
           impute_drop_missing_start(
             data.frame(conc = conc.sparse, time = time.sparse, subject = subject),
@@ -1142,13 +1153,6 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
         time.sparse <- sparse_data$time
         subject <- sparse_data$subject
       }
-      impute_sparse <-
-        impute_conc_time(
-          impute_funs=impute_funs[[1]], conc=conc.sparse, time=time.sparse,
-          start=interval$start[1], end=interval$end[1],
-          conc.group=conc.sparse.group, time.group=time.sparse.group, options=options,
-          drop_missing_start = drop_missing_start
-        )
       # An imputed zero at a time without samples is known and enters the
       # sparse estimators with a missing subject.  Any other imputed value has
       # no subject to attribute it to and its own uncertainty, so the

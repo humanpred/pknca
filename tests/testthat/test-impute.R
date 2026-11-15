@@ -1586,8 +1586,8 @@ test_that("a numeric conc.na is the value of a missing start concentration, so t
       NA_character_, "start_conc0", "start_cmin", "start_predose", "start_predose_conc0",
       "start_predose,start_conc0", "start_predose,start_cmin"
     )
-  # At conc.na = 0 every chain gives what it gave before a missing start row
-  # was dropped:  the 0 from conc.na at the start, nothing shifted or added
+  # At conc.na = 0 the start methods see the row, so nothing is shifted or
+  # added, and the AUCs start from the 0 that conc.na gives it
   for (current in chains) {
     for (with_predose in c(FALSE, TRUE)) {
       info <- paste(current, with_predose)

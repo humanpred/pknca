@@ -1394,8 +1394,8 @@ test_that("a collection with a missing concentration stays in the amount excrete
     # reason
     expect_equal(unname(res$value["ermax"]), 20, info = current)
     expect_equal(unname(res$exclude["ermax"]), reason, info = current)
-    # The start row stays, so the start methods see a row there, as they did
-    # before a missing start was treated as absent
+    # The start row stays, so the start methods see a row there and impute
+    # nothing
     expect_equal(unname(res$value[c("cstart", "auclast")]), c(NA_real_, NA_real_), info = current)
   }
   # start_conc0 forces the start to zero by design, so the collection is

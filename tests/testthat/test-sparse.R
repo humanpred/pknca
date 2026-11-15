@@ -1184,6 +1184,33 @@ test_that("a missing sample at the start time is no sample for the start imputat
   )
 })
 
+test_that("a user's imputation method receives the missing sparse samples at the start", {
+  assign("PKNCA_impute_method_test_user_record", impute_test_user_record, envir = globalenv())
+  withr::defer(rm("PKNCA_impute_method_test_user_record", envir = globalenv()))
+  d_base <-
+    data.frame(
+      id = 1:9,
+      conc = c(1.75, 2.2, 1.58, 4.63, 2.99, 1.52, 0.3, 0.0421, 0.231),
+      time = rep(c(1, 6, 24), each = 3)
+    )
+  d_all_missing <- rbind(data.frame(id = 101:103, conc = NA_real_, time = 0), d_base)
+  # The pooled samples are imputed last, so the record is theirs:  the three
+  # missing samples at 0 are in it
+  impute_test_user_seen$conc <- NULL
+  values_user <- sparse_test_impute_values(d_all_missing, "test_user_record")
+  expect_equal(impute_test_user_seen$conc, d_all_missing$conc[order(d_all_missing$time)])
+  # A method that changes nothing gives the results without imputation
+  expect_equal(values_user, sparse_test_impute_values(d_all_missing, NA))
+  # First in a chain before a start method, it still receives them, and the
+  # start method then treats them as no samples
+  impute_test_user_seen$conc <- NULL
+  expect_equal(
+    sparse_test_impute_values(d_all_missing, "test_user_record,start_predose_conc0"),
+    sparse_test_impute_values(d_all_missing, "start_predose_conc0")
+  )
+  expect_equal(sum(is.na(impute_test_user_seen$conc)), 3)
+})
+
 test_that("as_sparse_pk() marks a time with only missing subjects as imputed", {
   sparse_pk <- as_sparse_pk(conc = c(0, 1, 2, 3), time = c(0, 1, 1, 2), subject = c(NA, 1, 2, 3))
   expect_equal(vapply(sparse_pk, `[[`, "imputed", FUN.VALUE = TRUE), c(TRUE, FALSE, FALSE))

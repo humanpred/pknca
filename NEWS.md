@@ -1471,42 +1471,50 @@ the generated intervals:
 
 * With the `conc.na` option `"drop"` (the default), the `start_predose_conc0`,
   `start_predose`, `start_cmin`, and `start_conc0` imputation methods treat a
-  row at the start time with a missing concentration as no measurement, as
-  they treat no row (@billdenney).  They tested only whether a row existed at
-  the start time, so a missing concentration there stopped the imputation and
-  was then dropped.  Each result is now the one for the data without that row.
-  With a numeric `conc.na`, that number is the missing concentration, the row
-  stays, and every result is as before.  A row with a collection volume (urine
-  or feces) stays too, so the amount excreted stays missing (see below).  A
-  user's own imputation method and `end_conc_drop` receive the row unchanged,
-  and the methods called directly see the row as it is given.  The results
-  that change, at `conc.na = "drop"`:
-  * For a profile sampled from 0.25 h with a missing concentration at 0 (from
-    0 to infinity) with `start_predose_conc0`, `start_cmin`, or
-    `"start_predose,start_cmin"` (and with `start_predose` when it has a
-    predose sample to shift), these were `NA` ("Requesting an AUC range
-    starting (0) before the first measurement (0.25) is not allowed") and are
-    now calculated:  `auclast`, `aucall`, `aumclast`, `aumcall`, and their
-    `.dn` forms; `cav`, `cav.last`, `cav.all`, and their `.dn` forms;
-    `cl.last` and `cl.all`; `kel.last`, `kel.all`, and `kel.iv.last`;
-    `mrt.last`, `mrt.all`, and `mrt.iv.last`; `thalf.eff.last`,
-    `thalf.eff.all`, and `thalf.eff.iv.last`; `vss.last`, `vss.all`, and
-    `vss.iv.last`; and `aucivpbext.last` and `aucivpbext.all`.  AUClast is
-    1836.34 with `start_predose_conc0`, 1841.34 with `start_cmin` and
-    `"start_predose,start_cmin"` (the start is Cmin, 40), and 1836.96 with
-    `start_predose` shifting a predose concentration of 5.
-  * With the same methods, `cstart` and `ceoi` were `NA` and are now the
-    imputed start concentration (40, 0, or the shifted predose
-    concentration), and `aucabove.predose.all` was `NA` ("Missing
-    concentration to be above") and is now calculated.
-  * With the same methods, results that were calculated without the start
-    now count the imputed start observation:  `count.conc` (7 to 8),
-    `count.conc.measured` (7 to 8 when the imputed start is not 0), `tfirst`
-    and `tmin` (0.25 to 0), and, with an imputed 0 or a shifted predose
-    concentration, `cmin`, `cmin.dn`, and `swing`.  With a shifted predose
-    concentration, `c0` is that concentration (5 in place of 40), and the IV
-    results move with it:  `aucivlast`, `aucivall`, `cl.iv.last`, `cl.iv.all`,
-    `kel.iv.all`, `mrt.iv.all`, `thalf.eff.iv.all`, and `vss.iv.all`.
+  row at the start time with a missing concentration as no measurement, as they
+  treat no row (@billdenney; PR number to add).  They tested only whether a row
+  existed at the start time, so a missing concentration there stopped the
+  imputation and was then dropped.  Each result is now the one for the data
+  without that row.  With a numeric `conc.na`, that number is the missing
+  concentration, the row stays, and every result is as before.  Urine and feces
+  collections keep a missing start row too, so the amount excreted stays missing
+  (see below).  A user's own imputation method and `end_conc_drop` receive the
+  row unchanged, and the methods called directly see the row as it is given.
+  The results that change, at `conc.na = "drop"`:
+  * Every result that depends on the start concentration, or on an AUC that
+    starts there, can change with `start_predose_conc0`, `start_cmin`,
+    `"start_predose,start_cmin"`, and `start_predose` (when it has a predose
+    sample to shift).  Most were `NA` ("Requesting an AUC range starting (0)
+    before the first measurement (0.25) is not allowed") and are now
+    calculated.  For a profile sampled from 0.25 h with a missing
+    concentration at 0, AUClast is 1836.34 with `start_predose_conc0`, 1841.34
+    with `start_cmin` and `"start_predose,start_cmin"` (the start is Cmin,
+    40), and 1836.96 with `start_predose` shifting a predose concentration of
+    5.  A comparison of every parameter on single-dose (0 to 24 and 0 to
+    infinity) and multiple-dose profiles found these to change, and no others:
+    * AUCs and AUMCs:  `auclast`, `aucall`, `aucinf.obs`, `aucinf.pred`,
+      `aumclast`, `aumcall`, `aumcinf.obs`, `aumcinf.pred`, and their `.dn`
+      forms; `aucpext.obs`, `aucpext.pred`, `aucpext.inf.obs`,
+      `aucpext.inf.pred`; `aucabove.predose.all` and `aucabove.trough.all`.
+    * IV AUCs:  `aucivlast`, `aucivall`, `aucivinf.obs`, `aucivinf.pred`,
+      `aumcivlast`, `aumcivall`, `aumcivinf.obs`, `aumcivinf.pred`,
+      `aucivpbext.last`, `aucivpbext.all`, `aucivpbext.inf.obs`, and
+      `aucivpbext.inf.pred` (and the historical names `aucivpbextlast`,
+      `aucivpbextall`, `aucivpbextinf.obs`, and `aucivpbextinf.pred`).
+    * Average concentrations:  `cav`, `cav.last`, `cav.all`, `cav.iv.last`,
+      `cav.iv.all`, `cav.dn`, and `cav.last.dn`; and `deg.fluc`.
+    * Clearance, elimination rate, mean residence time, effective half-life,
+      and volumes:  every `.last`, `.all`, `.obs`, `.pred`, `.inf.obs`, and
+      `.inf.pred` form, with and without `.iv`, of `cl`, `kel`, `mrt`,
+      `thalf.eff`, `vss`, and `vz`, and the multiple-dose `mrt.md.*`,
+      `mrt.ivmd.*`, `vss.md.*`, and `vss.ivmd.*`.
+    * Concentrations and times at the start:  `cstart` and `ceoi` (the
+      imputed start concentration); `c0` (a shifted predose concentration in
+      place of a back-extrapolated one); `cmin`, `cmin.dn`, and `swing` (an
+      imputed 0 or a shifted predose concentration below the others);
+      `tfirst` and `tmin` (the start time); and `tlag`.
+    * Counts:  `count.conc` and `count.conc.measured` include the imputed
+      start observation (`count.conc.measured` only when it is not 0).
   * The row's other values (duration, half-life inclusion and exclusion, and
     `lloq`) go with it, so the imputed start concentration has the values of
     an added observation.
@@ -1533,7 +1541,10 @@ the generated intervals:
   `clr.*`) add "At least one concentration associated with a collection volume
   was missing" to their exclusion when a collection has a volume and no
   concentration, beside the existing "1 of 4 concentrations are missing"
-  (@billdenney).  No value changes.
+  (@billdenney; PR number to add).  Direct calls of `pk.calc.ae()`,
+  `pk.calc.ertlst()`, `pk.calc.ermax()`, `pk.calc.ertmax()`, and
+  `pk.calc.erlst()` return the longer exclusion text as well.  No value
+  changes.
 
 * Business functions (used for calculations of means, etc.) now return NA_real_
   for empty inputs rather than giving an error (#559).
