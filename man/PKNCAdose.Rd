@@ -89,10 +89,11 @@ same dose is given in every interval.  When given as a two-sided
 formula, both the dose amount and time are used directly from the
 data.
 
-A negative dose amount is an error (\code{pknca_error_dose_negative}, naming
-the rows), here and again in \code{\link[=pk.nca]{pk.nca()}} for a dose made negative later
-(for example by \code{mutate()}).  A zero or missing amount is allowed, and a
-row excluded with \code{exclude} is not checked.
+A negative numeric dose amount is an error (\code{pknca_error_dose_negative},
+naming the rows), here and again in \code{\link[=pk.nca]{pk.nca()}} for a dose made negative
+later (for example by \code{mutate()}).  A zero or missing amount is allowed,
+and a row excluded with \code{exclude} is not checked.  A dose column that is
+not numeric is not checked here.
 }
 \seealso{
 Other PKNCA objects:

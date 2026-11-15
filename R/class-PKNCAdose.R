@@ -44,10 +44,11 @@
 #'   formula, both the dose amount and time are used directly from the
 #'   data.
 #'
-#'   A negative dose amount is an error (`pknca_error_dose_negative`, naming
-#'   the rows), here and again in [pk.nca()] for a dose made negative later
-#'   (for example by `mutate()`).  A zero or missing amount is allowed, and a
-#'   row excluded with `exclude` is not checked.
+#'   A negative numeric dose amount is an error (`pknca_error_dose_negative`,
+#'   naming the rows), here and again in [pk.nca()] for a dose made negative
+#'   later (for example by `mutate()`).  A zero or missing amount is allowed,
+#'   and a row excluded with `exclude` is not checked.  A dose column that is
+#'   not numeric is not checked here.
 #' @family PKNCA objects
 #' @export
 PKNCAdose <- function(data, ...)
@@ -303,7 +304,8 @@ getDepVar.PKNCAdose <- function(x, ...) {
 #'
 #' A negative dose amount is invalid input.  A zero amount and a missing
 #' amount are allowed, and an excluded row is not checked, as for the dose
-#' times.
+#' times.  A dose column that is not numeric (character, factor, difftime) is
+#' not checked:  it fails later, where it is used as a number.
 #'
 #' @param object A PKNCAdose object
 #' @returns `object`, invisibly, or the error `pknca_error_dose_negative`

@@ -593,6 +593,16 @@ test_that("a negative dose amount is an error naming the rows", {
     fixed = TRUE,
     class = "pknca_error_dose_negative"
   )
+  # Exactly five rows are all named, with no "..."
+  cnd <-
+    expect_error(
+      PKNCAdose(data.frame(id = 1:6, time = 0, dose = c(1, -1, -2, -3, -4, -5)), dose ~ time | id),
+      class = "pknca_error_dose_negative"
+    )
+  expect_equal(
+    conditionMessage(cnd),
+    "Dose amounts (column 'dose') must not be negative; 5 row(s) of the dose data are: 2, 3, 4, 5, 6"
+  )
   # One dose per group for every interval (`dose ~ .`)
   expect_error(
     PKNCAdose(data.frame(id = 1:2, dose = c(5, -5)), dose ~ . | id),
@@ -620,6 +630,8 @@ test_that("an excluded negative dose, a zero dose, and a missing dose are allowe
   expect_no_error(PKNCAdose(d_dose, dose ~ time | id, exclude = "excl"))
   # No dose amount at all
   expect_no_error(PKNCAdose(data.frame(id = 1, time = 0), ~ time | id))
+  # A dose column that is not numeric is not checked here
+  expect_no_error(PKNCAdose(data.frame(id = 1:2, time = 0, dose = c("1", "-2")), dose ~ time | id))
   # Zero and missing amounts give what they gave before negative amounts were
   # refused:  a zero dose divides to Inf, and a missing one gives NA
   d_conc <- data.frame(id = 1, time = c(0, 1, 2, 4, 8), conc = c(0, 10, 8, 4, 2))

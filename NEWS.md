@@ -8,11 +8,13 @@ the dosing including dose amount and route.
 
 ## Breaking changes
 
-* A negative dose amount is an error (`pknca_error_dose_negative`, naming the
-  first rows and their count), in `PKNCAdose()` and again in `pk.nca()` for a
-  dose made negative later, for example by `mutate()` (@billdenney).  Code
-  that passed a negative dose before now stops.  A zero or missing dose amount
-  is allowed as before, and a dose row excluded with `exclude` is not checked.
+* A negative numeric dose amount is an error (`pknca_error_dose_negative`,
+  naming the first rows and their count), in `PKNCAdose()` and again in
+  `pk.nca()` for a dose made negative later, for example by `mutate()`
+  (@billdenney).  Code that passed a negative dose before now stops.  A zero
+  or missing dose amount is allowed as before, a dose row excluded with
+  `exclude` is not checked, and a dose column that is not numeric is not
+  checked here.
 
 * Parameter names and descriptions follow one style, so some column headers of
   `summary()` and some descriptions change (@billdenney):
