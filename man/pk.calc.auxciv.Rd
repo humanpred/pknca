@@ -136,8 +136,8 @@ describe the observed part of \code{auciv} (it either cannot be calculated or,
 for the \code{aucint} family, already extrapolates back to time 0 with
 \code{conc.origin}), so \code{NA} is returned.
 
-When \code{auciv} is less than \code{auc} beyond a relative tolerance of
-\code{sqrt(.Machine$double.eps)}, the concentration measured at the dose time is
+When \code{auciv} is less than \code{auc} by more than \code{sqrt(.Machine$double.eps)}
+times the larger of the two, the concentration measured at the dose time is
 above the C0 that \code{auciv} used, and the result is \code{NA} with that reason and
 a \code{pknca_warning_auciv_pbext_negative} warning; within the tolerance, the
 result is 0.  In \code{\link[=pk.nca]{pk.nca()}} only the interval forms give this, after an

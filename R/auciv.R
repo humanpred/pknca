@@ -525,8 +525,8 @@ add.interval.col(
 #'   for the `aucint` family, already extrapolates back to time 0 with
 #'   `conc.origin`), so `NA` is returned.
 #'
-#'   When `auciv` is less than `auc` beyond a relative tolerance of
-#'   `sqrt(.Machine$double.eps)`, the concentration measured at the dose time is
+#'   When `auciv` is less than `auc` by more than `sqrt(.Machine$double.eps)`
+#'   times the larger of the two, the concentration measured at the dose time is
 #'   above the C0 that `auciv` used, and the result is `NA` with that reason and
 #'   a `pknca_warning_auciv_pbext_negative` warning; within the tolerance, the
 #'   result is 0.  In [pk.nca()] only the interval forms give this, after an
@@ -559,7 +559,7 @@ pk.calc.auciv_pbext <- function(conc, time, auc, auciv, ..., options = list(), c
     )
   }
   if (!is.na(auciv) && !is.na(auc) && auciv < auc) {
-    if (isTRUE(all.equal(auciv, auc, tolerance = sqrt(.Machine$double.eps)))) {
+    if (abs(auc - auciv) <= sqrt(.Machine$double.eps) * max(abs(auc), abs(auciv))) {
       # Floating-point noise in two equal AUCs:  nothing is back-extrapolated
       return(0)
     }

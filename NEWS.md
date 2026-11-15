@@ -1221,7 +1221,7 @@ the generated intervals:
   3.5, 1.5, and 0.1 at 0, 1, 2, 4, 8, 12, and 24 hours:
   * With the measured value above the back-extrapolated C0 (20 against 19.69),
     `aucivpbext.int.last` stopped `pk.nca()` with "Please report a bug ...
-    `auciv must be >= auc`".  `aucivint.last` is now 90.39018, the
+    `auciv must be >= auc`".  `aucivint.last` is now 90.39018, the same as
     `aucint.last`, and the percent is 0.  The same holds over an interval that
     ends at the next dose.
   * With the measured value below it (19), `aucivint.last` moves from 90.24681

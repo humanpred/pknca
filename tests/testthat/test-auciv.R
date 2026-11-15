@@ -260,6 +260,22 @@ test_that("pk.calc.auciv_pbext handles edge cases correctly", {
   expect_no_warning(
     expect_equal(pk.calc.auciv_pbext(conc = c(1, 1), time = c(0, 1), auc = 0.1 + 0.2, auciv = 0.3), 0)
   )
+  # The tolerance is relative to the larger AUC, so small AUCs are compared
+  # as large ones are:  half of auc is a real difference at any scale
+  expect_warning(
+    expect_equal(
+      pk.calc.auciv_pbext(conc = c(1, 1), time = c(0, 1), auc = 2e-10, auciv = 1e-10),
+      structure(NA_real_, exclude = "The concentration measured at the dose time is above C0")
+    ),
+    class = "pknca_warning_auciv_pbext_negative"
+  )
+  expect_warning(
+    expect_equal(
+      pk.calc.auciv_pbext(conc = c(1, 1), time = c(0, 1), auc = 1e-9, auciv = 0),
+      structure(NA_real_, exclude = "The concentration measured at the dose time is above C0")
+    ),
+    class = "pknca_warning_auciv_pbext_negative"
+  )
   # Beyond the relative tolerance (sqrt(.Machine$double.eps), about 1.5e-8),
   # the difference is real
   expect_warning(
@@ -312,8 +328,8 @@ auciv_test_expect_unchanged <- function(value, info) {
 test_that("at the first dose, a nonzero concentration measured at the dose time is C0 for the interval forms", {
   # The first dose has no profile before it, so the measured 20 is C0, as it is
   # for aucivlast:  every IV AUCint is the AUCint, and nothing is
-  # back-extrapolated (the back-extrapolated C0 would be 19.69; main stopped
-  # with "auciv must be >= auc")
+  # back-extrapolated (the back-extrapolated C0 would be 19.69, above which the
+  # measured value would otherwise make auciv < auc)
   d_conc <- data.frame(time = c(0, 1, 2, 4, 8, 12, 24), conc = c(20, 16, 13, 8, 3.5, 1.5, 0.1))
   value <- auciv_test_dose_time(d_conc)$value
   expect_equal(unname(value["aucint.last"]), 90.39018408, tolerance = 1e-9)
@@ -321,9 +337,8 @@ test_that("at the first dose, a nonzero concentration measured at the dose time 
   auciv_test_expect_unchanged(value, info = "measured 20")
   expect_equal(unname(value["aucivlast"]), unname(value["aucint.last"]))
   expect_equal(unname(value["aucivpbext.last"]), 0)
-  # A measured value below the back-extrapolated C0 is C0 too.  The IV AUCint
-  # moves with it:  main back-extrapolated to 19.69 and gave aucivint.last
-  # 90.24681428 (aumcivint.last 403.24727871, aucivpbext.int.last 0.3604)
+  # A measured value below the back-extrapolated C0 (19.69) is C0 too, so the
+  # IV AUCint starts from the measured 19 and equals the AUCint
   d_conc$conc[1] <- 19
   value <- auciv_test_dose_time(d_conc)$value
   expect_equal(unname(value["aucivint.last"]), 89.92156217, tolerance = 1e-9)
@@ -338,8 +353,8 @@ test_that("at the first dose, a nonzero concentration measured at the dose time 
 })
 
 test_that("at the first dose, an interval that ends at the next dose uses the measured C0", {
-  # The second dose at 12 ends the interval; main stopped with "auciv must be
-  # >= auc"
+  # The second dose at 12 ends the interval, and the measured value at the
+  # first dose is C0 there too
   d_conc <-
     data.frame(
       time = c(0, 1, 2, 4, 8, 12, 13, 14, 16, 24),
@@ -351,7 +366,7 @@ test_that("at the first dose, an interval that ends at the next dose uses the me
 })
 
 test_that("an IV infusion at the first dose is unchanged", {
-  # Nothing is back-extrapolated for an infusion, before this change as after
+  # An interval that starts at an infusion has nothing to back-extrapolate
   d_conc <- data.frame(time = c(0, 1, 2, 4, 8, 12, 24), conc = c(20, 16, 13, 8, 3.5, 1.5, 0.1))
   value <- auciv_test_dose_time(d_conc, d_dose = data.frame(time = 0, dose = 1, dur = 0.5), duration = "dur")$value
   expect_equal(unname(value["aucivint.last"]), 90.39018408, tolerance = 1e-9)
