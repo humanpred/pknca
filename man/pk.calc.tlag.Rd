@@ -6,20 +6,23 @@
 concentration above the limit of quantification or above the first
 concentration in the interval)}
 \usage{
-pk.calc.tlag(conc, time)
+pk.calc.tlag(conc, time, check = TRUE)
 }
 \arguments{
 \item{conc}{Measured concentrations}
 
 \item{time}{Time of the measurement of the concentrations}
+
+\item{check}{Run \code{\link[=assert_conc_time]{assert_conc_time()}}?}
 }
 \value{
 The time associated with the first increasing concentration
 }
 \description{
-Determine the observed lag time (time before the first
-concentration above the limit of quantification or above the first
-concentration in the interval)
+Missing concentrations are skipped, as in \code{\link[=pk.calc.cmax]{pk.calc.cmax()}} and the other
+simple parameters:  the increase is looked for among the measured
+concentrations.  \code{NA} is returned when no measured concentration increases
+(including when every concentration is missing).
 }
 \seealso{
 Other NCA time parameters:

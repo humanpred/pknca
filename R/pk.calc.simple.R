@@ -2317,12 +2317,23 @@ add.interval.col("ptr",
 #' concentration above the limit of quantification or above the first
 #' concentration in the interval)
 #'
+#' Missing concentrations are skipped, as in [pk.calc.cmax()] and the other
+#' simple parameters:  the increase is looked for among the measured
+#' concentrations.  `NA` is returned when no measured concentration increases
+#' (including when every concentration is missing).
+#'
 #' @inheritParams assert_conc_time
+#' @param check Run [assert_conc_time()]?
 #' @returns The time associated with the first increasing concentration
 #' @family NCA time parameters
 #' @export
-pk.calc.tlag <- function(conc, time) {
-  assert_conc_time(conc = conc, time = time)
+pk.calc.tlag <- function(conc, time, check = TRUE) {
+  if (check) {
+    assert_conc_time(conc = conc, time = time)
+  }
+  mask_measured <- !is.na(conc)
+  conc <- conc[mask_measured]
+  time <- time[mask_measured]
   mask.increase <- c(conc[-1] > conc[-length(conc)], FALSE)
   if (any(mask.increase)) {
     time[mask.increase][1]

@@ -515,6 +515,56 @@ test_that("pk.calc.tlag", {
                info="No increase gives NA")
 })
 
+test_that("pk.calc.tlag skips missing concentrations, as the other simple parameters do", {
+  # At the start:  the first increase among the measured values is 40 to 80
+  expect_equal(pk.calc.tlag(c(NA, 40, 80, 10), c(0, 2, 4, 8)), 2)
+  # At the start with no increase among the measured values
+  expect_equal(pk.calc.tlag(c(NA, 40, 20, 10), c(0, 2, 4, 8)), NA_real_)
+  # In the middle:  10 and 5 are not an increase, 5 to 8 is
+  expect_equal(pk.calc.tlag(c(10, NA, 5, 8), 0:3), 2)
+  # At the end
+  expect_equal(pk.calc.tlag(c(0, 5, 10, NA), 0:3), 0)
+  # Everywhere, with a warning from the check, and without it
+  expect_warning(
+    value_all_missing <- pk.calc.tlag(c(NA_real_, NA_real_, NA_real_), 0:2),
+    class = "pknca_warning_all_concentration_missing"
+  )
+  expect_equal(value_all_missing, NA_real_)
+  expect_equal(pk.calc.tlag(c(NA_real_, NA_real_, NA_real_), 0:2, check = FALSE), NA_real_)
+  # check = FALSE skips the assertions, not the missing values
+  expect_equal(pk.calc.tlag(c(10, NA, 5, 8), 0:3, check = FALSE), 2)
+})
+
+# tlag from 0 to 8 of one profile with the conc.na option `conc_na`
+tlag_test_nca <- function(conc, conc_na) {
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(data.frame(id = 1, time = c(0, 2, 4, 8), conc = conc), conc ~ time | id),
+      PKNCAdose(data.frame(id = 1, time = 0, dose = 1), dose ~ time | id),
+      intervals = data.frame(start = 0, end = 8, tlag = TRUE),
+      options = list(conc.na = conc_na)
+    )
+  res <- as.data.frame(suppressWarnings(suppressMessages(pk.nca(o_data))))
+  res$PPORRES[res$PPTESTCD == "tlag"]
+}
+
+test_that("tlag in pk.nca with missing concentrations", {
+  # The missing value is skipped at either conc.na, as for cmax
+  for (conc_na in list("drop", 0)) {
+    expect_equal(tlag_test_nca(c(NA, 40, 80, 10), conc_na), 2, info = as.character(conc_na))
+    # No increase among the measured values:  NA, where the interval stopped
+    # with "Please report a bug"
+    expect_equal(tlag_test_nca(c(NA, 40, 20, 10), conc_na), NA_real_, info = as.character(conc_na))
+  }
+  # Every concentration missing:  NA, where the interval stopped with "Please
+  # report a bug" (the data checks warn that every concentration is missing)
+  expect_warning(
+    value_all_missing <- tlag_test_nca(rep(NA_real_, 4), "drop"),
+    class = "pknca_warning_all_concentration_missing"
+  )
+  expect_equal(value_all_missing, NA_real_)
+})
+
 test_that("pk.calc.deg.fluc", {
   expect_equal(pk.calc.deg.fluc(cmax=100, cmin=10, cav=45), 200,
                info="Degree of fluctuation math works")

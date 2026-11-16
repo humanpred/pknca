@@ -1212,6 +1212,15 @@ the generated intervals:
 
 ## Bug fixes
 
+* `pk.calc.tlag()` skips missing concentrations, as `pk.calc.cmax()` and the
+  other simple parameters do, and gains a `check` argument like theirs
+  (@billdenney; PR number to add).  Two results change:  a missing value
+  before or between the measured ones gave `NA` (for example
+  `pk.calc.tlag(c(NA, 40, 80, 10), c(0, 2, 4, 8))`) and now gives the lag time
+  of the measured values (2); and a missing value with no increase after it,
+  or every value missing, stopped the calculation (in `pk.nca()`, "Please
+  report a bug ... missing value where TRUE/FALSE needed") and now gives `NA`.
+
 * Preferred units (`concu_pref`, `doseu_pref`, and the others) with unit
   columns whose units differ between groups no longer stop `PKNCAdata()` with
   "arguments imply differing number of rows: 1, 0" when some groups are
