@@ -1476,13 +1476,16 @@ the generated intervals:
   existed at the start time, so a missing concentration there stopped the
   imputation and was then dropped.  Each result is now the one for the data
   without that row.  With a numeric `conc.na`, that number is the missing
-  concentration, the row stays, and every result is as before.  A profile of
-  urine or feces collections (one with any volume that is not missing) keeps a
-  missing start row too, so the amount excreted stays missing; this is decided
-  for each profile, so the plasma groups of data that also holds urine are
-  treated as they are alone.  A user's own imputation method and `end_conc_drop` receive the
-  row unchanged, and the methods called directly see the row as it is given.
-  The results that change, at `conc.na = "drop"`:
+  concentration, the row stays, and every result is as before.  A profile with
+  any volume that is not missing is a set of urine or feces collections, so one
+  row with a volume is enough:  such a profile keeps a missing start row, and
+  the amount excreted stays missing.  This is decided for each profile, so the
+  plasma groups of data that also holds urine are treated as they are alone.
+  The row is dropped right before the first of these methods in an imputation
+  chain:  a user's own method or `end_conc_drop` before it receives the row
+  unchanged, and one after it receives the data without it, on the dense and the
+  sparse paths.  The methods called directly see the row as it is given.  The
+  results that change, at `conc.na = "drop"`:
   * Every result that depends on the start concentration, or on an AUC that
     starts there, can change with `start_predose_conc0`, `start_cmin`,
     `"start_predose,start_cmin"`, and `start_predose` (when it has a predose
@@ -1500,9 +1503,11 @@ the generated intervals:
       `aucpext.inf.pred`; `aucabove.predose.all` and `aucabove.trough.all`.
     * IV AUCs:  `aucivlast`, `aucivall`, `aucivinf.obs`, `aucivinf.pred`,
       `aumcivlast`, `aumcivall`, `aumcivinf.obs`, `aumcivinf.pred`,
-      `aucivpbext.last`, `aucivpbext.all`, `aucivpbext.inf.obs`, and
-      `aucivpbext.inf.pred` (and the historical names `aucivpbextlast`,
-      `aucivpbextall`, `aucivpbextinf.obs`, and `aucivpbextinf.pred`).
+      `aucivpbext.last`, `aucivpbext.all`, `aucivpbext.inf.obs`,
+      `aucivpbext.inf.pred`, `aucivpbext.int.last`, and `aucivpbext.int.all`
+      (and the historical names `aucivpbextlast`, `aucivpbextall`,
+      `aucivpbextinf.obs`, `aucivpbextinf.pred`, `aucivpbextint.last`, and
+      `aucivpbextint.all`).
     * Average concentrations:  `cav`, `cav.last`, `cav.all`, `cav.iv.last`,
       `cav.iv.all`, `cav.dn`, and `cav.last.dn`; and `deg.fluc`.
     * Clearance, elimination rate, mean residence time, effective half-life,
@@ -1515,8 +1520,9 @@ the generated intervals:
       place of a back-extrapolated one); `cmin`, `cmin.dn`, and `swing` (an
       imputed 0 or a shifted predose concentration below the others);
       `tfirst` and `tmin` (the start time); and `tlag`.
-    * Counts:  `count.conc` and `count.conc.measured` include the imputed
-      start observation (`count.conc.measured` only when it is not 0).
+    * Counts:  `count.conc` and `count.conc.measured` (and the historical
+      names `count_conc` and `count_conc_measured`) include the imputed start
+      observation (`count.conc.measured` only when it is not 0).
   * The row's other values (duration, half-life inclusion and exclusion, and
     `lloq`) go with it, so the imputed start concentration has the values of
     an added observation.

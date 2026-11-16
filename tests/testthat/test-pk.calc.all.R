@@ -1459,6 +1459,14 @@ test_that("the plasma groups of an object that also holds urine give what they g
   expect_equal(plasma_alone$PPORRES[plasma_alone$PPTESTCD == "cstart"], 40)
 })
 
+test_that("one row with a volume makes a profile one of collections", {
+  # A stray volume on one row is enough:  the missing start row stays, so
+  # start_cmin imputes nothing and the start concentration is missing
+  d_conc <- data.frame(id = 1, time = c(0, 2, 4, 8), conc = c(NA, 40, 20, 10), vol = c(NA, NA, 1, NA), dur = c(0, 2, 2, 4))
+  res <- impute_test_urine(d_conc, "start_cmin")
+  expect_equal(unname(res$value[c("cstart", "auclast")]), c(NA_real_, NA_real_))
+})
+
 test_that("a urine profile with every volume missing follows the rule for a profile without volumes", {
   # Subject 1 has no volume at all, so its profile is not taken for
   # collections:  the missing start row is dropped and start_cmin imputes Cmin
