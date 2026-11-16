@@ -1212,6 +1212,11 @@ the generated intervals:
 
 ## Bug fixes
 
+* `pk.calc.swing()` gives `NA` for a missing `cmin` instead of stopping with
+  "missing value where TRUE/FALSE needed" (@billdenney; PR number to add).
+  In `pk.nca()`, an interval whose concentrations are all missing stopped with
+  "Please report a bug" when `swing` was requested, and now gives `NA`.
+
 * Preferred units (`concu_pref`, `doseu_pref`, and the others) with unit
   columns whose units differ between groups no longer stop `PKNCAdata()` with
   "arguments imply differing number of rows: 1, 0" when some groups are
