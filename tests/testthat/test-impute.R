@@ -1272,7 +1272,7 @@ test_that("pk.nca with chains of start imputations and a missing concentration a
   # without a predose sample to shift
   args <-
     list(
-      conc = c(NA, 40, 80), time = c(0, 1, 2), volume = c(NA, 1, 1), duration.conc = c(9, 1, 1),
+      conc = c(NA, 40, 80), time = c(0, 1, 2), volume = c(NA, NA, NA), duration.conc = c(9, 1, 1),
       include_half.life = c(TRUE, FALSE, TRUE), exclude_half.life = c(TRUE, FALSE, FALSE), lloq = c(9, 1, 1)
     )
   added <- list(volume = 0, duration.conc = NA_real_, include_half.life = NA, exclude_half.life = NA, lloq = 1)
@@ -1339,12 +1339,12 @@ test_that("start imputations with a missing and a measured concentration at the 
     expect_equal(
       impute_test_obs_chain(
         impute_funs = current, conc = conc, time = time,
-        volume = c(NA, 3, 1, 1), duration.conc = c(9, 3, 1, 1),
+        volume = c(NA, NA, NA, NA), duration.conc = c(9, 3, 1, 1),
         include_half.life = c(TRUE, FALSE, TRUE, TRUE), exclude_half.life = c(TRUE, FALSE, FALSE, FALSE),
         lloq = c(9, 3, 1, 1), predose = TRUE, end = 2
       ),
       data.frame(
-        conc = c(7, 40, 80), time = c(0, 1, 2), volume = c(3, 1, 1), duration.conc = c(3, 1, 1),
+        conc = c(7, 40, 80), time = c(0, 1, 2), volume = rep(NA_real_, 3), duration.conc = c(3, 1, 1),
         include_half.life = c(FALSE, TRUE, TRUE), exclude_half.life = c(FALSE, FALSE, FALSE), lloq = c(3, 1, 1)
       ),
       ignore_attr = "row.names",
@@ -1398,7 +1398,7 @@ test_that("start imputations with a missing start concentration and a predose sa
   # With the per-observation values, each is also the result without the row
   args <-
     list(
-      conc = conc, time = time, volume = c(NA, 1, 1), duration.conc = c(9, 1, 1),
+      conc = conc, time = time, volume = c(NA, NA, NA), duration.conc = c(9, 1, 1),
       include_half.life = c(TRUE, FALSE, TRUE), exclude_half.life = c(TRUE, FALSE, FALSE), lloq = c(9, 1, 1)
     )
   args_absent <- lapply(X = args, FUN = `[`, -1)
@@ -1417,7 +1417,7 @@ test_that("start imputations with a missing start concentration and a predose sa
       c(list(impute_funs = "PKNCA_impute_method_start_predose_conc0", predose = TRUE, predose_time = -1, end = 2), args)
     ),
     data.frame(
-      conc = c(0, 40, 80), time = c(0, 1, 2), volume = c(0, 1, 1), duration.conc = c(NA, 1, 1),
+      conc = c(0, 40, 80), time = c(0, 1, 2), volume = c(0, NA, NA), duration.conc = c(NA, 1, 1),
       include_half.life = c(NA, FALSE, TRUE), exclude_half.life = c(NA, FALSE, FALSE), lloq = c(1, 1, 1)
     ),
     ignore_attr = "row.names"
@@ -1439,11 +1439,11 @@ test_that("start_cmin with every concentration missing imputes nothing", {
   expect_equal(
     impute_test_obs_chain(
       impute_funs = "PKNCA_impute_method_start_cmin", conc = c(NA, NA, NA), time = c(0, 1, 2),
-      volume = c(NA, 1, 2), duration.conc = c(9, 1, 2), include_half.life = c(TRUE, FALSE, TRUE),
+      volume = c(NA, NA, NA), duration.conc = c(9, 1, 2), include_half.life = c(TRUE, FALSE, TRUE),
       exclude_half.life = c(TRUE, FALSE, FALSE), lloq = c(9, 1, 2), predose = FALSE, end = 2
     ),
     data.frame(
-      conc = c(NA, NA), time = c(1, 2), volume = c(1, 2), duration.conc = c(1, 2),
+      conc = c(NA, NA), time = c(1, 2), volume = c(NA_real_, NA_real_), duration.conc = c(1, 2),
       include_half.life = c(FALSE, TRUE), exclude_half.life = c(FALSE, FALSE), lloq = c(1, 2)
     ),
     ignore_attr = "row.names"
@@ -1498,7 +1498,7 @@ test_that("the registered methods that drop a missing start give the result with
   # its documentation says so
   args <-
     list(
-      conc = c(NA, 40, 80), time = c(0, 1, 2), volume = c(NA, 1, 1), duration.conc = c(9, 1, 1),
+      conc = c(NA, 40, 80), time = c(0, 1, 2), volume = c(NA, NA, NA), duration.conc = c(9, 1, 1),
       include_half.life = c(TRUE, FALSE, TRUE), exclude_half.life = c(TRUE, FALSE, FALSE), lloq = c(9, 1, 1)
     )
   args_absent <- lapply(X = args, FUN = `[`, -1)

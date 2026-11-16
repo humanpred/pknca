@@ -35,7 +35,7 @@ test_that("pknca_rd_impute_method writes the registered description and details"
     paste(
       "@describeIn PKNCA_impute_method",
       "Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data).",
-      "In `pk.nca()` with the `conc.na` option `\"drop\"` (the default), a row at the start time with a missing concentration and no collection volume is not a measurement:  it is dropped, with its other per-observation values, before this method runs, so the result is the one for the data without that row.  A row with a collection volume (urine or feces) stays:  the amount in that collection is unknown, not absent.  With a numeric `conc.na`, that number is the missing concentration and the row stays.  A direct call of this method sees the row as it is given."
+      "In `pk.nca()` with the `conc.na` option `\"drop\"` (the default), a row at the start time with a missing concentration is not a measurement:  it is dropped, with its other per-observation values, before this method runs, so the result is the one for the data without that row.  In a profile of urine or feces collections (one with any volume that is not missing), the row stays:  the amount in that collection is unknown, not absent.  This is decided for each profile, so a profile whose volumes are all missing follows the first rule.  With a numeric `conc.na`, that number is the missing concentration and the row stays.  A direct call of this method sees the row as it is given."
     )
   )
   expect_equal(
@@ -44,7 +44,7 @@ test_that("pknca_rd_impute_method writes the registered description and details"
       "@describeIn PKNCA_impute_method",
       "Shift a predose concentration to become the time zero concentration (only if a time zero concentration does not exist).",
       "The most recent predose sample with a measured concentration is shifted; samples with a missing concentration are skipped.",
-      "In `pk.nca()` with the `conc.na` option `\"drop\"` (the default), a row at the start time with a missing concentration and no collection volume is not a measurement:  it is dropped, with its other per-observation values, before this method runs, so the result is the one for the data without that row.  A row with a collection volume (urine or feces) stays:  the amount in that collection is unknown, not absent.  With a numeric `conc.na`, that number is the missing concentration and the row stays.  A direct call of this method sees the row as it is given."
+      "In `pk.nca()` with the `conc.na` option `\"drop\"` (the default), a row at the start time with a missing concentration is not a measurement:  it is dropped, with its other per-observation values, before this method runs, so the result is the one for the data without that row.  In a profile of urine or feces collections (one with any volume that is not missing), the row stays:  the amount in that collection is unknown, not absent.  This is decided for each profile, so a profile whose volumes are all missing follows the first rule.  With a numeric `conc.na`, that number is the missing concentration and the row stays.  A direct call of this method sees the row as it is given."
     )
   )
   expect_error(

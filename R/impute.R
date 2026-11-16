@@ -186,9 +186,9 @@ pknca_register_impute_method(
       "use `start_predose` without `start_conc0`.  When no observation exists at",
       "the start time, a new row with a concentration of 0 is added.  A missing",
       "concentration at the start time is set to 0 as well, so a urine or feces",
-      "collection at the start whose concentration is missing counts as an",
-      "amount of zero, where the other start methods leave the amount excreted",
-      "missing."
+      "collection at the start whose concentration is missing and whose volume",
+      "is known counts as an amount of zero, where the other start methods",
+      "leave the amount excreted missing."
     ),
   drop_missing_start = TRUE
 )
@@ -196,28 +196,40 @@ pknca_register_impute_method(
 #' Drop the rows at the start time that have a missing concentration
 #'
 #' A missing concentration is not a measurement, so an imputation that adds a
-#' start concentration when there is none treats such a row as absent.  A row
-#' with a collection volume (urine or feces) is a collection whose amount is
-#' unknown, so it stays:  the amount excreted stays missing rather than leaving
-#' the collection out of the sum.
+#' start concentration when there is none treats such a row as absent.  (For a
+#' profile of collections, impute_conc_time() does not call this:  see
+#' `impute_profile_is_collections()`.)
 #'
-#' @param ret A data frame with columns `conc` and `time`, and optionally
-#'   `volume` (any other columns are kept with their rows)
+#' @param ret A data frame with columns `conc` and `time` (any other columns
+#'   are kept with their rows)
 #' @param start The start time of the interval
-#' @returns `ret` without its rows at `start` with a missing `conc` (and no
-#'   `volume`); `ret` unchanged when `start` is missing, which is invalid and
-#'   identifies no rows
+#' @returns `ret` without its rows at `start` with a missing `conc`; `ret`
+#'   unchanged when `start` is missing, which is invalid and identifies no rows
 #' @keywords Internal
 #' @noRd
 impute_drop_missing_start <- function(ret, start) {
   if (anyNA(start)) {
     return(ret)
   }
-  drop <- ret$time %in% start & is.na(ret$conc)
-  if ("volume" %in% names(ret)) {
-    drop <- drop & is.na(ret$volume)
-  }
-  ret[!drop, , drop = FALSE]
+  ret[!(ret$time %in% start & is.na(ret$conc)), , drop = FALSE]
+}
+
+#' Is a profile a set of urine or feces collections?
+#'
+#' A profile (one group in one interval) is a set of collections when any of
+#' its rows has a volume that is not missing.  A missing start concentration
+#' in a collection is an amount that is unknown, not absent, so the start
+#' methods never drop that row, whatever its own volume.  A profile with no
+#' volume, or with every volume missing, is not:  the plasma groups of an
+#' object that also holds urine groups give what they give alone.
+#'
+#' @param data The profile, a data frame with `conc`, `time`, and optionally
+#'   `volume`
+#' @returns `TRUE` or `FALSE`
+#' @keywords Internal
+#' @noRd
+impute_profile_is_collections <- function(data) {
+  "volume" %in% names(data) && any(!is.na(data$volume))
 }
 
 #' Does an imputation method treat a missing start concentration as absent?

@@ -1476,9 +1476,11 @@ the generated intervals:
   existed at the start time, so a missing concentration there stopped the
   imputation and was then dropped.  Each result is now the one for the data
   without that row.  With a numeric `conc.na`, that number is the missing
-  concentration, the row stays, and every result is as before.  Urine and feces
-  collections keep a missing start row too, so the amount excreted stays missing
-  (see below).  A user's own imputation method and `end_conc_drop` receive the
+  concentration, the row stays, and every result is as before.  A profile of
+  urine or feces collections (one with any volume that is not missing) keeps a
+  missing start row too, so the amount excreted stays missing; this is decided
+  for each profile, so the plasma groups of data that also holds urine are
+  treated as they are alone.  A user's own imputation method and `end_conc_drop` receive the
   row unchanged, and the methods called directly see the row as it is given.
   The results that change, at `conc.na = "drop"`:
   * Every result that depends on the start concentration, or on an AUC that
@@ -1531,8 +1533,8 @@ the generated intervals:
     follows the same rule:  the row is dropped and the 0 is added with the
     values of an added observation, so a half-life flag on the missing row no
     longer reaches it.  A measured start concentration, and a missing one in a
-    collection with a volume, are still replaced with 0 in place, so such a
-    collection counts as an amount of zero.
+    profile of collections, are still replaced with 0 in place, so a collection
+    with a known volume counts as an amount of zero.
   * `pknca_impute_methods()` gains a `drop_missing_start` column saying which
     methods treat a missing start concentration as absent.
 

@@ -536,7 +536,8 @@ remap_sparse_sources <- function(arglist) {
 # start time with a missing concentration are dropped, with their values,
 # right before the first PKNCA start method that registers
 # `drop_missing_start` (see pknca_register_impute_method()); a user's method
-# and the methods before it in the chain receive them.
+# and the methods before it in the chain receive them.  A profile of urine or
+# feces collections keeps them (impute_profile_is_collections()).
 impute_conc_time <- function(impute_funs, conc, time, start, end,
                              conc.group, time.group, options,
                              drop_missing_start,
@@ -545,6 +546,9 @@ impute_conc_time <- function(impute_funs, conc, time, start, end,
   if (!is.null(obs_values)) {
     impute_data <- cbind(impute_data, obs_values)
   }
+  # Decided once, on the profile as given:  a row that a method adds has the
+  # fill volume, which would make any profile look like one of collections
+  drop_missing_start <- drop_missing_start && !impute_profile_is_collections(impute_data)
   for (current_fun_nm in impute_funs) {
     if (drop_missing_start && impute_method_drops_missing_start(current_fun_nm)) {
       # The method treats a missing start concentration as no row, so the

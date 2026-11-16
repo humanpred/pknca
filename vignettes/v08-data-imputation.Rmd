@@ -56,9 +56,11 @@ for `start_conc0`, `start_predose`, `start_cmin`, and `start_predose_conc0`
 when the `conc.na` option is `"drop"` (the default):  it is dropped before the
 first of them runs, so the result is the one for the data without that row.
 With a numeric `conc.na`, that number is the missing concentration, so the row
-is an observation and the methods see it.  For urine or feces data (with
-collection volumes), the row stays either way, so the amount excreted stays
-missing; `start_conc0` still sets that concentration to 0.
+is an observation and the methods see it.  For a profile of urine or feces
+collections (one with any volume that is not missing), the row stays either
+way, so the amount excreted stays missing; `start_conc0` still sets that
+concentration to 0.  This is decided for each profile, so the plasma groups of
+data that also holds urine are treated as they are alone.
 
 The development version of PKNCA also adds `PKNCA_impute_method_end_conc_drop`
 (used as `"end_conc_drop"`), which drops a concentration observed exactly at
