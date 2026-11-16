@@ -1390,9 +1390,8 @@ test_that("a collection with a missing concentration stays in the amount excrete
     res <- impute_test_urine(d_conc, current)
     expect_equal(unname(res$value[c("ae", "fe", "erint")]), rep(NA_real_, 3), info = current)
     expect_equal(unname(res$exclude[c("ae", "fe", "erint")]), rep(reason, 3), info = current)
-    # The excretion rate is calculated from the other collections, with the
-    # reason
-    expect_equal(unname(res$value["ermax"]), 20, info = current)
+    # The excretion rate of the interval is unknown too
+    expect_equal(unname(res$value["ermax"]), NA_real_, info = current)
     expect_equal(unname(res$exclude["ermax"]), reason, info = current)
     # The start row stays, so the start methods see a row there and impute
     # nothing
