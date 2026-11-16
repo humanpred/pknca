@@ -12,7 +12,7 @@ This directory contains internal design review documents for the PKNCA package. 
 | [04-code-clarity.md](04-code-clarity.md) | Confusing sections, naming inconsistencies, underdocumented internals |
 | [05-future-work.md](05-future-work.md) | Design decisions worth reconsidering, deprecation candidates, breaking changes for v1.0 |
 | [06-potential-bugs.md](06-potential-bugs.md) | Potential bugs, edge cases, and logic issues found during code review |
-| [uloq-plan.md](uloq-plan.md) | Concentrations above the upper limit of quantification:  the `uloq` argument, qualified Cmax, AUCs not calculated, half-life, and compatibility (for decision) |
+| [uloq-plan.md](uloq-plan.md) | Concentrations above the upper limit of quantification:  the `uloq` argument, `Inf` as the marker, `PPULOQ`, AUCs not calculated, half-life, and compatibility (for decision) |
 
 ## Audit Date
 

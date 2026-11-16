@@ -1,118 +1,117 @@
 # Concentrations above the upper limit of quantification
 
-Against main be353efa; for Bill's decision before any code.  His rule:
-"Cmax should be noted as greater than uloq not a value.  Tmax should use the
-above value as the maximum concentration.  AUC is likely incalculable."  In
-summaries an above-limit value is censored at the limit (Tobit).  PKNCA has
-no upper limit today; `lloq` is used only by the Tobit half-life.
+Against main be353efa, revised with Bill's answers of 2026-11-15 and 16; no
+code before he has read this.  His rule:  "Cmax should be noted as greater
+than uloq not a value.  Tmax should use the above value as the maximum
+concentration.  AUC is likely incalculable."
 
 ## 1. The argument and the marker
 
-- `PKNCAconc(uloq = )` takes a number or a column name, mirroring `lloq`:
+- **`PKNCAconc(uloq = )`** takes a number or a column name, mirroring `lloq`:
   positive and finite, `NA` allowed, anything else
   `pknca_error_conc_invalid_uloq`; `uloq > lloq` where a row has both
-  (`pknca_error_conc_uloq_below_lloq`).  Stored with
+  (`pknca_error_conc_uloq_below_lloq`).  It is stored with
   `setAttributeColumn(attr_name = "uloq")`, where results and nca.reporter
-  read it as they read `lloq`.  It goes wherever `lloq` goes per observation
-  (imputation's `impute_obs_values()`, the sparse median per time, the
-  unbound scaling by `fu`).
-- **Marker:** a record is above the limit when `conc >= uloq`, the mirror of
-  BLQ as zero, with the data layer delivering it at its limit.  A value
-  strictly above its `uloq` is outside the validated range and is treated the
-  same way, with `pknca_warning_conc_above_uloq` naming the rows, so it can
-  never become a Cmax.
-- **Equality is safe only with the qualifier "≥":** a value measured exactly
-  at L is "≥ L" too, while "> L" would be false for it.  Its cost is that such
-  a value loses its AUC.  A flag column would avoid that and is not proposed,
-  because the mirror works.  With no `uloq`, or all `NA`, nothing is marked.
+  read it, and goes wherever `lloq` goes per observation (imputation's
+  `impute_obs_values()`, the sparse median per time, the unbound scaling by
+  `fu`).
+- **The marker is `conc = Inf`** ("so that it is hard to miss"):  the data
+  layer sets the concentration of an above-limit record to `Inf` and its limit
+  in `uloq`.  A value equal to its limit is an ordinary measurement.
+- **A finite value above its `uloq`** (1200 with a limit of 1000) is kept and
+  used as measured, with `pknca_warning_conc_above_uloq` naming the rows.
+- **Today**, `PKNCAconc()` refuses any `Inf` ("Assertion on 'conc' failed:
+  Must be finite", with no class), so no data or result contains one now.
+  `+Inf` becomes valid; `-Inf` stays an error.
 
-## 2. Cmax, Tmax, and a qualifier on results
+## 2. Results carry `Inf` and `PPULOQ`
 
-- **A results column `qualifier`:** `NA`, or `">="` for a lower bound.  It is
-  lowercase like `exclude` and `pknca_parameter`, so it is not taken for an
-  SDTM variable; that is the only reason to reject the data layer's
-  `PPBOUND`.  PPORRES keeps the number L, so numeric readers keep working.
-- **Cmax** is the largest of the measured values and the limits, qualified
-  when any above-limit sample is in the interval.  With per-row limits, a
-  measured 1500 beside a sample above a limit of 1000 gives "≥ 1500".
-- **Tmax** is the time of that maximum.  An above-limit sample at L ranks
-  above a measured L, and above-limit samples tie with each other under
-  `first.tmax`.  When another above-limit sample's L is below Cmax (per-row
-  limits), Tmax is reported with the exclude reason "Tmax may be at <time>
-  (above the upper limit)".
-- **Propagation:** a monotone increasing function of a qualified value is
-  qualified (cmax.dn, ptr, swing, cmax ratios with an unqualified reference);
-  anything else is not calculated (section 3).  The same holds for cmin,
-  ctrough, cstart, clast.obs, ceoi, and the `c0` method of `pk.calc.c0()`
-  when they pick an above-limit sample.
-- **Outputs:** long and `out_format = "cdisc"` carry `qualifier`, and CDISC
-  also gains `PPSTRESC = ">=1000"`.  `wide` keeps the number and warns
-  (`pknca_warning_wide_qualifier_dropped`).  `summary()` gives the geometric
-  mean and CV from a lognormal estimate censored at the limits (Tobit) when
-  any value is qualified, with a footnote giving n censored; the other
-  statistics are NC, except the median and range when they can be ordered.
+- A result taken from an above-limit sample is `Inf` in PPORRES (and PPSTRES:
+  unit conversion multiplies `Inf` by its factor and keeps it).
+- **`PPULOQ`**, a new results column that is not SDTM, holds the limit that
+  makes the result `Inf`, in the result's own unit (the limit taken through
+  the same calculation:  `uloq/dose` for `cmax.dn`), so that the Tobit summary
+  can censor each value at its own limit.  It is `NA` on every other result.
+  SDTM's `--ULOQ` (PC, LB) is on every record of an assay with a limit; an AUC
+  has no concentration limit, so the PP analogue is filled only where it
+  bounds the value.
+- **Wide format:** the cell is `Inf`, with no `PPULOQ`.  **`summary()`:**
+  in the first PR, `NC` with a footnote ("n of N above the upper limit of
+  quantification") for a parameter with an `Inf` among its values; in the
+  second, the geometric mean and CV from a lognormal Tobit fit right-censored
+  at `PPULOQ`.
 
-## 3. Not calculated, with a reason
+## 3. Every parameter is `Inf` or `NA` with a reason, never `NaN`
 
-- An AUC, AUMC, or amount excreted (the `int` and `iv` forms included) is
-  `NA` when its range contains an above-limit sample or interpolates or
-  extrapolates through one, with the reason "Concentration above the upper
-  limit of quantification at <time>".  One whose range ends before the first
-  such sample is calculated (`aucint` 0 to 1 with the sample at 2 and one
-  measured at 1).
-- Dependants need no new code:  `pk.nca.interval()` already carries each
-  input's reason into its dependants (`combine_exclude_reasons()`).  A test
-  iterates `get.parameter.deps()` for every AUC and AUMC and checks each
-  dependant is `NA` with the reason.
-- **Grouping by reason (nca.reporter):** reasons today are free text joined
-  with "; ".  Proposed:  a results column `exclude_code` with the codes, here
-  `"conc_above_uloq"`, each with a template listed by `pknca_exclude_codes()`;
-  the existing reasons get codes in a later PR.
+- **`Inf`** (a concentration at or above the limit, or a function increasing
+  in one):  `cmax`; `cmin`, `ctrough`, `cstart`, `clast.obs`, `ceoi`, and `c0`
+  (its `c0` method) when they pick an above-limit sample; their `.dn` forms;
+  `ptr` and `swing` with a finite denominator; the excretion rates `ermax` and
+  `erlst` from an above-limit collection; `ratio.*` of an `Inf` over a finite
+  reference.  **Tmax** is the time of the above-limit sample (several:
+  `first.tmax` decides); `tlast`, `tfirst`, and `tlag` count it as measured.
+- **`NA` with the reason** "Concentration above the upper limit of
+  quantification at <time>":  every AUC and AUMC (`last`, `all`, `inf`, `int`,
+  `iv`, `pbext`, `pext`, `aucabove.*`) whose range contains the sample or
+  interpolates or extrapolates through it; `ae` and what depends on it;
+  `time.above`; and what depends on any of them (`cav*`, `deg.fluc`, `cl*`,
+  `kel*`, `mrt*`, `thalf.eff*`, `vss*`, `vz*`, `f*`, `clr*`, `fe`, `erint`),
+  through the existing reason propagation (`combine_exclude_reasons()`).
+  `ptr`, `swing`, and ratios with an `Inf` denominator are `NA` with the same
+  reason.  An AUC whose range ends before the first such sample is calculated.
+- **The guard:**  `pk.nca.interval()` refuses a non-finite result other than
+  `Inf` from a parameter registered as increasing in the concentration
+  (`above_limit = "inf"` in `add.interval.col()`); every other parameter whose
+  inputs contain an `Inf` gives `NA` with the reason.  One test iterates the
+  registry on a profile with an above-limit sample and checks each parameter
+  is either `Inf` (declared) or `NA` with the reason.
 
 ## 4. Half-life
 
-An above-limit sample is left out of the fit, as `exclude_half.life` leaves
-one out, and `get_halflife_points()` shows it with the reason "above the upper
-limit".  The Tobit half-life gains right censoring at `uloq` (the upper tail
-of `pnorm()` beside today's lower tail in `fit_half_life_tobit_LL()`); only
-there do such points count toward `min.hl.points`.
+An above-limit sample is left out of the fit before `lm()`, as
+`exclude_half.life` leaves one out, and `get_halflife_points()` shows it with
+the reason.  In the second PR the Tobit half-life right-censors it at its
+`uloq` (the upper tail of `pnorm()` beside today's lower one).  An `Inf` never
+reaches `lm()` or the likelihood as a number.
 
-## 5. What follows elsewhere
+## 5. Everything else that meets an `Inf`
 
-- **Sparse:** a time with any above-limit sample has no mean, so sparse AUCs
-  across it are not calculated; the sparse Cmax there is "≥" the mean with
-  those samples at their limits.
-- **Imputation:** the marker moves with its observation (`start_predose`
-  shifting an above-limit sample carries its `uloq`; `start_cmin` copying a
-  qualified Cmin is qualified); `start_conc0` replaces it with 0 as it
-  replaces any value.
-- **BLQ rules (`conc.blq`):** unaffected; an above-limit sample is measurable
-  when they look for the first and last measured value.
-- **Steady state (`pk.tss*`):** above-limit samples are left out with a
-  reason; no censored model.
-- **Secondary parameters (§3.16):** a qualified value over an unqualified one
-  is "≥"; any other combination is not calculated.
+- **Imputation:**  `start_cmin` takes Cmin of the finite concentrations and
+  adds nothing when there is none; `start_predose` shifts an above-limit
+  predose sample with its `uloq`, so the start is `Inf` and the AUCs from it
+  are `NA`; `start_conc0` replaces it with 0 by design; `start_predose_conc0`
+  keeps a measured `Inf` start.
+- **Sparse:**  a time with an above-limit sample has an `Inf` mean; sparse
+  AUCs across it are `NA` with the reason, and the sparse Cmax is `Inf`.
+- **Interpolation and extrapolation:**  a concentration interpolated between
+  an `Inf` and a finite value, or extrapolated from an `Inf`, is `NA` with the
+  reason, never `Inf` or `NaN` by arithmetic.
+- **BLQ rules (`conc.blq`):**  an `Inf` is measurable.
+- **Steady state (`pk.tss*`):**  an `Inf` trough is left out, with the reason.
+- **Superposition:**  `superposition()` refuses a profile with an `Inf`
+  (`pknca_error_superposition_above_limit`); it predicts concentrations and
+  has no limit to give them.
+- **Units:**  `Inf` converts to `Inf`; `PPULOQ` converts with the same factor.
 
 ## 6. Backward compatibility
 
-With no `uloq`, every result is identical to main (values, `exclude`,
-PPANMETH), with `qualifier` and `exclude_code` all `NA`.  A test pins it by
-running every registered parameter on the package's datasets with and without
-an all-`NA` `uloq`.  Nothing existing is renamed or removed.
+`Inf` is refused today, so existing data cannot contain one.  With no `uloq`
+and no `Inf`, every result is identical to main and `PPULOQ` is all `NA`, which
+a test pins for every registered parameter on the package's test data.
+Nothing existing is renamed or removed.
 
 ## 7. For Bill to decide (recommendation first)
 
-1. Marker `conc >= uloq` with "≥" (recommended), or ">" with a flag column to
-   tell a measured value at L apart.
-2. Column `qualifier` in long and CDISC output (recommended), or `PPBOUND`.
-3. A value strictly above `uloq`: above the limit with a warning
-   (recommended), or a typed error.
-4. `summary()`: Tobit geometric mean and CV (recommended), or NC with a
-   footnote until the Tobit summary is written.
-5. Reason codes: an `exclude_code` column starting with this one
-   (recommended), or text only.
+1. An `Inf` concentration on a row with no `uloq`:  a typed error
+   (`pknca_error_conc_inf_without_uloq`; recommended, since nothing can be
+   censored without a limit), or accepted with `PPULOQ` `NA`.
+2. `PPULOQ` filled on the `Inf` results only, in their unit (recommended), or
+   on every concentration result of a profile with a `uloq`, as `--ULOQ` is on
+   every PC record.
+3. `start_predose` with an above-limit predose sample:  shift it (recommended)
+   or skip to the latest finite one.
+4. `superposition()` with an `Inf`:  refuse (recommended) or predict `NA`.
 
-**Release:** two PRs in 0.13.0.  (a) Sections 1, 2 without the Tobit
-summary, 3, 4 without Tobit, and 6, with sparse data and steady state as
-exclusions with reasons.  (b) Tobit right censoring for the half-life and for
-`summary()`.
+**Release:**  two PRs in 0.13.0.  (a) Sections 1 to 6 with `NC` in
+`summary()` and the half-life exclusion.  (b) The Tobit right-censoring for
+`summary()` and the half-life.
