@@ -247,11 +247,7 @@ pk.calc.ertlst <- function(conc, volume, time, duration.conc, check = TRUE) {
     ret <- max(midtime[!is.na(er) & er != 0])
   }
 
-  if (length(message_all) != 0) {
-    message <- paste(message_all, collapse = "; ")
-    ret <- structure(ret, exclude = message)
-  }
-  ret
+  urine_rate_result(ret, conc = conc, volume = volume, message_all = message_all)
 }
 
 pknca_concept(pk.calc.ertlst) <- "excretion_rate"
@@ -293,11 +289,7 @@ pk.calc.ermax <- function(conc, volume, time, duration.conc, check = TRUE) {
     }
   }
 
-  if (length(message_all) != 0) {
-    message <- paste(message_all, collapse = "; ")
-    ret <- structure(ret, exclude = message)
-  }
-  ret
+  urine_rate_result(ret, conc = conc, volume = volume, message_all = message_all)
 }
 
 pknca_concept(pk.calc.ermax) <- "excretion_rate"
@@ -345,11 +337,7 @@ pk.calc.ertmax <- function(conc, volume, time, duration.conc, options = list(), 
     }
   }
 
-  if (length(message_all) != 0) {
-    message <- paste(message_all, collapse = "; ")
-    ret <- structure(ret, exclude = message)
-  }
-  ret
+  urine_rate_result(ret, conc = conc, volume = volume, message_all = message_all)
 }
 
 pknca_concept(pk.calc.ertmax) <- "excretion_rate"
@@ -437,11 +425,7 @@ pk.calc.erlst <- function(conc, volume, time, duration.conc, check = TRUE) {
     }
   }
 
-  if (length(message_all) != 0) {
-    message <- paste(message_all, collapse = "; ")
-    ret <- structure(ret, exclude = message)
-  }
-  ret
+  urine_rate_result(ret, conc = conc, volume = volume, message_all = message_all)
 }
 
 pknca_concept(pk.calc.erlst) <- "excretion_rate"
@@ -521,6 +505,20 @@ urine_missing_messages <- function(conc, volume) {
   ret <- generate_missing_messages(conc, volume, name_a = "concentrations", name_b = "volumes")
   if (any(is.na(conc) & !is.na(volume))) {
     ret <- c(ret, "At least one concentration associated with a collection volume was missing")
+  }
+  ret
+}
+
+# The result of an excretion rate (ertlst, ermax, ertmax, erlst) with the
+# reasons from urine_missing_messages():  a collection with a volume and no
+# concentration has an unknown amount, so the rate of the interval is unknown
+# too, as the amount excreted is
+urine_rate_result <- function(ret, conc, volume, message_all) {
+  if (any(is.na(conc) & !is.na(volume))) {
+    ret <- NA_real_
+  }
+  if (length(message_all) != 0) {
+    ret <- structure(ret, exclude = paste(message_all, collapse = "; "))
   }
   ret
 }
