@@ -197,7 +197,7 @@ The bootstrap methods are from Shen M. and Machado S. G. (2017). Bioequivalence 
 
 # Deprecated Parameter Names
 
-Sparse calculations were originally requested through a parallel set of names.  All eleven still calculate and still give the values they always gave, but each now warns and **will be an error in the next minor release of PKNCA**:
+Sparse calculations were originally requested through a parallel set of names.  All eleven still calculate and still give the values they always gave, and each now warns that it is deprecated; the old name keeps working:
 
 | Deprecated | Use instead |
 |---|---|
