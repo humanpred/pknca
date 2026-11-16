@@ -665,3 +665,34 @@ test_that("pk.nca refuses a dose made negative after PKNCAdose", {
     class = "pknca_error_dose_negative"
   )
 })
+
+# The durations of the doses, from PKNCAdose(rate = ) on `d_dose`
+rate_durations <- function(d_dose, formula = dose ~ time | id, rate = "rate") {
+  o_dose <- PKNCAdose(d_dose, formula, route = "intravascular", rate = rate)
+  as.data.frame(o_dose)[[o_dose$columns$duration]]
+}
+
+test_that("a rate column gives each dose its own duration, with any number of rows", {
+  expect_equal(rate_durations(data.frame(id = 1, time = 0, dose = 10, rate = 5)), 2)
+  expect_equal(rate_durations(data.frame(id = 1:2, time = 0, dose = c(10, 20), rate = c(5, 4))), c(2, 5))
+  expect_equal(rate_durations(data.frame(id = 1:3, time = 0, dose = c(10, 20, 30), rate = c(5, 4, 3))), c(2, 5, 10))
+  # One rate for every dose
+  expect_equal(rate_durations(data.frame(id = 1:2, time = 0, dose = c(10, 20)), rate = 2), c(5, 10))
+  # A missing rate, a rate of zero, or a missing dose amount gives no valid
+  # duration
+  for (d_dose in list(
+    data.frame(id = 1:2, time = 0, dose = c(10, 20), rate = c(5, NA)),
+    data.frame(id = 1:2, time = 0, dose = c(10, 20), rate = c(5, 0)),
+    data.frame(id = 1:2, time = 0, dose = c(10, NA), rate = c(5, 4))
+  )) {
+    expect_error(rate_durations(d_dose), class = "pknca_error_dose_invalid_duration")
+  }
+  # Without a dose amount, a rate cannot give a duration
+  for (n in 1:2) {
+    expect_error(
+      rate_durations(data.frame(id = seq_len(n), time = 0, rate = 5), formula = ~ time | id),
+      regexp = "`rate` needs the dose amount",
+      class = "pknca_error_rate_without_dose"
+    )
+  }
+})
