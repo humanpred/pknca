@@ -1702,7 +1702,7 @@ test_that("pk.nca can be run for each parameter independently (#473)", {
     all_params
   )
   # The deprecated names calculate what their replacements do, and warn
-  dense_params <- setdiff(all_params, c(sparse_params, names(deprecated_renamed_parameters)))
+  dense_params <- setdiff(all_params, c(sparse_params, names(parameter_renames())))
   
   # ── Intervals ─────────────────────────────────────────────────────────────
   intervals_dense  <- data.frame(start = c(0, 25), end = c(25, Inf))

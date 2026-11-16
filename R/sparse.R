@@ -938,7 +938,7 @@ warn_deprecated_parameter_names <- function(requested, replacements, notes = cha
   note <- ifelse(deprecated %in% names(notes), notes[deprecated], "")
   rlang::warn(
     sprintf(
-      "%s deprecated and will be an error in the next minor release of PKNCA; use %s instead:\n%s",
+      "%s deprecated, and the old name keeps working; use %s instead:\n%s",
       ngettext(length(deprecated), msg1="This NCA parameter is", msg2="These NCA parameters are"),
       ngettext(length(deprecated), msg1=new_name[1], msg2=new_name[2]),
       paste0("  ", deprecated, " -> ", replacements[deprecated], note, collapse = "\n")

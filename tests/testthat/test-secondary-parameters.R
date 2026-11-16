@@ -56,7 +56,7 @@ test_that("pknca_ref() marks a parameter and validates its input", {
 test_that("declaring pknca_ref() arguments does not change the secondary set", {
   tbl <- pknca_parameter_table()
   expect_equal(
-    sort(setdiff(tbl$parameter[tbl$secondary], names(deprecated_renamed_parameters))),
+    sort(setdiff(tbl$parameter[tbl$secondary], names(parameter_renames()))),
     sort(c(
       "f.inf.obs", "f.inf.pred", "f.last", "f.all", "f.int.last", "f.int.all",
       "f.int.inf.obs", "f.int.inf.pred",

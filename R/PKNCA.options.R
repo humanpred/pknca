@@ -856,6 +856,18 @@ PKNCA.set.summary <- function(name, description, point, spread,
   } else {
     rlang::abort("rounding must be either a list or a function", class = "pknca_error_rounding_invalid")
   }
+  # An earlier name of a parameter (see pknca_parameter_renames()) is
+  # summarized as the parameter is
+  all_intervals <- get("interval.cols", envir=.PKNCAEnv)
+  for (current_name in name) {
+    for (current_historical in all_intervals[[current_name]]$historical_names) {
+      current[[current_historical]] <- current[[current_name]]
+    }
+  }
+  # The earlier names come last, in the order of the registry
+  is_alias <- vapply(X = all_intervals, FUN = function(x) !is.null(x$historical_of), FUN.VALUE = TRUE)
+  historical <- intersect(names(all_intervals)[is_alias], names(current))
+  current <- current[c(setdiff(names(current), historical), historical)]
   # Set the summary parameters
   assign("summary", current, envir=.PKNCAEnv)
   invisible(current)

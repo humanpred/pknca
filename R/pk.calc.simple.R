@@ -316,7 +316,7 @@ pk.calc.thalf.eff <- function(mrt) {
 
 pknca_concept(pk.calc.thalf.eff) <- "effective_half_life"
 # Add the columns to the interval specification
-add.interval.col("thalf.eff.inf.obs",
+add.interval.col("thalf.eff.inf.obs", historical_names = "thalf.eff.obs",
                  FUN="pk.calc.thalf.eff",
                  values=c(FALSE, TRUE),
                  desc="Effective half-life, MRTobs",
@@ -328,7 +328,7 @@ add.interval.col("thalf.eff.inf.obs",
                  pptest_cdisc="Effective Half-Life Obs",
                  formula="$t_{1/2,\\text{eff,obs}} = \\ln(2) \\cdot MRT_{\\text{obs}}$")
 
-add.interval.col("thalf.eff.inf.pred",
+add.interval.col("thalf.eff.inf.pred", historical_names = "thalf.eff.pred",
                  FUN="pk.calc.thalf.eff",
                  values=c(FALSE, TRUE),
                  unit_type="time",
@@ -412,7 +412,7 @@ add.interval.col("thalf.eff.all",
                  pptest_cdisc="Effective Half-Life (based on AUCall)",
                  formula="$t_{1/2,\\text{eff,all}} = \\ln(2) \\cdot MRT_{\\text{all}}$")
 
-add.interval.col("thalf.eff.iv.inf.obs",
+add.interval.col("thalf.eff.iv.inf.obs", historical_names = "thalf.eff.iv.obs",
                  FUN="pk.calc.thalf.eff",
                  values=c(FALSE, TRUE),
                  unit_type="time",
@@ -424,7 +424,7 @@ add.interval.col("thalf.eff.iv.inf.obs",
                  pptest_cdisc="Effective HL (IV dosing, MRT Obs)",
                  formula="$t_{1/2,\\text{eff,iv,obs}} = \\ln(2) \\cdot MRT_{\\text{iv,obs}}$")
 
-add.interval.col("thalf.eff.iv.inf.pred",
+add.interval.col("thalf.eff.iv.inf.pred", historical_names = "thalf.eff.iv.pred",
                  FUN="pk.calc.thalf.eff",
                  values=c(FALSE, TRUE),
                  unit_type="time",
@@ -563,7 +563,7 @@ pk.calc.aucpext <- function(auclast, aucinf) {
 pknca_concept(pk.calc.aucpext) <- "auc_extrapolation"
 
 # Add the columns to the interval specification
-add.interval.col("aucpext.inf.obs",
+add.interval.col("aucpext.inf.obs", historical_names = "aucpext.obs",
                  FUN="pk.calc.aucpext",
                  values=c(FALSE, TRUE),
                  unit_type="%",
@@ -576,7 +576,7 @@ add.interval.col("aucpext.inf.obs",
                  formula="$\\%AUC_{\\text{ext,obs}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{last}}}{AUC_{\\infty,\\text{obs}}}\\right)$",
                  tier = "common")
 
-add.interval.col("aucpext.inf.pred",
+add.interval.col("aucpext.inf.pred", historical_names = "aucpext.pred",
                  FUN="pk.calc.aucpext",
                  values=c(FALSE, TRUE),
                  unit_type="%",
@@ -603,7 +603,7 @@ pk.calc.kel <- function(mrt) {
 
 pknca_concept(pk.calc.kel) <- "elimination_rate"
 # Add the columns to the interval specification
-add.interval.col("kel.inf.obs",
+add.interval.col("kel.inf.obs", historical_names = "kel.obs",
                  FUN="pk.calc.kel",
                  values=c(FALSE, TRUE),
                  unit_type="inverse_time",
@@ -615,7 +615,7 @@ add.interval.col("kel.inf.obs",
                  pptest_cdisc="Kel (based on AUCinf,obs)",
                  formula="$k_{el,\\text{obs}} = \\frac{1}{MRT_{\\text{obs}}}$")
 
-add.interval.col("kel.inf.pred",
+add.interval.col("kel.inf.pred", historical_names = "kel.pred",
                  FUN="pk.calc.kel",
                  values=c(FALSE, TRUE),
                  unit_type="inverse_time",
@@ -639,7 +639,7 @@ add.interval.col("kel.last",
                  pptest_cdisc="Kel (based on AUClast)",
                  formula="$k_{el,\\text{last}} = \\frac{1}{MRT_{\\text{last}}}$")
 
-add.interval.col("kel.iv.inf.obs",
+add.interval.col("kel.iv.inf.obs", historical_names = "kel.iv.obs",
                  FUN="pk.calc.kel",
                  values=c(FALSE, TRUE),
                  unit_type="inverse_time",
@@ -651,7 +651,7 @@ add.interval.col("kel.iv.inf.obs",
                  pptest_cdisc="Kel (for IV dosing, based on AUCinf,obs)",
                  formula="$k_{el,\\text{iv,obs}} = \\frac{1}{MRT_{\\text{iv,obs}}}$")
 
-add.interval.col("kel.iv.inf.pred",
+add.interval.col("kel.iv.inf.pred", historical_names = "kel.iv.pred",
                  FUN="pk.calc.kel",
                  values=c(FALSE, TRUE),
                  unit_type="inverse_time",
@@ -863,7 +863,7 @@ add.interval.col("cl.all",
                  pptest_cdisc=list(route=list(extravascular="CL by F (based on AUCall)", intravascular="CL (based on AUCall)")),
                  formula="$CL_{\\text{all}} = \\frac{Dose}{AUC_{\\text{all}}}$")
 
-add.interval.col("cl.inf.obs",
+add.interval.col("cl.inf.obs", historical_names = "cl.obs",
                  FUN="pk.calc.cl",
                  values=c(FALSE, TRUE),
                  unit_type="clearance",
@@ -876,7 +876,7 @@ add.interval.col("cl.inf.obs",
                  formula="$CL_{\\text{obs}} = \\frac{Dose}{AUC_{\\infty,\\text{obs}}}$",
                  tier = "common")
 
-add.interval.col("cl.inf.pred",
+add.interval.col("cl.inf.pred", historical_names = "cl.pred",
                  FUN="pk.calc.cl",
                  values=c(FALSE, TRUE),
                  unit_type="clearance",
@@ -965,7 +965,7 @@ add.interval.col("cl.iv.last",
                  pptest_cdisc = "CL (for IV dosing, AUClast)",
                  formula = "$CL_{\\text{iv,last}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,last}}}$")
 
-add.interval.col("cl.iv.inf.obs",
+add.interval.col("cl.iv.inf.obs", historical_names = "cl.iv.obs",
                  FUN = "pk.calc.cl",
                  values = c(FALSE, TRUE),
                  unit_type = "clearance",
@@ -977,7 +977,7 @@ add.interval.col("cl.iv.inf.obs",
                  pptest_cdisc = "CL (for IV dosing, AUCinf,obs)",
                  formula = "$CL_{\\text{iv,obs}} = \\frac{Dose_{\\text{iv}}}{AUC_{\\text{iv,}\\infty\\text{,obs}}}$")
 
-add.interval.col("cl.iv.inf.pred",
+add.interval.col("cl.iv.inf.pred", historical_names = "cl.iv.pred",
                  FUN = "pk.calc.cl",
                  values = c(FALSE, TRUE),
                  unit_type = "clearance",
@@ -1078,7 +1078,7 @@ pknca_concept(pk.calc.f) <- "bioavailability"
 # The AUC a bioavailability is built on is a choice of the analysis, so each
 # basis is its own parameter.  They share the CDISC code, as the clr.* family
 # shares RENALCL.
-add.interval.col("f.inf.obs",
+add.interval.col("f.inf.obs", historical_names = "f.obs",
                  FUN="pk.calc.f",
                  values=c(FALSE, TRUE),
                  unit_type="fraction",
@@ -1094,7 +1094,7 @@ add.interval.col("f.inf.obs",
                  formula="$F = \\frac{AUC_{\\infty,obs,2} / Dose_2}{AUC_{\\infty,obs,1} / Dose_1}$",
                  selection = list(secondary = TRUE))
 
-add.interval.col("f.inf.pred",
+add.interval.col("f.inf.pred", historical_names = "f.pred",
                  FUN="pk.calc.f",
                  values=c(FALSE, TRUE),
                  unit_type="fraction",
@@ -1174,7 +1174,7 @@ add.interval.col("f.int.all",
                  formula="$F = \\frac{AUC_{int,all,2} / Dose_2}{AUC_{int,all,1} / Dose_1}$",
                  selection = list(secondary = TRUE))
 
-add.interval.col("f.int.inf.obs",
+add.interval.col("f.int.inf.obs", historical_names = "f.int.obs",
                  FUN="pk.calc.f",
                  values=c(FALSE, TRUE),
                  unit_type="fraction",
@@ -1190,7 +1190,7 @@ add.interval.col("f.int.inf.obs",
                  formula="$F = \\frac{AUC_{int,\\infty,obs,2} / Dose_2}{AUC_{int,\\infty,obs,1} / Dose_1}$",
                  selection = list(secondary = TRUE))
 
-add.interval.col("f.int.inf.pred",
+add.interval.col("f.int.inf.pred", historical_names = "f.int.pred",
                  FUN="pk.calc.f",
                  values=c(FALSE, TRUE),
                  unit_type="fraction",
@@ -1226,7 +1226,7 @@ pk.calc.mrt <- function(auc, aumc) {
 
 pknca_concept(pk.calc.mrt) <- "mrt"
 # Add the columns to the interval specification
-add.interval.col("mrt.inf.obs",
+add.interval.col("mrt.inf.obs", historical_names = "mrt.obs",
                  FUN="pk.calc.mrt",
                  values=c(FALSE, TRUE),
                  unit_type="time",
@@ -1238,7 +1238,7 @@ add.interval.col("mrt.inf.obs",
                  pptest_cdisc=list(route=list(extravascular="MRT Extravasc Infinity Obs", intravascular="MRT IV Cont Inf Infinity Obs")),
                  formula="$MRT_{\\text{obs}} = \\frac{AUMC_{\\infty,\\text{obs}}}{AUC_{\\infty,\\text{obs}}}$")
 
-add.interval.col("mrt.inf.pred",
+add.interval.col("mrt.inf.pred", historical_names = "mrt.pred",
                  FUN="pk.calc.mrt",
                  values=c(FALSE, TRUE),
                  unit_type="time",
@@ -1347,7 +1347,7 @@ pk.calc.mrt.iv <- function(auc, aumc, duration.dose) {
 pknca_concept(pk.calc.mrt.iv) <- "mrt"
 
 # Add the columns to the interval specification
-add.interval.col("mrt.iv.inf.obs",
+add.interval.col("mrt.iv.inf.obs", historical_names = "mrt.iv.obs",
                  FUN="pk.calc.mrt.iv",
                  values=c(FALSE, TRUE),
                  unit_type="time",
@@ -1359,7 +1359,7 @@ add.interval.col("mrt.iv.inf.obs",
                  pptest_cdisc="MRT Intravasc Infinity Obs",
                  formula="$MRT_{\\text{iv,obs}} = \\frac{AUMC_{\\infty,\\text{obs}}}{AUC_{\\infty,\\text{obs}}} - \\frac{T_{\\text{inf}}}{2}$")
 
-add.interval.col("mrt.iv.inf.pred",
+add.interval.col("mrt.iv.inf.pred", historical_names = "mrt.iv.pred",
                  FUN="pk.calc.mrt.iv",
                  values=c(FALSE, TRUE),
                  unit_type="time",
@@ -1478,7 +1478,7 @@ pk.calc.mrt.md <- function(auctau, aumctau, aucinf, tau) {
 
 pknca_concept(pk.calc.mrt.md) <- "mrt"
 
-add.interval.col("mrt.md.inf.obs",
+add.interval.col("mrt.md.inf.obs", historical_names = "mrt.md.obs",
                  FUN="pk.calc.mrt.md",
                  values=c(FALSE, TRUE),
                  unit_type="time",
@@ -1491,7 +1491,7 @@ add.interval.col("mrt.md.inf.obs",
                  formula="$MRT_{\\text{md,obs}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{obs}} - AUC_{\\text{last}}}{AUC_{\\text{last}}}$",
                  selection = list(dosing = c("multiple", "steady_state")))
 
-add.interval.col("mrt.md.inf.pred",
+add.interval.col("mrt.md.inf.pred", historical_names = "mrt.md.pred",
                  FUN="pk.calc.mrt.md",
                  values=c(FALSE, TRUE),
                  unit_type="time",
@@ -1524,7 +1524,7 @@ pk.calc.mrt.md.iv <- function(auctau, aumctau, aucinf, tau, duration.dose) {
 
 pknca_concept(pk.calc.mrt.md.iv) <- "mrt"
 
-add.interval.col("mrt.ivmd.inf.obs",
+add.interval.col("mrt.ivmd.inf.obs", historical_names = "mrt.ivmd.obs",
                  FUN="pk.calc.mrt.md.iv",
                  values=c(FALSE, TRUE),
                  unit_type="time",
@@ -1537,7 +1537,7 @@ add.interval.col("mrt.ivmd.inf.obs",
                  formula="$MRT_{\\text{ivmd,obs}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{obs}} - AUC_{\\text{last}}}{AUC_{\\text{last}}} - \\frac{T_{\\text{inf}}}{2}$",
                  selection = list(dosing = c("multiple", "steady_state")))
 
-add.interval.col("mrt.ivmd.inf.pred",
+add.interval.col("mrt.ivmd.inf.pred", historical_names = "mrt.ivmd.pred",
                  FUN="pk.calc.mrt.md.iv",
                  values=c(FALSE, TRUE),
                  unit_type="time",
@@ -1573,7 +1573,7 @@ pk.calc.vz <- function(cl, lambda.z) {
 pknca_concept(pk.calc.vz) <- "volume_z"
 
 # Add the columns to the interval specification
-add.interval.col("vz.inf.obs",
+add.interval.col("vz.inf.obs", historical_names = "vz.obs",
                  FUN="pk.calc.vz",
                  values=c(FALSE, TRUE),
                  unit_type="volume",
@@ -1585,7 +1585,7 @@ add.interval.col("vz.inf.obs",
                  pptest_cdisc=list(route=list(extravascular="Vz by F Obs", intravascular="Vz Obs")),
                  formula="$V_{z,\\text{obs}} = \\frac{CL_{\\text{obs}}}{\\lambda_z}$")
 
-add.interval.col("vz.inf.pred",
+add.interval.col("vz.inf.pred", historical_names = "vz.pred",
                  FUN="pk.calc.vz",
                  values=c(FALSE, TRUE),
                  unit_type="volume",
@@ -1679,7 +1679,7 @@ add.interval.col("vz.iv.last",
                  pptest_cdisc = "Vz (for IV dosing, AUClast)",
                  formula = "$V_{z,\\text{iv,last}} = \\frac{CL_{\\text{iv,last}}}{\\lambda_z}$")
 
-add.interval.col("vz.iv.inf.obs",
+add.interval.col("vz.iv.inf.obs", historical_names = "vz.iv.obs",
                  FUN = "pk.calc.vz",
                  values = c(FALSE, TRUE),
                  unit_type = "volume",
@@ -1691,7 +1691,7 @@ add.interval.col("vz.iv.inf.obs",
                  pptest_cdisc = "Vz (for IV dosing, AUCinf,obs)",
                  formula = "$V_{z,\\text{iv,obs}} = \\frac{CL_{\\text{iv,obs}}}{\\lambda_z}$")
 
-add.interval.col("vz.iv.inf.pred",
+add.interval.col("vz.iv.inf.pred", historical_names = "vz.iv.pred",
                  FUN = "pk.calc.vz",
                  values = c(FALSE, TRUE),
                  unit_type = "volume",
@@ -1787,7 +1787,7 @@ pk.calc.vss <- function(cl, mrt) {
 
 pknca_concept(pk.calc.vss) <- "volume_ss"
 # Add the columns to the interval specification
-add.interval.col("vss.inf.obs",
+add.interval.col("vss.inf.obs", historical_names = "vss.obs",
                  FUN="pk.calc.vss",
                  values=c(FALSE, TRUE),
                  unit_type="volume",
@@ -1799,7 +1799,7 @@ add.interval.col("vss.inf.obs",
                  pptest_cdisc=list(route=list(extravascular="Vss by F Obs", intravascular="Vol Dist Steady State Obs")),
                  formula="$V_{ss,\\text{obs}} = CL_{\\text{obs}} \\cdot MRT_{\\text{obs}}$")
 
-add.interval.col("vss.inf.pred",
+add.interval.col("vss.inf.pred", historical_names = "vss.pred",
                  FUN="pk.calc.vss",
                  values=c(FALSE, TRUE),
                  unit_type="volume",
@@ -1823,7 +1823,7 @@ add.interval.col("vss.last",
                  pptest_cdisc=list(route=list(extravascular="Vss by F (based on AUClast)", intravascular="Vss (based on AUClast)")),
                  formula="$V_{ss,\\text{last}} = CL_{\\text{last}} \\cdot MRT_{\\text{last}}$")
 
-add.interval.col("vss.iv.inf.obs",
+add.interval.col("vss.iv.inf.obs", historical_names = "vss.iv.obs",
                  FUN="pk.calc.vss",
                  values=c(FALSE, TRUE),
                  unit_type="volume",
@@ -1835,7 +1835,7 @@ add.interval.col("vss.iv.inf.obs",
                  pptest_cdisc="Vss (for IV dosing, based on AUCinf,obs)",
                  formula="$V_{ss,\\text{iv,obs}} = CL_{\\text{obs}} \\cdot MRT_{\\text{iv,obs}}$")
 
-add.interval.col("vss.iv.inf.pred",
+add.interval.col("vss.iv.inf.pred", historical_names = "vss.iv.pred",
                  FUN="pk.calc.vss",
                  values=c(FALSE, TRUE),
                  unit_type="volume",
@@ -1859,7 +1859,7 @@ add.interval.col("vss.iv.last",
                  pptest_cdisc="Vss (for IV dosing, based on AUClast)",
                  formula="$V_{ss,\\text{iv,last}} = CL_{\\text{last}} \\cdot MRT_{\\text{iv,last}}$")
 
-add.interval.col("vss.md.inf.obs",
+add.interval.col("vss.md.inf.obs", historical_names = "vss.md.obs",
                  FUN="pk.calc.vss",
                  values=c(FALSE, TRUE),
                  unit_type="volume",
@@ -1872,7 +1872,7 @@ add.interval.col("vss.md.inf.obs",
                  formula="$V_{ss,\\text{md,obs}} = CL_{\\text{last}} \\cdot MRT_{\\text{md,obs}}$",
                  selection = list(dosing = c("multiple", "steady_state")))
 
-add.interval.col("vss.md.inf.pred",
+add.interval.col("vss.md.inf.pred", historical_names = "vss.md.pred",
                  FUN="pk.calc.vss",
                  values=c(FALSE, TRUE),
                  unit_type="volume",
@@ -1885,7 +1885,7 @@ add.interval.col("vss.md.inf.pred",
                  formula="$V_{ss,\\text{md,pred}} = CL_{\\text{last}} \\cdot MRT_{\\text{md,pred}}$",
                  selection = list(dosing = c("multiple", "steady_state")))
 
-add.interval.col("vss.ivmd.inf.obs",
+add.interval.col("vss.ivmd.inf.obs", historical_names = "vss.ivmd.obs",
                  FUN="pk.calc.vss",
                  values=c(FALSE, TRUE),
                  unit_type="volume",
@@ -1898,7 +1898,7 @@ add.interval.col("vss.ivmd.inf.obs",
                  formula="$V_{ss,\\text{ivmd,obs}} = CL_{\\text{last}} \\cdot MRT_{\\text{ivmd,obs}}$",
                  selection = list(dosing = c("multiple", "steady_state")))
 
-add.interval.col("vss.ivmd.inf.pred",
+add.interval.col("vss.ivmd.inf.pred", historical_names = "vss.ivmd.pred",
                  FUN="pk.calc.vss",
                  values=c(FALSE, TRUE),
                  unit_type="volume",
@@ -2057,7 +2057,7 @@ pk.calc.cav <- function(auc, start, end) {
 
 pknca_concept(pk.calc.cav) <- "average_conc"
 add.interval.col(
-  "cav.last",
+  "cav.last", historical_names = "cav",
   FUN = "pk.calc.cav",
   values = c(FALSE, TRUE),
   unit_type = "conc",
@@ -2532,7 +2532,7 @@ pk.calc.count_conc <- function(conc, check=TRUE) {
 pknca_concept(pk.calc.count_conc) <- "observation_count"
 # Add the column to the interval specification
 add.interval.col(
-  "count.conc",
+  "count.conc", historical_names = "count_conc",
   FUN = "pk.calc.count_conc",
   values = c(FALSE, TRUE),
   unit_type = "count",
@@ -2567,7 +2567,7 @@ pk.calc.count_conc_measured <- function(conc, check=TRUE) {
 pknca_concept(pk.calc.count_conc_measured) <- "observation_count"
 # Add the column to the interval specification
 add.interval.col(
-  "count.conc.measured",
+  "count.conc.measured", historical_names = "count_conc_measured",
   FUN="pk.calc.count_conc_measured",
   values=c(FALSE, TRUE),
   unit_type="count",

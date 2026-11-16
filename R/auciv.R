@@ -541,7 +541,7 @@ pk.calc.auciv_pbext <- function(conc, time, auc, auciv, ..., options = list(), c
 pknca_concept(pk.calc.auciv_pbext) <- "auc_extrapolation"
 
 add.interval.col(
-  name = "aucivpbext.last",
+  name = "aucivpbext.last", historical_names = "aucivpbextlast",
   FUN = "pk.calc.auciv_pbext",
   unit_type = "%",
   pretty_name = "AUCbext (based on AUClast)",
@@ -554,7 +554,7 @@ add.interval.col(
   formula = "$\\%AUC_{\\text{bext,last}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{last}}}{AUC_{\\text{iv,last}}}\\right)$")
 
 add.interval.col(
-  name = "aucivpbext.all",
+  name = "aucivpbext.all", historical_names = "aucivpbextall",
   FUN = "pk.calc.auciv_pbext",
   unit_type = "%",
   pretty_name = "AUCbext (based on AUCall)",
@@ -567,7 +567,7 @@ add.interval.col(
   formula = "$\\%AUC_{\\text{bext,all}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{all}}}{AUC_{\\text{iv,all}}}\\right)$")
 
 add.interval.col(
-  name = "aucivpbext.int.last",
+  name = "aucivpbext.int.last", historical_names = "aucivpbextint.last",
   FUN = "pk.calc.auciv_pbext",
   unit_type = "%",
   pretty_name = "AUCbext (based on AUCint,last)",
@@ -580,7 +580,7 @@ add.interval.col(
   formula = "$\\%AUC_{\\text{bext,int,last}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{int,last}}}{AUC_{\\text{iv,int,last}}}\\right)$")
 
 add.interval.col(
-  name = "aucivpbext.int.all",
+  name = "aucivpbext.int.all", historical_names = "aucivpbextint.all",
   FUN = "pk.calc.auciv_pbext",
   unit_type = "%",
   pretty_name = "AUCbext (based on AUCint,all)",
@@ -593,7 +593,7 @@ add.interval.col(
   formula = "$\\%AUC_{\\text{bext,int,all}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\text{int,all}}}{AUC_{\\text{iv,int,all}}}\\right)$")
 
 add.interval.col(
-  name = "aucivpbext.inf.obs",
+  name = "aucivpbext.inf.obs", historical_names = "aucivpbextinf.obs",
   FUN = "pk.calc.auciv_pbext",
   unit_type = "%",
   pretty_name = "AUCbext (based on AUCinf,obs)",
@@ -606,7 +606,7 @@ add.interval.col(
   formula = "$\\%AUC_{\\text{bext,}\\infty\\text{,obs}} = 100 \\cdot \\left(1 - \\frac{AUC_{\\infty,\\text{obs}}}{AUC_{\\text{iv,}\\infty\\text{,obs}}}\\right)$")
 
 add.interval.col(
-  name = "aucivpbext.inf.pred",
+  name = "aucivpbext.inf.pred", historical_names = "aucivpbextinf.pred",
   FUN = "pk.calc.auciv_pbext",
   unit_type = "%",
   pretty_name = "AUCbext (based on AUCinf,pred)",

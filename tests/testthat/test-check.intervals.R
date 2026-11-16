@@ -167,7 +167,7 @@ test_that("get.parameter.deps", {
     fixed=TRUE
   )
   expect_equal(
-    setdiff(get.parameter.deps("kel.inf.obs"), names(deprecated_renamed_parameters)),
+    setdiff(get.parameter.deps("kel.inf.obs"), names(parameter_renames())),
     "kel.inf.obs",
     info="Parameters that have nothing that depend on them return themselves only."
   )
@@ -182,7 +182,7 @@ test_that("get.parameter.deps", {
     info="Special columns that are not actually parameters have no dependencies (including themselves)."
   )
   expect_equal(
-    setdiff(get.parameter.deps("cl.inf.obs"), names(deprecated_renamed_parameters)),
+    setdiff(get.parameter.deps("cl.inf.obs"), names(parameter_renames())),
     c("cl.inf.obs", "vss.inf.obs", "vss.iv.inf.obs", "vz.inf.obs"),
     info="Parameters with dependencies return them."
   )

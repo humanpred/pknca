@@ -886,7 +886,7 @@ test_that("requesting a deprecated sparse parameter warns with its replacement",
   rlang::reset_warning_verbosity("pknca_deprecated_sparse_sparse_auclast")
   expect_warning(
     PKNCAdata(o_conc_sparse, intervals = data.frame(start = 0, end = 4, sparse_auclast = TRUE)),
-    regexp = "deprecated and will be an error in the next minor release.*sparse_auclast -> auclast",
+    regexp = "deprecated, and the old name keeps working.*sparse_auclast -> auclast",
     class = "pknca_warning_deprecated_sparse_parameter"
   )
   # Only once per session for the same request

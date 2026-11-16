@@ -584,7 +584,7 @@ test_that("every parameter's pretty name and description follow the naming rules
   expect_equal(names(desc)[grepl(pattern = "lambda", x = desc_without_name, ignore.case = TRUE)], character())
   # Each pretty name tells its parameter apart in a summary (a deprecated name
   # shares the pretty name of its replacement)
-  current <- pretty[setdiff(names(pretty), names(deprecated_renamed_parameters))]
+  current <- pretty[setdiff(names(pretty), names(parameter_renames()))]
   expect_equal(names(current)[duplicated(current) | duplicated(current, fromLast = TRUE)], character())
   # One space between words, no trailing period, and descriptions short enough
   # for SDTM

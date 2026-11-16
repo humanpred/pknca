@@ -892,7 +892,7 @@ PKNCA.set.summary(
   point=business.geomean,
   spread=business.geocv
 )
-add.interval.col("tobit.residual",
+add.interval.col("tobit.residual", historical_names = "tobit_residual",
                  FUN=NA,
                  values=c(FALSE, TRUE),
                  unit_type="unitless",
@@ -909,7 +909,7 @@ PKNCA.set.summary(
   point=business.mean,
   spread=business.sd
 )
-add.interval.col("adj.tobit.residual",
+add.interval.col("adj.tobit.residual", historical_names = "adj_tobit_residual",
                  FUN=NA,
                  values=c(FALSE, TRUE),
                  unit_type="unitless",
@@ -924,7 +924,7 @@ PKNCA.set.summary(
   point=business.mean,
   spread=business.sd
 )
-add.interval.col("lambda.z.n.points.blq",
+add.interval.col("lambda.z.n.points.blq", historical_names = "lambda.z.n.points_blq",
                  FUN=NA,
                  values=c(FALSE, TRUE),
                  unit_type="count",

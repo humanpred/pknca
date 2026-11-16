@@ -352,6 +352,15 @@ the generated intervals:
 
 ## New features
 
+* The earlier names of renamed parameters (such as `cl.obs` for `cl.inf.obs`
+  and `cav` for `cav.last`) are declared with the new `historical_names`
+  argument of `add.interval.col()`, and `pknca_parameter_renames()` lists them
+  with their current names (@billdenney; PR number to add).  Each earlier name
+  still calculates the value of its current name, as before.  Requesting one
+  still warns (`pknca_warning_deprecated_parameter`), and the warning no longer
+  says the name "will be an error in the next minor release":  earlier names,
+  and the deprecated sparse names, keep working.  No result changes.
+
 * Cav is available for every AUC that covers only the interval, as `cav.last`
   (from `auclast`), `cav.all` (from `aucall`) and, for IV bolus dosing, `cav.iv.last`, `cav.iv.all`,
   `cav.ivint.last`, `cav.ivint.all`, `cav.ivint.inf.obs`, and

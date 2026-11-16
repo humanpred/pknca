@@ -64,21 +64,18 @@ local({
       depends=c(n),
       formula=dn_formula,
       pptestcd_cdisc=dn_pptestcd,
-      pptest_cdisc=dn_pptest
+      pptest_cdisc=dn_pptest,
+      # The earlier names of the base parameter give the earlier names of its
+      # dose-normalized form (cav for cav.last gives cav.dn for cav.last.dn)
+      historical_names=
+        if (length(get.interval.cols()[[n]]$historical_names) > 0) {
+          paste(get.interval.cols()[[n]]$historical_names, "dn", sep=".")
+        }
     )
     PKNCA.set.summary(
       name=paste(n, "dn", sep="."),
       description="geometric mean and geometric coefficient of variation",
       point=business.geomean,
       spread=business.geocv)
-  }
-})
-
-# The deprecated parameter names, each registered as a copy of the parameter
-# that replaced it (see deprecated_renamed_parameters).  This comes after every
-# replacement is registered, including the dose-normalized ones above.
-local({
-  for (current_old in names(deprecated_renamed_parameters)) {
-    register_deprecated_parameter(current_old, deprecated_renamed_parameters[[current_old]])
   }
 })

@@ -22,7 +22,8 @@ add.interval.col(
   formula = NULL,
   formula_note = NULL,
   tier = "uncommon",
-  selection = NULL
+  selection = NULL,
+  historical_names = NULL
 )
 }
 \arguments{
@@ -126,6 +127,15 @@ parameter is never chosen automatically; it stays available by name.
 A declared value propagates to every parameter calculated from this
 one.}
 }}
+
+\item{historical_names}{Earlier names of the parameter (a character
+vector), which keep working:  each is registered as an alias of the
+parameter, a copy that calculates the same value under the old name, and a
+request for one warns (\code{pknca_warning_deprecated_parameter}) without any
+plan to remove it.  A name may not be a parameter or an earlier name of
+another parameter (\code{pknca_error_historical_name_conflict}).  \code{NULL} (the
+default) keeps the earlier names the parameter already has, so
+registering it again does not drop them.  See \code{\link[=pknca_parameter_renames]{pknca_parameter_renames()}}.}
 }
 \value{
 NULL (Calling this function has a side effect of changing the
@@ -239,6 +249,7 @@ Other Interval specifications:
 \code{\link[=pknca_concepts]{pknca_concepts()}},
 \code{\link[=pknca_interval_table]{pknca_interval_table()}},
 \code{\link[=pknca_match_route]{pknca_match_route()}},
+\code{\link[=pknca_parameter_renames]{pknca_parameter_renames()}},
 \code{\link[=pknca_parameter_table]{pknca_parameter_table()}},
 \code{\link[=pknca_presets]{pknca_presets()}},
 \code{\link[=pknca_ref]{pknca_ref()}}

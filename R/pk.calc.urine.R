@@ -163,7 +163,7 @@ add.interval.col("clr.all",
                  formula="$CL_{R,\\text{all}} = \\frac{AE}{AUC_{\\text{all}}}$",
                  selection = list(secondary = TRUE))
 
-add.interval.col("clr.inf.obs",
+add.interval.col("clr.inf.obs", historical_names = "clr.obs",
                  FUN="pk.calc.clr",
                  values=c(FALSE, TRUE),
                  unit_type="renal_clearance",
@@ -177,7 +177,7 @@ add.interval.col("clr.inf.obs",
                  tier = "common",
                  selection = list(secondary = TRUE))
 
-add.interval.col("clr.inf.pred",
+add.interval.col("clr.inf.pred", historical_names = "clr.pred",
                  FUN="pk.calc.clr",
                  values=c(FALSE, TRUE),
                  unit_type="renal_clearance",

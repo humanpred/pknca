@@ -157,7 +157,7 @@ test_that("anything needing a dose duration is intravenous", {
 test_that("the multiple-dose family is the closure of the declared seeds", {
   tbl <- pknca_parameter_table()
   expect_equal(
-    sort(setdiff(tbl$parameter[tbl$dosing == "multiple,steady_state"], names(deprecated_renamed_parameters))),
+    sort(setdiff(tbl$parameter[tbl$dosing == "multiple,steady_state"], names(parameter_renames()))),
     sort(c(
       "ctrough", "ctrough.dn", "ptr", "deg.fluc", "swing",
       "aucabove.trough.all",
@@ -224,7 +224,7 @@ test_that("a parameter calculated from a sparse parameter is sparse", {
 test_that("secondary marks the parameters needing more than one profile", {
   tbl <- pknca_parameter_table()
   expect_equal(
-    sort(setdiff(tbl$parameter[tbl$secondary], names(deprecated_renamed_parameters))),
+    sort(setdiff(tbl$parameter[tbl$secondary], names(parameter_renames()))),
     sort(c(
       # Compares two administrations, on each AUC basis
       "f.inf.obs", "f.inf.pred", "f.last", "f.all", "f.int.last", "f.int.all",
@@ -276,7 +276,7 @@ test_that("the bolus-only set is exactly what back-extrapolation reaches without
   from_back_extrapolation <-
     intersect(unique(unlist(lapply(seeds, get.parameter.deps))), names(classification$route))
   expect_equal(sort(bolus_only), sort(setdiff(from_back_extrapolation, needs_duration)))
-  expect_length(setdiff(bolus_only, names(deprecated_renamed_parameters)), 57L)
+  expect_length(setdiff(bolus_only, names(parameter_renames())), 57L)
 })
 
 test_that("tlag is extravascular", {

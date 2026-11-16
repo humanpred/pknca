@@ -418,7 +418,7 @@ test_that("every cav variant is its AUC divided by the interval duration", {
   # ones), so that a new variant is checked without editing this test
   all_cols <- get.interval.cols()
   not_dn <- grep("[.]dn$", names(all_cols), value = TRUE, invert = TRUE)
-  cav_params <- setdiff(grep("^cav", not_dn, value = TRUE), names(deprecated_renamed_parameters))
+  cav_params <- setdiff(grep("^cav", not_dn, value = TRUE), names(parameter_renames()))
   expect_true(length(cav_params) >= 12)
   auc_of <- vapply(lapply(all_cols[cav_params], `[[`, "formalsmap"), `[[`, "", "auc")
   d_conc <- as.data.frame(datasets::Indometh)[datasets::Indometh$Subject == 1, ]
@@ -451,9 +451,9 @@ test_that("every cav variant is its AUC divided by the interval duration", {
 test_that("cav is deprecated in favor of cav.last, which gives the same value", {
   # Every deprecated name points at a registered replacement that is not
   # itself deprecated
-  expect_equal(deprecated_renamed_parameters[c("cav", "cav.dn")], c(cav = "cav.last", cav.dn = "cav.last.dn"))
-  expect_true(all(deprecated_renamed_parameters %in% names(get.interval.cols())))
-  expect_true(all(names(deprecated_renamed_parameters) %in% names(get.interval.cols())))
+  expect_equal(parameter_renames()[c("cav", "cav.dn")], c(cav = "cav.last", cav.dn = "cav.last.dn"))
+  expect_true(all(parameter_renames() %in% names(get.interval.cols())))
+  expect_true(all(names(parameter_renames()) %in% names(get.interval.cols())))
 
   d_conc <- data.frame(conc = c(0, 2, 4, 3, 1), time = c(0, 1, 2, 4, 8))
   o_conc <- PKNCAconc(d_conc, conc ~ time)
@@ -465,7 +465,7 @@ test_that("cav is deprecated in favor of cav.last, which gives the same value", 
         o_conc, o_dose,
         intervals = data.frame(start = 0, end = 8, cav = TRUE, cav.last = TRUE)
       ),
-    regexp = "deprecated and will be an error in the next minor release.*cav -> cav[.]last",
+    regexp = "deprecated, and the old name keeps working.*cav -> cav[.]last",
     class = "pknca_warning_deprecated_parameter"
   )
   r <- as.data.frame(pk.nca(o_data))
@@ -480,7 +480,7 @@ test_that("cav is deprecated in favor of cav.last, which gives the same value", 
   )
   # No context offers a deprecated name
   it <- pknca_interval_table(start = 0, end = 24, dosing = "single", route = "extravascular", tier = "all")
-  expect_false(any(unlist(it[intersect(names(deprecated_renamed_parameters), names(it))])))
+  expect_false(any(unlist(it[intersect(names(parameter_renames()), names(it))])))
   expect_true(any(it$cav.last))
 })
 
