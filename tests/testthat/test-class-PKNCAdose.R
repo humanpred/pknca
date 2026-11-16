@@ -696,3 +696,16 @@ test_that("a rate column gives each dose its own duration, with any number of ro
     )
   }
 })
+
+# The durations of the doses of a PKNCAdose object
+dose_test_duration <- function(object) {
+  as.data.frame(object)[[object$columns$duration]]
+}
+
+test_that("setDuration() with a rate takes the dose column by default, or the dose amounts", {
+  o_dose <- PKNCAdose(data.frame(id = 1:2, time = 0, dose = c(10, 20)), dose ~ time | id, route = "intravascular")
+  expect_equal(dose_test_duration(setDuration(o_dose, rate = 5)), c(2, 4))
+  expect_equal(dose_test_duration(setDuration(o_dose, rate = 5, dose = c(20, 40))), c(4, 8))
+  # A missing dose amount gives no duration
+  expect_error(setDuration(o_dose, rate = 5, dose = NA), class = "pknca_error_rate_without_dose")
+})

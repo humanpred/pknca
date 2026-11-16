@@ -1225,8 +1225,10 @@ the generated intervals:
   to 'logical(1)'", because the dose amounts were passed where the name of the
   dose column was expected; one row worked by accident.  Each dose's duration
   is its amount divided by its rate.  A `rate` with no dose amount (a formula
-  without a left side) is now the error `pknca_error_rate_without_dose` in
-  place of an error without a class.
+  without a left side) is now the error `pknca_error_rate_without_dose`; it
+  was `pknca_error_dose_invalid_duration` with one row and an error without a
+  class with more.  A direct `setDuration(object, rate = 5, dose = NA)`
+  returned a duration of 0 and is now that error too.
 
 * Preferred units (`concu_pref`, `doseu_pref`, and the others) with unit
   columns whose units differ between groups no longer stop `PKNCAdata()` with
