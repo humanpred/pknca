@@ -1,7 +1,8 @@
 # Concentrations above the upper limit of quantification
 
-Against main be353efa, revised with Bill's answers of 2026-11-15 and 16; no
-code before he has read this.  His rule:  "Cmax should be noted as greater
+Against main be353efa, revised with Bill's answers of 2026-11-15 and 16
+(including his four decisions of 2026-11-16, now in the text); no code before
+he has read this.  His rule:  "Cmax should be noted as greater
 than uloq not a value.  Tmax should use the above value as the maximum
 concentration.  AUC is likely incalculable."
 
@@ -20,21 +21,34 @@ concentration.  AUC is likely incalculable."
   in `uloq`.  A value equal to its limit is an ordinary measurement.
 - **A finite value above its `uloq`** (1200 with a limit of 1000) is kept and
   used as measured, with `pknca_warning_conc_above_uloq` naming the rows.
+- **An `Inf` on a row with no `uloq`** is the error
+  `pknca_error_conc_inf_without_uloq`, naming the rows:  without a limit,
+  nothing can be censored.
 - **Today**, `PKNCAconc()` refuses any `Inf` ("Assertion on 'conc' failed:
   Must be finite", with no class), so no data or result contains one now.
-  `+Inf` becomes valid; `-Inf` stays an error.
+  `+Inf` with a `uloq` becomes valid; `-Inf` stays an error.
 
 ## 2. Results carry `Inf` and `PPULOQ`
 
 - A result taken from an above-limit sample is `Inf` in PPORRES (and PPSTRES:
   unit conversion multiplies `Inf` by its factor and keeps it).
-- **`PPULOQ`**, a new results column that is not SDTM, holds the limit that
-  makes the result `Inf`, in the result's own unit (the limit taken through
-  the same calculation:  `uloq/dose` for `cmax.dn`), so that the Tobit summary
-  can censor each value at its own limit.  It is `NA` on every other result.
-  SDTM's `--ULOQ` (PC, LB) is on every record of an assay with a limit; an AUC
-  has no concentration limit, so the PP analogue is filled only where it
-  bounds the value.
+- **`PPULOQ`** is a new results column, not part of SDTM, named after the
+  `--ULOQ` convention.  It is filled on every concentration result of a
+  profile that has a `uloq`, whether the value is `Inf` or not, and is `NA`
+  on every other result and on every result of a profile without a `uloq`.
+  The concentration results are those with a concentration unit in the
+  registry, each in its own unit:
+  - in the concentration unit:  `cmax`, `cmin`, `ctrough`, `cstart`,
+    `clast.obs`, `clast.pred`, `ceoi`, `c0`, and the average concentrations
+    (`cav`, `cav.last`, `cav.all`, and the `int`, `iv`, and `ivint` forms);
+  - dose-normalized:  `cmax.dn`, `cmin.dn`, `ctrough.dn`, `clast.obs.dn`,
+    `clast.pred.dn`, `cav.dn`, `cav.last.dn`, with `PPULOQ` divided by the
+    dose as the value is.
+  For a result taken from one sample (`cmax`, `cmin`, `ctrough`, `cstart`,
+  `clast.obs`, `ceoi`, `c0`) the limit is that sample's; for the others (the
+  average concentrations, `clast.pred`) it is the profile's when every sample
+  has the same limit, and `NA` when the limits differ.  The Tobit summary
+  censors each `Inf` at its `PPULOQ`.
 - **Wide format:** the cell is `Inf`, with no `PPULOQ`.  **`summary()`:**
   in the first PR, `NC` with a footnote ("n of N above the upper limit of
   quantification") for a parameter with an `Inf` among its values; in the
@@ -78,7 +92,7 @@ reaches `lm()` or the likelihood as a number.
 
 - **Imputation:**  `start_cmin` takes Cmin of the finite concentrations and
   adds nothing when there is none; `start_predose` shifts an above-limit
-  predose sample with its `uloq`, so the start is `Inf` and the AUCs from it
+  predose sample with its `uloq` (Bill:  shift it), so the start is `Inf` and the AUCs from it
   are `NA`; `start_conc0` replaces it with 0 by design; `start_predose_conc0`
   keeps a measured `Inf` start.
 - **Sparse:**  a time with an above-limit sample has an `Inf` mean; sparse
@@ -89,8 +103,8 @@ reaches `lm()` or the likelihood as a number.
 - **BLQ rules (`conc.blq`):**  an `Inf` is measurable.
 - **Steady state (`pk.tss*`):**  an `Inf` trough is left out, with the reason.
 - **Superposition:**  `superposition()` refuses a profile with an `Inf`
-  (`pknca_error_superposition_above_limit`); it predicts concentrations and
-  has no limit to give them.
+  with the typed error `pknca_error_superposition_above_limit` (Bill:
+  refuse); it predicts concentrations and has no limit to give them.
 - **Units:**  `Inf` converts to `Inf`; `PPULOQ` converts with the same factor.
 
 ## 6. Backward compatibility
@@ -100,17 +114,13 @@ and no `Inf`, every result is identical to main and `PPULOQ` is all `NA`, which
 a test pins for every registered parameter on the package's test data.
 Nothing existing is renamed or removed.
 
-## 7. For Bill to decide (recommendation first)
+## 7. Decided (Bill, 2026-11-16)
 
-1. An `Inf` concentration on a row with no `uloq`:  a typed error
-   (`pknca_error_conc_inf_without_uloq`; recommended, since nothing can be
-   censored without a limit), or accepted with `PPULOQ` `NA`.
-2. `PPULOQ` filled on the `Inf` results only, in their unit (recommended), or
-   on every concentration result of a profile with a `uloq`, as `--ULOQ` is on
-   every PC record.
-3. `start_predose` with an above-limit predose sample:  shift it (recommended)
-   or skip to the latest finite one.
-4. `superposition()` with an `Inf`:  refuse (recommended) or predict `NA`.
+1. An `Inf` on a row with no `uloq`:  a typed error.
+2. `PPULOQ`:  on every concentration result of a profile with a `uloq`.
+3. `start_predose` with an above-limit predose sample:  it is shifted, with
+   its limit.
+4. `superposition()` with an `Inf`:  a typed error.
 
 **Release:**  two PRs in 0.13.0.  (a) Sections 1 to 6 with `NC` in
 `summary()` and the half-life exclusion.  (b) The Tobit right-censoring for
