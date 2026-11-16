@@ -160,28 +160,35 @@ To build:
     names, so an old name never stops working because of a re-registration.
   - Generated members take theirs by rule from their base (`cav` -> `cav.last`
     gives `cav.dn` -> `cav.last.dn`).
-- **Accessor:**
-  - `pknca_parameter_renames()` returns a data.frame of `historical` and
-    `current`, built from the registry, generated members included.
-  - It replaces `deprecated_renamed_parameters` at every reader listed above.
-  - `register_deprecated_parameter()` and the copy loop are deleted, which
-    removes the 54 copies.
-- **Translation:**
-  - `assert_intervals()` (and `set_intervals()`) renames an old column to its
-    current name and warns with the same class.
-  - The text changes from "will be an error in the next minor release" to one
-    that promises no removal.
-  - The mapping is kept as an attribute on the intervals, so result rows take
-    the requested name.  This replaces pk.calc.all.R:1420, and the three
-    output-only names go through the same path.
-  - An old and a current column both given must agree row by row
-    (`pknca_error_historical_name_conflict`).
+- **Alias entries (Bill, 2026-11-16: "Generated alias entries"):**
+  - `add.interval.col(historical_names = )` is the only place an old name is
+    written.  Each old name is registered as an alias entry:  a copy of its
+    parameter marked `historical_of = "<current>"`, tier "uncommon", rebuilt
+    whenever the parameter is registered again and kept at the end of the
+    registry in sorted order.
+  - `deprecated_renamed_parameters`, `register_deprecated_parameter()`, and
+    the copy loop at the end of zzz-pk.calc.dn.R are deleted.
+    `PKNCA.set.summary()` gives an alias its parameter's summary.
+  - The copies stay in the registry, as aliases, and `get.interval.cols()`
+    still lists the old names.  Taking them out of the registry, as an
+    earlier draft of this plan said, would need a historical-name lookup at
+    each of 62 places in 17 files that read parameter names from the
+    registry (the interval checks, `filter_requested`, the units table, the
+    CDISC codes, the summary instructions, the exclusion rules, and more),
+    where any one missed would silently drop an old name.  With aliases,
+    every reader works unchanged and results are identical to main; an old
+    and a current name requested together are both calculated, as on main.
+- **Accessor:**  `pknca_parameter_renames()` returns a data.frame of
+  `historical` and `current`, built from the alias entries; it replaces
+  `deprecated_renamed_parameters` at every reader listed above.
+- **Warning:**  the text changes from "will be an error in the next minor
+  release" to one that promises no removal, for the renamed and the
+  deprecated sparse names alike.
 - **Test:** iterate `pknca_parameter_renames()`.  Each historical name, through
   `pk.nca()`, gives the warning class, the requested PPTESTCD, and the value of
   the current name.
-- **Same rule elsewhere:** the 11 `deprecated_sparse_parameters` warn with the
-  same promise of an error.  Their text changes to match the standing rule;
-  they stay as they are otherwise.
+- **Same rule elsewhere:** the 11 `deprecated_sparse_parameters` share the
+  warning text above and stay as they are otherwise.
 
 ## SE/DF companions are outputs, not columns
 
