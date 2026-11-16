@@ -524,6 +524,9 @@ test_that("pk.calc.tlag skips missing concentrations, as the other simple parame
   expect_equal(pk.calc.tlag(c(10, NA, 5, 8), 0:3), 2)
   # At the end
   expect_equal(pk.calc.tlag(c(0, 5, 10, NA), 0:3), 0)
+  # Between the last zero and the first increase:  the lag is the time of the
+  # last measured zero
+  expect_equal(pk.calc.tlag(c(0, NA, 5, 8), c(0, 1, 2, 4)), 0)
   # Everywhere, with a warning from the check, and without it
   expect_warning(
     value_all_missing <- pk.calc.tlag(c(NA_real_, NA_real_, NA_real_), 0:2),

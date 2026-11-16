@@ -2320,7 +2320,10 @@ add.interval.col("ptr",
 #' Missing concentrations are skipped, as in [pk.calc.cmax()] and the other
 #' simple parameters:  the increase is looked for among the measured
 #' concentrations.  `NA` is returned when no measured concentration increases
-#' (including when every concentration is missing).
+#' (including when every concentration is missing).  Because the lag is found
+#' among the measured samples only, a missing sample between the last zero and
+#' the first increase can move it:  `pk.calc.tlag(c(0, NA, 5, 8), c(0, 1, 2, 4))`
+#' is 0, the time of the last measured zero.
 #'
 #' @inheritParams assert_conc_time
 #' @param check Run [assert_conc_time()]?
