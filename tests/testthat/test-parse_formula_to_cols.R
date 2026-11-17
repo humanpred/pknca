@@ -194,6 +194,6 @@ test_that("parse_formula_to_cols", {
 test_that("parse_formula_to_cols expected errors", {
   expect_error(
     parse_formula_to_cols(form = "foo"),
-    regexp = "form must be a formula or coercable into one"
+    regexp = "form must be a formula or coercible into one"
   )
 })

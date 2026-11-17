@@ -166,7 +166,7 @@ test_that("PKNCAresults has exclude, when applicable", {
         ]
     ),
     "Too few points for half-life calculation (min.hl.points=3 with only 0 points)",
-    info="exclusions are propogated to results"
+    info="exclusions are propagated to results"
   )
   expect_equal(
     unique(
@@ -179,7 +179,7 @@ test_that("PKNCAresults has exclude, when applicable", {
         ]
     ),
     NA_character_,
-    info="exclusions are propogated to results only when applicable"
+    info="exclusions are propagated to results only when applicable"
   )
 })
 
@@ -1099,4 +1099,3 @@ test_that("CDISC interval reference: column order", {
     )
   )
 })
-
