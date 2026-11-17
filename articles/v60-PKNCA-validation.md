@@ -31,7 +31,7 @@ results: Tests were not run because tests are not installed.
 Sys.Date()
 ```
 
-    ## [1] "2026-11-12"
+    ## [1] "2026-11-17"
 
 ``` r
 
@@ -63,7 +63,7 @@ sessionInfo()
     ## 
     ## loaded via a namespace (and not attached):
     ##  [1] jsonlite_2.0.0    compiler_4.6.2    brio_1.1.5        tidyselect_1.2.1 
-    ##  [5] Rcpp_1.1.2        jquerylib_0.1.4   systemfonts_1.3.2 textshaping_1.0.5
+    ##  [5] Rcpp_1.1.2        jquerylib_0.1.4   systemfonts_1.3.3 textshaping_1.0.5
     ##  [9] yaml_2.3.12       fastmap_1.2.0     lattice_0.23-1    R6_2.6.1         
     ## [13] generics_0.1.4    tibble_3.3.1      desc_1.4.3        units_1.0-1      
     ## [17] bslib_0.12.0      pillar_1.11.1     rlang_1.3.0       cachem_1.1.0     

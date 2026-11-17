@@ -209,7 +209,7 @@ dplyr verbs are supported on these classes: `filter`, `mutate`,
 - **Validation tests:** use `expect_error(..., regexp=)` and
   `expect_warning(..., regexp=)` for input validation
 - **Spelling:** checked via
-  [`spelling::spell_check_package()`](https://docs.ropensci.org/spelling//reference/spell_check_package.html)
+  [`spelling::spell_check_package()`](https://docs.ropensci.org/spelling/reference/spell_check_package.html)
   with custom wordlist at `inst/WORDLIST`
 
 ## CI/CD
