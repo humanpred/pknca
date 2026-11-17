@@ -57,8 +57,9 @@ the regulator, and \code{heteroscedastic}.}
 sequence, and period.  When \code{NULL} they are taken from the \code{PKNCAresults}
 object or detected from common column names.  \code{sequence} may be absent.}
 
-\item{design}{An optional \code{\link[=be_design]{be_design()}} object; computed from the data when
-\code{NULL}.}
+\item{design}{An optional \code{\link[=be_design]{be_design()}} object.  When \code{NULL}, the design is
+classified from the subjects, periods, and treatments of the requested
+endpoints, including administrations where an endpoint's value is missing.}
 
 \item{covariates}{An optional character vector of column names added to
 every model as additive fixed effects (numeric columns as linear terms,
