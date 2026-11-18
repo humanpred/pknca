@@ -32,7 +32,7 @@ normalize.data.frame <- function(object, norm_table, parameters, suffix) {
   if (length(common_colnames) > 0) {
     
     # Check for missing groups
-    missing_groups <- dplyr::anti_join(norm_table, object, by = common_colnames)
+    missing_groups <- join_unify_factor_keys(norm_table, object, by = common_colnames, join_fun = dplyr::anti_join)
     if (nrow(missing_groups) > 0) {
       df_error_string <- paste(
         paste(names(missing_groups), collapse = "\t"),
@@ -74,7 +74,7 @@ normalize.data.frame <- function(object, norm_table, parameters, suffix) {
     # Cartesian join
     df <- merge(df, norm_table, by = NULL)
   } else {
-    df <- dplyr::inner_join(df, norm_table, by = common_colnames)
+    df <- join_unify_factor_keys(df, norm_table, by = common_colnames, join_fun = dplyr::inner_join)
   }
   
   # ---- Apply normalization (base R) ----

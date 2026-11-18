@@ -24,6 +24,12 @@ The concentration when \code{time == end}.  If none match, then \code{NA}
 \description{
 Determine the trough (end of interval) concentration
 }
+\details{
+\code{time} and \code{end} (or \code{start}) must be on the same time scale.
+\code{\link[=pk.nca]{pk.nca()}} gives \code{time} relative to the start of the interval, so it gives
+these functions the bounds of the interval on that scale (the \code{time.end}
+and \code{time.start} sources of \code{\link[=add.interval.col]{add.interval.col()}}).
+}
 \section{Functions}{
 \itemize{
 \item \code{pk.calc.cstart()}: Concentration at the beginning of the interval

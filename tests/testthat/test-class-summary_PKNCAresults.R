@@ -633,3 +633,34 @@ test_that("the deprecated sparse_auclast is summarized with sparse_auc_se (#170)
   )
   expect_equal(attr(o_summary, "caption"), "sparse_auclast: estimate and standard error")
 })
+
+test_that("summary() joins ordered factor groups whose levels differ between the data and the intervals", {
+  ord <- function(x, levels) factor(x, levels = levels, ordered = TRUE)
+  d_conc <-
+    data.frame(
+      subject = ord(rep(c("a", "b"), each = 4), c("b", "a")),
+      time = rep(c(0, 1, 2, 4), 2),
+      conc = c(0, 4, 2, 1, 0, 3, 2, 1)
+    )
+  d_dose <- data.frame(subject = ord(c("a", "b"), c("c", "b", "a")), time = 0, dose = 10)
+  d_interval <-
+    data.frame(
+      subject = ord(c("a", "b"), c("a", "b", "d")),
+      start = 0, end = 4, cmax = TRUE, auclast = TRUE
+    )
+  o_nca <-
+    pk.nca(PKNCAdata(
+      PKNCAconc(d_conc, conc~time|subject),
+      PKNCAdose(d_dose, dose~time|subject),
+      intervals = d_interval
+    ))
+  d_summary <- summary(o_nca, drop_group = character())
+  expect_equal(as.character(d_summary$subject), c("a", "b"))
+  expect_equal(d_summary$N, c("1", "1"))
+  expect_equal(d_summary$cmax, c("4.00", "3.00"))
+  expect_equal(d_summary$auclast, c("7.77", "6.85"))
+  # Summarized across subjects
+  d_summary_all <- summary(o_nca)
+  expect_equal(d_summary_all$N, "2")
+  expect_equal(d_summary_all$cmax, "3.46 [20.6]")
+})

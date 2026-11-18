@@ -186,7 +186,7 @@ setExcludeColumn <- function(object, exclude = NULL, dataname = "data") {
         object[[dataname]][[exclude]] <- rep(NA_character_, nrow(object[[dataname]]))
       } else if (!is.character(object[[dataname]][[exclude]])) {
         rlang::abort(
-          "exclude column must be character vector or something convertable to character without loss of information.",
+          "exclude column must be character vector or something convertible to character without loss of information.",
           class = "pknca_error_exclude_not_character"
         )
       }

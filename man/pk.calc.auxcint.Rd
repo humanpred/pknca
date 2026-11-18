@@ -264,8 +264,21 @@ not estimable and the interval is finite, \code{AUCall} is used instead.}
 }
 
 When the interval ends at or before Tlast, no extrapolation happens and
-\code{lambda.z} is not used at all.  The extrapolation that was used is reported
-in the method (\code{PPANMETH}) column.
+\code{lambda.z} is not used at all, with one exception:  a concentration at \code{start}
+that is estimated from the profile before a dose (the trough before the dose
+that starts the interval, when it was not measured) is past the Tlast of that
+profile, so \code{AUCinf} extrapolates it with \code{lambda.z} wherever the interval
+ends.  The extrapolation that was used is reported in the method (\code{PPANMETH})
+column.
+}
+
+\section{The time origin of the AUMC}{
+The AUMC is weighted by the time since \code{start}, which is what \code{aumclast}
+gives for the interval's own data in \code{\link[=pk.nca]{pk.nca()}} (where times are relative to
+the start of the interval).  The AUC does not depend on the time origin.
+\code{\link[=pk.calc.aumc]{pk.calc.aumc()}} weights by the times as given, so with an \code{interval} that
+does not start at time 0 it differs from the AUMC over the same interval
+here.
 }
 
 \seealso{
@@ -273,10 +286,12 @@ in the method (\code{PPANMETH}) column.
 
 Other AUC calculations:
 \code{\link[=pk.calc.auxc]{pk.calc.auxc()}},
-\code{\link[=pk.calc.auxciv]{pk.calc.auxciv()}}
+\code{\link[=pk.calc.auxciv]{pk.calc.auxciv()}},
+\code{\link[=pk.calc.auxciv.int]{pk.calc.auxciv.int()}}
 
 Other AUMC calculations:
-\code{\link[=pk.calc.auxciv]{pk.calc.auxciv()}}
+\code{\link[=pk.calc.auxciv]{pk.calc.auxciv()}},
+\code{\link[=pk.calc.auxciv.int]{pk.calc.auxciv.int()}}
 }
 \concept{AUC calculations}
 \concept{AUMC calculations}

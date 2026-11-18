@@ -902,29 +902,50 @@ deprecated_sparse_parameters <- c(
 # specification requests.  These are interval-specification columns rather than
 # functions, so there is no function call for lifecycle to attach itself to.
 warn_deprecated_sparse_parameters <- function(requested) {
-  deprecated <- intersect(names(deprecated_sparse_parameters), requested)
+  warn_deprecated_parameter_names(
+    requested = requested,
+    replacements = deprecated_sparse_parameters,
+    notes = c(
+      vz.sparse.last = " (which uses the lambda.z fitted on the mean profile rather than 1/MRT, so the value changes)"
+    ),
+    new_name = c("the unified name", "the unified names"),
+    class = "pknca_warning_deprecated_sparse_parameter",
+    frequency_id = "pknca_deprecated_sparse"
+  )
+}
+
+#' Warn that requested NCA parameter names are deprecated
+#'
+#' @param requested The parameter names an interval specification requests
+#' @param replacements A named character vector:  the names are the deprecated
+#'   parameters and the values their replacements
+#' @param notes A named character vector of text to add after the replacement
+#'   of a deprecated parameter (the names are deprecated parameters)
+#' @param new_name How to describe the replacement, singular then plural
+#' @param class The class of the warning
+#' @param frequency_id The prefix of the `.frequency_id`, which is completed
+#'   with the deprecated names so that each set warns once per session
+#' @returns `NULL`, invisibly, after warning when any requested name is
+#'   deprecated
+#' @keywords Internal
+#' @noRd
+warn_deprecated_parameter_names <- function(requested, replacements, notes = character(),
+                                            new_name, class, frequency_id) {
+  deprecated <- intersect(names(replacements), requested)
   if (length(deprecated) == 0) {
     return(invisible(NULL))
   }
-  replacement_note <-
-    ifelse(
-      deprecated %in% "vz.sparse.last",
-      " (which uses the lambda.z fitted on the mean profile rather than 1/MRT, so the value changes)",
-      ""
-    )
+  note <- ifelse(deprecated %in% names(notes), notes[deprecated], "")
   rlang::warn(
     sprintf(
       "%s deprecated and will be an error in the next minor release of PKNCA; use %s instead:\n%s",
       ngettext(length(deprecated), msg1="This NCA parameter is", msg2="These NCA parameters are"),
-      ngettext(length(deprecated), msg1="the unified name", msg2="the unified names"),
-      paste0(
-        "  ", deprecated, " -> ", deprecated_sparse_parameters[deprecated], replacement_note,
-        collapse = "\n"
-      )
+      ngettext(length(deprecated), msg1=new_name[1], msg2=new_name[2]),
+      paste0("  ", deprecated, " -> ", replacements[deprecated], note, collapse = "\n")
     ),
-    class = "pknca_warning_deprecated_sparse_parameter",
+    class = class,
     .frequency = "once",
-    .frequency_id = paste(c("pknca_deprecated_sparse", sort(deprecated)), collapse = "_")
+    .frequency_id = paste(c(frequency_id, sort(deprecated)), collapse = "_")
   )
 }
 

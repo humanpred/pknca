@@ -104,7 +104,17 @@ classify_routes <- function(all_intervals) {
   specs <- set_requires_inputs(names(all_intervals))
   needs_duration <-
     names(specs)[vapply(specs, function(x) isTRUE(x$requires_dose_dur), TRUE)]
-  back_extrapolated <- deps_union("c0", all_intervals)
+  # Back-extrapolation to C0 needs a bolus, whether from the c0 parameter or
+  # within a parameter declared bolus-only (the IV interval AUCs back-extrapolate
+  # C0 of the dose that starts the interval themselves), and so does everything
+  # calculated from one
+  bolus_seeds <-
+    names(all_intervals)[vapply(
+      X = all_intervals,
+      FUN = function(x) identical(x$selection$route, "iv_bolus"),
+      FUN.VALUE = TRUE
+    )]
+  back_extrapolated <- deps_union(c("c0", bolus_seeds), all_intervals)
   iv_routes <- setdiff(pknca_routes(), "extravascular")
   lapply(
     X = stats::setNames(names(all_intervals), names(all_intervals)),

@@ -108,8 +108,7 @@ pknca_units_table.default <- function(concu, doseu, amountu, timeu,
       pknca_units_table_conc_time(concu=concu, timeu=timeu),
       pknca_units_table_time_amount(timeu=timeu, amountu=amountu),
       pknca_units_table_conc_time_dose(concu=concu, timeu=timeu, doseu=doseu),
-      pknca_units_table_conc_time_amount(concu=concu, timeu=timeu, amountu=amountu),
-      pknca_units_table_conc_time_amount_dose(concu=concu, timeu=timeu, amountu=amountu, doseu=doseu)
+      pknca_units_table_conc_time_amount(concu=concu, timeu=timeu, amountu=amountu)
     )
 
   # Generate preferred units and merge them into `conversions`
@@ -234,7 +233,7 @@ pknca_units_table.PKNCAdata <- function(concu, ..., conversions = data.frame()) 
       if (length(join_cols) == 0) {
         dplyr::cross_join(d_concu, d_doseu)
       } else {
-        dplyr::left_join(d_concu, d_doseu, by = join_cols)
+        join_unify_factor_keys(d_concu, d_doseu, by = join_cols, join_fun = dplyr::left_join)
       } %>%
       dplyr::mutate(dplyr::across(dplyr::everything(), ~ as.character(.))) %>%
       unique()
@@ -295,10 +294,8 @@ pknca_units_table.PKNCAdata <- function(concu, ..., conversions = data.frame()) 
       concu = groups_units_tbl[[concu_col]][i],
       amountu = groups_units_tbl[[amountu_col]][i],
       timeu = groups_units_tbl[[timeu_col]][i],
-      # Note: $units$concu_pref (and amountu_pref, timeu_pref) are only non-NULL
-      # when the original units were specified as scalar values rather than as a
-      # column name.  When units are column-based, preferred unit conversion is
-      # not supported through the _pref scalar mechanism and these will be NULL.
+      # Preferred units are always one value (pknca_set_units()), so every unit
+      # set, including one from unit columns, converts to the same units.
       concu_pref = o_conc$units$concu_pref[1],
       amountu_pref = o_conc$units$amountu_pref[1],
       timeu_pref = o_conc$units$timeu_pref[1],
@@ -306,7 +303,6 @@ pknca_units_table.PKNCAdata <- function(concu, ..., conversions = data.frame()) 
     )
     if (has_dose) {
       pknca_units_tbl_args$doseu <- groups_units_tbl[[doseu_col]][i]
-      # Same limitation applies to doseu_pref; see concu_pref note above.
       pknca_units_tbl_args$doseu_pref <- o_dose$units$doseu_pref[1]
     }
     pknca_units_tbl_i <- do.call(pknca_units_table, pknca_units_tbl_args)
@@ -315,12 +311,23 @@ pknca_units_table.PKNCAdata <- function(concu, ..., conversions = data.frame()) 
       pknca_units_tbl_i <- pknca_units_tbl_i[!is.na(pknca_units_tbl_i$PPORRESU), ]
     }
     unit_tables[[i]] <- pknca_units_tbl_i
+  }
+  # A unit set whose units are already the preferred ones has no conversions,
+  # so its table lacks the standardization columns that another set's table
+  # has.  As in pknca_units_table(), its units are the ones to report, with a
+  # factor of 1.
+  has_std <- vapply(X = unit_tables, FUN = function(x) "PPSTRESU" %in% names(x), FUN.VALUE = TRUE)
+  for (i in which(!has_std & any(has_std))) {
+    unit_tables[[i]]$PPSTRESU <- unit_tables[[i]]$PPORRESU
+    unit_tables[[i]]$conversion_factor <- rep(1, nrow(unit_tables[[i]]))
+  }
+  for (i in seq_along(unit_tables)) {
     if (length(groups_cols) > 0) {
       groups_values <- groups_units_tbl[i, groups_cols, drop = FALSE]
       row.names(groups_values) <- NULL
-      ret[[i]] <- cbind(groups_values, pknca_units_tbl_i)
+      ret[[i]] <- cbind(groups_values, unit_tables[[i]])
     } else {
-      ret[[i]] <- pknca_units_tbl_i
+      ret[[i]] <- unit_tables[[i]]
     }
   }
 
@@ -736,19 +743,6 @@ pknca_units_table_time_amount <- function(timeu, amountu) {
   )
 }
 
-pknca_units_table_conc_time_amount_dose <- function(concu, timeu, amountu, doseu) {
-  if (useless(concu) || useless(timeu) || useless(amountu) || useless(doseu)) {
-    renal_clearance_dosenorm <- NA_character_
-  } else {
-    renal_clearance_dosenorm <- sprintf("(%s/(%s*%s))/%s", pknca_units_add_paren(amountu), timeu, concu, pknca_units_add_paren(doseu))
-  }
-  data.frame(
-    # Renal clearance, dose-normalized
-    PPORRESU=renal_clearance_dosenorm,
-    PPTESTCD=pknca_find_units_param(unit_type="renal_clearance_dosenorm")
-  )
-}
-
 #' Find NCA parameters with a given unit type
 #'
 #' @param unit_type The type of unit as assigned with `add.interval.col`
@@ -854,11 +848,8 @@ pknca_unit_conversion <- function(result, units, allow_partial_missing_units = F
     for (col in setdiff(grep("_ref$", names(units), value = TRUE), names(ret))) {
       units <- units[is.na(units[[col]]), setdiff(names(units), col), drop = FALSE]
     }
-    ret <-
-      dplyr::left_join(
-        ret, units,
-        by=intersect(names(ret), names(units))
-      )
+    # The units table that PKNCAdata() builds holds group values as character
+    ret <- left_join_by_value(ret, units, by = intersect(names(ret), names(units)))
     mask_missing_units <- is.na(ret$PPORRESU)
     if (any(mask_missing_units)) {
       msg_missing <-

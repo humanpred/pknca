@@ -85,7 +85,7 @@
 #' my_data <- PKNCAdata(my_conc,
 #'                      intervals=data.frame(start=0, end=Inf,
 #'                                           aucinf.obs=TRUE,
-#'                                           aucpext.obs=TRUE))
+#'                                           aucpext.inf.obs=TRUE))
 #' my_result <- pk.nca(my_data)
 #' my_result_excluded <- exclude(my_result,
 #'                               FUN=exclude_nca_max.aucinf.pext())
@@ -233,13 +233,13 @@ exclude_nca_max.aucinf.pext <- function(max.aucinf.pext) {
   # Exclude for both obs and pred
   exc_obs <-
     exclude_nca_by_param(
-      parameter = "aucpext.obs",
+      parameter = "aucpext.inf.obs",
       max_thr = max.aucinf.pext,
       affected_parameters = get.parameter.deps("aucinf.obs")
     )
   exc_pred <-
     exclude_nca_by_param(
-      parameter = "aucpext.pred",
+      parameter = "aucpext.inf.pred",
       max_thr = max.aucinf.pext,
       affected_parameters = get.parameter.deps("aucinf.pred")
     )
@@ -247,8 +247,8 @@ exclude_nca_max.aucinf.pext <- function(max.aucinf.pext) {
     res_obs <- exc_obs(x, ...)
     res_pred <- exc_pred(x, ...)
     # Combine results, prioritizing non-NA from either
-    is.obs <- grepl(paste0("aucpext.obs > ", max.aucinf.pext), res_obs)
-    is.pred <- grepl(paste0("aucpext.pred > ", max.aucinf.pext), res_pred)
+    is.obs <- grepl(paste0("aucpext.inf.obs > ", max.aucinf.pext), res_obs)
+    is.pred <- grepl(paste0("aucpext.inf.pred > ", max.aucinf.pext), res_pred)
     ret <- ifelse(
       is.obs | is.pred,
       gsub(
@@ -294,7 +294,7 @@ exclude_nca_count_conc_measured <- function(min_count, exclude_param_pattern = c
       )
     )))
   exclude_nca_by_param(
-    parameter = "count_conc_measured",
+    parameter = "count.conc.measured",
     min_thr = min_count,
     affected_parameters = affected_parameters
   )
@@ -989,10 +989,16 @@ exclude_nca_by_param <- function(
     rlang::abort("if both defined min_thr must be less than max_thr", class = "pknca_error_min_thr_gt_max_thr")
   }
 
+  # A deprecated name gives the same value as the parameter that replaced it,
+  # so the parameter is read under its old name when it was requested only by
+  # that name, and the old names of the affected parameters are affected too
+  parameter_names <- parameter_and_deprecated_names(parameter)
+  affected_names <- unique(unlist(lapply(X = affected_parameters, FUN = parameter_and_deprecated_names)))
   ret_fun <- function(x, ...) {
     ret <- rep(NA_character_, nrow(x))
-    idx_param <- which(x$PPTESTCD == parameter)
-    idx_aff_params <- which(x$PPTESTCD %in% affected_parameters)
+    found_name <- intersect(parameter_names, x$PPTESTCD)
+    idx_param <- if (length(found_name) == 0) integer(0) else which(x$PPTESTCD == found_name[1])
+    idx_aff_params <- which(x$PPTESTCD %in% affected_names)
 
     if (length(idx_param) > 1) {
       rlang::abort(

@@ -20,8 +20,8 @@ of quantification.}
 \value{
 A data.frame with one row and columns named \code{"lambda.z"},
 \code{"clast.pred"}, \code{"lambda.z.time.first"}, \code{"lambda.z.time.last"},
-\code{"lambda.z.n.points"}, \code{"lambda.z.n.points_blq"}, \code{"half.life"},
-\code{"span.ratio"}, \code{"tobit_residual"}, and \code{"adj_tobit_residual"}.
+\code{"lambda.z.n.points"}, \code{"lambda.z.n.points.blq"}, \code{"half.life"},
+\code{"span.ratio"}, \code{"tobit.residual"}, and \code{"adj.tobit.residual"}.
 Returns \code{NA} for all columns if \code{\link[stats:optim]{stats::optim()}} does not converge,
 and emits a warning.
 }

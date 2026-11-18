@@ -426,7 +426,11 @@ summarize_PKNCAresults_object <- function(data, result_group, subject_col, resul
 summarize_PKNCAresults_group <- function(data, current_group, subject_col, result_value_template, result_units, intervals, not_calculated) {
   ret <- result_value_template
 
-  current_data <- dplyr::inner_join(data, current_group, by = intersect(names(data), names(current_group)))
+  current_data <-
+    join_unify_factor_keys(
+      data, current_group,
+      by = intersect(names(data), names(current_group)), join_fun = dplyr::inner_join
+    )
   if (nrow(current_data) == 0) {
     # I don't think that a user can get here
     # nocov start
@@ -439,7 +443,11 @@ summarize_PKNCAresults_group <- function(data, current_group, subject_col, resul
     return(ret)
     # nocov end
   }
-  current_interval <- dplyr::inner_join(intervals, current_group, by = intersect(names(intervals), names(current_group)))
+  current_interval <-
+    join_unify_factor_keys(
+      intervals, current_group,
+      by = intersect(names(intervals), names(current_group)), join_fun = dplyr::inner_join
+    )
   current_param_prep <-
     vapply(
       X = current_interval[, setdiff(names(get.interval.cols()), c("start", "end"))],

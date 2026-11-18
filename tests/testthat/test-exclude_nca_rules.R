@@ -64,12 +64,12 @@ test_that("pknca_exclude_rules gives arguments, defaults, and options", {
   expect_false(by_param$callable_with_defaults)
   expect_null(by_param$options[[1]])
   expect_null(by_param$affected_parameters[[1]])
-  count_conc <- get_rule("exclude_nca_count_conc_measured")
+  count.conc <- get_rule("exclude_nca_count_conc_measured")
   expect_equal(
-    count_conc$arguments[[1]]$default[2],
+    count.conc$arguments[[1]]$default[2],
     'c("^aucall", "^aucinf", "^aucint", "^auciv", "^auclast", "^aumc", "^sparse_auc")'
   )
-  expect_null(count_conc$affected_parameters[[1]])
+  expect_null(count.conc$affected_parameters[[1]])
 
   tmax_0 <- get_rule("exclude_nca_tmax_0")
   expect_equal(nrow(tmax_0$arguments[[1]]), 0)

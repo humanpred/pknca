@@ -25,7 +25,7 @@ full_join_PKNCAconc_PKNCAdose <- function(o_conc, o_dose, extra_cols_conc = char
   n_conc <- prepare_PKNCAconc(o_conc, extra_cols = extra_cols_conc)
   shared_groups <- intersect(names(n_conc), names(n_dose))
   if (length(shared_groups) > 0) {
-    dplyr::full_join(n_conc, n_dose, by=shared_groups)
+    join_unify_factor_keys(n_conc, n_dose, by = shared_groups, join_fun = dplyr::full_join)
   } else {
     tidyr::crossing(n_conc, n_dose)
   }
@@ -88,7 +88,7 @@ full_join_PKNCAdata <- function(x, extra_conc_cols = character()) {
     )
   shared_groups <- intersect(names(conc_dose), names(n_i))
   if (length(shared_groups) > 0) {
-    ret <- dplyr::full_join(conc_dose, n_i, by=shared_groups)
+    ret <- join_unify_factor_keys(conc_dose, n_i, by = shared_groups, join_fun = dplyr::full_join)
   } else {
     ret <- tidyr::crossing(conc_dose, n_i)
   }

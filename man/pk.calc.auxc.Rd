@@ -172,6 +172,7 @@ Press, 2000.  164-7.
 
 Other AUC calculations:
 \code{\link[=pk.calc.auxcint]{pk.calc.auxcint()}},
-\code{\link[=pk.calc.auxciv]{pk.calc.auxciv()}}
+\code{\link[=pk.calc.auxciv]{pk.calc.auxciv()}},
+\code{\link[=pk.calc.auxciv.int]{pk.calc.auxciv.int()}}
 }
 \concept{AUC calculations}

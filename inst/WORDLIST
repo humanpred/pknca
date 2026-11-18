@@ -10,7 +10,9 @@ AUMC
 AUMCall
 AUMCinf
 AUMClast
+AUMCint
 AUXC
+AUXCint
 Analyte
 Barnett
 BIP
@@ -202,6 +204,7 @@ kel
 knitr
 leq
 lin
+mcg
 mL
 md
 monoexponential

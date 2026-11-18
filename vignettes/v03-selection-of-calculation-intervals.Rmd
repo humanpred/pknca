@@ -367,9 +367,9 @@ ggplot_intervals(interval_definition,
 
 # Multiple-Dose MRT and Vss
 
-The multiple-dose parameters `mrt.md.obs`, `mrt.md.pred`, `vss.md.obs`, and `vss.md.pred` measure MRT and Vss over a steady-state dosing interval instead of over a single dose.
+The multiple-dose parameters `mrt.md.inf.obs`, `mrt.md.inf.pred`, `vss.md.inf.obs`, and `vss.md.inf.pred` measure MRT and Vss over a steady-state dosing interval instead of over a single dose.
 
-**These are the parameters to use when PK are nonlinear.**  When PK are linear, MRT and Vss can be measured from a single dose, and the single-dose parameters (`mrt.obs`, `vss.obs`, and similar) describe steady state as well.  When PK are nonlinear they do not: clearance and volume at steady state differ from their values after the first dose, so MRT and Vss have to be measured over a steady-state interval.
+**These are the parameters to use when PK are nonlinear.**  When PK are linear, MRT and Vss can be measured from a single dose, and the single-dose parameters (`mrt.inf.obs`, `vss.inf.obs`, and similar) describe steady state as well.  When PK are nonlinear they do not: clearance and volume at steady state differ from their values after the first dose, so MRT and Vss have to be measured over a steady-state interval.
 
 Taking `mrt.last` over a dosing interval is not a substitute.  `AUMC` divided by `AUC` over 0 to tau leaves out the drug still in the body at the end of the interval and underestimates MRT substantially.  The multiple-dose parameters add the `tau*(AUCinf - AUCtau)/AUCtau` term that accounts for it.
 
@@ -380,7 +380,7 @@ intervals_md <-
   data.frame(
     start=0, end=24,
     tau=24,
-    mrt.md.obs=TRUE, vss.md.obs=TRUE
+    mrt.md.inf.obs=TRUE, vss.md.inf.obs=TRUE
   )
 ```
 
@@ -388,7 +388,7 @@ When no `tau` column is given, `tau` is detected from the dose times with `find.
 
 ## Intravenous Infusions
 
-For an IV infusion, use `mrt.ivmd.obs`, `mrt.ivmd.pred`, `vss.ivmd.obs`, and `vss.ivmd.pred` instead.  They subtract half of the infusion duration, the same correction that `mrt.iv.obs` applies to the single-dose MRT.  Without it, MRT is high by half the infusion duration and Vss is high by clearance times half the infusion duration.
+For an IV infusion, use `mrt.ivmd.inf.obs`, `mrt.ivmd.inf.pred`, `vss.ivmd.inf.obs`, and `vss.ivmd.inf.pred` instead.  They subtract half of the infusion duration, the same correction that `mrt.iv.inf.obs` applies to the single-dose MRT.  Without it, MRT is high by half the infusion duration and Vss is high by clearance times half the infusion duration.
 
 # Parameters Available for Calculation in an Interval
 

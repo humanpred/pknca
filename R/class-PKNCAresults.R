@@ -135,9 +135,10 @@ as.data.frame.PKNCAresults <- function(x, ..., out_format = c('long', 'wide', 'c
     intervals_long_filtered <- intervals_long[intervals_long$keep_interval, , drop = FALSE]
     intervals_long_filtered$keep_interval <- NULL
     ret <-
-      dplyr::inner_join(
+      join_unify_factor_keys(
         ret, intervals_long_filtered,
-        by = intersect(names(ret), names(intervals_long_filtered))
+        by = intersect(names(ret), names(intervals_long_filtered)),
+        join_fun = dplyr::inner_join
       )
   }
 

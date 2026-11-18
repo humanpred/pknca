@@ -685,7 +685,7 @@ summary(pk.nca(o_data_manual_intervals))
 o_conc <- PKNCAconc(conc~Time|Treatment+Subject, data=d_conc)
 o_dose <- PKNCAdose(Dose~dose_time|Treatment+Subject, data=d_dose)
 o_data_auto_intervals <- PKNCAdata(o_conc, o_dose)
-o_data_auto_intervals$intervals$aucint.inf.obs <- TRUE
+o_data_auto_intervals$intervals$aucall <- TRUE
 summary(pk.nca(o_data_auto_intervals))
 ```
 

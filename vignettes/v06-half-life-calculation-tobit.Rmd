@@ -97,8 +97,8 @@ The steps for Tobit regression are:
        line) is not positive are removed from consideration; in other words,
        the half-life slope must be decreasing.
     2. Among the remaining sets, select the set minimizing
-       `tobit_residual * n_points ^ tobit_n_points_penalty`, where
-       `tobit_residual` is the residual standard deviation of the Tobit fit on
+       `tobit.residual * n_points ^ tobit_n_points_penalty`, where
+       `tobit.residual` is the residual standard deviation of the Tobit fit on
        the log-concentration scale and `n_points` is the number of points in
        the set.  The `tobit_n_points_penalty` option (default 0) sets the
        penalty on the number of points; with the default of 0, the set with
@@ -169,7 +169,7 @@ Note the columns that are returned:
 # Log-linear returns r-squared and related diagnostics
 names(hl_loglinear)
 
-# Tobit returns tobit_residual and BLQ point counts instead
+# Tobit returns tobit.residual and BLQ point counts instead
 names(hl_tobit)
 ```
 
@@ -211,8 +211,8 @@ cat("  Points used:    ", hl_loglinear$lambda.z.n.points, "\n")
 cat("\nTobit (includes BLQ as censored):\n")
 cat("  Half-life:      ", round(hl_tobit$half.life, 3), "\n")
 cat("  Total points:   ", hl_tobit$lambda.z.n.points, "\n")
-cat("  BLQ points:     ", hl_tobit$lambda.z.n.points_blq, "\n")
-cat("  Tobit residual: ", round(hl_tobit$tobit_residual, 4), "\n")
+cat("  BLQ points:     ", hl_tobit$lambda.z.n.points.blq, "\n")
+cat("  Tobit residual: ", round(hl_tobit$tobit.residual, 4), "\n")
 ```
 
 ## Using the global option

@@ -309,3 +309,45 @@ test_that("prepare_PKNCAconc carries frac_unbound only when it is used", {
   prep_plain <- prepare_PKNCAconc(o_plain)
   expect_false(any(vapply(prep_plain$data_conc, function(x) "frac_unbound" %in% names(x), TRUE)))
 })
+
+test_that("conc, dose, and interval groups join when ordered factor levels differ", {
+  ord <- function(x, levels) factor(x, levels = levels, ordered = TRUE)
+  d_conc <-
+    data.frame(
+      subject = ord(rep(c("a", "b"), each = 4), c("b", "a")),
+      time = rep(c(0, 1, 2, 4), 2),
+      conc = c(0, 4, 2, 1, 0, 3, 2, 1)
+    )
+  d_dose <- data.frame(subject = ord(c("a", "b"), c("c", "b", "a")), time = 0, dose = 10)
+  d_interval <-
+    data.frame(
+      subject = ord(c("a", "b"), c("a", "b", "d")),
+      start = 0, end = 4, cmax = TRUE
+    )
+  o_conc <- PKNCAconc(d_conc, conc~time|subject)
+  o_dose <- PKNCAdose(d_dose, dose~time|subject)
+  # The conc levels are a subset of the dose levels, so the dose levels are used
+  conc_dose <- full_join_PKNCAconc_PKNCAdose(o_conc, o_dose)
+  expect_identical(conc_dose$subject, ord(c("a", "b"), c("c", "b", "a")))
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = d_interval)
+  expect_identical(
+    full_join_PKNCAdata(o_data)$subject,
+    ord(c("a", "b"), c("c", "b", "a", "d"))
+  )
+  o_nca <- pk.nca(o_data)
+  df_nca <- as.data.frame(o_nca)
+  expect_identical(df_nca$subject, ord(c("a", "b"), c("c", "b", "a", "d")))
+  expect_equal(df_nca$PPORRES, c(4, 3))
+  # Joins of the results with the intervals
+  expect_equal(as.data.frame(o_nca, filter_requested = TRUE)$PPORRES, c(4, 3))
+  expect_equal(
+    as.data.frame(
+      normalize(
+        o_nca,
+        norm_table = data.frame(subject = ord(c("a", "b"), c("a", "b")), normalization = 2, unit = "kg"),
+        parameters = "cmax", suffix = ".n"
+      )
+    )$PPORRES,
+    c(4, 3, 2, 1.5)
+  )
+})

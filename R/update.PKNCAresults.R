@@ -84,6 +84,55 @@ coerce_factor_join_keys <- function(data, cols) {
   data
 }
 
+#' Give the factor join-key columns of two data.frames the same levels
+#'
+#' dplyr joins combine two unordered factors with different levels into a
+#' factor with the union of their levels, but they error on two ordered
+#' factors (or an ordered and an unordered factor) whose levels differ, as when
+#' one data.frame dropped the levels it does not use.  Re-leveling both sides
+#' to one set of levels lets such pairs join by value while the joined column
+#' stays a factor.  When the levels of one side are all among the levels of
+#' the other, the larger set is used in its own order; otherwise the levels of
+#' `x` come first.  The joined column is ordered when the column of `x` is.
+#'
+#' @param x,y Data.frames to join
+#' @param by Column names to join by
+#' @returns A list with elements `x` and `y`, the inputs with each column in
+#'   `by` that is a factor in both re-leveled to the same levels
+#' @noRd
+unify_factor_join_keys <- function(x, y, by) {
+  for (nm in by) {
+    x_col <- x[[nm]]
+    y_col <- y[[nm]]
+    same_type <-
+      identical(levels(x_col), levels(y_col)) &&
+      identical(is.ordered(x_col), is.ordered(y_col))
+    if (is.factor(x_col) && is.factor(y_col) && !same_type) {
+      new_levels <-
+        if (all(levels(x_col) %in% levels(y_col))) {
+          levels(y_col)
+        } else {
+          union(levels(x_col), levels(y_col))
+        }
+      x[[nm]] <- factor(as.character(x_col), levels = new_levels, ordered = is.ordered(x_col))
+      y[[nm]] <- factor(as.character(y_col), levels = new_levels, ordered = is.ordered(x_col))
+    }
+  }
+  list(x = x, y = y)
+}
+
+#' A `dplyr` join whose factor key columns are first given the same levels
+#'
+#' @inheritParams unify_factor_join_keys
+#' @param join_fun A `dplyr` join, such as [dplyr::full_join()]
+#' @param ... Passed to `join_fun`
+#' @returns The result of `join_fun`
+#' @noRd
+join_unify_factor_keys <- function(x, y, by, join_fun, ...) {
+  unified <- unify_factor_join_keys(x, y, by = by)
+  join_fun(unified$x, unified$y, by = by, ...)
+}
+
 #' Rows of `x` kept by a `dplyr` filtering join, matching factor key columns by value
 #'
 #' @param x,y Data.frames to join
@@ -119,6 +168,36 @@ anti_join_by_value <- function(x, y, by) {
 #' @noRd
 semi_join_by_value <- function(x, y, by) {
   join_rows_by_value(x, y, by = by, join_fun = dplyr::semi_join)
+}
+
+#' `dplyr::left_join()` matching key columns by their values as text
+#'
+#' The units table that `PKNCAdata()` builds holds group values as character,
+#' while the results keep the types of the source data.  dplyr will not join an
+#' integer, numeric, or date column to a character one, and joining a factor to
+#' a character column makes the joined column character.  The keys are matched
+#' as character, and the returned rows keep the key columns of `x` as they
+#' were.
+#'
+#' @inheritParams join_rows_by_value
+#' @returns The rows of `dplyr::left_join(x, y, by = by)`, with the key columns
+#'   of `x` unchanged
+#' @noRd
+left_join_by_value <- function(x, y, by) {
+  rowid_col <- paste0(max(c(names(x), names(y))), "X")
+  tracking <- x
+  y_text <- y
+  for (nm in by) {
+    tracking[[nm]] <- as.character(tracking[[nm]])
+    y_text[[nm]] <- as.character(y_text[[nm]])
+  }
+  tracking[[rowid_col]] <- seq_len(nrow(x))
+  ret <- dplyr::left_join(tracking, y_text, by = by)
+  for (nm in by) {
+    ret[[nm]] <- x[[nm]][ret[[rowid_col]]]
+  }
+  ret[[rowid_col]] <- NULL
+  ret
 }
 
 # remove the original data.frames from the source data to enable comparison for

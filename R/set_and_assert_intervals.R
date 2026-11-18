@@ -56,7 +56,7 @@ assert_intervals <- function(intervals, data) {
       names(get.interval.cols()),
       impute_column_names(data$impute),
       "conc_above",
-      "time_above",
+      "time.above",
       "impute",
       "tau",
       "interval_id",
@@ -74,7 +74,7 @@ assert_intervals <- function(intervals, data) {
     # rejection
     renamed <-
       c(
-        f = "f.obs",
+        f = "f.inf.obs",
         # The AUCint parameters are all dose-aware now, so the `.dose` variants
         # calculate what the parameter they were named after calculates (#508)
         aucint.last.dose = "aucint.last",
@@ -127,7 +127,11 @@ assert_intervals <- function(intervals, data) {
 
   # Name only what the specification itself asks for, not the dependencies it
   # drags in, so that the user is told about the columns they wrote
-  warn_deprecated_sparse_parameters(interval_requested_params(intervals, expand = FALSE))
+  requested <- interval_requested_params(intervals, expand = FALSE)
+  warn_deprecated_sparse_parameters(requested)
+  warn_deprecated_renamed_parameters(requested)
+  # Parameters that no single context gives together
+  warn_inconsistent_interval_parameters(intervals)
 
   # A standard error or degrees of freedom that only a sparse estimator produces
   # would silently give nothing with dense data, so say so instead.  The
