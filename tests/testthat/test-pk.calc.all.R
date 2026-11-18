@@ -1810,6 +1810,34 @@ test_that("mrt.iv and vss.iv give one correct value for a multi-segment infusion
   expect_equal(value[["thalf.eff.iv.obs"]], log(2)*value[["mrt.iv.obs"]])
 })
 
+test_that("mrt.iv and vss.iv are NA, one row each, when one of several dose rows has no dose (#694)", {
+  segs <- data.frame(start=c(0, 1), dur=c(1, 2), dose=c(10, 10))
+  tt <- c(0, 0.25, 0.5, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 36, 48)
+  d_conc <- data.frame(ID=1, time=tt, conc=conc_one_comp_segments(tt, segs))
+  d_dose <- data.frame(ID=1, time=segs$start, dose=c(10, NA), dur=segs$dur)
+  res <-
+    as.data.frame(
+      pk.nca(
+        PKNCAdata(
+          PKNCAconc(d_conc, conc~time|ID),
+          PKNCAdose(d_dose, dose~time|ID, route="intravascular", duration="dur"),
+          intervals=data.frame(
+            start=0, end=Inf,
+            aucinf.obs=TRUE, aumcinf.obs=TRUE, cl.obs=TRUE, mrt.iv.obs=TRUE, vss.iv.obs=TRUE
+          ),
+          options=list(auc.method="linear")
+        )
+      )
+    )
+  expect_false(any(duplicated(res$PPTESTCD)))
+  value <- stats::setNames(res$PPORRES, res$PPTESTCD)
+  # The dose weights are unknown, so they are not guessed
+  expect_true(is.na(value[["mrt.iv.obs"]]))
+  expect_true(is.na(value[["vss.iv.obs"]]))
+  expect_true(is.na(value[["cl.obs"]]))
+  expect_false(is.na(value[["aucinf.obs"]]))
+})
+
 test_that("mrt.iv for a single infusion is unchanged and accounts for a late start (#694)", {
   tt <- c(0, 0.5, 1, 2, 3, 4, 6, 8, 12, 16, 24, 36, 48)
   # An infusion at the interval start: AUMC/AUC - duration/2, as before
@@ -1964,7 +1992,6 @@ test_that("mrt.ivmd and vss.ivmd give one correct value for a multi-segment infu
   expect_equal(value[["vss.ivmd.obs"]], value[["cl.last"]]*value[["mrt.ivmd.obs"]])
   expect_equal(value[["vss.ivmd.pred"]], value[["cl.last"]]*value[["mrt.ivmd.pred"]])
 })
-
 
 test_that("an I()-wrapped formalsmap value is passed to the function as a constant", {
   fn_name <- "pknca_test_formalsmap_constant_"

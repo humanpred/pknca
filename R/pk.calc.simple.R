@@ -1170,14 +1170,16 @@ add.interval.col("mrt.sparse.last",
 
 #' @describeIn pk.calc.mrt MRT for an IV infusion
 #' @export
-pk.calc.mrt.iv <- function(auc, aumc, duration.dose, dose, time.dose) {
+pk.calc.mrt.iv <- function(auc, aumc, duration.dose, dose = NULL, time.dose = NULL) {
   mit <- pk_mean_input_time(dose, time.dose, duration.dose)
   ret <- aumc/auc - mit
   mask_zero <- is.na(auc) | auc <= 0
   if (any(mask_zero)) {
     ret[mask_zero] <- NA_real_
   }
-  assert_mrt_scalar(ret)
+  if (length(ret) != 1) {
+    rlang::abort("MRT must be a single value per interval (auc and aumc must each be one value)", class = "pknca_error_mrt_not_scalar")
+  }
   ret
 }
 
@@ -1188,21 +1190,17 @@ pk.calc.mrt.iv <- function(auc, aumc, duration.dose, dose, time.dose) {
 # infusion at the start of the interval, it is `duration.dose/2`.  A bolus
 # (`duration.dose = 0`) contributes its dose time.
 #
-# @param dose The dose amounts (used as weights; not required for a single dose)
+# @param dose The dose amounts (used as weights; not required for a single dose).
+#   One value per dose, the same length as `duration.dose`.
 # @param time.dose The dose times relative to the interval start (pk.nca() has
-#   already subtracted the interval start, so do not subtract it again).  `NULL`
-#   means that the dose(s) are at the interval start.
+#   already subtracted the interval start, so do not subtract it again).  One
+#   value per dose, the same length as `duration.dose`.  `NULL` means that the
+#   dose(s) are at the interval start.
 # @param duration.dose The dose durations
 # @returns A scalar mean input time, `NA_real_` when it cannot be determined
 # @noRd
-pk_mean_input_time <- function(dose, time.dose, duration.dose) {
-  # Callers pass their own arguments along, so a missing one stays missing here
-  if (missing(dose)) {
-    dose <- NULL
-  }
-  if (missing(time.dose)) {
-    time.dose <- NULL
-  }
+pk_mean_input_time <- function(dose = NULL, time.dose = NULL, duration.dose) {
+  checkmate::assert_numeric(duration.dose, lower = 0, finite = TRUE)
   n_dose <- length(duration.dose)
   if (n_dose == 0) {
     return(NA_real_)
@@ -1210,55 +1208,20 @@ pk_mean_input_time <- function(dose, time.dose, duration.dose) {
   if (is.null(time.dose)) {
     time.dose <- rep(0, n_dose)
   }
-  if (length(time.dose) == 1 && n_dose > 1) {
-    time.dose <- rep(time.dose, n_dose)
-  }
-  if (length(time.dose) != n_dose) {
-    rlang::abort(
-      "time.dose and duration.dose must have the same length",
-      class = "pknca_error_mit_length"
-    )
-  }
+  checkmate::assert_numeric(time.dose, len = n_dose, finite = TRUE)
+  # dose is only used as a weight, so it is only required for more than one dose
+  checkmate::assert_numeric(dose, len = n_dose, lower = 0, finite = TRUE, null.ok = n_dose == 1)
+  
   midpoint <- time.dose + duration.dose/2
   if (n_dose == 1) {
     # The weight does not matter for a single dose
     return(as.numeric(midpoint))
-  }
-  if (is.null(dose)) {
-    rlang::abort(
-      "dose is required to calculate the mean input time when there is more than one dose in the interval",
-      class = "pknca_error_mit_dose_missing"
-    )
-  }
-  if (length(dose) == 1) {
-    dose <- rep(dose, n_dose)
-  }
-  if (length(dose) != n_dose) {
-    rlang::abort(
-      "dose and duration.dose must have the same length",
-      class = "pknca_error_mit_length"
-    )
   }
   if (anyNA(dose) || anyNA(midpoint) || sum(dose) <= 0) {
     # The weights or the input times are unknown
     return(NA_real_)
   }
   as.numeric(sum(dose*midpoint)/sum(dose))
-}
-
-# MRT is one value per interval.  A vector would be reported by pk.nca() as
-# several rows with the same PPTESTCD, so fail loudly instead.
-assert_mrt_scalar <- function(x, .var.name = "MRT") {
-  if (length(x) != 1) {
-    rlang::abort(
-      sprintf(
-        "%s must be a single value per interval; got %g values.  Check for several auc/aumc values or for dose inputs that are not one value per dose.",
-        .var.name, length(x)
-      ),
-      class = "pknca_error_mrt_not_scalar"
-    )
-  }
-  invisible(x)
 }
 
 pknca_concept(pk.calc.mrt.iv) <- "mrt"
@@ -1409,14 +1372,16 @@ add.interval.col("mrt.md.pred",
 #'   everything derived from it are high by the mean input time.
 #'
 #' @export
-pk.calc.mrt.md.iv <- function(auctau, aumctau, aucinf, tau, duration.dose, dose, time.dose) {
+pk.calc.mrt.md.iv <- function(auctau, aumctau, aucinf, tau, duration.dose, dose = NULL, time.dose = NULL) {
   mit <- pk_mean_input_time(dose, time.dose, duration.dose)
   ret <- aumctau/auctau + tau*(aucinf-auctau)/auctau - mit
   mask_zero <- is.na(auctau) | auctau <= 0
   if (any(mask_zero)) {
     ret[mask_zero] <- NA_real_
   }
-  assert_mrt_scalar(ret)
+  if (length(ret) != 1) {
+    rlang::abort("MRT must be a single value per interval (auctau, aumctau, and aucinf must each be one value)", class = "pknca_error_mrt.md_not_scalar")
+  }
   ret
 }
 

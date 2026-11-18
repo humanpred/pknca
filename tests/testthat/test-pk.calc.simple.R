@@ -373,11 +373,6 @@ test_that("pk.calc.mrt.iv uses the dose-weighted mean input time for several dos
     pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(0, 2), dose=c(10, 10), time.dose=c(0, 2)),
     6 - 1.5
   )
-  # A scalar dose or time is used for each of the durations
-  expect_equal(
-    pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(0, 2), dose=10, time.dose=c(0, 2)),
-    6 - 1.5
-  )
 })
 
 test_that("pk.calc.mrt.iv returns NA when the mean input time is unknown for several doses", {
@@ -394,23 +389,95 @@ test_that("pk.calc.mrt.iv returns NA when the mean input time is unknown for sev
     NA_real_
   )
   expect_equal(
+    pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(1, 2), dose=c(10, 10), time.dose=c(0, NA)),
+    NA_real_,
+    info="a missing dose time with several doses gives NA"
+  )
+  expect_equal(
     pk.calc.mrt.iv(auc=0, aumc=6, duration.dose=c(1, 2), dose=c(10, 10), time.dose=c(0, 1)),
     NA_real_
+  )
+  # The weights are not guessed: with one dose missing, the result is NA rather than
+  # the equal-weight value
+  equal_weight <- 6 - mean(c(0 + 1/2, 1 + 2/2))
+  expect_false(isTRUE(all.equal(
+    pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(1, 2), dose=c(10, NA), time.dose=c(0, 1)),
+    equal_weight
+  )))
+  # A single dose row does not use dose, so a missing dose is fine
+  expect_equal(
+    pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=2, dose=NA_real_, time.dose=3),
+    6 - (3 + 2/2)
+  )
+  # A single dose with a missing time or duration is NA
+  expect_equal(pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=2, dose=10, time.dose=NA_real_), NA_real_)
+  expect_equal(pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=NA_real_, dose=10, time.dose=0), NA_real_)
+})
+
+test_that("pk.calc.mrt.md.iv returns NA when the mean input time is unknown for several doses", {
+  args <- list(auctau=10, aumctau=40, aucinf=12, tau=12)
+  expect_equal(
+    do.call(pk.calc.mrt.md.iv, c(args, list(duration.dose=c(1, NA), dose=c(10, 10), time.dose=c(0, 1)))),
+    NA_real_
+  )
+  expect_equal(
+    do.call(pk.calc.mrt.md.iv, c(args, list(duration.dose=c(1, 2), dose=c(10, NA), time.dose=c(0, 1)))),
+    NA_real_
+  )
+  expect_equal(
+    do.call(pk.calc.mrt.md.iv, c(args, list(duration.dose=c(1, 2), dose=c(0, 0), time.dose=c(0, 1)))),
+    NA_real_
+  )
+  expect_equal(
+    do.call(pk.calc.mrt.md.iv, c(args, list(duration.dose=c(1, 2), dose=c(10, 10), time.dose=c(0, NA)))),
+    NA_real_
+  )
+  # A single dose row does not use dose
+  expect_equal(
+    do.call(pk.calc.mrt.md.iv, c(args, list(duration.dose=2, dose=NA_real_, time.dose=0))),
+    40/10 + 12*(12 - 10)/10 - 1
   )
 })
 
 test_that("pk.calc.mrt.iv requires one result and consistent dose inputs (#694)", {
+  # dose is required to weight more than one dose
   expect_error(
     pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(1, 2)),
-    class="pknca_error_mit_dose_missing"
+    regexp="Assertion on 'dose' failed"
   )
+  # dose and time.dose must have one value per dose (no recycling of a single value)
   expect_error(
     pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(1, 2), dose=c(10, 10), time.dose=0:2),
-    class="pknca_error_mit_length"
+    regexp="Assertion on 'time.dose' failed.*length 2"
+  )
+  expect_error(
+    pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(0, 2), dose=c(10, 10), time.dose=0),
+    regexp="Assertion on 'time.dose' failed.*length 2"
   )
   expect_error(
     pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(1, 2), dose=c(10, 10, 10), time.dose=c(0, 1)),
-    class="pknca_error_mit_length"
+    regexp="Assertion on 'dose' failed.*length 2"
+  )
+  expect_error(
+    pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(0, 2), dose=10, time.dose=c(0, 2)),
+    regexp="Assertion on 'dose' failed.*length 2"
+  )
+  # Other invalid dose inputs
+  expect_error(
+    pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(1, 2), dose=c(10, -10), time.dose=c(0, 1)),
+    regexp="Assertion on 'dose' failed"
+  )
+  expect_error(
+    pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(1, -2), dose=c(10, 10), time.dose=c(0, 1)),
+    regexp="Assertion on 'duration.dose' failed"
+  )
+  expect_error(
+    pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(1, 2), dose=c(10, 10), time.dose=c("0", "1")),
+    regexp="Assertion on 'time.dose' failed"
+  )
+  expect_error(
+    pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(1, 2), dose=c(10, 10), time.dose=c(0, Inf)),
+    regexp="Assertion on 'time.dose' failed"
   )
   # More than one AUC and AUMC is not a single MRT per interval
   expect_error(
@@ -421,7 +488,7 @@ test_that("pk.calc.mrt.iv requires one result and consistent dose inputs (#694)"
     pk.calc.mrt.md.iv(
       auctau=c(1, 2), aumctau=c(2, 4), aucinf=c(1.5, 3), tau=24, duration.dose=1
     ),
-    class="pknca_error_mrt_not_scalar"
+    class="pknca_error_mrt.md_not_scalar"
   )
 })
 
@@ -465,7 +532,11 @@ test_that("pk.calc.mrt.md.iv uses the dose-weighted mean input time for several 
   )
   expect_error(
     pk.calc.mrt.md.iv(1, 2, 1.5, 24, duration.dose=c(1, 2)),
-    class="pknca_error_mit_dose_missing"
+    regexp="Assertion on 'dose' failed"
+  )
+  expect_error(
+    pk.calc.mrt.md.iv(1, 2, 1.5, 24, duration.dose=c(1, 2), dose=c(10, 10), time.dose=0),
+    regexp="Assertion on 'time.dose' failed.*length 2"
   )
 })
 
