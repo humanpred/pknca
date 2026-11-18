@@ -10,11 +10,11 @@ multiple-dose data.}
 \usage{
 pk.calc.mrt(auc, aumc)
 
-pk.calc.mrt.iv(auc, aumc, duration.dose)
+pk.calc.mrt.iv(auc, aumc, duration.dose, dose, time.dose)
 
 pk.calc.mrt.md(auctau, aumctau, aucinf, tau)
 
-pk.calc.mrt.md.iv(auctau, aumctau, aucinf, tau, duration.dose)
+pk.calc.mrt.md.iv(auctau, aumctau, aucinf, tau, duration.dose, dose, time.dose)
 }
 \arguments{
 \item{auc}{the AUC from 0 to infinity or 0 to tau}
@@ -22,7 +22,17 @@ pk.calc.mrt.md.iv(auctau, aumctau, aucinf, tau, duration.dose)
 \item{aumc}{the AUMC from 0 to infinity or 0 to tau}
 
 \item{duration.dose}{The duration of the dose (usually an infusion duration
-for an IV infusion)}
+for an IV infusion).  May be a vector with one value per dose in the
+interval.}
+
+\item{dose}{The dose amount(s) in the interval, used to weight the mean input
+time when there is more than one dose.  It is required when
+\code{duration.dose} has more than one value; with a single dose it does not
+affect the result.}
+
+\item{time.dose}{The time(s) of the dose(s) relative to the start of the
+interval (the same origin as \code{aumc}).  When missing, the dose is assumed to
+be at the interval start (time 0).}
 
 \item{auctau}{the AUC from time 0 to the end of the dosing interval (tau).}
 
@@ -41,7 +51,17 @@ Calculate the mean residence time (MRT) for single-dose data or linear
 multiple-dose data.
 }
 \details{
-mrt is \code{aumc/auc - duration.dose/2} where \code{duration.dose = 0} for oral administration.
+mrt is \code{aumc/auc - MIT} where \code{MIT} is the mean input time of the
+dose.  \code{MIT = 0} for oral administration.  For an IV infusion that starts
+at the beginning of the interval, \code{MIT = duration.dose/2}.
+
+When an interval holds more than one dose row (for example, a variable-rate
+infusion given as one row per constant-rate segment, or a bolus plus an
+infusion), the mean input time is the dose-weighted mean of the midpoints
+of the inputs, with times relative to the interval start (the same origin
+as the AUMC): \code{MIT = sum(dose*(time.dose + duration.dose/2))/sum(dose)}.
+A bolus (\code{duration.dose = 0}) contributes its dose time.  The result is a
+single value per interval.
 
 mrt.md is \code{aumctau/auctau + tau*(aucinf-auctau)/auctau} and should
 only be used for multiple dosing with equal intervals between doses.
@@ -66,9 +86,10 @@ interval specification instead; a \code{tau} column always takes precedence
 over detection.  If \code{tau} can be neither given nor detected, the parameter
 is \code{NA} with a warning.
 
-mrt.ivmd is mrt.md less half of the infusion duration, the same
-correction that mrt.iv applies to the single-dose MRT.  Without it, MRT
-and everything derived from it are high by \code{duration.dose/2}.
+mrt.ivmd is mrt.md less the mean input time, the same correction
+that mrt.iv applies to the single-dose MRT (half of the infusion duration
+for a single infusion at the start of the interval).  Without it, MRT and
+everything derived from it are high by the mean input time.
 }
 \section{Functions}{
 \itemize{
