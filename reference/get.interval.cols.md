@@ -2403,7 +2403,7 @@ get.interval.cols()
 #> [1] "MRT Intravasc to Last Nonzero Conc"
 #> 
 #> $mrt.iv.last$formula
-#> [1] "$MRT_{\\text{iv,last}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} - \\frac{T_{\\text{inf}}}{2}$"
+#> [1] "$MRT_{\\text{iv,last}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} - \\text{MIT}$"
 #> 
 #> $mrt.iv.last$formula_note
 #> NULL
@@ -11381,7 +11381,7 @@ get.interval.cols()
 #> [1] "MRT Intravasc Infinity Obs"
 #> 
 #> $mrt.iv.inf.obs$formula
-#> [1] "$MRT_{\\text{iv,obs}} = \\frac{AUMC_{\\infty,\\text{obs}}}{AUC_{\\infty,\\text{obs}}} - \\frac{T_{\\text{inf}}}{2}$"
+#> [1] "$MRT_{\\text{iv,obs}} = \\frac{AUMC_{\\infty,\\text{obs}}}{AUC_{\\infty,\\text{obs}}} - \\text{MIT}$"
 #> 
 #> $mrt.iv.inf.obs$formula_note
 #> NULL
@@ -11436,7 +11436,7 @@ get.interval.cols()
 #> [1] "MRT Intravasc Infinity Pred"
 #> 
 #> $mrt.iv.inf.pred$formula
-#> [1] "$MRT_{\\text{iv,pred}} = \\frac{AUMC_{\\infty,\\text{pred}}}{AUC_{\\infty,\\text{pred}}} - \\frac{T_{\\text{inf}}}{2}$"
+#> [1] "$MRT_{\\text{iv,pred}} = \\frac{AUMC_{\\infty,\\text{pred}}}{AUC_{\\infty,\\text{pred}}} - \\text{MIT}$"
 #> 
 #> $mrt.iv.inf.pred$formula_note
 #> NULL
@@ -11724,7 +11724,7 @@ get.interval.cols()
 #> [1] "MRT (IV infusion, MD, AUCinf,obs)"
 #> 
 #> $mrt.ivmd.inf.obs$formula
-#> [1] "$MRT_{\\text{ivmd,obs}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{obs}} - AUC_{\\text{last}}}{AUC_{\\text{last}}} - \\frac{T_{\\text{inf}}}{2}$"
+#> [1] "$MRT_{\\text{ivmd,obs}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{obs}} - AUC_{\\text{last}}}{AUC_{\\text{last}}} - \\text{MIT}$"
 #> 
 #> $mrt.ivmd.inf.obs$formula_note
 #> NULL
@@ -11784,7 +11784,7 @@ get.interval.cols()
 #> [1] "MRT (IV infusion, MD, AUCinf,pred)"
 #> 
 #> $mrt.ivmd.inf.pred$formula
-#> [1] "$MRT_{\\text{ivmd,pred}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{pred}} - AUC_{\\text{last}}}{AUC_{\\text{last}}} - \\frac{T_{\\text{inf}}}{2}$"
+#> [1] "$MRT_{\\text{ivmd,pred}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{pred}} - AUC_{\\text{last}}}{AUC_{\\text{last}}} - \\text{MIT}$"
 #> 
 #> $mrt.ivmd.inf.pred$formula_note
 #> NULL
@@ -16513,7 +16513,7 @@ get.interval.cols()
 #> [1] "MRT Intravasc Infinity Obs"
 #> 
 #> $mrt.iv.obs$formula
-#> [1] "$MRT_{\\text{iv,obs}} = \\frac{AUMC_{\\infty,\\text{obs}}}{AUC_{\\infty,\\text{obs}}} - \\frac{T_{\\text{inf}}}{2}$"
+#> [1] "$MRT_{\\text{iv,obs}} = \\frac{AUMC_{\\infty,\\text{obs}}}{AUC_{\\infty,\\text{obs}}} - \\text{MIT}$"
 #> 
 #> $mrt.iv.obs$formula_note
 #> NULL
@@ -16568,7 +16568,7 @@ get.interval.cols()
 #> [1] "MRT Intravasc Infinity Pred"
 #> 
 #> $mrt.iv.pred$formula
-#> [1] "$MRT_{\\text{iv,pred}} = \\frac{AUMC_{\\infty,\\text{pred}}}{AUC_{\\infty,\\text{pred}}} - \\frac{T_{\\text{inf}}}{2}$"
+#> [1] "$MRT_{\\text{iv,pred}} = \\frac{AUMC_{\\infty,\\text{pred}}}{AUC_{\\infty,\\text{pred}}} - \\text{MIT}$"
 #> 
 #> $mrt.iv.pred$formula_note
 #> NULL
@@ -16626,7 +16626,7 @@ get.interval.cols()
 #> [1] "MRT (IV infusion, MD, AUCinf,obs)"
 #> 
 #> $mrt.ivmd.obs$formula
-#> [1] "$MRT_{\\text{ivmd,obs}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{obs}} - AUC_{\\text{last}}}{AUC_{\\text{last}}} - \\frac{T_{\\text{inf}}}{2}$"
+#> [1] "$MRT_{\\text{ivmd,obs}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{obs}} - AUC_{\\text{last}}}{AUC_{\\text{last}}} - \\text{MIT}$"
 #> 
 #> $mrt.ivmd.obs$formula_note
 #> NULL
@@ -16686,7 +16686,7 @@ get.interval.cols()
 #> [1] "MRT (IV infusion, MD, AUCinf,pred)"
 #> 
 #> $mrt.ivmd.pred$formula
-#> [1] "$MRT_{\\text{ivmd,pred}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{pred}} - AUC_{\\text{last}}}{AUC_{\\text{last}}} - \\frac{T_{\\text{inf}}}{2}$"
+#> [1] "$MRT_{\\text{ivmd,pred}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{pred}} - AUC_{\\text{last}}}{AUC_{\\text{last}}} - \\text{MIT}$"
 #> 
 #> $mrt.ivmd.pred$formula_note
 #> NULL

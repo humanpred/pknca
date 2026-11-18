@@ -70,11 +70,11 @@ multiple-dose data.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">pk.calc.mrt</span><span class="op">(</span><span class="va">auc</span>, <span class="va">aumc</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">pk.calc.mrt.iv</span><span class="op">(</span><span class="va">auc</span>, <span class="va">aumc</span>, <span class="va">duration.dose</span><span class="op">)</span></span>
+<span><span class="fu">pk.calc.mrt.iv</span><span class="op">(</span><span class="va">auc</span>, <span class="va">aumc</span>, <span class="va">duration.dose</span>, <span class="va">dose</span>, <span class="va">time.dose</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">pk.calc.mrt.md</span><span class="op">(</span><span class="va">auctau</span>, <span class="va">aumctau</span>, <span class="va">aucinf</span>, <span class="va">tau</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">pk.calc.mrt.md.iv</span><span class="op">(</span><span class="va">auctau</span>, <span class="va">aumctau</span>, <span class="va">aucinf</span>, <span class="va">tau</span>, <span class="va">duration.dose</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">pk.calc.mrt.md.iv</span><span class="op">(</span><span class="va">auctau</span>, <span class="va">aumctau</span>, <span class="va">aucinf</span>, <span class="va">tau</span>, <span class="va">duration.dose</span>, <span class="va">dose</span>, <span class="va">time.dose</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -91,7 +91,21 @@ multiple-dose data.</p>
 
 <dt id="arg-duration-dose">duration.dose<a class="anchor" aria-label="anchor" href="#arg-duration-dose"></a></dt>
 <dd><p>The duration of the dose (usually an infusion duration
-for an IV infusion)</p></dd>
+for an IV infusion).  May be a vector with one value per dose in the
+interval.</p></dd>
+
+
+<dt id="arg-dose">dose<a class="anchor" aria-label="anchor" href="#arg-dose"></a></dt>
+<dd><p>The dose amount(s) in the interval, used to weight the mean input
+time when there is more than one dose.  It is required when
+<code>duration.dose</code> has more than one value; with a single dose it does not
+affect the result.</p></dd>
+
+
+<dt id="arg-time-dose">time.dose<a class="anchor" aria-label="anchor" href="#arg-time-dose"></a></dt>
+<dd><p>The time(s) of the dose(s) relative to the start of the
+interval (the same origin as <code>aumc</code>).  When missing, the dose is assumed to
+be at the interval start (time 0).</p></dd>
 
 
 <dt id="arg-auctau">auctau<a class="anchor" aria-label="anchor" href="#arg-auctau"></a></dt>
@@ -117,7 +131,16 @@ data)</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>mrt is <code>aumc/auc - duration.dose/2</code> where <code>duration.dose = 0</code> for oral administration.</p>
+    <p>mrt is <code>aumc/auc - MIT</code> where <code>MIT</code> is the mean input time of the
+dose.  <code>MIT = 0</code> for oral administration.  For an IV infusion that starts
+at the beginning of the interval, <code>MIT = duration.dose/2</code>.</p>
+<p>When an interval holds more than one dose row (for example, a variable-rate
+infusion given as one row per constant-rate segment, or a bolus plus an
+infusion), the mean input time is the dose-weighted mean of the midpoints
+of the inputs, with times relative to the interval start (the same origin
+as the AUMC): <code>MIT = sum(dose*(time.dose + duration.dose/2))/sum(dose)</code>.
+A bolus (<code>duration.dose = 0</code>) contributes its dose time.  The result is a
+single value per interval.</p>
 <p>mrt.md is <code>aumctau/auctau + tau*(aucinf-auctau)/auctau</code> and should
 only be used for multiple dosing with equal intervals between doses.
 Note that if <code>aucinf == auctau</code> (as would be the assumption with
@@ -138,9 +161,10 @@ repeats and nothing can be detected, so give <code>tau</code> as a column of the
 interval specification instead; a <code>tau</code> column always takes precedence
 over detection.  If <code>tau</code> can be neither given nor detected, the parameter
 is <code>NA</code> with a warning.</p>
-<p>mrt.ivmd is mrt.md less half of the infusion duration, the same
-correction that mrt.iv applies to the single-dose MRT.  Without it, MRT
-and everything derived from it are high by <code>duration.dose/2</code>.</p>
+<p>mrt.ivmd is mrt.md less the mean input time, the same correction
+that mrt.iv applies to the single-dose MRT (half of the infusion duration
+for a single infusion at the start of the interval).  Without it, MRT and
+everything derived from it are high by the mean input time.</p>
     </div>
     <div class="section level2">
     <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>

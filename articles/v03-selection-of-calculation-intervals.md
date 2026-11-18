@@ -808,19 +808,19 @@ information about the parameter, see the documentation for the function.
 | mrt.int.inf.pred | $`MRT_{\text{int,}\infty\text{,pred}} = \frac{AUMC_{\text{int,}\infty\text{,pred}}}{AUC_{\text{int,}\infty\text{,pred}}}`$ |  | time | MRT, interval AUCinf,pred/AUMCinf,pred | pk.calc.mrt |
 | mrt.int.last | $`MRT_{\text{int,last}} = \frac{AUMC_{\text{int,last}}}{AUC_{\text{int,last}}}`$ |  | time | MRT, interval AUClast/AUMClast | pk.calc.mrt |
 | mrt.iv.all |  |  | time | IV MRT, AUCall/AUMCall | pk.calc.mrt.iv |
-| mrt.iv.inf.obs | $`MRT_{\text{iv,obs}} = \frac{AUMC_{\infty,\text{obs}}}{AUC_{\infty,\text{obs}}} - \frac{T_{\text{inf}}}{2}`$ |  | time | IV MRT, AUCinf,obs/AUMCinf,obs | pk.calc.mrt.iv |
-| mrt.iv.inf.pred | $`MRT_{\text{iv,pred}} = \frac{AUMC_{\infty,\text{pred}}}{AUC_{\infty,\text{pred}}} - \frac{T_{\text{inf}}}{2}`$ |  | time | IV MRT, AUCinf,pred/AUMCinf,pred | pk.calc.mrt.iv |
-| mrt.iv.last | $`MRT_{\text{iv,last}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}} - \frac{T_{\text{inf}}}{2}`$ |  | time | IV MRT, AUClast/AUMClast | pk.calc.mrt.iv |
-| mrt.iv.obs | $`MRT_{\text{iv,obs}} = \frac{AUMC_{\infty,\text{obs}}}{AUC_{\infty,\text{obs}}} - \frac{T_{\text{inf}}}{2}`$ |  | time | IV MRT, AUCinf,obs/AUMCinf,obs | pk.calc.mrt.iv |
-| mrt.iv.pred | $`MRT_{\text{iv,pred}} = \frac{AUMC_{\infty,\text{pred}}}{AUC_{\infty,\text{pred}}} - \frac{T_{\text{inf}}}{2}`$ |  | time | IV MRT, AUCinf,pred/AUMCinf,pred | pk.calc.mrt.iv |
+| mrt.iv.inf.obs | $`MRT_{\text{iv,obs}} = \frac{AUMC_{\infty,\text{obs}}}{AUC_{\infty,\text{obs}}} - \text{MIT}`$ |  | time | IV MRT, AUCinf,obs/AUMCinf,obs | pk.calc.mrt.iv |
+| mrt.iv.inf.pred | $`MRT_{\text{iv,pred}} = \frac{AUMC_{\infty,\text{pred}}}{AUC_{\infty,\text{pred}}} - \text{MIT}`$ |  | time | IV MRT, AUCinf,pred/AUMCinf,pred | pk.calc.mrt.iv |
+| mrt.iv.last | $`MRT_{\text{iv,last}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}} - \text{MIT}`$ |  | time | IV MRT, AUClast/AUMClast | pk.calc.mrt.iv |
+| mrt.iv.obs | $`MRT_{\text{iv,obs}} = \frac{AUMC_{\infty,\text{obs}}}{AUC_{\infty,\text{obs}}} - \text{MIT}`$ |  | time | IV MRT, AUCinf,obs/AUMCinf,obs | pk.calc.mrt.iv |
+| mrt.iv.pred | $`MRT_{\text{iv,pred}} = \frac{AUMC_{\infty,\text{pred}}}{AUC_{\infty,\text{pred}}} - \text{MIT}`$ |  | time | IV MRT, AUCinf,pred/AUMCinf,pred | pk.calc.mrt.iv |
 | mrt.ivint.all |  |  | time | IV MRT, interval AUCall/AUMCall | pk.calc.mrt.iv |
 | mrt.ivint.inf.obs |  |  | time | IV MRT, AUCint/AUMCint,inf,obs | pk.calc.mrt.iv |
 | mrt.ivint.inf.pred |  |  | time | IV MRT, AUCint/AUMCint,inf,pred | pk.calc.mrt.iv |
 | mrt.ivint.last |  |  | time | IV MRT, interval AUClast/AUMClast | pk.calc.mrt.iv |
-| mrt.ivmd.inf.obs | $`MRT_{\text{ivmd,obs}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}} + \tau \cdot \frac{AUC_{\infty,\text{obs}} - AUC_{\text{last}}}{AUC_{\text{last}}} - \frac{T_{\text{inf}}}{2}`$ |  | time | IV MRT, multi-dose, AUCinf,obs | pk.calc.mrt.md.iv |
-| mrt.ivmd.inf.pred | $`MRT_{\text{ivmd,pred}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}} + \tau \cdot \frac{AUC_{\infty,\text{pred}} - AUC_{\text{last}}}{AUC_{\text{last}}} - \frac{T_{\text{inf}}}{2}`$ |  | time | IV MRT, multi-dose, AUCinf,pred | pk.calc.mrt.md.iv |
-| mrt.ivmd.obs | $`MRT_{\text{ivmd,obs}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}} + \tau \cdot \frac{AUC_{\infty,\text{obs}} - AUC_{\text{last}}}{AUC_{\text{last}}} - \frac{T_{\text{inf}}}{2}`$ |  | time | IV MRT, multi-dose, AUCinf,obs | pk.calc.mrt.md.iv |
-| mrt.ivmd.pred | $`MRT_{\text{ivmd,pred}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}} + \tau \cdot \frac{AUC_{\infty,\text{pred}} - AUC_{\text{last}}}{AUC_{\text{last}}} - \frac{T_{\text{inf}}}{2}`$ |  | time | IV MRT, multi-dose, AUCinf,pred | pk.calc.mrt.md.iv |
+| mrt.ivmd.inf.obs | $`MRT_{\text{ivmd,obs}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}} + \tau \cdot \frac{AUC_{\infty,\text{obs}} - AUC_{\text{last}}}{AUC_{\text{last}}} - \text{MIT}`$ |  | time | IV MRT, multi-dose, AUCinf,obs | pk.calc.mrt.md.iv |
+| mrt.ivmd.inf.pred | $`MRT_{\text{ivmd,pred}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}} + \tau \cdot \frac{AUC_{\infty,\text{pred}} - AUC_{\text{last}}}{AUC_{\text{last}}} - \text{MIT}`$ |  | time | IV MRT, multi-dose, AUCinf,pred | pk.calc.mrt.md.iv |
+| mrt.ivmd.obs | $`MRT_{\text{ivmd,obs}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}} + \tau \cdot \frac{AUC_{\infty,\text{obs}} - AUC_{\text{last}}}{AUC_{\text{last}}} - \text{MIT}`$ |  | time | IV MRT, multi-dose, AUCinf,obs | pk.calc.mrt.md.iv |
+| mrt.ivmd.pred | $`MRT_{\text{ivmd,pred}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}} + \tau \cdot \frac{AUC_{\infty,\text{pred}} - AUC_{\text{last}}}{AUC_{\text{last}}} - \text{MIT}`$ |  | time | IV MRT, multi-dose, AUCinf,pred | pk.calc.mrt.md.iv |
 | mrt.last | $`MRT_{\text{last}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}}`$ |  | time | MRT, AUClast/AUMClast | pk.calc.mrt |
 | mrt.md.inf.obs | $`MRT_{\text{md,obs}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}} + \tau \cdot \frac{AUC_{\infty,\text{obs}} - AUC_{\text{last}}}{AUC_{\text{last}}}`$ |  | time | MRT, multi-dose AUCinf,obs/AUMCinf,obs | pk.calc.mrt.md |
 | mrt.md.inf.pred | $`MRT_{\text{md,pred}} = \frac{AUMC_{\text{last}}}{AUC_{\text{last}}} + \tau \cdot \frac{AUC_{\infty,\text{pred}} - AUC_{\text{last}}}{AUC_{\text{last}}}`$ |  | time | MRT, multi-dose AUCinf,pred/AUMCinf,pred | pk.calc.mrt.md |

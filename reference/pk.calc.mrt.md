@@ -8,11 +8,11 @@ multiple-dose data.
 ``` r
 pk.calc.mrt(auc, aumc)
 
-pk.calc.mrt.iv(auc, aumc, duration.dose)
+pk.calc.mrt.iv(auc, aumc, duration.dose, dose, time.dose)
 
 pk.calc.mrt.md(auctau, aumctau, aucinf, tau)
 
-pk.calc.mrt.md.iv(auctau, aumctau, aucinf, tau, duration.dose)
+pk.calc.mrt.md.iv(auctau, aumctau, aucinf, tau, duration.dose, dose, time.dose)
 ```
 
 ## Arguments
@@ -28,7 +28,20 @@ pk.calc.mrt.md.iv(auctau, aumctau, aucinf, tau, duration.dose)
 - duration.dose:
 
   The duration of the dose (usually an infusion duration for an IV
-  infusion)
+  infusion). May be a vector with one value per dose in the interval.
+
+- dose:
+
+  The dose amount(s) in the interval, used to weight the mean input time
+  when there is more than one dose. It is required when `duration.dose`
+  has more than one value; with a single dose it does not affect the
+  result.
+
+- time.dose:
+
+  The time(s) of the dose(s) relative to the start of the interval (the
+  same origin as `aumc`). When missing, the dose is assumed to be at the
+  interval start (time 0).
 
 - auctau:
 
@@ -52,8 +65,18 @@ the numeric value of the mean residence time
 
 ## Details
 
-mrt is `aumc/auc - duration.dose/2` where `duration.dose = 0` for oral
-administration.
+mrt is `aumc/auc - MIT` where `MIT` is the mean input time of the dose.
+`MIT = 0` for oral administration. For an IV infusion that starts at the
+beginning of the interval, `MIT = duration.dose/2`.
+
+When an interval holds more than one dose row (for example, a
+variable-rate infusion given as one row per constant-rate segment, or a
+bolus plus an infusion), the mean input time is the dose-weighted mean
+of the midpoints of the inputs, with times relative to the interval
+start (the same origin as the AUMC):
+`MIT = sum(dose*(time.dose + duration.dose/2))/sum(dose)`. A bolus
+(`duration.dose = 0`) contributes its dose time. The result is a single
+value per interval.
 
 mrt.md is `aumctau/auctau + tau*(aucinf-auctau)/auctau` and should only
 be used for multiple dosing with equal intervals between doses. Note
@@ -80,9 +103,10 @@ can be detected, so give `tau` as a column of the interval specification
 instead; a `tau` column always takes precedence over detection. If `tau`
 can be neither given nor detected, the parameter is `NA` with a warning.
 
-mrt.ivmd is mrt.md less half of the infusion duration, the same
-correction that mrt.iv applies to the single-dose MRT. Without it, MRT
-and everything derived from it are high by `duration.dose/2`.
+mrt.ivmd is mrt.md less the mean input time, the same correction that
+mrt.iv applies to the single-dose MRT (half of the infusion duration for
+a single infusion at the start of the interval). Without it, MRT and
+everything derived from it are high by the mean input time.
 
 ## Functions
 
