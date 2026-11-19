@@ -764,9 +764,13 @@ test_that("pk.calc.deg.fluc", {
 })
 
 test_that("pk.calc.swing", {
-  # A missing cmin (or cmax) gives NA, not an error
-  expect_equal(pk.calc.swing(10, NA), NA_real_)
-  expect_equal(pk.calc.swing(NA, 2), NA_real_)
+  # A missing cmin or cmax gives NA_real_, not an error, and not the infinity
+  # of a zero cmin
+  expect_identical(pk.calc.swing(10, NA), NA_real_)
+  expect_identical(pk.calc.swing(NA, 2), NA_real_)
+  expect_identical(pk.calc.swing(NA, 0), NA_real_)
+  expect_identical(pk.calc.swing(NA, NA), NA_real_)
+  expect_identical(pk.calc.swing(10, NA_integer_), NA_real_)
   expect_equal(pk.calc.swing(100, 10), 900,
                info="Swing math works")
   expect_equal(pk.calc.swing(100, 0), Inf,
@@ -922,8 +926,7 @@ test_that("count.conc and count.conc.measured count imputed concentrations by va
 })
 
 test_that("swing in pk.nca() with every concentration missing is NA", {
-  # The data checks warn that every concentration is missing; the interval
-  # used to stop with "Please report a bug"
+  # The data checks warn that every concentration is missing
   res <-
     suppressWarnings(
       as.data.frame(pk.nca(PKNCAdata(
@@ -934,4 +937,60 @@ test_that("swing in pk.nca() with every concentration missing is NA", {
       classes = "pknca_warning_all_concentration_missing"
     )
   expect_equal(res$PPORRES[res$PPTESTCD == "swing"], NA_real_)
+})
+
+# The tlag or swing results of pk.nca() for concentration data with the columns
+# id, time, and conc, on one interval from 0 to `end`, in the order of id
+tlag_swing_results <- function(d_conc, parameter, conc.na, end) {
+  d_interval <- data.frame(start = 0, end = end)
+  d_interval[[parameter]] <- TRUE
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time | id),
+      intervals = d_interval,
+      options = list(conc.na = conc.na)
+    )
+  res <-
+    suppressWarnings(
+      as.data.frame(pk.nca(o_data)),
+      classes = "pknca_warning_all_concentration_missing"
+    )
+  res <- res[res$PPTESTCD == parameter, ]
+  res$PPORRES[order(res$id)]
+}
+
+test_that("a profile with missing concentrations does not stop tlag or swing for the other profiles (#723)", {
+  # The profile with missing concentrations gets NA, and the other subject's
+  # result is calculated, at any conc.na.
+
+  # tlag: a falling profile, with one sample missing for the second subject
+  d_falling <-
+    data.frame(
+      id = rep(1:2, each = 5),
+      time = rep(c(0.25, 1, 2, 4, 8), 2),
+      conc = c(10, 8, 6, 4, 2, 10, 8, NA, 4, 2)
+    )
+  expect_identical(tlag_swing_results(d_falling, "tlag", conc.na = "drop", end = Inf), c(NA_real_, NA_real_))
+  expect_identical(tlag_swing_results(d_falling, "tlag", conc.na = 0, end = Inf), c(NA_real_, NA_real_))
+  expect_identical(pk.calc.tlag(conc = c(10, 8, NA, 4, 2), time = c(0.25, 1, 2, 4, 8)), NA_real_)
+
+  # tlag: no measurable concentration and one missing sample for the second
+  # subject
+  d_none_measurable <-
+    data.frame(
+      id = rep(1:2, each = 4),
+      time = rep(c(0, 1, 2, 4), 2),
+      conc = c(0, 5, 3, 1, 0, 0, NA, 0)
+    )
+  expect_identical(tlag_swing_results(d_none_measurable, "tlag", conc.na = "drop", end = Inf), c(0, NA_real_))
+
+  # swing: every sample of the second subject's interval is missing
+  d_all_missing <-
+    data.frame(
+      id = rep(1:2, each = 4),
+      time = rep(c(0, 1, 2, 4), 2),
+      conc = c(1, 5, 3, 1, NA, NA, NA, NA)
+    )
+  expect_identical(tlag_swing_results(d_all_missing, "swing", conc.na = "drop", end = 4), c(400, NA_real_))
+  expect_identical(tlag_swing_results(d_all_missing, "swing", conc.na = 0, end = 4), c(400, NA_real_))
 })
