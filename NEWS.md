@@ -1560,6 +1560,13 @@ the generated intervals:
 
 ## Other changes
 
+* The help of `interp.extrap.conc()` now says what `auc.type = "AUCall"` does
+  after the last measurable concentration (Clast):  a straight line from Clast
+  to 0 at the first concentration below the limit of quantification, and 0
+  everywhere else, without `lambda.z`.  It said the result was the same as
+  for "AUCinf" when the last concentration is measurable or missing, which
+  it is not.  No result changes (@billdenney).
+
 * The sparse AUC vignette and the help of `var_sparse_auc()` and
   `sparse_bootstrap()` cite Wolfsegger and Jaki's estimators for serial
   sacrifice, batch, and complete designs and Barnett et al.'s comparison of

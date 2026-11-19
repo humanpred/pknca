@@ -44,8 +44,14 @@
 #'   \item{extrap.method}{
 #'     \describe{
 #'       \item{'AUCinf'}{Use lambda.z to extrapolate beyond the last point with the half-life.}
-#'       \item{'AUCall'}{If the last point is above the limit of quantification or missing, this is identical to 'AUCinf'. If the last point is below the limit of quantification, then linear interpolation between the Clast and the next BLQ is used for that  interval and all additional points are extrapolated as 0.}
-#'       \item{'AUClast'}{Extrapolates all points after the last above the  limit of quantification as 0.}
+#'       \item{'AUCall'}{Between the last concentration above the limit of
+#'         quantification (Clast) and the first concentration below it, the
+#'         concentration is interpolated linearly from Clast to 0 (the triangle
+#'         that AUCall adds to AUClast).  Everywhere else after Clast, including
+#'         when no concentration below the limit follows it, it is 0, as for
+#'         'AUClast'; `lambda.z` is not used.  Missing concentrations are
+#'         handled by `conc.na` first.}
+#'       \item{'AUClast'}{Extrapolates all points after the last above the limit of quantification as 0.}
 #'     }
 #'   }
 #' }
