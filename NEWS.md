@@ -1228,6 +1228,42 @@ the generated intervals:
   `swing` was requested, which stopped the calculation for every subject, and
   now gives `NA` for that interval.
 
+* A simple parameter that is `NA` because of missing or unusable data now says
+  why in the `exclude` column of `pk.nca()` results, where the column was
+  empty (@billdenney, #727).  No value changes; only the
+  `exclude` text of results that were already `NA`.  The reasons, set by the
+  calculation functions as an `exclude` attribute on their `NA` return:
+  - "All concentrations are missing":  `cmax`, `cmin`, `tmax`, `tmin`, `tlast`,
+    `tfirst`, `clast.obs`, `tlag`.
+  - "No concentration is above zero":  `tmax`, `tlast`, `tfirst`.
+  - "Concentrations never increase":  `tlag`.
+  - "No non-missing concentration at the start of the interval":  `cstart`;
+    "... at the end of the interval":  `ctrough`; "... at the end of the
+    infusion":  `ceoi`.  "Dose duration is missing":  `ceoi`.
+  - "AUC is zero or negative":  `cl.*`, `mrt.*` (all forms), and the reference
+    AUC of `f.*`; "AUCinf is zero":  `aucpext.*`; "Cav is zero":  `deg.fluc`;
+    "Ctrough is zero":  `ptr`.
+  - "Dose is missing":  `cl.*`, `f.*`, `totdose`, and the dose-normalized
+    parameters (`*.dn`); "Dose is zero or negative":  `f.*`; "No dose in the
+    interval":  `cl.*`, `totdose`, and `mrt.iv.*` and `mrt.ivmd.*`.
+  - "A dose time or duration is missing", or "A dose amount is missing, or the
+    doses sum to zero" (when several doses are weighted):  `mrt.iv.*` and
+    `mrt.ivmd.*`; "The dosing interval (tau) is not known":  `mrt.md.*` and
+    `mrt.ivmd.*`.
+  - "The interval start or end is missing", "The interval has zero duration":
+    `cav.*`.
+
+  Everything calculated from one of these carries its reason, as for any
+  other reason (for example `swing`, `vss.*`, `vz.*`, `kel.*`, `thalf.eff.*`),
+  and a reason given by more than one input is now listed once (for example
+  `swing` of an all-missing interval, from both `cmax` and `cmin`).  What
+  changes for code reading the results:  `summary()` gives the same numbers
+  (it ignores an `NA` either way); `as.data.frame(filter_excluded = TRUE)`
+  now leaves out these `NA` rows, as it leaves out any row with a reason; and
+  `exclude()` adds its reason after the one already there.  A direct call such
+  as `pk.calc.cmax(c(NA, NA))` still returns `NA`, now with the `exclude`
+  attribute, so `is.na()` is unchanged but `identical(x, NA)` is `FALSE`.
+
 * `mrt.iv.*`, `mrt.ivint.*`, `mrt.ivmd.*`, and everything calculated from them
   (`vss.iv.*`, `vss.ivint.*`, `vss.ivmd.*`, `kel.iv.*`, `thalf.eff.iv.*`) are
   now correct, and one value per interval, when an interval has more than one
