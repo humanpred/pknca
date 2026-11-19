@@ -253,7 +253,7 @@ test_that("pk.calc.cl", {
                c(NA_real_, 0.5),
                info="NA generation works with NA, including for a vector")
   expect_equal(pk.calc.cl(dose=c(50, 50), auc=c(0, 100)),
-               structure(c(NA_real_, 0.5), exclude = "AUC is zero or negative"),
+               c(NA_real_, 0.5),
                info="NA generation works with zero, including for a vector")
 })
 
@@ -787,7 +787,7 @@ test_that("pk.calc.ceoi", {
                structure(NA_real_, exclude = "No non-missing concentration at the end of the infusion"),
                info="Ceoi returns NA if there is no measurement at the end of the dosing duration")
   expect_equal(pk.calc.ceoi(conc=0:5, time=0:5, duration.dose=NA),
-               structure(NA_real_, exclude = "Dose duration is missing"),
+               structure(NA_real_, exclude = "Dose duration is missing (or there is no dose in the interval)"),
                info="Ceoi returns NA if there is no dosing duration")
 })
 
@@ -1089,48 +1089,92 @@ test_that("a simple parameter that is NA because of missing or unusable data say
   expect_equal(infusion$exclude, "No non-missing concentration at the end of the infusion")
 })
 
-test_that("every parameter calculated by a simple function gives a reason with each NA in pk.nca()", {
-  simple_functions <- c(
-    "pk.calc.cmax", "pk.calc.cmin", "pk.calc.tmax", "pk.calc.tmin", "pk.calc.tlast",
-    "pk.calc.tfirst", "pk.calc.clast.obs", "pk.calc.thalf.eff", "pk.calc.aucpext",
-    "pk.calc.kel", "pk.calc.cl", "pk.calc.mrt", "pk.calc.mrt.iv", "pk.calc.mrt.md",
-    "pk.calc.mrt.md.iv", "pk.calc.vz", "pk.calc.vss", "pk.calc.cav", "pk.calc.ctrough",
-    "pk.calc.cstart", "pk.calc.ptr", "pk.calc.tlag", "pk.calc.deg.fluc", "pk.calc.swing",
-    "pk.calc.ceoi", "pk.calc.aucabove", "pk.calc.count_conc", "pk.calc.count_conc_measured",
-    "pk.calc.totdose", "pk.calc.dn"
-  )
+test_that("every registered parameter gives a reason with each NA in pk.nca()", {
   all_intervals <- get.interval.cols()
   parameters <-
-    names(all_intervals)[vapply(all_intervals, function(x) isTRUE(x$FUN %in% simple_functions), logical(1))]
-  # Every simple function except pk.calc.f() (which needs a reference interval)
-  # is registered for at least one parameter
-  expect_setequal(
-    unique(vapply(all_intervals[parameters], function(x) x$FUN, character(1))),
-    simple_functions
+    names(all_intervals)[vapply(all_intervals, function(x) !is.null(x$FUN) && !is.na(x$FUN), logical(1))]
+  # Parameters these fixtures cannot calculate:  they need a urine collection
+  # (volume), a reference interval, or a concentration threshold
+  not_exercised <- c(
+    "ae", "fe", "volpk", "ertlst", "ermax", "ertmax", "erint", "erlst",
+    grep("^clr[.]", parameters, value = TRUE),
+    grep("^(f|ratio)[.]", parameters, value = TRUE),
+    "time.above", "time_above"
   )
-  profiles <- list(
-    all_missing = rep(NA_real_, 6),
-    all_zero = rep(0, 6),
-    missing_ends = c(NA, 5, 8, 6, 3, NA)
+  expect_true(all(not_exercised %in% parameters))
+  parameters <- setdiff(parameters, not_exercised)
+  # Known to give NA without a reason in these fixtures, from the IV
+  # back-extrapolation functions (and cl.iv.* calculated from them).  When they
+  # gain reasons, this test fails until they are removed from the list.
+  known_without_reason <- c(
+    "aucivinf.obs", "aucivinf.pred", "aumcivinf.obs", "aumcivinf.pred",
+    "cl.iv.inf.obs", "cl.iv.inf.pred", "cl.iv.obs", "cl.iv.pred",
+    "aucivpbext.last", "aucivpbext.all", "aucivpbext.inf.obs", "aucivpbext.inf.pred",
+    "aucivpbext.int.last", "aucivpbext.int.all",
+    "aucivpbextlast", "aucivpbextall", "aucivpbextinf.obs", "aucivpbextinf.pred",
+    "aucivpbextint.last", "aucivpbextint.all"
   )
+  fixtures <- list(
+    all_missing = list(conc = rep(NA_real_, 6), dose = 100),
+    all_zero = list(conc = rep(0, 6), dose = 100),
+    missing_ends = list(conc = c(NA, 5, 8, 6, 3, NA), dose = 100),
+    one_measured = list(conc = c(0, 0, 5, 0, 0, 0), dose = 100),
+    dose_zero = list(conc = c(0, 5, 8, 6, 3, 1), dose = 0),
+    dose_missing = list(conc = c(0, 5, 8, 6, 3, 1), dose = NA)
+  )
+  found_without_reason <- character(0)
   for (current_route in c("extravascular", "intravascular")) {
-    for (current_profile in names(profiles)) {
+    for (current_fixture in names(fixtures)) {
       for (current_conc_na in list("drop", 0)) {
+        current_info <- paste(current_route, current_fixture, current_conc_na)
         res <-
           simple_reason_results(
-            conc = profiles[[current_profile]], parameters = parameters,
+            conc = fixtures[[current_fixture]]$conc, parameters = parameters,
+            dose = fixtures[[current_fixture]]$dose,
             duration = if (current_route == "intravascular") 1.5 else 0,
             route = current_route, conc.na = current_conc_na
           )
-        no_reason <- res$PPTESTCD[is.na(res$PPORRES) & is.na(res$exclude)]
-        expect_equal(
-          no_reason, character(0),
-          info = paste(current_route, current_profile, current_conc_na)
-        )
+        # The fixture calculates and has NA results to check
+        expect_gt(nrow(res), 0)
+        expect_true(any(is.na(res$PPORRES)), info = current_info)
+        no_reason <- unique(res$PPTESTCD[is.na(res$PPORRES) & is.na(res$exclude)])
+        expect_equal(setdiff(no_reason, known_without_reason), character(0), info = current_info)
+        found_without_reason <- union(found_without_reason, no_reason)
       }
     }
   }
-  res_dose_missing <-
-    simple_reason_results(conc = c(0, 5, 8, 6, 3, 1), parameters = parameters, dose = NA)
-  expect_equal(res_dose_missing$PPTESTCD[is.na(res_dose_missing$PPORRES) & is.na(res_dose_missing$exclude)], character(0))
+  expect_setequal(found_without_reason, known_without_reason)
+})
+
+test_that("a reason is given with a single value only, never beside a valid value", {
+  # One value:  the reason is given
+  # A zero aucinf warns as well
+  aucpext_classes <- c("pknca_warning_aucpext_aucinf_le_auclast", "pknca_warning_aucpext_aucinf_auclast_positive")
+  expect_equal(
+    suppressWarnings(pk.calc.aucpext(1, 0), classes = aucpext_classes),
+    structure(NA_real_, exclude = "AUCinf is zero")
+  )
+  expect_equal(pk.calc.cav(10, 5, 5), structure(NA_real_, exclude = "The interval has zero duration"))
+  expect_equal(pk.calc.dn(1, NA), structure(NA_real_, exclude = "Dose is missing"))
+  # Several values with one NA among them:  no attribute
+  expect_equal(
+    suppressWarnings(pk.calc.aucpext(c(1, 1), c(2, 0)), classes = aucpext_classes),
+    c(50, NA_real_)
+  )
+  expect_equal(pk.calc.cav(10, c(0, 5), 5), c(2, NA_real_))
+  expect_equal(pk.calc.dn(c(1, 2), c(1, NA)), c(1, NA_real_))
+  expect_equal(pk.calc.ptr(c(2, 2), c(1, 0)), c(2, NA_real_))
+  expect_equal(pk.calc.deg.fluc(cmax = c(100, 100), cmin = 10, cav = c(45, 0)), c(200, NA_real_))
+  expect_equal(pk.calc.f(c(1, 0), 1, 1, 1), c(1, NA_real_))
+  expect_equal(pk.calc.totdose(c(1, 2)), 3)
+})
+
+test_that("a dose-normalized zero over a zero dose stays NaN and says why", {
+  expect_equal(pk.calc.dn(0, 0), structure(NaN, exclude = "Dose is zero"))
+  # A nonzero value over a zero dose is infinite, as before, with no reason
+  expect_identical(pk.calc.dn(1, 0), Inf)
+})
+
+test_that("ctrough for an interval with no finite end says so", {
+  expect_equal(pk.calc.ctrough(1:5, 0:4, Inf), structure(NA_real_, exclude = "The interval has no finite end"))
 })
