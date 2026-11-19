@@ -9,7 +9,7 @@ test_that("check.interval.specification", {
   expect_warning(expect_warning(
     check.interval.specification(as.matrix(d1)),
     regexp="Interval specification must be a data.frame",
-    info="Interval must be a data.frame or coercable into a data frame"),
+    info="Interval must be a data.frame or coercible into a data frame"),
     regexp="Nothing to be calculated in interval specification number\\(s\\): 1"
   )
   expect_warning(
