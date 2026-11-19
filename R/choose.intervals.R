@@ -245,18 +245,30 @@ pknca_split_timeu <- function(splitdata, group_info, o_conc) {
 # "pknca_warning_dose_regimen" class of find.dose.regimen() and
 # resolve_dose_tau()), and its message that the units package is missing, so
 # that each is given once for the group, with the group named, rather than once
-# for every interval and every parameter that needed tau.
+# for every interval and every parameter that needed tau.  While the group's
+# intervals are chosen, the other warnings of choose.auc.intervals() and
+# dose_route_for_intervals() (such as "pknca_warning_no_tau_for_intervals") are
+# gathered too, so that they name the group as well.
 pknca_regimen_warning_collector <- function() {
   collector <- new.env(parent = emptyenv())
   collector$conditions <- list()
   collector
 }
 
-# Evaluate `expr`, keeping its dose regimen warnings in `collector`
-pknca_collect_regimen_warnings <- function(expr, collector) {
+# Evaluate `expr`, keeping its dose regimen warnings in `collector`.  With
+# `all_pknca = TRUE` (interval selection, where every PKNCA warning concerns the
+# group) any warning with a `pknca_warning_*` class is kept, so that a warning
+# added there names its group without being listed here; other warnings pass
+# through unchanged.
+pknca_collect_regimen_warnings <- function(expr, collector, all_pknca = FALSE) {
   withCallingHandlers(
     expr,
-    pknca_warning_dose_regimen = function(cnd) pknca_keep_regimen_warning(cnd, collector),
+    warning = function(cnd) {
+      if (inherits(cnd, "pknca_warning_dose_regimen") ||
+          (all_pknca && any(startsWith(class(cnd), "pknca_warning_")))) {
+        pknca_keep_regimen_warning(cnd, collector)
+      }
+    },
     pknca_message_tau_units_fallback = function(cnd) pknca_keep_regimen_warning(cnd, collector)
   )
 }
@@ -268,16 +280,16 @@ pknca_keep_regimen_warning <- function(cnd, collector) {
   invokeRestart(if (inherits(cnd, "message")) "muffleMessage" else "muffleWarning")
 }
 
-# Evaluate `expr` for one group, giving its dose regimen warnings once each,
-# prefixed with the group.  They are given on the way out, so an error in
+# Evaluate `expr` for one group, giving its PKNCA warnings once each, prefixed
+# with the group.  They are given on the way out, so an error in
 # `expr` does not lose the warnings that came before it.
 pknca_with_regimen_warnings <- function(expr, prefix) {
   collector <- pknca_regimen_warning_collector()
   on.exit(pknca_emit_regimen_warnings(collector, prefix), add = TRUE)
-  pknca_collect_regimen_warnings(expr, collector)
+  pknca_collect_regimen_warnings(expr, collector, all_pknca = TRUE)
 }
 
-# Give the kept dose regimen warnings, each once, prefixed with the group
+# Give the kept warnings, each once, prefixed with the group
 pknca_emit_regimen_warnings <- function(collector, prefix) {
   for (cnd in collector$conditions) {
     text <- paste0(prefix, sub("\n$", "", conditionMessage(cnd)))

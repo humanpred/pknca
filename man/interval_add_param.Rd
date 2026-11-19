@@ -30,11 +30,14 @@ interval_remove_param(
 parameter names.  One or both of \code{param} and \code{param_pattern} must be given.}
 
 \item{target_groups}{A data.frame of group values restricting the change to
-matching intervals.  Every column must match (and) for at least one row of
-\code{target_groups} (or).  \code{NULL} (the default) applies the change to all
+matching intervals.  Its columns are group columns of the intervals and/or
+\code{start} and \code{end}, so \code{data.frame(start = 0, end = 24)} selects the
+intervals from 0 to 24.  Every column must match (and) for at least one row
+of \code{target_groups} (or).  \code{NULL} (the default) applies the change to all
 intervals.}
 
-\item{...}{Ignored.}
+\item{...}{Not used; giving any argument here is an error
+(\code{pknca_error_unknown_argument}).}
 }
 \value{
 The input with the parameters added or removed.
