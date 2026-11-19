@@ -248,7 +248,7 @@ test_that("PKNCA.options", {
                FALSE)
   expect_error(PKNCA.options(first.tmax=c(FALSE, TRUE), check=TRUE),
                regexp="Must have length 1")
-  
+
   # Conversion works
   expect_warning(v1 <- PKNCA.options(first.tmax="T", check=TRUE),
                  regexp="Converting first.tmax to a logical value: TRUE")
@@ -421,10 +421,10 @@ test_that("PKNCA.set.summary input checking", {
   expect_warning(
     PKNCA.set.summary(reset=TRUE),
     class = "pknca_warning_summary_reset"
-  )  
+  )
   # Confirm that reset actually resets the summary settings
   expect_equal(PKNCA.set.summary(), list())
-  
+
   # name must already be defined
   expect_error(PKNCA.set.summary("blah"),
                regexp="You must first define the parameter name with add.interval.col")
@@ -446,7 +446,7 @@ test_that("PKNCA.set.summary input checking", {
   # spread must be a function
   expect_error(PKNCA.set.summary("auclast", description="A", point=mean, spread="a"),
                regexp="Must be a function")
-  
+
   # Rounding must either be a function or a list
   expect_error(PKNCA.set.summary("auclast", description="A", point=mean, spread=sd,
                                  rounding="a"),
@@ -480,7 +480,7 @@ test_that("PKNCA.set.summary input checking", {
   expect_warning(
     PKNCA.set.summary(reset=TRUE),
     class = "pknca_warning_summary_reset"
-  )  
+  )
   expect_equal(
     PKNCA.set.summary(
       name=c("cmax", "auclast"),
@@ -502,12 +502,12 @@ test_that("PKNCA.set.summary input checking", {
            )
     )
   )
-  
+
   # Reset all the values to the defaults
   expect_warning(
     PKNCA.set.summary(reset=TRUE),
     class = "pknca_warning_summary_reset"
-  )  
+  )
   for (n in names(initial.summary.set)) {
     tmp <- initial.summary.set[[n]]
     tmp$name <- n
@@ -515,7 +515,7 @@ test_that("PKNCA.set.summary input checking", {
   }
 })
 
-test_that("PKNCA.set.summary exists for all paramters", {
+test_that("PKNCA.set.summary exists for all parameters", {
   missing_summaries <-
     setdiff(setdiff(names(get.interval.cols()),
                     names(PKNCA.set.summary())),

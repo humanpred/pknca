@@ -57,4 +57,4 @@ Config/testthat/start-first: pk.calc.all, half.life, update.PKNCAresults,
     bioequivalence-assess
 Encoding: UTF-8
 Language: en-US
-Config/roxygen2/version: 8.1.0
+Config/roxygen2/version: 8.1.1
