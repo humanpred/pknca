@@ -37,7 +37,10 @@ test_that("a deprecated name gives the value of its replacement and warns", {
         PKNCAdose(d_dose, dose ~ time),
         intervals = intervals
       ),
-    regexp = "aucpext.obs.*cl.obs.*vz.obs",
+    regexp = paste0(
+      "^These NCA parameters are deprecated, and the old names keep working; use the new names instead:\n",
+      "  aucpext[.]obs -> aucpext[.]inf[.]obs\n  cl[.]obs -> cl[.]inf[.]obs\n  vz[.]obs -> vz[.]inf[.]obs"
+    ),
     class = "pknca_warning_deprecated_parameter"
   )
   o_nca <- suppressWarnings(pk.nca(o_data))
