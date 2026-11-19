@@ -62,11 +62,11 @@ test_that("setExcludeColumn", {
   )
   expect_error(setExcludeColumn(list(data=data.frame(a=1, exclude=FALSE)),
                                 exclude="exclude"),
-               regexp="exclude column must be character vector or something convertable to character without loss of information.",
+               regexp="exclude column must be character vector or something convertible to character without loss of information.",
                info="setExcludeColumn gives error on logical non-NA value")
   expect_error(setExcludeColumn(list(data=data.frame(a=1, exclude=5)),
                                 exclude="exclude"),
-               regexp="exclude column must be character vector or something convertable to character without loss of information.",
+               regexp="exclude column must be character vector or something convertible to character without loss of information.",
                info="setExcludeColumn gives error on non-character value")
 
   # Zero-row data works

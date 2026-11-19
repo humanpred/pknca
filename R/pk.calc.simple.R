@@ -1210,13 +1210,30 @@ add.interval.col("f.int.inf.pred",
 #' Calculate the mean residence time (MRT) for single-dose data or linear
 #' multiple-dose data.
 #'
-#' @details mrt is `aumc/auc - duration.dose/2` where `duration.dose =
-#'   0` for oral administration.
+#' @details mrt is `aumc/auc - MIT` where `MIT` is the mean input time of the
+#'   dose.  `MIT = 0` for oral administration.  For an IV infusion that starts
+#'   at the beginning of the interval, `MIT = duration.dose/2`.
+#'
+#'   When an interval holds more than one dose row (for example, a variable-rate
+#'   infusion given as one row per constant-rate segment, or a bolus plus an
+#'   infusion), the mean input time is the dose-weighted mean of the midpoints
+#'   of the inputs, with times relative to the interval start (the same origin
+#'   as the AUMC): `MIT = sum(dose*(time.dose + duration.dose/2))/sum(dose)`.
+#'   A bolus (`duration.dose = 0`) contributes its dose time.  The result is a
+#'   single value per interval.
 #'
 #' @param auc the AUC from 0 to infinity or 0 to tau
 #' @param aumc the AUMC from 0 to infinity or 0 to tau
 #' @param duration.dose The duration of the dose (usually an infusion duration
-#'   for an IV infusion)
+#'   for an IV infusion).  May be a vector with one value per dose in the
+#'   interval.
+#' @param dose The dose amount(s) in the interval, used to weight the mean input
+#'   time when there is more than one dose.  It is required when
+#'   `duration.dose` has more than one value; with a single dose it does not
+#'   affect the result.
+#' @param time.dose The time(s) of the dose(s) relative to the start of the
+#'   interval (the same origin as `aumc`).  When missing, the dose is assumed to
+#'   be at the interval start (time 0).
 #' @returns the numeric value of the mean residence time
 #' @family Mean residence time
 #' @export
@@ -1335,13 +1352,58 @@ add.interval.col("mrt.sparse.last",
 
 #' @describeIn pk.calc.mrt MRT for an IV infusion
 #' @export
-pk.calc.mrt.iv <- function(auc, aumc, duration.dose) {
-  ret <- aumc/auc - duration.dose/2
+pk.calc.mrt.iv <- function(auc, aumc, duration.dose, dose = NULL, time.dose = NULL) {
+  mit <- pk_mean_input_time(dose, time.dose, duration.dose)
+  ret <- aumc/auc - mit
   mask_zero <- is.na(auc) | auc <= 0
   if (any(mask_zero)) {
     ret[mask_zero] <- NA_real_
   }
+  if (length(ret) != 1) {
+    rlang::abort("MRT must be a single value per interval (auc and aumc must each be one value)", class = "pknca_error_mrt_not_scalar")
+  }
   ret
+}
+
+# The mean input time (MIT) of all of the doses in an interval.
+#
+# The MIT is the dose-weighted mean of the midpoint of each input, with times
+# relative to the interval start (the same origin as the AUMC).  For a single
+# infusion at the start of the interval, it is `duration.dose/2`.  A bolus
+# (`duration.dose = 0`) contributes its dose time.
+#
+# @param dose The dose amounts (used as weights; not required for a single dose).
+#   One value per dose, the same length as `duration.dose`.
+# @param time.dose The dose times relative to the interval start (pk.nca() has
+#   already subtracted the interval start, so do not subtract it again).  One
+#   value per dose, the same length as `duration.dose`.  `NULL` means that the
+#   dose(s) are at the interval start.
+# @param duration.dose The dose durations
+# @returns A scalar mean input time, `NA_real_` when it cannot be determined
+# @noRd
+pk_mean_input_time <- function(dose = NULL, time.dose = NULL, duration.dose) {
+  checkmate::assert_numeric(duration.dose, lower = 0, finite = TRUE)
+  n_dose <- length(duration.dose)
+  if (n_dose == 0) {
+    return(NA_real_)
+  }
+  if (is.null(time.dose)) {
+    time.dose <- rep(0, n_dose)
+  }
+  checkmate::assert_numeric(time.dose, len = n_dose, finite = TRUE)
+  # dose is only used as a weight, so it is only required for more than one dose
+  checkmate::assert_numeric(dose, len = n_dose, lower = 0, finite = TRUE, null.ok = n_dose == 1)
+  
+  midpoint <- time.dose + duration.dose/2
+  if (n_dose == 1) {
+    # The weight does not matter for a single dose
+    return(as.numeric(midpoint))
+  }
+  if (anyNA(dose) || anyNA(midpoint) || sum(dose) <= 0) {
+    # The weights or the input times are unknown
+    return(NA_real_)
+  }
+  as.numeric(sum(dose*midpoint)/sum(dose))
 }
 
 pknca_concept(pk.calc.mrt.iv) <- "mrt"
@@ -1357,7 +1419,7 @@ add.interval.col("mrt.iv.inf.obs",
                  depends=c("aucinf.obs", "aumcinf.obs"),
                  pptestcd_cdisc="MRTIBIFO",
                  pptest_cdisc="MRT Intravasc Infinity Obs",
-                 formula="$MRT_{\\text{iv,obs}} = \\frac{AUMC_{\\infty,\\text{obs}}}{AUC_{\\infty,\\text{obs}}} - \\frac{T_{\\text{inf}}}{2}$")
+                 formula="$MRT_{\\text{iv,obs}} = \\frac{AUMC_{\\infty,\\text{obs}}}{AUC_{\\infty,\\text{obs}}} - \\text{MIT}$")
 
 add.interval.col("mrt.iv.inf.pred",
                  FUN="pk.calc.mrt.iv",
@@ -1369,7 +1431,7 @@ add.interval.col("mrt.iv.inf.pred",
                  depends=c("aucinf.pred", "aumcinf.pred"),
                  pptestcd_cdisc="MRTIBIFP",
                  pptest_cdisc="MRT Intravasc Infinity Pred",
-                 formula="$MRT_{\\text{iv,pred}} = \\frac{AUMC_{\\infty,\\text{pred}}}{AUC_{\\infty,\\text{pred}}} - \\frac{T_{\\text{inf}}}{2}$")
+                 formula="$MRT_{\\text{iv,pred}} = \\frac{AUMC_{\\infty,\\text{pred}}}{AUC_{\\infty,\\text{pred}}} - \\text{MIT}$")
 
 add.interval.col("mrt.iv.last",
                  FUN="pk.calc.mrt.iv",
@@ -1381,7 +1443,7 @@ add.interval.col("mrt.iv.last",
                  depends=c("auclast", "aumclast"),
                  pptestcd_cdisc="MRTIBLST",
                  pptest_cdisc="MRT Intravasc to Last Nonzero Conc",
-                 formula="$MRT_{\\text{iv,last}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} - \\frac{T_{\\text{inf}}}{2}$")
+                 formula="$MRT_{\\text{iv,last}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} - \\text{MIT}$")
 
 add.interval.col("mrt.iv.all",
                  FUN = "pk.calc.mrt.iv",
@@ -1508,16 +1570,21 @@ add.interval.col("mrt.md.inf.pred",
 #' @describeIn pk.calc.mrt MRT for multiple-dose data with nonlinear kinetics
 #'   given as an IV infusion
 #'
-#' @details mrt.ivmd is mrt.md less half of the infusion duration, the same
-#'   correction that mrt.iv applies to the single-dose MRT.  Without it, MRT
-#'   and everything derived from it are high by `duration.dose/2`.
+#' @details mrt.ivmd is mrt.md less the mean input time, the same correction
+#'   that mrt.iv applies to the single-dose MRT (half of the infusion duration
+#'   for a single infusion at the start of the interval).  Without it, MRT and
+#'   everything derived from it are high by the mean input time.
 #'
 #' @export
-pk.calc.mrt.md.iv <- function(auctau, aumctau, aucinf, tau, duration.dose) {
-  ret <- aumctau/auctau + tau*(aucinf-auctau)/auctau - duration.dose/2
+pk.calc.mrt.md.iv <- function(auctau, aumctau, aucinf, tau, duration.dose, dose = NULL, time.dose = NULL) {
+  mit <- pk_mean_input_time(dose, time.dose, duration.dose)
+  ret <- aumctau/auctau + tau*(aucinf-auctau)/auctau - mit
   mask_zero <- is.na(auctau) | auctau <= 0
   if (any(mask_zero)) {
     ret[mask_zero] <- NA_real_
+  }
+  if (length(ret) != 1) {
+    rlang::abort("MRT must be a single value per interval (auctau, aumctau, and aucinf must each be one value)", class = "pknca_error_mrt.md_not_scalar")
   }
   ret
 }
@@ -1534,7 +1601,7 @@ add.interval.col("mrt.ivmd.inf.obs",
                  depends=c("auclast", "aumclast", "aucinf.obs"),
                  pptestcd_cdisc="MRTMO",
                  pptest_cdisc="MRT (IV infusion, MD, AUCinf,obs)",
-                 formula="$MRT_{\\text{ivmd,obs}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{obs}} - AUC_{\\text{last}}}{AUC_{\\text{last}}} - \\frac{T_{\\text{inf}}}{2}$",
+                 formula="$MRT_{\\text{ivmd,obs}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{obs}} - AUC_{\\text{last}}}{AUC_{\\text{last}}} - \\text{MIT}$",
                  selection = list(dosing = c("multiple", "steady_state")))
 
 add.interval.col("mrt.ivmd.inf.pred",
@@ -1547,7 +1614,7 @@ add.interval.col("mrt.ivmd.inf.pred",
                  depends=c("auclast", "aumclast", "aucinf.pred"),
                  pptestcd_cdisc="MRTMP",
                  pptest_cdisc="MRT (IV infusion, MD, AUCinf,pred)",
-                 formula="$MRT_{\\text{ivmd,pred}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{pred}} - AUC_{\\text{last}}}{AUC_{\\text{last}}} - \\frac{T_{\\text{inf}}}{2}$",
+                 formula="$MRT_{\\text{ivmd,pred}} = \\frac{AUMC_{\\text{last}}}{AUC_{\\text{last}}} + \\tau \\cdot \\frac{AUC_{\\infty,\\text{pred}} - AUC_{\\text{last}}}{AUC_{\\text{last}}} - \\text{MIT}$",
                  selection = list(dosing = c("multiple", "steady_state")))
 
 
