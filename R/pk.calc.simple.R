@@ -16,13 +16,18 @@ adj.r.squared <- function(r.sq, n) {
   }
 }
 
-# Set the values of `ret` selected by `mask` to `NA` and add `reason` to its
-# "exclude" attribute, which pk.nca() puts in the exclude column (see
-# combine_exclude_reasons()).  `ret` is unchanged when `mask` selects nothing.
+# Set the values of `ret` selected by `mask` to `NA` and, for a single value,
+# add `reason` to its "exclude" attribute, which pk.nca() puts in the exclude
+# column (see combine_exclude_reasons()).  An attribute describes the whole
+# vector, so a longer result gets none rather than one that would also sit
+# beside its valid values; pk.nca() calls with single values.  `ret` is
+# unchanged when `mask` selects nothing.
 na_with_reason <- function(ret, mask, reason) {
   if (any(mask)) {
     ret[mask] <- NA_real_
-    attr(ret, "exclude") <- paste(c(attr(ret, "exclude"), reason), collapse = "; ")
+    if (length(ret) == 1) {
+      attr(ret, "exclude") <- paste(c(attr(ret, "exclude"), reason), collapse = "; ")
+    }
   }
   ret
 }
@@ -219,9 +224,9 @@ add.interval.col("tmin",
 #'
 #' @inheritParams assert_conc_time
 #' @inheritParams clean.conc.blq
-#' @returns The time of the last observed concentration measurement, or `NA`
-#'   with the reason in its "exclude" attribute when no concentration is above
-#'   zero
+#' @returns The time of the last (`pk.calc.tlast()`) or first
+#'   (`pk.calc.tfirst()`) observed concentration measurement, or `NA` with the
+#'   reason in its "exclude" attribute when no concentration is above zero
 #' @family NCA time parameters
 #' @export
 pk.calc.tlast <- function(conc, time, check=TRUE) {
@@ -289,7 +294,8 @@ add.interval.col("tfirst",
 #'
 #' @inheritParams assert_conc_time
 #' @inheritParams clean.conc.blq
-#' @returns The last observed concentration above the LOQ
+#' @returns The last observed concentration above the LOQ, or `NA` with the
+#'   reason in its "exclude" attribute when all concentrations are missing
 #' @family NCA parameters for concentrations during the intervals
 #' @export
 pk.calc.clast.obs <- function(conc, time, check=TRUE) {
@@ -537,9 +543,10 @@ add.interval.col("thalf.eff.iv.all",
 #' @param auclast the area under the curve from time 0 to the last measurement
 #'   above the limit of quantification
 #' @param aucinf the area under the curve from time 0 to infinity
-#' @returns The numeric value of the AUC percent extrapolated or `NA_real_` if
-#'   any of the following are true `is.na(aucinf)`, `is.na(auclast)`,
-#'   `aucinf <= 0`, or `auclast <= 0`.
+#' @returns The numeric value of the AUC percent extrapolated, or `NA_real_`
+#'   if `aucinf` or `auclast` is `NA` or `aucinf` is zero (a negative value is
+#'   calculated, with a warning).  A result of length one that is `NA` because of missing or unusable data
+#'   has the reason in its "exclude" attribute, which [pk.nca()] reports.
 #' @family Half-life and elimination
 #' @export
 pk.calc.aucpext <- function(auclast, aucinf) {
@@ -829,7 +836,8 @@ add.interval.col("kel.sparse.last",
 #' @param dose the dose administered
 #' @param auc The area under the concentration-time curve.
 #' @returns the numeric value of the total (CL) or observed oral clearance
-#'   (CL/F)
+#'   (CL/F).  A result of length one that is `NA` because of missing or unusable data
+#'   has the reason in its "exclude" attribute, which [pk.nca()] reports.
 #' @details If `dose` is the same length as the other inputs, then the output
 #'   will be the same length as all of the inputs; the function assumes that you
 #'   are calculating for multiple intervals simultaneously.  If the inputs other
@@ -1079,6 +1087,8 @@ add.interval.col("cl.sparse.last",
 #'   method 1
 #' @param auc2 The AUC from 0 to infinity or 0 to tau administered in route or
 #'   method 2
+#' @returns The bioavailability.  A result of length one that is `NA` because of missing or unusable data
+#'   has the reason in its "exclude" attribute, which [pk.nca()] reports.
 #' @export
 pk.calc.f <- function(dose1, auc1, dose2, auc2) {
   ret <- (auc2/dose2)/(auc1/dose1)
@@ -1249,7 +1259,8 @@ add.interval.col("f.int.inf.pred",
 #' @param time.dose The time(s) of the dose(s) relative to the start of the
 #'   interval (the same origin as `aumc`).  When missing, the dose is assumed to
 #'   be at the interval start (time 0).
-#' @returns the numeric value of the mean residence time
+#' @returns the numeric value of the mean residence time.  A result of length one that is `NA` because of missing or unusable data
+#'   has the reason in its "exclude" attribute, which [pk.nca()] reports.
 #' @family Mean residence time
 #' @export
 pk.calc.mrt <- function(auc, aumc) {
@@ -1549,6 +1560,8 @@ add.interval.col("mrt.ivint.inf.obs",
 #' @param aucinf the AUC from time 0 to infinity (typically using single-dose
 #'   data)
 #' @inheritParams assert_dosetau
+#' @returns The mean residence time.  A result of length one that is `NA` because of missing or unusable data
+#'   has the reason in its "exclude" attribute, which [pk.nca()] reports.
 #' @export
 pk.calc.mrt.md <- function(auctau, aumctau, aucinf, tau) {
   pk.calc.mrt.md.iv(
@@ -2129,7 +2142,8 @@ add.interval.col("vss.sparse.last",
 #'
 #' @param auc The area under the curve during the interval
 #' @inheritParams assert_intervaltime_single
-#' @returns The Cav (average concentration during the interval)
+#' @returns The Cav (average concentration during the interval).  A result of length one that is `NA` because of missing or unusable data
+#'   has the reason in its "exclude" attribute, which [pk.nca()] reports.
 #' @family NCA parameters for concentrations during the intervals
 #' @export
 pk.calc.cav <- function(auc, start, end) {
@@ -2303,7 +2317,8 @@ add.interval.col(
 #'
 #' @inheritParams assert_conc_time
 #' @inheritParams assert_intervaltime_single
-#' @returns The concentration when `time == end`.  If none match, or that
+#' @returns The concentration when `time == end` (`pk.calc.ctrough()`) or
+#'   `time == start` (`pk.calc.cstart()`).  If none match, or that
 #'   concentration is missing, then `NA` with the reason in its "exclude"
 #'   attribute
 #' @family NCA parameters for concentrations during the intervals
@@ -2313,6 +2328,8 @@ pk.calc.ctrough <- function(conc, time, end) {
   mask_end <- time %in% end
   if (sum(mask_end) == 1 && !is.na(conc[mask_end])) {
     conc[mask_end]
+  } else if (sum(mask_end) == 0 && length(end) == 1 && is.infinite(end)) {
+    structure(NA_real_, exclude = "The interval has no finite end")
   } else if (sum(mask_end) <= 1) {
     structure(
       if (sum(mask_end) == 1) conc[mask_end] else NA_real_,
@@ -2382,8 +2399,8 @@ add.interval.col("cstart",
 #'
 #' @param cmax The maximum observed concentration
 #' @param ctrough The last concentration in an interval
-#' @return The ratio of cmax to ctrough (if ctrough == 0, NA with the reason in
-#'   its "exclude" attribute)
+#' @return The ratio of cmax to ctrough (if ctrough == 0, NA).  A result of length one that is `NA` because of missing or unusable data
+#'   has the reason in its "exclude" attribute, which [pk.nca()] reports.
 #' @family Multiple-dose PK parameters
 #' @export
 pk.calc.ptr <- function(cmax, ctrough) {
@@ -2463,6 +2480,8 @@ add.interval.col("tlag",
 #' @param cmin The minimum observed concentration
 #' @param cav The average concentration in the interval
 #' @returns The degree of fluctuation around the average concentration.
+#'   A result of length one that is `NA` because of missing or unusable data
+#'   has the reason in its "exclude" attribute, which [pk.nca()] reports.
 #' @family Multiple-dose PK parameters
 #' @export
 pk.calc.deg.fluc <- function(cmax, cmin, cav) {
@@ -2532,7 +2551,7 @@ pk.calc.ceoi <- function(conc, time, duration.dose=NA, check=TRUE) {
     assert_conc_time(conc = conc, time = time)
   }
   if (is.na(duration.dose)) {
-    structure(NA_real_, exclude = "Dose duration is missing")
+    structure(NA_real_, exclude = "Dose duration is missing (or there is no dose in the interval)")
   } else if (all(time != duration.dose) || is.na(conc[time == duration.dose][1])) {
     structure(NA_real_, exclude = "No non-missing concentration at the end of the infusion")
   } else {

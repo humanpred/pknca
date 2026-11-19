@@ -12,8 +12,8 @@ pk.calc.ptr(cmax, ctrough)
 \item{ctrough}{The last concentration in an interval}
 }
 \value{
-The ratio of cmax to ctrough (if ctrough == 0, NA with the reason in
-its "exclude" attribute)
+The ratio of cmax to ctrough (if ctrough == 0, NA).  A result of length one that is \code{NA} because of missing or unusable data
+has the reason in its "exclude" attribute, which \code{\link[=pk.nca]{pk.nca()}} reports.
 }
 \description{
 Determine the peak-to-trough ratio

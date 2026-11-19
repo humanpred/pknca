@@ -15,7 +15,8 @@ pk.calc.clast.obs(conc, time, check = TRUE)
 \item{check}{Run \code{\link[=assert_conc_time]{assert_conc_time()}}?}
 }
 \value{
-The last observed concentration above the LOQ
+The last observed concentration above the LOQ, or \code{NA} with the
+reason in its "exclude" attribute when all concentrations are missing
 }
 \description{
 If all concentrations are missing, \code{NA_real_} is returned.  If all
