@@ -1221,7 +1221,7 @@ the generated intervals:
 ## Bug fixes
 
 * `PKNCAdose()` with a `rate` column now works with more than one dose row
-  (@billdenney; PR number to add).  It stopped with "'length = 2' in coercion
+  (@billdenney, #728).  It stopped with "'length = 2' in coercion
   to 'logical(1)'", because the dose amounts were passed where the name of the
   dose column was expected; one row worked by accident.  Each dose's duration
   is its amount divided by its rate.  A `rate` with no dose amount (a formula
