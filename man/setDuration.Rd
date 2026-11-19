@@ -22,7 +22,9 @@ in the data to use for the duration.}
 
 \item{rate}{(for PKNCAdose objects only) The rate of infusion}
 
-\item{dose}{(for PKNCAdose objects only) The dose amount}
+\item{dose}{(for PKNCAdose objects only) The name of the dose column (the
+default, from the formula), or the dose amounts (a value, or one per
+row); used with \code{rate}}
 }
 \value{
 The object with duration set
