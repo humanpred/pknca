@@ -83,7 +83,7 @@ parse_formula_to_cols <- function(form) {
     form <- try({stats::as.formula(form)}, silent = TRUE)
   }
   if (!inherits(form, "formula")) {
-    rlang::abort("form must be a formula or coercable into one", class = "pknca_error_form_not_formula")
+    rlang::abort("form must be a formula or coercible into one", class = "pknca_error_form_not_formula")
   }
   rhs_raw <- findOperator(form, "~", "right")
   groups_raw <- findOperator(rhs_raw, "|", "right")

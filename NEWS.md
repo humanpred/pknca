@@ -1221,6 +1221,22 @@ the generated intervals:
   or every value missing, stopped the calculation (in `pk.nca()`, "Please
   report a bug ... missing value where TRUE/FALSE needed") and now gives `NA`.
 
+* `mrt.iv.*`, `mrt.ivint.*`, `mrt.ivmd.*`, and everything calculated from them
+  (`vss.iv.*`, `vss.ivint.*`, `vss.ivmd.*`, `kel.iv.*`, `thalf.eff.iv.*`) are
+  now correct, and one value per interval, when an interval has more than one
+  dose row, such as a variable-rate infusion given as one row per constant-rate
+  segment (#694, @billdenney).  Before, the infusion duration of each row was
+  subtracted separately, so `pk.nca()` reported one wrong value per dose row
+  under the same parameter name.  The correction is now the dose-weighted mean
+  input time, `sum(dose*(time.dose + duration.dose/2))/sum(dose)`, with times
+  relative to the interval start.  It is the same as before for a single
+  infusion that starts at the interval start.  It now also accounts for a
+  single dose that starts after the interval start, and for a bolus plus an
+  infusion.  `pk.calc.mrt.iv()` and `pk.calc.mrt.md.iv()` gain the arguments
+  `dose` and `time.dose` (required to weight more than one dose), and they give
+  an error rather than a vector of values when they would return more than one
+  value.
+  
 * Preferred units (`concu_pref`, `doseu_pref`, and the others) with unit
   columns whose units differ between groups no longer stop `PKNCAdata()` with
   "arguments imply differing number of rows: 1, 0" when some groups are
