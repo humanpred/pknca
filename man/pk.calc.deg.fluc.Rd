@@ -20,7 +20,7 @@ pk.calc.swing(cmax, cmin)
 The degree of fluctuation around the average concentration.
 
 The swing above the minimum concentration.  If \code{cmin} is zero, then
-the result is infinity.
+the result is infinity; if \code{cmin} is missing, it is \code{NA}.
 }
 \description{
 Determine the degree of fluctuation

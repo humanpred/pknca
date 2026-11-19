@@ -764,6 +764,9 @@ test_that("pk.calc.deg.fluc", {
 })
 
 test_that("pk.calc.swing", {
+  # A missing cmin (or cmax) gives NA, not an error
+  expect_equal(pk.calc.swing(10, NA), NA_real_)
+  expect_equal(pk.calc.swing(NA, 2), NA_real_)
   expect_equal(pk.calc.swing(100, 10), 900,
                info="Swing math works")
   expect_equal(pk.calc.swing(100, 0), Inf,
@@ -916,4 +919,19 @@ test_that("count.conc and count.conc.measured count imputed concentrations by va
   # A fabricated minimum is above the limit of quantification, so it is counted
   # by both even though it was not measured at that time
   expect_equal(counts("start_cmin"), c(conc = 7, measured = 7))
+})
+
+test_that("swing in pk.nca() with every concentration missing is NA", {
+  # The data checks warn that every concentration is missing; the interval
+  # used to stop with "Please report a bug"
+  res <-
+    suppressWarnings(
+      as.data.frame(pk.nca(PKNCAdata(
+        PKNCAconc(data.frame(id = 1, time = c(0, 2, 4), conc = NA_real_), conc ~ time | id),
+        PKNCAdose(data.frame(id = 1, time = 0, dose = 1), dose ~ time | id),
+        intervals = data.frame(start = 0, end = 4, swing = TRUE)
+      ))),
+      classes = "pknca_warning_all_concentration_missing"
+    )
+  expect_equal(res$PPORRES[res$PPTESTCD == "swing"], NA_real_)
 })

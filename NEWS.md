@@ -1214,12 +1214,19 @@ the generated intervals:
 
 * `pk.calc.tlag()` skips missing concentrations, as `pk.calc.cmax()` and the
   other simple parameters do, and gains a `check` argument like theirs
-  (@billdenney; PR number to add).  Two results change:  a missing value
-  before or between the measured ones gave `NA` (for example
+  (reported by @kawasakin, #723; @billdenney, #727).  Two results change:  a
+  missing value before or between the measured ones gave `NA` (for example
   `pk.calc.tlag(c(NA, 40, 80, 10), c(0, 2, 4, 8))`) and now gives the lag time
   of the measured values (2); and a missing value with no increase after it,
   or every value missing, stopped the calculation (in `pk.nca()`, "Please
   report a bug ... missing value where TRUE/FALSE needed") and now gives `NA`.
+
+* `pk.calc.swing()` gives `NA` for a missing `cmin` or `cmax` instead of
+  stopping with "missing value where TRUE/FALSE needed" (reported by
+  @kawasakin, #723; @billdenney, #727).  In `pk.nca()`, an interval whose
+  concentrations are all missing stopped with "Please report a bug" when
+  `swing` was requested, which stopped the calculation for every subject, and
+  now gives `NA` for that interval.
 
 * `mrt.iv.*`, `mrt.ivint.*`, `mrt.ivmd.*`, and everything calculated from them
   (`vss.iv.*`, `vss.ivint.*`, `vss.ivmd.*`, `kel.iv.*`, `thalf.eff.iv.*`) are
