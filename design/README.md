@@ -13,6 +13,7 @@ This directory contains internal design review documents for the PKNCA package. 
 | [05-future-work.md](05-future-work.md) | Design decisions worth reconsidering, deprecation candidates, breaking changes for v1.0 |
 | [06-potential-bugs.md](06-potential-bugs.md) | Potential bugs, edge cases, and logic issues found during code review |
 | [registry-rules-plan.md](registry-rules-plan.md) | Ratios and metabolite ratios by rule, molar ratios through units, historical parameter names, and SE/DF companions (decisions of 2026-11-13) |
+| [ctrough-predose-plan.md](ctrough-predose-plan.md) | Ctrough as the predose concentration of the dose that starts the interval:  today's `ctrough` and `cstart`, the CDISC, EMA and FDA definitions, every value that would change, and the options (for decision) |
 | [uloq-plan.md](uloq-plan.md) | Concentrations above the upper limit of quantification:  the `uloq` argument, `Inf` as the marker, `PPULOQ`, AUCs not calculated, half-life, and compatibility (for decision) |
 
 ## Audit Date
