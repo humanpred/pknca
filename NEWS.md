@@ -1482,7 +1482,7 @@ the generated intervals:
 * With the `conc.na` option `"drop"` (the default), the `start_predose_conc0`,
   `start_predose`, `start_cmin`, and `start_conc0` imputation methods treat a
   row at the start time with a missing concentration as no measurement, as they
-  treat no row (@billdenney; PR number to add).  They tested only whether a row
+  treat no row (@billdenney, #730).  They tested only whether a row
   existed at the start time, so a missing concentration there stopped the
   imputation and was then dropped.  Each result is now the one for the data
   without that row.  With a numeric `conc.na`, that number is the missing
@@ -1559,7 +1559,7 @@ the generated intervals:
   `clr.*`) add "At least one concentration associated with a collection volume
   was missing" to their exclusion when a collection has a volume and no
   concentration, beside the existing "1 of 4 concentrations are missing"
-  (@billdenney; PR number to add).  Direct calls of `pk.calc.ae()`,
+  (@billdenney, #730).  Direct calls of `pk.calc.ae()`,
   `pk.calc.ertlst()`, `pk.calc.ermax()`, `pk.calc.ertmax()`, and
   `pk.calc.erlst()` return the longer exclusion text as well.  No value
   changes.
