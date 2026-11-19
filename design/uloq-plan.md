@@ -47,8 +47,9 @@ concentration.  AUC is likely incalculable."
   For a result taken from one sample (`cmax`, `cmin`, `ctrough`, `cstart`,
   `clast.obs`, `ceoi`, `c0`) the limit is that sample's; for the others (the
   average concentrations, `clast.pred`) it is the profile's when every sample
-  has the same limit, and `NA` when the limits differ.  The Tobit summary
-  censors each `Inf` at its `PPULOQ`.
+  has the same limit, and the median limit of the group when the limits
+  differ (Bill's decision), rather than `NA`.  The Tobit summary censors
+  each `Inf` at its `PPULOQ`.
 - **Wide format:** the cell is `Inf`, with no `PPULOQ`.  **`summary()`:**
   in the first PR, `NC` with a footnote ("n of N above the upper limit of
   quantification") for a parameter with an `Inf` among its values; in the
