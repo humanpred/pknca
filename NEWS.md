@@ -10,7 +10,7 @@ the dosing including dose amount and route.
 
 * The excretion rates `ertlst`, `ermax`, `ertmax`, and `erlst` are now `NA`
   when a collection with a volume has no concentration, as `ae`, `fe`, and
-  `erint` already were (@billdenney; PR number to add).  They were calculated
+  `erint` already were (@billdenney, #729).  They were calculated
   from the other collections, with the reason "1 of 4 concentrations are
   missing"; the amount in that collection is unknown, so the rate of the
   interval is too.  The reason is unchanged, with "At least one concentration
