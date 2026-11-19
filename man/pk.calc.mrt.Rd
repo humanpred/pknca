@@ -10,11 +10,19 @@ multiple-dose data.}
 \usage{
 pk.calc.mrt(auc, aumc)
 
-pk.calc.mrt.iv(auc, aumc, duration.dose, dose, time.dose)
+pk.calc.mrt.iv(auc, aumc, duration.dose, dose = NULL, time.dose = NULL)
 
 pk.calc.mrt.md(auctau, aumctau, aucinf, tau)
 
-pk.calc.mrt.md.iv(auctau, aumctau, aucinf, tau, duration.dose, dose, time.dose)
+pk.calc.mrt.md.iv(
+  auctau,
+  aumctau,
+  aucinf,
+  tau,
+  duration.dose,
+  dose = NULL,
+  time.dose = NULL
+)
 }
 \arguments{
 \item{auc}{the AUC from 0 to infinity or 0 to tau}
