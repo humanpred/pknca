@@ -2,12 +2,14 @@
 #'
 #' @param parameter Parameter to dose normalize
 #' @param dose Dose in units compatible with the area under the curve
-#' @returns a number for dose normalized AUC
+#' @returns a number for dose normalized AUC, or `NA` with the reason in its
+#'   "exclude" attribute when the dose is missing
 #' @examples
 #' pk.calc.dn(90, 10)
 #' @export
 pk.calc.dn <- function(parameter, dose) {
-  parameter/dose
+  # A missing parameter carries its own reason from its calculation
+  na_with_reason(parameter/dose, mask = !is.na(parameter) & is.na(dose), reason = "Dose is missing")
 }
 
 local({

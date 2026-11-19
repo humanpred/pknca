@@ -12,7 +12,8 @@ pk.calc.ptr(cmax, ctrough)
 \item{ctrough}{The last concentration in an interval}
 }
 \value{
-The ratio of cmax to ctrough (if ctrough == 0, NA)
+The ratio of cmax to ctrough (if ctrough == 0, NA with the reason in
+its "exclude" attribute)
 }
 \description{
 Determine the peak-to-trough ratio

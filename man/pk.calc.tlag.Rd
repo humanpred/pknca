@@ -16,7 +16,9 @@ pk.calc.tlag(conc, time, check = TRUE)
 \item{check}{Run \code{\link[=assert_conc_time]{assert_conc_time()}}?}
 }
 \value{
-The time associated with the first increasing concentration
+The time associated with the first increasing concentration, or
+\code{NA} with the reason in its "exclude" attribute when concentrations never
+increase
 }
 \description{
 Missing concentrations are skipped, as in \code{\link[=pk.calc.cmax]{pk.calc.cmax()}} and the other

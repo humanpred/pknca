@@ -16,12 +16,23 @@ adj.r.squared <- function(r.sq, n) {
   }
 }
 
+# Set the values of `ret` selected by `mask` to `NA` and add `reason` to its
+# "exclude" attribute, which pk.nca() puts in the exclude column (see
+# combine_exclude_reasons()).  `ret` is unchanged when `mask` selects nothing.
+na_with_reason <- function(ret, mask, reason) {
+  if (any(mask)) {
+    ret[mask] <- NA_real_
+    attr(ret, "exclude") <- paste(c(attr(ret, "exclude"), reason), collapse = "; ")
+  }
+  ret
+}
+
 #' Determine maximum observed PK concentration
 #'
 #' @inheritParams assert_conc_time
 #' @param check Run [assert_conc()]?
 #' @return a number for the maximum concentration or NA if all concentrations
-#'   are missing
+#'   are missing, with the reason in its "exclude" attribute
 #' @family NCA parameters for concentrations during the intervals
 #' @export
 pk.calc.cmax <- function(conc, check=TRUE) {
@@ -29,7 +40,7 @@ pk.calc.cmax <- function(conc, check=TRUE) {
     assert_conc(conc = conc)
   }
   if (length(conc) == 0 || all(is.na(conc))) {
-    NA
+    structure(NA, exclude = "All concentrations are missing")
   } else {
     max(conc, na.rm=TRUE)
   }
@@ -61,7 +72,7 @@ pk.calc.cmin <- function(conc, check=TRUE) {
     assert_conc(conc=conc)
   }
   if (length(conc) == 0 || all(is.na(conc))) {
-    NA
+    structure(NA, exclude = "All concentrations are missing")
   } else {
     min(conc, na.rm=TRUE)
   }
@@ -99,7 +110,8 @@ add.interval.col("cmin",
 #' @param first.tmax If there is more than one time point with the maximum value (Cmax or ERmax),
 #'   which time should be selected for Tmax/ERTmax?  If 'TRUE', the first will be selected. If not, then the
 #'   last is considered Tmax/ERTmax.
-#' @returns The time of the maximum concentration
+#' @returns The time of the maximum concentration, or `NA` with the reason in
+#'   its "exclude" attribute when no concentration is above zero
 #' @family NCA time parameters
 #' @examples
 #' conc_data <- Theoph[Theoph$Subject == 1,]
@@ -113,8 +125,10 @@ pk.calc.tmax <- function(conc, time,
   if (check) {
     assert_conc_time(conc = conc, time = time)
   }
-  if (length(conc) == 0 || all(conc %in% c(NA, 0))) {
-    NA
+  if (length(conc) == 0 || all(is.na(conc))) {
+    structure(NA, exclude = "All concentrations are missing")
+  } else if (all(conc %in% c(NA, 0))) {
+    structure(NA, exclude = "No concentration is above zero")
   } else {
     ret <- time[conc %in% pk.calc.cmax(conc, check=FALSE)]
     if (first.tmax) {
@@ -158,7 +172,8 @@ add.interval.col("tmax",
 #' @param first.tmin If there is more than one time point with the minimum value (Cmin),
 #'   which time should be selected for Tmin?  If 'TRUE', the first will be selected. If not,
 #'   then the last is considered Tmin.
-#' @returns The time of the minimum concentration
+#' @returns The time of the minimum concentration, or `NA` with the reason in
+#'   its "exclude" attribute when all concentrations are missing
 #' @family NCA time parameters
 #' @examples
 #' conc_data <- Theoph[Theoph$Subject == 1,]
@@ -173,7 +188,7 @@ pk.calc.tmin <- function(conc, time,
     assert_conc_time(conc = conc, time = time)
   }
   if (length(conc) == 0 || all(is.na(conc))) {
-    NA
+    structure(NA, exclude = "All concentrations are missing")
   } else {
     ret <- time[conc %in% pk.calc.cmin(conc, check=FALSE)]
     if (first.tmin) {
@@ -204,15 +219,19 @@ add.interval.col("tmin",
 #'
 #' @inheritParams assert_conc_time
 #' @inheritParams clean.conc.blq
-#' @returns The time of the last observed concentration measurement
+#' @returns The time of the last observed concentration measurement, or `NA`
+#'   with the reason in its "exclude" attribute when no concentration is above
+#'   zero
 #' @family NCA time parameters
 #' @export
 pk.calc.tlast <- function(conc, time, check=TRUE) {
   if (check) {
     assert_conc_time(conc = conc, time = time)
   }
-  if (all(conc %in% c(NA, 0))) {
-    NA
+  if (all(is.na(conc))) {
+    structure(NA, exclude = "All concentrations are missing")
+  } else if (all(conc %in% c(NA, 0))) {
+    structure(NA, exclude = "No concentration is above zero")
   } else {
     max(time[!(conc %in% c(NA, 0))])
   }
@@ -238,8 +257,10 @@ pk.calc.tfirst <- function(conc, time, check=TRUE) {
   if (check) {
     assert_conc_time(conc, time)
   }
-  if (all(conc %in% c(NA, 0))) {
-    NA
+  if (all(is.na(conc))) {
+    structure(NA, exclude = "All concentrations are missing")
+  } else if (all(conc %in% c(NA, 0))) {
+    structure(NA, exclude = "No concentration is above zero")
   } else {
     min(time[!(conc %in% c(NA, 0))])
   }
@@ -276,7 +297,7 @@ pk.calc.clast.obs <- function(conc, time, check=TRUE) {
     assert_conc_time(conc = conc, time = time)
   }
   if (all(is.na(conc))) {
-    NA_real_
+    structure(NA_real_, exclude = "All concentrations are missing")
   } else if (all(conc %in% c(0, NA))) {
     0
   } else {
@@ -557,7 +578,7 @@ pk.calc.aucpext <- function(auclast, aucinf) {
     )
   ret[mask_calc] <-
     100*(1-auclast[mask_calc]/aucinf[mask_calc])
-  ret
+  na_with_reason(ret, mask = !mask_na & aucinf %in% 0, reason = "AUCinf is zero")
 }
 
 pknca_concept(pk.calc.aucpext) <- "auc_extrapolation"
@@ -823,17 +844,14 @@ add.interval.col("kel.sparse.last",
 pk.calc.cl <- function(dose, auc) {
   # sum() of nothing is 0, which would be a wrong answer, not a missing one
   if (length(dose) == 0) {
-    return(NA_real_)
+    return(structure(NA_real_, exclude = "No dose in the interval"))
   }
   if (length(auc) == 1) {
     dose <- sum(dose)
   }
   ret <- dose/auc
-  mask_zero <- !is.na(auc) & (auc <= 0)
-  if (any(mask_zero)) {
-    ret[mask_zero] <- NA_real_
-  }
-  ret
+  ret <- na_with_reason(ret, mask = !is.na(auc) & is.na(dose), reason = "Dose is missing")
+  na_with_reason(ret, mask = !is.na(auc) & (auc <= 0), reason = "AUC is zero or negative")
 }
 
 pknca_concept(pk.calc.cl) <- "clearance"
@@ -1064,14 +1082,11 @@ add.interval.col("cl.sparse.last",
 #' @export
 pk.calc.f <- function(dose1, auc1, dose2, auc2) {
   ret <- (auc2/dose2)/(auc1/dose1)
-  mask_zero <-
-    is.na(auc1)  | (auc1 <= 0) |
-    is.na(dose2) | (dose2 <= 0) |
-    is.na(dose1) | (dose1 <= 0)
-  if (any(mask_zero)) {
-    ret[mask_zero] <- NA_real_
-  }
-  ret
+  # A missing AUC carries its own reason from its calculation
+  ret[is.na(auc1)] <- NA_real_
+  ret <- na_with_reason(ret, mask = is.na(dose1) | is.na(dose2), reason = "Dose is missing")
+  ret <- na_with_reason(ret, mask = (!is.na(dose1) & dose1 <= 0) | (!is.na(dose2) & dose2 <= 0), reason = "Dose is zero or negative")
+  na_with_reason(ret, mask = !is.na(auc1) & auc1 <= 0, reason = "AUC is zero or negative")
 }
 
 pknca_concept(pk.calc.f) <- "bioavailability"
@@ -1354,11 +1369,11 @@ add.interval.col("mrt.sparse.last",
 #' @export
 pk.calc.mrt.iv <- function(auc, aumc, duration.dose, dose = NULL, time.dose = NULL) {
   mit <- pk_mean_input_time(dose, time.dose, duration.dose)
-  ret <- aumc/auc - mit
-  mask_zero <- is.na(auc) | auc <= 0
-  if (any(mask_zero)) {
-    ret[mask_zero] <- NA_real_
-  }
+  ret <- aumc/auc - as.numeric(mit)
+  # A missing AUC carries its own reason from its calculation
+  ret[is.na(auc)] <- NA_real_
+  ret <- na_with_reason(ret, mask = !is.na(auc) & is.na(mit), reason = attr(mit, "exclude"))
+  ret <- na_with_reason(ret, mask = !is.na(auc) & auc <= 0, reason = "AUC is zero or negative")
   if (length(ret) != 1) {
     rlang::abort("MRT must be a single value per interval (auc and aumc must each be one value)", class = "pknca_error_mrt_not_scalar")
   }
@@ -1380,12 +1395,13 @@ pk.calc.mrt.iv <- function(auc, aumc, duration.dose, dose = NULL, time.dose = NU
 #   dose(s) are at the interval start.
 # @param duration.dose The dose durations
 # @returns A scalar mean input time, `NA_real_` when it cannot be determined
+#   (with the reason in its "exclude" attribute)
 # @noRd
 pk_mean_input_time <- function(dose = NULL, time.dose = NULL, duration.dose) {
   checkmate::assert_numeric(duration.dose, lower = 0, finite = TRUE)
   n_dose <- length(duration.dose)
   if (n_dose == 0) {
-    return(NA_real_)
+    return(structure(NA_real_, exclude = "No dose in the interval"))
   }
   if (is.null(time.dose)) {
     time.dose <- rep(0, n_dose)
@@ -1395,13 +1411,15 @@ pk_mean_input_time <- function(dose = NULL, time.dose = NULL, duration.dose) {
   checkmate::assert_numeric(dose, len = n_dose, lower = 0, finite = TRUE, null.ok = n_dose == 1)
   
   midpoint <- time.dose + duration.dose/2
+  if (anyNA(midpoint)) {
+    return(structure(NA_real_, exclude = "A dose time or duration is missing"))
+  }
   if (n_dose == 1) {
     # The weight does not matter for a single dose
     return(as.numeric(midpoint))
   }
-  if (anyNA(dose) || anyNA(midpoint) || sum(dose) <= 0) {
-    # The weights or the input times are unknown
-    return(NA_real_)
+  if (anyNA(dose) || sum(dose) <= 0) {
+    return(structure(NA_real_, exclude = "A dose amount is missing, or the doses sum to zero"))
   }
   as.numeric(sum(dose*midpoint)/sum(dose))
 }
@@ -1578,11 +1596,12 @@ add.interval.col("mrt.md.inf.pred",
 #' @export
 pk.calc.mrt.md.iv <- function(auctau, aumctau, aucinf, tau, duration.dose, dose = NULL, time.dose = NULL) {
   mit <- pk_mean_input_time(dose, time.dose, duration.dose)
-  ret <- aumctau/auctau + tau*(aucinf-auctau)/auctau - mit
-  mask_zero <- is.na(auctau) | auctau <= 0
-  if (any(mask_zero)) {
-    ret[mask_zero] <- NA_real_
-  }
+  ret <- aumctau/auctau + tau*(aucinf-auctau)/auctau - as.numeric(mit)
+  # A missing AUC carries its own reason from its calculation
+  ret[is.na(auctau)] <- NA_real_
+  ret <- na_with_reason(ret, mask = !is.na(auctau) & is.na(tau), reason = "The dosing interval (tau) is not known")
+  ret <- na_with_reason(ret, mask = !is.na(auctau) & is.na(mit), reason = attr(mit, "exclude"))
+  ret <- na_with_reason(ret, mask = !is.na(auctau) & auctau <= 0, reason = "AUC is zero or negative")
   if (length(ret) != 1) {
     rlang::abort("MRT must be a single value per interval (auctau, aumctau, and aucinf must each be one value)", class = "pknca_error_mrt.md_not_scalar")
   }
@@ -2115,11 +2134,8 @@ add.interval.col("vss.sparse.last",
 #' @export
 pk.calc.cav <- function(auc, start, end) {
   ret <- auc/(end-start)
-  mask_zero <- is.na(end) | is.na(start) | end == start
-  if (any(mask_zero)) {
-    ret[mask_zero] <- NA_real_
-  }
-  ret
+  ret <- na_with_reason(ret, mask = is.na(end) | is.na(start), reason = "The interval start or end is missing")
+  na_with_reason(ret, mask = !is.na(end) & !is.na(start) & end == start, reason = "The interval has zero duration")
 }
 
 pknca_concept(pk.calc.cav) <- "average_conc"
@@ -2287,16 +2303,21 @@ add.interval.col(
 #'
 #' @inheritParams assert_conc_time
 #' @inheritParams assert_intervaltime_single
-#' @returns The concentration when `time == end`.  If none match, then `NA`
+#' @returns The concentration when `time == end`.  If none match, or that
+#'   concentration is missing, then `NA` with the reason in its "exclude"
+#'   attribute
 #' @family NCA parameters for concentrations during the intervals
 #' @export
 pk.calc.ctrough <- function(conc, time, end) {
   assert_conc_time(conc = conc, time = time)
   mask_end <- time %in% end
-  if (sum(mask_end) == 1) {
+  if (sum(mask_end) == 1 && !is.na(conc[mask_end])) {
     conc[mask_end]
-  } else if (sum(mask_end) == 0) {
-    NA_real_
+  } else if (sum(mask_end) <= 1) {
+    structure(
+      if (sum(mask_end) == 1) conc[mask_end] else NA_real_,
+      exclude = "No non-missing concentration at the end of the interval"
+    )
   } else {
     # This should be impossible as assert_conc_time should catch
     # duplicates.
@@ -2327,10 +2348,13 @@ add.interval.col("ctrough",
 pk.calc.cstart <- function(conc, time, start) {
   assert_conc_time(conc = conc, time = time)
   mask_start <- time %in% start
-  if (sum(mask_start) == 1) {
+  if (sum(mask_start) == 1 && !is.na(conc[mask_start])) {
     conc[mask_start]
-  } else if (sum(mask_start) == 0) {
-    NA_real_
+  } else if (sum(mask_start) <= 1) {
+    structure(
+      if (sum(mask_start) == 1) conc[mask_start] else NA_real_,
+      exclude = "No non-missing concentration at the start of the interval"
+    )
   } else {
     # This should be impossible as assert_conc_time should catch
     # duplicates.
@@ -2358,13 +2382,13 @@ add.interval.col("cstart",
 #'
 #' @param cmax The maximum observed concentration
 #' @param ctrough The last concentration in an interval
-#' @return The ratio of cmax to ctrough (if ctrough == 0, NA)
+#' @return The ratio of cmax to ctrough (if ctrough == 0, NA with the reason in
+#'   its "exclude" attribute)
 #' @family Multiple-dose PK parameters
 #' @export
 pk.calc.ptr <- function(cmax, ctrough) {
   ret <- cmax/ctrough
-  ret[ctrough %in% 0] <- NA_real_
-  ret
+  na_with_reason(ret, mask = ctrough %in% 0, reason = "Ctrough is zero")
 }
 
 pknca_concept(pk.calc.ptr) <- "fluctuation"
@@ -2394,7 +2418,9 @@ add.interval.col("ptr",
 #'
 #' @inheritParams assert_conc_time
 #' @param check Run [assert_conc_time()]?
-#' @returns The time associated with the first increasing concentration
+#' @returns The time associated with the first increasing concentration, or
+#'   `NA` with the reason in its "exclude" attribute when concentrations never
+#'   increase
 #' @family NCA time parameters
 #' @export
 pk.calc.tlag <- function(conc, time, check = TRUE) {
@@ -2407,8 +2433,10 @@ pk.calc.tlag <- function(conc, time, check = TRUE) {
   mask.increase <- c(conc[-1] > conc[-length(conc)], FALSE)
   if (any(mask.increase)) {
     time[mask.increase][1]
+  } else if (length(conc) == 0) {
+    structure(NA_real_, exclude = "All concentrations are missing")
   } else {
-    NA_real_
+    structure(NA_real_, exclude = "Concentrations never increase")
   }
 }
 
@@ -2439,11 +2467,9 @@ add.interval.col("tlag",
 #' @export
 pk.calc.deg.fluc <- function(cmax, cmin, cav) {
   ret <- 100*(cmax - cmin)/cav
-  mask_zero <- is.na(cav) | cav == 0
-  if (any(mask_zero)) {
-    ret[mask_zero] <- NA_real_
-  }
-  ret
+  # A missing cav carries its own reason from its calculation
+  ret[is.na(cav)] <- NA_real_
+  na_with_reason(ret, mask = cav %in% 0, reason = "Cav is zero")
 }
 
 pknca_concept(pk.calc.deg.fluc) <- "fluctuation"
@@ -2497,7 +2523,8 @@ add.interval.col("swing",
 #' @param duration.dose The duration for the dosing administration (typically
 #'   from IV infusion)
 #' @returns The concentration at the end of the infusion, `NA` if
-#'   `duration.dose` is `NA`, or `NA` if all `time != duration.dose`
+#'   `duration.dose` is `NA`, or `NA` if all `time != duration.dose` or that
+#'   concentration is missing; an `NA` has the reason in its "exclude" attribute
 #' @family NCA parameters for concentrations during the intervals
 #' @export
 pk.calc.ceoi <- function(conc, time, duration.dose=NA, check=TRUE) {
@@ -2505,9 +2532,9 @@ pk.calc.ceoi <- function(conc, time, duration.dose=NA, check=TRUE) {
     assert_conc_time(conc = conc, time = time)
   }
   if (is.na(duration.dose)) {
-    NA_real_
-  } else if (all(time != duration.dose)) {
-    NA_real_
+    structure(NA_real_, exclude = "Dose duration is missing")
+  } else if (all(time != duration.dose) || is.na(conc[time == duration.dose][1])) {
+    structure(NA_real_, exclude = "No non-missing concentration at the end of the infusion")
   } else {
     conc[time == duration.dose][1]
   }
@@ -2663,13 +2690,14 @@ add.interval.col(
 #' Extract the dose used for calculations
 #'
 #' @inheritParams pk.calc.cl
-#' @returns The total dose for an interval
+#' @returns The total dose for an interval, or `NA` with the reason in its
+#'   "exclude" attribute when there is no dose or a dose is missing
 #' @export
 pk.calc.totdose <- function(dose) {
   if (length(dose) == 0) {
-    return(NA_real_)
+    return(structure(NA_real_, exclude = "No dose in the interval"))
   }
-  sum(dose)
+  na_with_reason(sum(dose), mask = anyNA(dose), reason = "Dose is missing")
 }
 
 pknca_concept(pk.calc.totdose) <- "total_dose"

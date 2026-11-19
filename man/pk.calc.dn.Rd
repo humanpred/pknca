@@ -12,7 +12,8 @@ pk.calc.dn(parameter, dose)
 \item{dose}{Dose in units compatible with the area under the curve}
 }
 \value{
-a number for dose normalized AUC
+a number for dose normalized AUC, or \code{NA} with the reason in its
+"exclude" attribute when the dose is missing
 }
 \description{
 Determine dose normalized NCA parameter

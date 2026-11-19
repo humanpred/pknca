@@ -18,7 +18,9 @@ pk.calc.tfirst(conc, time, check = TRUE)
 \item{check}{Run \code{\link[=assert_conc_time]{assert_conc_time()}}?}
 }
 \value{
-The time of the last observed concentration measurement
+The time of the last observed concentration measurement, or \code{NA}
+with the reason in its "exclude" attribute when no concentration is above
+zero
 }
 \description{
 \code{NA} will be returned if all \code{conc} are \code{NA} or 0.
