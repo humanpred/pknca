@@ -8,6 +8,16 @@ the dosing including dose amount and route.
 
 ## Breaking changes
 
+* The excretion rates `ertlst`, `ermax`, `ertmax`, and `erlst` are now `NA`
+  when a collection with a volume has no concentration, as `ae`, `fe`, and
+  `erint` already were (@billdenney, #729).  They were calculated
+  from the other collections, with the reason "1 of 4 concentrations are
+  missing"; the amount in that collection is unknown, so the rate of the
+  interval is too.  The reason is unchanged, with "At least one concentration
+  associated with a collection volume was missing" beside it.  A collection
+  missing both its concentration and its volume, or a known concentration
+  with a missing volume, leaves the rates as they were.
+
 * Parameter names and descriptions follow one style, so some column headers of
   `summary()` and some descriptions change (@billdenney):
   * Pretty names write lambda.z as math (`$\lambda_z$`), including "Number of
