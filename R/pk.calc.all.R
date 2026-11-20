@@ -985,7 +985,8 @@ bind_interval_result <- function(interval_cols, calculated) {
 # result wins and clears everything.  Documented in
 # vignettes/v80-writing-parameter-functions.Rmd.
 combine_exclude_reasons <- function(from_inputs, from_result) {
-  reasons <- stats::na.omit(c(from_inputs, from_result))
+  # A reason that reaches the result through more than one input is given once
+  reasons <- unique(stats::na.omit(c(from_inputs, from_result)))
   if (identical(from_result, "DO NOT EXCLUDE")) {
     NA_character_
   } else if (length(reasons) > 0) {
