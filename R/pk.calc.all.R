@@ -555,6 +555,24 @@ impute_conc_time <- function(impute_funs, conc, time, start, end,
   impute_data
 }
 
+# The group's data with the part within the interval (from `start` to `end`,
+# inclusive) replaced by the interval's imputed data, in time order.  `group`
+# and `imputed` are lists of the per-observation vectors named `conc`, `time`,
+# `volume`, and `duration.conc`; one that is NULL in either is NULL in the
+# result.  A group observation with a missing time is kept, as it is not within
+# the interval.
+impute_group_data <- function(group, imputed, start, end) {
+  mask_outside <- !((group$time >= start & group$time <= end) %in% TRUE)
+  ret <- list()
+  for (current_name in names(group)) {
+    if (!is.null(group[[current_name]]) && !is.null(imputed[[current_name]])) {
+      ret[[current_name]] <- c(group[[current_name]][mask_outside], imputed[[current_name]])
+    }
+  }
+  time_order <- order(ret$time)
+  lapply(ret, `[`, time_order)
+}
+
 # The values given to pk.nca.interval() one per observation, as a data.frame
 # whose rows imputation adds and drops with their observation (see
 # impute_align_obs()), and the value each column takes for an observation that
@@ -1103,6 +1121,19 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
     if ("lloq" %in% names(impute_data)) lloq <- impute_data$lloq
     conc <- impute_data$conc
     time <- impute_data$time
+    # The interval AUCs read the group's data, which reaches past the interval
+    # for the interpolation at its ends; within the interval they read the
+    # imputed data, as every other parameter does.
+    group_imputed <-
+      impute_group_data(
+        group = list(conc = conc.group, time = time.group, volume = volume.group, duration.conc = duration.conc.group),
+        imputed = list(conc = conc, time = time, volume = volume, duration.conc = duration.conc),
+        start = interval$start[1], end = interval$end[1]
+      )
+    conc.group <- group_imputed$conc
+    time.group <- group_imputed$time
+    volume.group <- group_imputed$volume
+    duration.conc.group <- group_imputed$duration.conc
     if (has_sparse_conc) {
       impute_sparse <-
         impute_conc_time(
