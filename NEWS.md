@@ -1212,6 +1212,41 @@ the generated intervals:
 
 ## Bug fixes
 
+* Arguments that must be one value are checked, so a zero-length or longer
+  value gives a classed error naming the argument instead of an R error such
+  as "argument is of length zero" or "invalid 'x' length" (@billdenney).
+  `pk.nca()` always gives these one value, so its results do not change.
+  The checks and their classes:
+  - `lambda.z` and `clast` of the AUCinf, AUMCinf, and AUCint functions
+    (`pknca_error_lambdaz_invalid`, `pknca_error_clast_invalid`), and the
+    half-life inputs of the sparse AUCinf and AUMCinf functions
+    (`pknca_error_lambdaz_invalid`);
+  - `c0` and the AUC or AUMC of the IV corrections (`pk.calc.auciv()` and its
+    siblings; `pknca_error_c0_invalid`, `pknca_error_auxc_invalid`);
+  - `cmax` and `cmin` of `pk.calc.swing()`, `duration.dose` of
+    `pk.calc.ceoi()`, and `tmax` and `tlast` of `pk.calc.half.life()`;
+  - `not_calculated` and `not_requested` of `summary()`, and a summary
+    function (`PKNCA.set.summary(point = )`) that returns more than one value
+    (`pknca_error_summary_string_invalid`,
+    `pknca_error_summary_point_invalid`);
+  - `default` and `check` of `PKNCA.options()`
+    (`pknca_error_options_flag_invalid`), `scaling` of
+    `be_fit_model_single()` (`pknca_error_be_scaling_invalid`), and the
+    `subject`, `period`, and `sequence` columns of `be_dataset()`
+    (`pknca_error_be_column_invalid`);
+  - a zero-length unit (`pknca_error_units_zero_length`), and a zero-length
+    `tss.fraction`, `min.points`, or `level` of the time to steady state
+    (`pknca_error_tss_argument_invalid`).
+
+  Four calls that stopped now give a result:  `pk.calc.half.life()` with
+  `tmax = NA` gives `NA` with the reason "Tmax is missing"; the sparse
+  AUCinf and AUMCinf with `lambda.z.n.points = NA` give the estimate without
+  its standard error and warn (`pknca_warning_sparse_lambda_z_points`);
+  `be_dataset()` of results whose concentration data have no groups looks
+  for the subject column by name, as for a data frame, and says which
+  names it tried when none is there; and `summary()` with
+  `not_calculated = NA` works when the summary counts subjects.
+
 * `mrt.iv.*`, `mrt.ivint.*`, `mrt.ivmd.*`, and everything calculated from them
   (`vss.iv.*`, `vss.ivint.*`, `vss.ivmd.*`, `kel.iv.*`, `thalf.eff.iv.*`) are
   now correct, and one value per interval, when an interval has more than one
