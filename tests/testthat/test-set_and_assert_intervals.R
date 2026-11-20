@@ -401,3 +401,31 @@ test_that("pk.nca() completes intervals assigned directly or set before a parame
   expect_equal(d_res$PPTESTCD, c("cmax", "cmin"))
   expect_equal(d_res$PPORRES, c(8, 0))
 })
+
+test_that("a table with no rows is refused by PKNCAdata() and accepted by set_intervals()", {
+  d_conc <- data.frame(id = 1, time = c(0, 1, 2, 4, 8), conc = c(0, 6, 8, 4, 2))
+  o_conc <- PKNCAconc(d_conc, conc ~ time | id)
+  intervals <- data.frame(start = 0, end = 8, cmax = TRUE)
+  expect_error(
+    PKNCAdata(o_conc, intervals = intervals[0, ]),
+    class = "pknca_error_interval_no_rows",
+    regexp = "interval specification has no rows"
+  )
+  o_data <- PKNCAdata(o_conc, intervals = intervals)
+  # set_intervals() stores the zero-row table as given
+  o_data_none <- set_intervals(o_data, intervals[0, ])
+  expect_identical(o_data_none$intervals, intervals[0, ])
+  expect_warning(
+    d_res <- as.data.frame(pk.nca(o_data_none)),
+    regexp = "No intervals given; no calculations will be done."
+  )
+  expect_equal(nrow(d_res), 0)
+  # So is a zero-row table assigned directly
+  o_data_direct <- o_data
+  o_data_direct$intervals <- intervals[0, ]
+  expect_warning(
+    d_res_direct <- as.data.frame(pk.nca(o_data_direct)),
+    regexp = "No intervals given; no calculations will be done."
+  )
+  expect_equal(nrow(d_res_direct), 0)
+})
