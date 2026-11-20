@@ -136,9 +136,13 @@ pknca_concept(pk.calc.auciv) <- "auc"
 #'   starting from \eqn{C_0}, which is back-extrapolated with the methods of
 #'   [pk.calc.c0()] from the concentrations after the dose that are within the
 #'   interval and before the next dose (with BLQ and missing concentrations
-#'   handled as the AUCint handles them).  A concentration measured at the dose
-#'   time is taken to be measured before the dose, as for
-#'   [interp.extrap.conc.dose()], so it is not used as \eqn{C_0}.
+#'   handled as the AUCint handles them).  After an earlier dose, a
+#'   concentration measured at the dose time is taken to be measured before the
+#'   dose (the trough), as for [interp.extrap.conc.dose()], so it is not used as
+#'   \eqn{C_0}.  At the first dose there is no profile before it, so a nonzero
+#'   concentration measured at the dose time is \eqn{C_0}, as for
+#'   [pk.calc.c0()] and `aucivlast`:  the AUXCint already starts from it and is
+#'   returned unchanged.
 #'
 #'   An interval that starts at an IV infusion has nothing to back-extrapolate,
 #'   so the AUXCint is returned unchanged; an interval that does not start at an
@@ -193,6 +197,16 @@ pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extra
     clean.conc.blq(
       conc = conc[mask_window], time = time[mask_window], options = options, check = FALSE
     )
+  # The first dose has no profile before it, so a nonzero concentration
+  # measured at its time is the concentration just after the bolus, C0, as for
+  # pk.calc.c0() and aucivlast.  The AUXCint already starts from it, so it is
+  # the AUXCint unchanged.  After an earlier dose, that concentration is the
+  # trough of the profile before the dose.
+  earlier_dose <- any(!is.na(time.dose) & time.dose < start)
+  conc_at_start <- data$conc[data$time == start]
+  if (!earlier_dose && length(conc_at_start) == 1 && !(conc_at_start %in% 0)) {
+    return(auxc)
+  }
   # The profile after the dose at the start of the interval:  within the
   # interval and before the next dose
   next_dose <- min(c(time.dose[!is.na(time.dose) & time.dose > start], Inf))
@@ -510,6 +524,16 @@ add.interval.col(
 #'   describe the observed part of `auciv` (it either cannot be calculated or,
 #'   for the `aucint` family, already extrapolates back to time 0 with
 #'   `conc.origin`), so `NA` is returned.
+#'
+#'   When `auciv` is less than `auc` by more than `sqrt(.Machine$double.eps)`
+#'   times the larger of the two, the concentration measured at the dose time is
+#'   above the C0 that `auciv` used, and the result is `NA` with that reason and
+#'   a `pknca_warning_auciv_pbext_negative` warning; within the tolerance, the
+#'   result is 0.  In [pk.nca()] only the interval forms give this, after an
+#'   earlier dose, where the measured value is the trough and C0 is
+#'   back-extrapolated.  The other forms use a nonzero measured value at the
+#'   dose time as C0 (the first method of [pk.calc.c0()]), so they reach it only
+#'   when called directly with an `auciv` from a lower `c0`.
 #' @param auc The AUC calculated without C0 back-extrapolation 
 #' @param auciv The AUC calculated using `c0`
 #' @returns `pk.calc.auciv_pctbackextrap`: The AUC percent back-extrapolated
@@ -534,7 +558,28 @@ pk.calc.auciv_pbext <- function(conc, time, auc, auciv, ..., options = list(), c
       )
     )
   }
-  if (!is.na(auciv) && !is.na(auc) && auciv < auc){rlang::abort("auciv must be >= auc; back-extrapolation cannot be negative.")}
+  if (!is.na(auciv) && !is.na(auc) && auciv < auc) {
+    if (abs(auc - auciv) <= sqrt(.Machine$double.eps) * max(abs(auc), abs(auciv))) {
+      # Floating-point noise in two equal AUCs:  nothing is back-extrapolated
+      return(0)
+    }
+    # The AUC without C0 starts from the concentration measured at the dose
+    # time, and that concentration is above the C0 that auciv used
+    rlang::warn(
+      paste(
+        "The AUC with C0 is less than the AUC without it:  the concentration",
+        "measured at the dose time is above C0, so the percent back-extrapolated",
+        "is not calculated"
+      ),
+      class = "pknca_warning_auciv_pbext_negative"
+    )
+    return(
+      structure(
+        NA_real_,
+        exclude = "The concentration measured at the dose time is above C0"
+      )
+    )
+  }
   100*(1 - auc/auciv)
 }
 
