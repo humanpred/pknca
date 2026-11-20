@@ -950,8 +950,11 @@ bind_interval_result <- function(interval_cols, calculated) {
 # result wins and clears everything.  Documented in
 # vignettes/v80-writing-parameter-functions.Rmd.
 combine_exclude_reasons <- function(from_inputs, from_result) {
-  # A reason that reaches the result through more than one input is given once
-  reasons <- unique(stats::na.omit(c(from_inputs, from_result)))
+  # Each reason is given once, in the order it first appears, including when it
+  # reaches the result through more than one input:  an input's reasons are
+  # already joined with "; ", so they are split before being compared.
+  reasons <- as.character(stats::na.omit(c(from_inputs, from_result)))
+  reasons <- unique(unlist(strsplit(reasons, split = "; ", fixed = TRUE)))
   if (identical(from_result, "DO NOT EXCLUDE")) {
     NA_character_
   } else if (length(reasons) > 0) {
@@ -1245,7 +1248,8 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
     from_sparse <- dispatch[[n]]$sparse
     if (dispatch[[n]]$calculable) {
       call_args <- list()
-      exclude_from_argument <- character(0)
+      # The exclusion reasons of the inputs, by the argument they are given to
+      exclude_from_argument <- list()
       # Prepare to call the function by setting up its arguments.
       arg_spec <- parameter_arg_spec(n, sparse = dispatch[[n]]$sparse)
       arglist <- arg_spec$arglist
@@ -1271,7 +1275,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
             # argument, because test and reference would then be the same value
             # and the result degenerate (f would always be 1).
             call_args[[arg_formal]] <- computed_value[[target]]
-            exclude_from_argument <- c(exclude_from_argument, computed_exclude[[target]])
+            exclude_from_argument[[arg_formal]] <- computed_exclude[[target]]
           } else {
             rlang::abort(
               sprintf(
@@ -1302,8 +1306,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
           # A parameter calculated earlier in this interval carries its
           # exclusion into anything calculated from it
           call_args[[arg_formal]] <- computed_value[[arg_mapped]]
-          exclude_from_argument <-
-            c(exclude_from_argument, computed_exclude[[arg_mapped]])
+          exclude_from_argument[[arg_formal]] <- computed_exclude[[arg_mapped]]
         } else if (!is.null(interval[[arg_mapped]])) {
           call_args[[arg_formal]] <- interval[[arg_mapped]]
         } else {
@@ -1356,8 +1359,15 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       # The handling of the exclude column is documented in the
       # "vignettes/v80-writing-parameter-functions.Rmd" vignette.  Document any
       # changes to this section of code there.
+      # A calculation may name arguments that did not enter its result
+      # ("exclude_unused_args"), and their exclusion reasons do not apply to it
+      args_used <- setdiff(names(exclude_from_argument), attr(tmp_result, "exclude_unused_args"))
+      attr(tmp_result, "exclude_unused_args") <- NULL
       exclude_reason <-
-        combine_exclude_reasons(exclude_from_argument, attr(tmp_result, "exclude"))
+        combine_exclude_reasons(
+          unlist(exclude_from_argument[args_used], use.names = FALSE),
+          attr(tmp_result, "exclude")
+        )
       # The handling of the method column (PPANMETH).  Not every calculation
       # function sets a "method" attribute at run time; when one does not, but
       # the parameter's own registration documents a `formula_note` (e.g.

@@ -674,16 +674,11 @@ test_that("aucint.inf.* is NA past Tlast when the half-life is not estimable", {
   reason_halflife <- res$exclude[res$PPTESTCD %in% "half.life"]
   expect_match(reason_halflife, "^Too few points for half-life calculation")
   # The .pred form receives the half-life's reason through both lambda.z and
-  # clast.pred
-  expected_exclude <-
-    c(
-      aucint.inf.obs = paste(reason_halflife, "the half-life is NA", sep = "; "),
-      aucint.inf.pred = paste(reason_halflife, reason_halflife, "the half-life is NA", sep = "; ")
-    )
-  for (param in names(expected_exclude)) {
+  # clast.pred, and gives it once
+  for (param in c("aucint.inf.obs", "aucint.inf.pred")) {
     row <- res[res$PPTESTCD %in% param, ]
     expect_equal(row$PPORRES, NA_real_, info = param)
-    expect_equal(row$exclude, expected_exclude[[param]], info = param)
+    expect_equal(row$exclude, paste(reason_halflife, "the half-life is NA", sep = "; "), info = param)
   }
   # AUCall needs no half-life
   expect_equal(
@@ -726,16 +721,10 @@ test_that("an interval to infinity needs the half-life only when it ends after T
       expect_equal(row$exclude, NA_character_, info = paste(param, end))
     }
     # After the last sample, the half-life is needed.  The .pred forms receive
-    # its reason through both lambda.z and clast.pred.
+    # its reason through both lambda.z and clast.pred, and give it once.
     row <- res[res$PPTESTCD %in% param & res$end %in% 48, ]
-    expected_exclude <-
-      if (endsWith(param, ".pred")) {
-        paste(reason_halflife, reason_halflife, "the half-life is NA", sep = "; ")
-      } else {
-        paste(reason_halflife, "the half-life is NA", sep = "; ")
-      }
     expect_equal(row$PPORRES, NA_real_, info = param)
-    expect_equal(row$exclude, expected_exclude, info = param)
+    expect_equal(row$exclude, paste(reason_halflife, "the half-life is NA", sep = "; "), info = param)
   }
   expect_equal(
     res$PPORRES[res$PPTESTCD %in% "aucint.last" & res$end %in% c(12, 24)],

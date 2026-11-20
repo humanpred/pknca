@@ -1062,23 +1062,84 @@ auciv_inf_results <- function(d_conc, d_dose, intervals, route = "intravascular"
 }
 
 test_that("aucivint.inf.* give each reason for exclusion once, and none for the half-life it does not use", {
-  # Too few points for a half-life
+  # Too few points for a half-life, and an interval that ends at the last
+  # sample, so aucint.inf.obs does not need one
   d_conc <- data.frame(id = 1, time = c(0, 1, 2), conc = c(0, 5, 3))
   d_dose <- data.frame(id = 1, time = 0, dose = 10)
-  intervals <- data.frame(start = 0, end = 24, aucint.inf.obs = TRUE, aucivint.inf.obs = TRUE, cl.ivint.inf.obs = TRUE)
-  # Extravascular:  NA, with the half-life's reason and the interval's once each
+  intervals <-
+    data.frame(
+      start = 0, end = 2, lambda.z = TRUE, aucint.inf.obs = TRUE, aucivint.inf.obs = TRUE, aucivint.inf.pred = TRUE,
+      cl.ivint.inf.obs = TRUE, vz.ivint.inf.obs = TRUE, vz.ivint.inf.pred = TRUE
+    )
+  # Extravascular:  NA for the interval's own reason, which the half-life does
+  # not change; what is calculated from it adds the half-life's reason once
   res_ev <- auciv_inf_results(d_conc, d_dose, intervals, route = "extravascular")
-  expect_true(is.na(res_ev$value[["aucivint.inf.obs"]]))
-  reasons <- strsplit(res_ev$exclude[["aucivint.inf.obs"]], split = "; ", fixed = TRUE)[[1]]
-  expect_equal(anyDuplicated(reasons), 0L)
-  expect_true("The interval does not start at an IV bolus dose" %in% reasons)
-  expect_equal(sum(startsWith(reasons, "Too few points for half-life calculation")), 1L)
+  reason_halflife <- res_ev$exclude[["lambda.z"]]
+  expect_match(reason_halflife, "^Too few points for half-life calculation")
+  for (param in c("aucivint.inf.obs", "aucivint.inf.pred")) {
+    expect_true(is.na(res_ev$value[[param]]), info = param)
+    expect_equal(res_ev$exclude[[param]], "The interval does not start at an IV bolus dose", info = param)
+  }
+  for (param in c("vz.ivint.inf.obs", "vz.ivint.inf.pred")) {
+    expect_equal(
+      res_ev$exclude[[param]],
+      paste("The interval does not start at an IV bolus dose", reason_halflife, sep = "; "),
+      info = param
+    )
+  }
   # An infusion:  the AUCint unchanged, which does not use the half-life, and
   # not excluded for it
   res_inf <- auciv_inf_results(d_conc, d_dose, intervals, duration = 1)
   expect_equal(res_inf$value[["aucivint.inf.obs"]], res_inf$value[["aucint.inf.obs"]])
   expect_true(is.na(res_inf$exclude[["aucivint.inf.obs"]]))
   expect_true(is.na(res_inf$exclude[["cl.ivint.inf.obs"]]))
+})
+
+test_that("aucivint.inf.* over a tail beyond the last sample are NA without a half-life", {
+  # A bolus with nothing measured at the dose, every point excluded from the
+  # half-life, and an interval that ends 24 after the last sample
+  t <- c(0.5, 1, 2, 4, 8, 12, 24)
+  params <- c("aucivint.last", "aucivint.inf.obs", "aucivint.inf.pred", "aumcivint.inf.obs", "aumcivint.inf.pred")
+  reason_halflife <- "Too few points for half-life calculation (min.hl.points=3 with only 0 points)"
+  # One dose, interval 0 to 48; and doses at 0 and 24, interval 24 to 72
+  d_conc_single <- data.frame(id = 1, time = t, conc = 10 * exp(-0.15 * t), excl = TRUE)
+  t_multiple <- c(t, 24 + t)
+  d_conc_multiple <-
+    data.frame(
+      id = 1, time = t_multiple,
+      conc = 10 * exp(-0.15 * t_multiple) + ifelse(t_multiple > 24, 10 * exp(-0.15 * (t_multiple - 24)), 0),
+      excl = TRUE
+    )
+  cases <-
+    list(
+      single = list(conc = d_conc_single, dose_time = 0, start = 0),
+      multiple = list(conc = d_conc_multiple, dose_time = c(0, 24), start = 24)
+    )
+  for (case in names(cases)) {
+    current <- cases[[case]]
+    intervals <- data.frame(start = current$start, end = current$start + 48)
+    for (param in params) {
+      intervals[[param]] <- TRUE
+    }
+    res <-
+      suppressWarnings(as.data.frame(pk.nca(PKNCAdata(
+        PKNCAconc(current$conc, conc ~ time | id, exclude_half.life = "excl"),
+        PKNCAdose(data.frame(id = 1, time = current$dose_time, dose = 100), dose ~ time | id, route = "intravascular"),
+        intervals = intervals
+      ))))
+    value <- stats::setNames(res$PPORRES, res$PPTESTCD)
+    exclude <- stats::setNames(res$exclude, res$PPTESTCD)
+    # The last form needs no half-life
+    expect_false(is.na(value[["aucivint.last"]]), info = case)
+    for (param in setdiff(params, "aucivint.last")) {
+      expect_equal(value[[param]], NA_real_, info = paste(case, param))
+      expect_equal(
+        exclude[[param]],
+        paste(reason_halflife, "the half-life is NA", "AUCint is not calculated", sep = "; "),
+        info = paste(case, param)
+      )
+    }
+  }
 })
 
 test_that("aucivint.inf.* extrapolate the tail as aucint.inf.* do, and without a half-life equal the last form at a sample", {

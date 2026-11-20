@@ -182,32 +182,29 @@ pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extra
     )
   }
   if (is.na(auxc)) {
-    return(structure(NA_real_, exclude = "AUCint is not calculated"))
+    return(auxciv_int_result(structure(NA_real_, exclude = "AUCint is not calculated"), auc.type))
   }
   if (length(time.dose) == 0 || all(is.na(time.dose))) {
-    return(structure(NA_real_, exclude = "dose time is missing"))
+    return(auxciv_int_result(structure(NA_real_, exclude = "dose time is missing"), auc.type))
   }
   route <- rep_len(route, length(time.dose))
   duration.dose <- rep_len(duration.dose, length(time.dose))
   dose_at_start <- !is.na(time.dose) & time.dose == start & route %in% "intravascular"
   if (any(dose_at_start & is.na(duration.dose))) {
-    return(structure(NA_real_, exclude = "dose duration is missing"))
+    return(auxciv_int_result(structure(NA_real_, exclude = "dose duration is missing"), auc.type))
   }
-  # The AUXCint calculated without the half-life, to tell whether the half-life
-  # (and with it, a reason that it is excluded) enters the result
-  inf_args <-
-    list(
-      conc = conc, time = time, start = start, time.dose = time.dose, route = route,
-      duration.dose = duration.dose, auc.type = "AUCinf", lambda.z = NA_real_, clast = clast,
-      options = options
-    )
   if (any(dose_at_start & !(duration.dose %in% 0))) {
     # An infusion starts from the concentration before it, which the AUCint
     # already uses, so there is nothing to back-extrapolate
-    return(auxciv_int_result(auxc, auxc = auxc, auc.type = auc.type, fun_auxcint = fun_auxcint, inf_args = c(inf_args, end = end)))
+    return(auxciv_int_result(auxc, auc.type))
   }
   if (!any(dose_at_start)) {
-    return(structure(NA_real_, exclude = "The interval does not start at an IV bolus dose"))
+    return(
+      auxciv_int_result(
+        structure(NA_real_, exclude = "The interval does not start at an IV bolus dose"),
+        auc.type
+      )
+    )
   }
   # The concentrations the AUCint integrates:  up to the first dose at or after
   # the end of the interval, cleaned of BLQ and missing values the same way
@@ -226,18 +223,23 @@ pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extra
   earlier_dose <- any(!is.na(time.dose) & time.dose < start)
   conc_at_start <- data$conc[data$time == start]
   if (!earlier_dose && length(conc_at_start) == 1 && !(conc_at_start %in% 0)) {
-    return(auxciv_int_result(auxc, auxc = auxc, auc.type = auc.type, fun_auxcint = fun_auxcint, inf_args = c(inf_args, end = end)))
+    return(auxciv_int_result(auxc, auc.type))
   }
   # The profile after the dose at the start of the interval:  within the
   # interval and before the next dose
   next_dose <- min(c(time.dose[!is.na(time.dose) & time.dose > start], Inf))
   data_after <- data[data$time > start & data$time <= min(end, next_dose), , drop = FALSE]
   if (nrow(data_after) == 0) {
-    return(structure(NA_real_, exclude = "No concentration after the IV bolus dose in the interval"))
+    return(
+      auxciv_int_result(
+        structure(NA_real_, exclude = "No concentration after the IV bolus dose in the interval"),
+        auc.type
+      )
+    )
   }
   c0 <- pk.calc.c0(conc = data_after$conc, time = data_after$time, time.dose = start, check = FALSE)
   if (is.na(c0)) {
-    return(structure(NA_real_, exclude = "c0 is not calculated"))
+    return(auxciv_int_result(structure(NA_real_, exclude = "c0 is not calculated"), auc.type))
   }
   # Both segments come from the same AUXCint function, so they use its time
   # scale and integration method.  The trough segment interpolates the same
@@ -267,36 +269,27 @@ pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extra
       conc = c(c0, data_after$conc[1]), time = c(start, data_after$time[1]),
       start = start, end = data_after$time[1], options = options
     )
+  segment_uses_halflife <- FALSE
+  if (identical(auc.type, "AUCinf")) {
+    trough_args_without <- trough_args
+    trough_args_without$lambda.z <- NA_real_
+    segment_uses_halflife <- !function_value_same(trough_fun, trough_args_without, segment_trough)
+  }
   auxciv_int_result(
     auxc - as.numeric(segment_trough) + as.numeric(segment_c0),
-    auxc = auxc, auc.type = auc.type, fun_auxcint = fun_auxcint,
-    inf_args = c(inf_args, end = end), segment_trough = segment_trough,
-    segment_end = data_after$time[1]
+    auc.type = auc.type, segment_uses_halflife = segment_uses_halflife
   )
 }
 
 # The result of pk.calc.auxciv.int(), `value`.  An AUCinf-type form receives
-# lambda.z and clast only to reproduce the start of `auxc`, so their reasons
-# for exclusion do not apply when neither `auxc` nor the replaced segment
-# changes without the half-life:  the result is then not excluded for them.
-# (When `auxc` does not use the half-life, its own calculation gives it no
-# reason for exclusion either.)
-auxciv_int_result <- function(value, auxc, auc.type, fun_auxcint, inf_args,
-                              segment_trough = NULL, segment_end = NULL) {
-  if (!identical(auc.type, "AUCinf") || is.na(value)) {
-    return(value)
+# lambda.z and clast only to calculate the segment of `auxc` that is replaced
+# (the half-life that `auxc` itself used reaches the result through `auxc`), so
+# their exclusion reasons apply only when that segment uses the half-life.
+auxciv_int_result <- function(value, auc.type, segment_uses_halflife = FALSE) {
+  if (identical(auc.type, "AUCinf") && !segment_uses_halflife) {
+    attr(value, "exclude_unused_args") <- c("lambda.z", "clast")
   }
-  same_without <- function_value_same(fun_auxcint, inf_args, auxc)
-  if (same_without && !is.null(segment_trough)) {
-    segment_args <- inf_args
-    segment_args$end <- segment_end
-    same_without <- function_value_same(fun_auxcint, segment_args, segment_trough)
-  }
-  if (same_without) {
-    structure(as.numeric(value), exclude = "DO NOT EXCLUDE")
-  } else {
-    value
-  }
+  value
 }
 
 # Does `fun` called with `args` give `value` (with the warnings it gives

@@ -1237,6 +1237,26 @@ the generated intervals:
     place of the error.  `pk.calc.auciv_pbext()` treats an `auciv` below `auc`
     by no more than floating-point noise as 0 percent.
 
+* A reason for exclusion that reaches a parameter through more than one input
+  is given once in the `exclude` column (@billdenney).  With too few points
+  for a half-life, `kel.obs` was excluded with "Too few points for half-life
+  calculation (min.hl.points=3 with only 2 points); Too few points for
+  half-life calculation (min.hl.points=3 with only 2 points)" and is now
+  excluded with that reason once.  Only the `exclude` text changes, never a
+  value or whether a result is excluded.  It changes for the parameters
+  calculated from the half-life and from other excluded results, such as
+  `aucinf.pred`, `aucivinf.*`, `aumcinf.*`, `aucpext.*`, `cl`, `kel`, `mrt`,
+  `thalf.eff`, `vss`, and `vz`, with their IV and multiple-dose forms.
+
+* `aucivint.inf.*` and `aumcivint.inf.*` are excluded with the half-life's
+  reason when the half-life changes the segment they replace (the trough
+  after an earlier dose, estimated with it).  Otherwise they keep the
+  exclusion of the `aucint.inf.*` or `aumcint.inf.*` they start from, which
+  carries the half-life's reason when that used it.  For this, a function
+  that calculates a parameter can name the arguments that did not enter its
+  result in an `exclude_unused_args` attribute (see
+  `vignette("v80-writing-parameter-functions")`). (@billdenney)
+
 * `mrt.iv.*`, `mrt.ivint.*`, `mrt.ivmd.*`, and everything calculated from them
   (`vss.iv.*`, `vss.ivint.*`, `vss.ivmd.*`, `kel.iv.*`, `thalf.eff.iv.*`) are
   now correct, and one value per interval, when an interval has more than one
