@@ -250,9 +250,9 @@ test_that("pk.calc.auciv_pbext handles edge cases correctly", {
   expect_warning(
     expect_equal(
       pk.calc.auciv_pbext(conc = c(0, 1), time = c(0, 1), auc = 5, auciv = 3),
-      structure(NA_real_, exclude = "The concentration measured at the dose time is above C0")
+      structure(NA_real_, exclude = "The concentration at the dose time (measured or imputed) is above C0")
     ),
-    regexp = "The AUC with C0 is less than the AUC without it:  the concentration measured at the dose time is above C0",
+    regexp = "The AUC with C0 is less than the AUC without it:  the concentration at the dose time (measured, or imputed for the interval) is above C0,",
     fixed = TRUE,
     class = "pknca_warning_auciv_pbext_negative"
   )
@@ -265,14 +265,14 @@ test_that("pk.calc.auciv_pbext handles edge cases correctly", {
   expect_warning(
     expect_equal(
       pk.calc.auciv_pbext(conc = c(1, 1), time = c(0, 1), auc = 2e-10, auciv = 1e-10),
-      structure(NA_real_, exclude = "The concentration measured at the dose time is above C0")
+      structure(NA_real_, exclude = "The concentration at the dose time (measured or imputed) is above C0")
     ),
     class = "pknca_warning_auciv_pbext_negative"
   )
   expect_warning(
     expect_equal(
       pk.calc.auciv_pbext(conc = c(1, 1), time = c(0, 1), auc = 1e-9, auciv = 0),
-      structure(NA_real_, exclude = "The concentration measured at the dose time is above C0")
+      structure(NA_real_, exclude = "The concentration at the dose time (measured or imputed) is above C0")
     ),
     class = "pknca_warning_auciv_pbext_negative"
   )
@@ -281,7 +281,7 @@ test_that("pk.calc.auciv_pbext handles edge cases correctly", {
   expect_warning(
     expect_equal(
       pk.calc.auciv_pbext(conc = c(1, 1), time = c(0, 1), auc = 0.3 * (1 + 1e-7), auciv = 0.3),
-      structure(NA_real_, exclude = "The concentration measured at the dose time is above C0")
+      structure(NA_real_, exclude = "The concentration at the dose time (measured or imputed) is above C0")
     ),
     class = "pknca_warning_auciv_pbext_negative"
   )
@@ -393,7 +393,7 @@ test_that("after an earlier dose, a trough above the back-extrapolated C0 gives 
     expect_equal(unname(res$value[current]), NA_real_, info = current)
     expect_equal(
       unname(res$exclude[current]),
-      "The concentration measured at the dose time is above C0",
+      "The concentration at the dose time (measured or imputed) is above C0",
       info = current
     )
   }
@@ -1007,4 +1007,44 @@ test_that("aucivint for an interval starting at an IV infusion is the AUCint", {
   expect_equal(value_of("mrt.ivint.last", 12), 3.753407, tolerance = 1e-6)
   expect_equal(value_of("vss.ivint.last", 12), mrt_second*100/auc_second)
   expect_equal(value_of("kel.ivint.last", 12), 1/mrt_second)
+})
+
+test_that("aucivint.inf.* replace the segment that aucint.inf.* integrated, so they equal aucivint.last at a sample", {
+  # IV bolus doses at 0 and 24 hours; the interval ends at the 48-hour sample,
+  # so nothing is extrapolated after it, but aucint.inf.* estimate the start
+  # concentration with the half-life of the profile before the dose
+  t <- c(0, 1, 2, 4, 8, 12, 23.95, 25, 26, 28, 32, 36, 47.9, 48)
+  d_conc <- data.frame(id = 1, time = t, conc = 10 * (exp(-0.1 * t) - exp(-t)) + 0.5)
+  d_dose <- data.frame(id = 1, time = c(0, 24), dose = 100)
+  pairs <-
+    c(
+      aucivint.inf.obs = "aucivint.last", aucivint.inf.pred = "aucivint.last",
+      aumcivint.inf.obs = "aumcivint.last", aumcivint.inf.pred = "aumcivint.last",
+      cl.ivint.inf.obs = "cl.ivint.last", cl.ivint.inf.pred = "cl.ivint.last",
+      kel.ivint.inf.obs = "kel.ivint.last", mrt.ivint.inf.obs = "mrt.ivint.last",
+      vss.ivint.inf.obs = "vss.ivint.last", vz.ivint.inf.obs = "vz.ivint.last",
+      cav.ivint.inf.obs = "cav.ivint.last", thalf.eff.ivint.inf.obs = "thalf.eff.ivint.last"
+    )
+  intervals <- data.frame(start = 24, end = 48, aucint.last = TRUE, aucint.inf.obs = TRUE)
+  for (p in c(names(pairs), unname(pairs))) {
+    intervals[[p]] <- TRUE
+  }
+  res <-
+    suppressWarnings(as.data.frame(pk.nca(PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time | id),
+      PKNCAdose(d_dose, dose ~ time | id, route = "intravascular"),
+      intervals = intervals
+    ))))
+  values <- stats::setNames(res$PPORRES, res$PPTESTCD)
+  # The AUCint forms differ at the start:  0 for last, the half-life
+  # estimate for inf
+  expect_equal(values[["aucint.last"]], 19.7382402957, tolerance = 1e-9)
+  expect_equal(values[["aucint.inf.obs"]], 20.4427828950, tolerance = 1e-9)
+  for (p in names(pairs)) {
+    expect_equal(values[[p]], values[[pairs[[p]]]], tolerance = 1e-12, info = p)
+  }
+  expect_equal(values[["aucivint.inf.obs"]], 20.4397556508, tolerance = 1e-9)
+  expect_equal(values[["cl.ivint.inf.obs"]], 4.8924263924, tolerance = 1e-9)
+  expect_equal(values[["mrt.ivint.inf.obs"]], 10.2673293571, tolerance = 1e-9)
+  expect_equal(values[["vss.ivint.inf.obs"]], 50.2321531261, tolerance = 1e-9)
 })
