@@ -403,6 +403,12 @@ add_parameter_rule(
   prefix = "ratio", eligible = ratio_rule_eligible, make = ratio_rule_make,
   refusal = ratio_rule_refusal
 )
+# Metabolite to parent ratios (`mr.<base>`) have the same bases; all of them are
+# made at the end of R/zzz-pk.calc.dn.R, after the ratios.
+add_parameter_rule(
+  prefix = "mr", eligible = mr_rule_eligible, make = mr_rule_make,
+  refusal = mr_rule_refusal
+)
 register_parameter_rule_members(prefix = "ratio", bases = names(ratio_overrides()))
 
 # Parameters in this one-row interval that are deferred to the cross-interval
@@ -539,6 +545,10 @@ expand_secondary_auto <- function(intervals, requested_secondary, conc, group_re
           ref_vary = interval_ref_vary(intervals, r, p, default = ref_vary)
         )
       if (is.null(found)) {
+        if (is_metabolite_ratio(p)) {
+          # Only `group_ref` can say which analyte is the parent
+          abort_mr_needs_parent(p)
+        }
         # Not applicable:  the in-interval abort tells the user to give a
         # reference, because there is nothing in the data to derive one from.
         next
@@ -1667,6 +1677,9 @@ interval_secondary_auto <- function(intervals, param, target_groups, conc,
             ref_vary
           }
       )
+    if (is.null(found) && is_metabolite_ratio(param)) {
+      abort_mr_needs_parent(param)
+    }
     if (is.null(found) || is.character(found)) {
       rlang::abort(
         sprintf(

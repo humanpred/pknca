@@ -139,7 +139,8 @@ pknca_concepts <- function() {
     "excreted_amount", "excreted_fraction", "excretion_rate",
     "collected_volume",
     # Bookkeeping
-    "bioavailability", "total_dose", "observation_count", "parameter_ratio"
+    "bioavailability", "total_dose", "observation_count", "parameter_ratio",
+    "metabolite_ratio"
   )
 }
 

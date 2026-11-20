@@ -37,7 +37,9 @@ add_parameter_rule <- function(prefix, eligible, make, refusal) {
 #'
 #' Some NCA parameters are not registered one by one but made by a rule from a
 #' base parameter:  `ratio.<base>` is the ratio of `<base>` to its value in a
-#' reference interval.  A member is registered for every eligible base when
+#' reference interval, and `mr.<base>` is the metabolite to parent ratio of
+#' `<base>` (its reference is the same interval of the parent analyte, named
+#' with the `group_ref` argument of [PKNCAdata()]).  A member is registered for every eligible base when
 #' PKNCA is loaded; a parameter registered later with [add.interval.col()] does
 #' not get one.
 #'
@@ -188,10 +190,16 @@ ratio_rule_eligible <- function(base, spec) {
 
 # Why `base` has no ratio, in the order of the conditions above
 ratio_rule_refusal <- function(base, spec) {
+  ratio_refusal_text(base = base, spec = spec, prefix = "ratio")
+}
+
+# Why `base` has no member of the rule `prefix` (a ratio or a metabolite ratio,
+# which have the same bases)
+ratio_refusal_text <- function(base, spec, prefix) {
   if (!is.null(spec$historical_of)) {
     sprintf(
-      "'%s' is an earlier name of '%s', and a ratio is made only of the current name ('ratio.%s')",
-      base, spec$historical_of, spec$historical_of
+      "'%s' is an earlier name of '%s', and a ratio is made only of the current name ('%s.%s')",
+      base, spec$historical_of, prefix, spec$historical_of
     )
   } else if (parameter_spec_is_secondary(spec)) {
     sprintf("'%s' is calculated with a value from a reference interval, and a ratio is not made of it", base)
@@ -212,14 +220,18 @@ ratio_rule_refusal <- function(base, spec) {
 # The description is limited to 40 characters (SDTM PPTEST); a label that is too
 # long for it gives way to the base's name
 ratio_rule_desc <- function(base, label) {
-  candidates <-
-    c(
-      sprintf("Ratio of %s to reference", label),
-      sprintf("Ratio of %s to reference", base),
-      sprintf("Ratio of %s to ref", base)
-    )
+  rule_desc_fit(c(
+    sprintf("Ratio of %s to reference", label),
+    sprintf("Ratio of %s to reference", base),
+    sprintf("Ratio of %s to ref", base)
+  ))
+}
+
+# The first description of `candidates` that fits the 40 characters of SDTM
+# PPTEST, or the last one when none does
+rule_desc_fit <- function(candidates) {
   fits <- nchar(candidates) <= 40
-  if (any(fits)) candidates[fits][1] else candidates[3]
+  if (any(fits)) candidates[fits][1] else candidates[length(candidates)]
 }
 
 ratio_rule_make <- function(base, spec) {
@@ -243,5 +255,72 @@ ratio_rule_make <- function(base, spec) {
         point = business.geomean,
         spread = business.geocv
       )
+  )
+}
+
+# mr.<base> ####
+
+# A metabolite to parent ratio has the bases of a ratio, and its reference is
+# the same interval of the parent analyte (named with `group_ref`)
+mr_rule_eligible <- function(base, spec) {
+  ratio_rule_eligible(base = base, spec = spec)
+}
+
+mr_rule_refusal <- function(base, spec) {
+  ratio_refusal_text(base = base, spec = spec, prefix = "mr")
+}
+
+mr_rule_make <- function(base, spec) {
+  label <- spec$pretty_name
+  desc <-
+    rule_desc_fit(c(
+      sprintf("Metabolite to parent ratio of %s", label),
+      sprintf("Metabolite to parent ratio of %s", base),
+      sprintf("Met/parent ratio of %s", base)
+    ))
+  list(
+    FUN = "pk.calc.ratio",
+    values = c(FALSE, TRUE),
+    unit_type = "fraction",
+    pretty_name = sprintf("Metabolite to parent ratio of %s", label),
+    desc = desc,
+    formalsmap = list(test = base, reference = pknca_ref(base)),
+    depends = base,
+    pptestcd_cdisc = paste0("mr.", base),
+    pptest_cdisc = desc,
+    selection = list(concept = "metabolite_ratio"),
+    summary =
+      list(
+        description = "geometric mean and geometric coefficient of variation",
+        point = business.geomean,
+        spread = business.geocv
+      )
+  )
+}
+
+# Is `param` a metabolite ratio, whose reference must be the parent analyte?
+is_metabolite_ratio <- function(param) {
+  startsWith(param, "mr.") &
+    vapply(
+      X = param,
+      FUN = function(x) identical(get.interval.cols()[[x]]$selection$concept, "metabolite_ratio"),
+      FUN.VALUE = TRUE,
+      USE.NAMES = FALSE
+    )
+}
+
+# The error for a metabolite ratio requested with no way to find its parent
+abort_mr_needs_parent <- function(param, call = rlang::caller_env()) {
+  rlang::abort(
+    sprintf(
+      paste(
+        "The metabolite ratio '%s' needs its parent analyte as the reference, and none is named.",
+        "Give `group_ref` to PKNCAdata() naming the parent (for example, `group_ref = data.frame(<analyte column> = \"<parent>\")`),",
+        "set the '%s_ref' column in the interval specification to the parent's 'interval_id', or use interval_add_secondary()."
+      ),
+      param, param
+    ),
+    class = c("pknca_error_mr_needs_parent", "pknca_error_secondary_needs_ref"),
+    call = call
   )
 }

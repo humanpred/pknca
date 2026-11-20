@@ -251,7 +251,10 @@ kable(d_steered[d_steered$PPTESTCD %in% "clr.last", ])
 
 `group_ref` also directs comparisons that the data cannot tell apart at all.
 Nothing in a data set says which analyte is the parent and which the metabolite,
-so a metabolite ratio has to be told:
+so a metabolite ratio has to be told.  The metabolite to parent ratio of a
+parameter is `mr.<parameter>` (for example, `mr.aucinf.obs`), and requesting
+one without `group_ref` (or a `mr.<parameter>_ref` pointer) is an error
+(`pknca_error_mr_needs_parent`):
 
 ```{r group-ref-parameter-specific}
 d_conc_two <-
@@ -285,7 +288,7 @@ intervals_two <-
     ae = c(TRUE, TRUE, FALSE, FALSE),
     clr.last = c(TRUE, TRUE, FALSE, FALSE),
     aucinf.obs = c(FALSE, FALSE, TRUE, FALSE),
-    ratio.aucinf.obs = c(FALSE, FALSE, FALSE, TRUE)
+    mr.aucinf.obs = c(FALSE, FALSE, FALSE, TRUE)
   )
 ```
 
@@ -298,7 +301,7 @@ parameter's row leaves `NA` do not constrain it:
 ```{r group-ref-table}
 group_ref_by_param <-
   data.frame(
-    parameter = c("clr.last", "ratio.aucinf.obs"),
+    parameter = c("clr.last", "mr.aucinf.obs"),
     PCSPEC = c("plasma", NA),
     Analyte = c(NA, "parent")
   )
@@ -313,7 +316,7 @@ o_data_two <-
     group_ref = group_ref_by_param
   )
 d_two <- as.data.frame(pk.nca(o_data_two))
-kable(d_two[d_two$PPTESTCD %in% c("clr.last", "ratio.aucinf.obs"), ])
+kable(d_two[d_two$PPTESTCD %in% c("clr.last", "mr.aucinf.obs"), ])
 ```
 
 A named list of data.frames, one per parameter, says the same thing:
@@ -325,7 +328,7 @@ PKNCAdata(
   group_ref =
     list(
       clr.last = data.frame(PCSPEC = "plasma"),
-      ratio.aucinf.obs = data.frame(Analyte = "parent")
+      mr.aucinf.obs = data.frame(Analyte = "parent")
     )
 )
 ```
@@ -756,14 +759,18 @@ support a link.
 * The reference for an absolute bioavailability is not yet derived from the
   route of administration; give it with `group_ref`, a `f.inf.obs_ref` pointer, or
   `interval_add_secondary()`.
-* The CDISC `PPTESTCD` of a ratio does not yet depend on what the ratio compares
-  (accumulation against metabolite ratio).
+* The CDISC `PPTESTCD` of a ratio or a metabolite ratio other than the six
+  existing ratios is its name until a controlled-terminology code is
+  confirmed.
 * `exclude()` and the `exclude_nca_*()` functions work on a finished
   `PKNCAresults` and cannot reach across groups, so an exclusion applied after
   the calculation does not propagate along a link the way one set during the
   calculation does.
-* Molecular-weight adjustment of a metabolite ratio (a molar conversion) is a
-  units-layer feature that is not yet available.
+* Molecular-weight adjustment of a metabolite ratio (a molar conversion,
+  reported as `"mol/mol"`) is a units-layer feature that is not yet available.  A
+  metabolite ratio of two analytes in the same mass units is the ratio of the
+  masses, in the units "fraction"; with different units, its units are the
+  quotient of the two analytes' units.
 
 # See also
 

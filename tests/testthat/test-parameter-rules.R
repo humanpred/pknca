@@ -65,10 +65,11 @@ test_that("the six earlier ratios are made by the rule with their fields unchang
   }
 })
 
-test_that("pknca_parameter_rules() lists the ratio rule and exactly its 38 bases", {
+test_that("pknca_parameter_rules() lists the ratio and metabolite ratio rules and exactly their 38 bases", {
   rules <- pknca_parameter_rules()
-  expect_equal(rules$prefix, "ratio")
-  expect_equal(strsplit(rules$bases, split = ", ", fixed = TRUE)[[1]], ratio_bases_expected)
+  expect_equal(rules$prefix, c("ratio", "mr"))
+  expect_equal(strsplit(rules$bases[1], split = ", ", fixed = TRUE)[[1]], ratio_bases_expected)
+  expect_equal(strsplit(rules$bases[2], split = ", ", fixed = TRUE)[[1]], ratio_bases_expected)
 })
 
 test_that("every ratio is registered when PKNCA is loaded, after the parameters and before the earlier names", {
@@ -77,14 +78,17 @@ test_that("every ratio is registered when PKNCA is loaded, after the parameters 
   members <- paste0("ratio.", ratio_bases_expected)
   expect_true(all(members %in% all_names))
   expect_equal(sum(startsWith(all_names, "ratio.")), 38L)
-  # The 32 that were not registered one by one come right before the earlier
-  # names, in the order of their bases; the six keep their places among the
-  # parameters
+  # The 32 that were not registered one by one come after the parameters, then
+  # the 38 metabolite ratios, then the earlier names, each in the order of their
+  # bases; the six keep their places among the parameters
   is_alias <- vapply(X = all_intervals, FUN = function(x) !is.null(x$historical_of), FUN.VALUE = TRUE)
   first_alias <- which(is_alias)[1]
   expect_true(all(is_alias[first_alias:length(all_names)]))
   new_members <- setdiff(members, paste0("ratio.", ratio_six_expected$base))
-  expect_equal(all_names[(first_alias - 32):(first_alias - 1)], new_members)
+  expect_equal(
+    all_names[(first_alias - 70):(first_alias - 1)],
+    c(new_members, paste0("mr.", ratio_bases_expected))
+  )
   for (member in members) {
     spec <- all_intervals[[member]]
     base <- sub("^ratio[.]", "", member)
@@ -107,7 +111,7 @@ test_that("every ratio is registered when PKNCA is loaded, after the parameters 
 })
 
 test_that("no generated interval requests a ratio", {
-  members <- paste0("ratio.", ratio_bases_expected)
+  members <- c(paste0("ratio.", ratio_bases_expected), paste0("mr.", ratio_bases_expected))
   for (dosing in c("single", "multiple", "steady_state")) {
     interval_table <- pknca_interval_table(start = 0, end = 24, dosing = dosing, route = "extravascular")
     expect_true(all(members %in% names(interval_table)), info = dosing)
@@ -271,4 +275,140 @@ test_that("interval_add_param(), interval_add_secondary(), and pknca_interval_ta
 
   ret_table <- pknca_interval_table(start = 0, end = 24, dosing = "multiple", route = "extravascular", include = "ratio.cstart")
   expect_true(ret_table$ratio.cstart)
+})
+
+# mr.<base> ####
+
+d_conc_mr <-
+  data.frame(
+    subject = rep(1:2, each = 10),
+    analyte = rep(rep(c("parent", "metab"), each = 5), 2),
+    time = rep(c(0, 1, 2, 4, 8), 4),
+    conc = c(0, 10, 8, 4, 2, 0, 2, 3, 2, 1, 0, 12, 9, 5, 2, 0, 3, 4, 2, 1)
+  )
+intervals_mr <-
+  data.frame(
+    analyte = c("parent", "metab"), start = 0, end = 8,
+    auclast = TRUE, cmax = TRUE, mr.auclast = c(FALSE, TRUE), mr.cmax = c(FALSE, TRUE)
+  )
+
+test_that("every metabolite ratio is registered, with its own concept and names", {
+  all_intervals <- get.interval.cols()
+  for (base in ratio_bases_expected) {
+    member <- paste0("mr.", base)
+    spec <- all_intervals[[member]]
+    expect_equal(spec$FUN, "pk.calc.ratio", info = member)
+    expect_equal(spec$depends, base, info = member)
+    expect_equal(spec$unit_type, "fraction", info = member)
+    expect_equal(spec$formalsmap, list(test = base, reference = pknca_ref(base)), info = member)
+    expect_equal(spec$tier, "uncommon", info = member)
+    expect_equal(spec$selection, list(concept = "metabolite_ratio"), info = member)
+    expect_equal(spec$pptestcd_cdisc, member, info = member)
+    expect_equal(spec$pptest_cdisc, spec$desc, info = member)
+    expect_equal(
+      spec$pretty_name,
+      sprintf("Metabolite to parent ratio of %s", all_intervals[[base]]$pretty_name),
+      info = member
+    )
+    # SDTM limits PPTEST to 40 characters
+    expect_lte(nchar(spec$desc), 40)
+    expect_equal(
+      PKNCA.set.summary()[[member]]$description,
+      "geometric mean and geometric coefficient of variation",
+      info = member
+    )
+  }
+  expect_equal(all_intervals[["mr.auclast"]]$desc, "Metabolite to parent ratio of AUClast")
+  expect_equal(all_intervals[["mr.aucabove.predose.all"]]$desc, "Met/parent ratio of aucabove.predose.all")
+  expect_true("metabolite_ratio" %in% pknca_concepts())
+})
+
+test_that("a metabolite ratio uses the parent named by group_ref", {
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc_mr, conc ~ time | subject / analyte, concu = "ng/mL", timeu = "hr"),
+      intervals = intervals_mr,
+      group_ref = data.frame(analyte = "parent")
+    )
+  expect_message(
+    d_res <- as.data.frame(pk.nca(o_data)),
+    class = "pknca_message_secondary_ref_created"
+  )
+  d_mr <- d_res[startsWith(d_res$PPTESTCD, "mr."), ]
+  d_parent <- d_res[d_res$analyte == "parent", ]
+  d_metab <- d_res[d_res$analyte == "metab", ]
+  for (current_subject in 1:2) {
+    for (base in c("auclast", "cmax")) {
+      expect_equal(
+        d_mr$PPORRES[d_mr$subject == current_subject & d_mr$PPTESTCD == paste0("mr.", base)],
+        d_metab$PPORRES[d_metab$subject == current_subject & d_metab$PPTESTCD == base] /
+          d_parent$PPORRES[d_parent$subject == current_subject & d_parent$PPTESTCD == base],
+        info = paste(current_subject, base)
+      )
+    }
+  }
+  expect_equal(d_mr$PPORRES[d_mr$PPTESTCD == "mr.cmax"], c(3 / 10, 4 / 12))
+  expect_equal(unique(d_mr$analyte), "metab")
+  expect_equal(unique(d_mr$analyte_ref), "parent")
+  # Both analytes are in ng/mL, so the ratio is a fraction
+  expect_equal(unique(d_mr$PPORRESU), "fraction")
+})
+
+test_that("a metabolite ratio with no parent named is pknca_error_mr_needs_parent", {
+  o_conc <- PKNCAconc(d_conc_mr, conc ~ time | subject / analyte)
+  expect_error(
+    pk.nca(PKNCAdata(o_conc, intervals = intervals_mr)),
+    class = "pknca_error_mr_needs_parent",
+    regexp = "The metabolite ratio 'mr.auclast' needs its parent analyte as the reference"
+  )
+  # The class is also the general one for a secondary parameter without a
+  # reference
+  expect_error(
+    pk.nca(PKNCAdata(o_conc, intervals = intervals_mr)),
+    class = "pknca_error_secondary_needs_ref"
+  )
+  # A group_ref for other parameters only does not name the parent
+  expect_error(
+    pk.nca(PKNCAdata(
+      o_conc, intervals = intervals_mr,
+      group_ref = data.frame(parameter = "ratio.auclast", analyte = "parent")
+    )),
+    class = "pknca_error_mr_needs_parent"
+  )
+  # interval_add_secondary() with no reference and nothing to derive one from
+  expect_error(
+    interval_add_secondary(intervals_mr, param = "mr.auclast"),
+    class = "pknca_error_mr_needs_parent"
+  )
+})
+
+test_that("a metabolite ratio may name the parent's interval with its _ref column", {
+  intervals <- intervals_mr
+  intervals$interval_id <- c("parent", NA)
+  intervals$mr.auclast_ref <- c(NA, "parent")
+  intervals$mr.cmax <- FALSE
+  d_res <-
+    as.data.frame(pk.nca(PKNCAdata(PKNCAconc(d_conc_mr, conc ~ time | subject / analyte), intervals = intervals)))
+  expect_equal(
+    d_res$PPORRES[d_res$PPTESTCD == "mr.auclast"],
+    d_res$PPORRES[d_res$PPTESTCD == "auclast" & d_res$analyte == "metab"] /
+      d_res$PPORRES[d_res$PPTESTCD == "auclast" & d_res$analyte == "parent"]
+  )
+})
+
+test_that("a name the metabolite ratio rule does not make says why", {
+  intervals <- intervals_mr
+  intervals$mr.aumclast <- c(FALSE, TRUE)
+  expect_error(
+    PKNCAdata(PKNCAconc(d_conc_mr, conc ~ time | subject / analyte), intervals = intervals),
+    class = "pknca_error_parameter_rule_ineligible",
+    regexp = "'mr.aumclast' is not a parameter:  'aumclast' is an AUMC"
+  )
+  intervals_cav <- intervals_mr
+  intervals_cav$mr.cav <- c(FALSE, TRUE)
+  expect_error(
+    PKNCAdata(PKNCAconc(d_conc_mr, conc ~ time | subject / analyte), intervals = intervals_cav),
+    class = "pknca_error_parameter_rule_ineligible",
+    regexp = "the current name \\('mr.cav.last'\\)"
+  )
 })

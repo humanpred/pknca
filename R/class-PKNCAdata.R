@@ -79,15 +79,17 @@
 #'   `group_ref = data.frame(PCSPEC = "PLASMA")` directs renal-clearance
 #'   references to the plasma profiles and
 #'   `group_ref = data.frame(PCTEST = "midazolam")` directs metabolite ratios
-#'   to the parent analyte.  The same data.frame with a `parameter` column
+#'   (`mr.<parameter>`) to the parent analyte.  A metabolite ratio requires
+#'   `group_ref` or a `<parameter>_ref` pointer
+#'   (`pknca_error_mr_needs_parent`).  The same data.frame with a `parameter` column
 #'   applies each row only to the secondary parameter it names, and the columns
 #'   a parameter's rows leave `NA` do not apply to it, so one table can steer
 #'   renal clearance by `PCSPEC` and a metabolite ratio by `PCTEST`:
-#'   `group_ref = data.frame(parameter = c("clr.inf.obs", "ratio.aucinf.obs"),
+#'   `group_ref = data.frame(parameter = c("clr.inf.obs", "mr.aucinf.obs"),
 #'   PCSPEC = c("PLASMA", NA), PCTEST = c(NA, "midazolam"))`.  A named list of
 #'   data.frames, one per parameter, says the same thing:
 #'   `group_ref = list(clr.inf.obs = data.frame(PCSPEC = "PLASMA"),
-#'   ratio.aucinf.obs = data.frame(PCTEST = "midazolam"))`.
+#'   mr.aucinf.obs = data.frame(PCTEST = "midazolam"))`.
 #' @section Date-time input:
 #'
 #'   The concentration and dose times may be date-times (POSIXct) or dates

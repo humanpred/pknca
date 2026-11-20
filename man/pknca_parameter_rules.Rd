@@ -14,7 +14,9 @@ from, separated by commas)
 \description{
 Some NCA parameters are not registered one by one but made by a rule from a
 base parameter:  \verb{ratio.<base>} is the ratio of \verb{<base>} to its value in a
-reference interval.  A member is registered for every eligible base when
+reference interval, and \verb{mr.<base>} is the metabolite to parent ratio of
+\verb{<base>} (its reference is the same interval of the parent analyte, named
+with the \code{group_ref} argument of \code{\link[=PKNCAdata]{PKNCAdata()}}).  A member is registered for every eligible base when
 PKNCA is loaded; a parameter registered later with \code{\link[=add.interval.col]{add.interval.col()}} does
 not get one.
 }

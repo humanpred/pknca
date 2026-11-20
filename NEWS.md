@@ -381,6 +381,22 @@ the generated intervals:
     of its own, not a concentration, AUC, or amount, or registered after
     PKNCA was loaded.
 
+* A metabolite to parent ratio is available as `mr.<base>` for the same 38
+  bases as `ratio.<base>` (@billdenney; PR number to add).  Its reference is the
+  same interval of the parent analyte, named with `group_ref` in `PKNCAdata()`
+  (for example, `group_ref = data.frame(PCTEST = "parent")`) or with a
+  `mr.<base>_ref` pointer; without either, requesting one is
+  `pknca_error_mr_needs_parent` (also a `pknca_error_secondary_needs_ref`).  Its
+  concept is the new `"metabolite_ratio"`, its `PPTESTCD` is its name, and it is
+  summarized by the geometric mean and geometric CV.  The 38 members are
+  registered when PKNCA is loaded, after the 32 new ratios and before the
+  earlier names, so `get.interval.cols()`, `pknca_parameter_table()`,
+  `pknca_interval_table()`, the generated intervals, and the units table have
+  38 more parameters; none is requested by default.  A metabolite ratio
+  of two analytes in the same mass units is the ratio of the masses, and its
+  units are "fraction"; the molar form (`"mol/mol"`, through per-analyte units
+  tables) is not yet available.
+
 * `set_intervals()` adds rows to the units table that `PKNCAdata()` built for a
   requested parameter that has none, such as one registered with
   `add.interval.col()` after the data object was built (@billdenney; PR number

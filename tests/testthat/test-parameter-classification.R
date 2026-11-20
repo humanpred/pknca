@@ -163,8 +163,8 @@ test_that("the multiple-dose family is the closure of the declared seeds", {
       "aucabove.trough.all",
       "mrt.md.inf.obs", "mrt.md.inf.pred", "vss.md.inf.obs", "vss.md.inf.pred",
       "mrt.ivmd.inf.obs", "mrt.ivmd.inf.pred", "vss.ivmd.inf.obs", "vss.ivmd.inf.pred",
-      # The ratios of two of them
-      "ratio.ctrough", "ratio.aucabove.trough.all"
+      # The ratios and metabolite ratios of two of them
+      "ratio.ctrough", "ratio.aucabove.trough.all", "mr.ctrough", "mr.aucabove.trough.all"
     ))
   )
 })
@@ -236,7 +236,7 @@ test_that("secondary marks the parameters needing more than one profile", {
       "clr.int.last", "clr.int.all", "clr.int.inf.obs", "clr.int.inf.pred",
       # Compares the same parameter between two profiles
       paste0(
-        "ratio.",
+        rep(c("ratio.", "mr."), each = 38),
         c(
           "auclast", "aucall", "aucint.last", "aucint.all", "aucivint.last", "aucivint.all", "c0",
           "cmax", "cmin", "clast.obs", "cav.last", "cav.int.last", "cav.int.all", "cav.all",
@@ -289,13 +289,19 @@ test_that("the bolus-only set is exactly what back-extrapolation reaches without
     intersect(unique(unlist(lapply(seeds, get.parameter.deps))), names(classification$route))
   expect_equal(sort(bolus_only), sort(setdiff(from_back_extrapolation, needs_duration)))
   bolus_only_current <- setdiff(bolus_only, names(parameter_renames()))
-  expect_length(bolus_only_current, 72L)
-  # 15 of them are the ratios of the others that have a ratio
+  expect_length(bolus_only_current, 87L)
+  # 15 of them are the ratios, and 15 the metabolite ratios, of the others that
+  # have one
   expect_equal(
     sort(bolus_only_current[startsWith(bolus_only_current, "ratio.")]),
     sort(intersect(paste0("ratio.", bolus_only_current), bolus_only_current))
   )
+  expect_equal(
+    sort(bolus_only_current[startsWith(bolus_only_current, "mr.")]),
+    sort(intersect(paste0("mr.", bolus_only_current), bolus_only_current))
+  )
   expect_equal(sum(startsWith(bolus_only_current, "ratio.")), 15L)
+  expect_equal(sum(startsWith(bolus_only_current, "mr.")), 15L)
 })
 
 test_that("tlag is extravascular", {
