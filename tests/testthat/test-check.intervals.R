@@ -173,7 +173,10 @@ test_that("get.parameter.deps", {
   )
   expect_equal(
     get.parameter.deps("ctrough"),
-    c("aucabove.trough.all", "ctrough", "ctrough.dn", "ptr", "ratio.aucabove.trough.all", "ratio.ctrough"),
+    c(
+      "aucabove.trough.all", "ctrough", "ctrough.dn", "mr.aucabove.trough.all", "mr.ctrough", "ptr",
+      "ratio.aucabove.trough.all", "ratio.ctrough"
+    ),
     info="Parameters with formalsmap-related dependencies return themselves and the formalsmap-related dependencies."
   )
   expect_equal(
