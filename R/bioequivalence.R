@@ -1831,7 +1831,7 @@ print.be_dataset <- function(x, ...) {
 be_fit_model_single <- function(ds_ep, model_type = c("lmer", "nlme", "anova", "isc", "gls"), scaling = TRUE) {
   model_type <- match.arg(model_type)
   abort_invalid(
-    !is_condition_value(scaling), "scaling", "Must be TRUE or FALSE (one logical value or number, not NA)",
+    !is_condition_value(scaling, uses = "not"), "scaling", "Must be TRUE or FALSE (one logical value or number, not NA)",
     class = "pknca_error_be_scaling_invalid"
   )
   fit <-

@@ -67,20 +67,17 @@ pk.calc.auxciv <- function(conc, time, c0, auxc, fun_auxc_last, fun_auxc,
     return(structure(NA_real_, exclude = "No data for AUC calculation"))
   }
   # The errors name the argument of the calling function (pk.calc.auciv() or
-  # pk.calc.aumciv())
+  # pk.calc.aumciv()).  Each value is checked where it is used.
+  call <- rlang::caller_env()
   abort_invalid(
-    length(c0) != 1 || (is.character(c0) && !is.na(c0)), "c0", "Must be one number (or NA)",
-    class = "pknca_error_c0_invalid", call = rlang::caller_env()
-  )
-  abort_invalid(
-    (is.character(auxc) && !(length(auxc) == 1 && is.na(auxc))) || is.list(auxc), auxc_name,
-    "Must be a number (or NA)",
-    class = "pknca_error_auxc_invalid", call = rlang::caller_env()
+    length(c0) != 1, "c0", "Must be one number (or NA)",
+    class = "pknca_error_c0_invalid", call = call
   )
   if (is.na(c0)) {
     return(structure(NA_real_, exclude = "c0 is not calculated"))
   }
   if (0 %in% data$time) {
+    abort_invalid_auxciv_values(c0 = c0, auxc = auxc, auxc_name = auxc_name, call = call)
     auxc_first <- fun_auxc_last(conc = data$conc[1:2], time = data$time[1:2], ..., check = FALSE)
     auxc_second <- fun_auxc_last(conc = c(c0, data$conc[2]), time = data$time[1:2], ..., check = FALSE)
     auxc + auxc_second - auxc_first
@@ -89,12 +86,14 @@ pk.calc.auxciv <- function(conc, time, c0, auxc, fun_auxc_last, fun_auxc,
   } else if (!is.na(auxc)) {
     # auxc extrapolated back to time 0 with conc.origin (zero); replace that
     # segment with the one starting from c0.
+    abort_invalid_auxciv_values(c0 = c0, auxc = auxc, auxc_name = auxc_name, call = call)
     auxc_first <- fun_auxc_last(conc = c(0, data$conc[1]), time = c(0, data$time[1]), ..., check = FALSE)
     auxc_second <- fun_auxc_last(conc = c(c0, data$conc[1]), time = c(0, data$time[1]), ..., check = FALSE)
     auxc + auxc_second - auxc_first
   } else if (is.null(auc.type)) {
     structure(NA_real_, exclude = "No time 0 in data")
   } else {
+    abort_invalid_auxciv_values(c0 = c0, auxc = NA, auxc_name = auxc_name, call = call)
     auxc_args <-
       list(
         conc = c(c0, data$conc), time = c(0, data$time),
@@ -184,10 +183,10 @@ pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extra
                                auxc, fun_auxcint_last, options = list(), auxc_name = "auxc") {
   # The error names the argument of the calling function (pk.calc.auciv.int()
   # or pk.calc.aumciv.int())
+  call <- rlang::caller_env()
   abort_invalid(
-    length(auxc) != 1 || ((is.character(auxc) || is.list(auxc)) && !all(is.na(auxc))), auxc_name,
-    "Must be one number (or NA)",
-    class = "pknca_error_auxc_invalid", call = rlang::caller_env()
+    length(auxc) != 1, auxc_name, "Must be one number (or NA)",
+    class = "pknca_error_auxc_invalid", call = call
   )
   if (is.na(auxc)) {
     return(structure(NA_real_, exclude = "AUCint is not calculated"))
@@ -247,6 +246,10 @@ pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extra
       conc = c(c0, data_after$conc[1]), time = c(start, data_after$time[1]),
       start = start, end = data_after$time[1], options = options
     )
+  abort_invalid(
+    (is.character(auxc) || (is.list(auxc) && !is.data.frame(auxc))) && !all(is.na(auxc)), auxc_name, "Must be one number (or NA)",
+    class = "pknca_error_auxc_invalid", call = call
+  )
   auxc - as.numeric(segment_trough) + as.numeric(segment_c0)
 }
 

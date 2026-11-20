@@ -624,4 +624,6 @@ test_that("PKNCA.options() names the flag it refuses and keeps a number as befor
   # A number is a flag, as before
   expect_equal(PKNCA.options(default = 1), PKNCA.options(default = TRUE))
   expect_equal(PKNCA.options(check = 0), PKNCA.options())
+  # Anything that works as a condition, as before
+  expect_equal(PKNCA.options(default = as.Date("2020-01-01")), PKNCA.options(default = TRUE))
 })

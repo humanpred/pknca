@@ -361,14 +361,43 @@ abort_invalid <- function(invalid, arg, requirement, class, call = rlang::caller
   abort_check(if (isTRUE(invalid)) requirement else TRUE, arg, class = class, call = call)
 }
 
-# Can `x` be the condition of `if ()`:  one logical value or number (or, with
-# `factor_ok`, a factor)?  One NA of any type is accepted only with `na_ok`.
-is_condition_value <- function(x, factor_ok = FALSE, na_ok = FALSE) {
-  if (length(x) != 1 || is.list(x)) {
-    return(FALSE)
+# Can `x` be used as the condition the code using it evaluates:  `if (x)`,
+# `if (!x)`, or `x && y` (`uses`)?  The answer is what R itself does with `x`,
+# so exactly the values that stopped with an R error are refused.  One NA of
+# any type is accepted with `na_ok`.
+is_condition_value <- function(x, uses = "if", na_ok = FALSE) {
+  if (na_ok && length(x) == 1 && !is.list(x) && isTRUE(is.na(x))) {
+    return(TRUE)
   }
-  if (is.na(x)) {
-    return(na_ok)
-  }
-  is.logical(x) || is.numeric(x) || (factor_ok && is.factor(x))
+  all(vapply(X = uses, FUN = condition_use_works, FUN.VALUE = TRUE, x = x))
+}
+
+# Does `x` work in one use of a condition (see is_condition_value())?
+condition_use_works <- function(use, x) {
+  tryCatch(
+    {
+      switch(
+        use,
+        "if" = if (x) TRUE else TRUE,
+        not = if (!x) TRUE else TRUE,
+        and = x && TRUE
+      )
+      TRUE
+    },
+    error = function(e) FALSE
+  )
+}
+
+# The c0 and AUXC of an IV correction, checked where they are used:  a value
+# that is text or a list cannot be added to an AUC
+abort_invalid_auxciv_values <- function(c0, auxc, auxc_name, call) {
+  abort_invalid(
+    is.character(c0) && !is.na(c0), "c0", "Must be one number (or NA)",
+    class = "pknca_error_c0_invalid", call = call
+  )
+  abort_invalid(
+    (is.character(auxc) && !(length(auxc) == 1 && is.na(auxc))) || (is.list(auxc) && !is.data.frame(auxc)), auxc_name,
+    "Must be a number (or NA)",
+    class = "pknca_error_auxc_invalid", call = call
+  )
 }

@@ -155,7 +155,7 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
                               allow.tmax.in.half.life=NULL,
                               check=TRUE) {
   abort_invalid(
-    !is_condition_value(manually.selected.points, factor_ok = TRUE), "manually.selected.points",
+    !is_condition_value(manually.selected.points), "manually.selected.points",
     "Must be TRUE or FALSE (one value, not NA)",
     class = "pknca_error_manually_selected_points_invalid"
   )

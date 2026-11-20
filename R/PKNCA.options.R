@@ -571,11 +571,11 @@ pair_r_squared_factors <- function(x, name) {
 #' @export
 PKNCA.options <- function(..., default=FALSE, check=FALSE, name, value) {
   abort_invalid(
-    !is_condition_value(default), "default", "Must be TRUE or FALSE (one logical value or number, not NA)",
+    !is_condition_value(default, uses = c("and", "if")), "default", "Must be TRUE or FALSE (one logical value or number, not NA)",
     class = "pknca_error_options_flag_invalid"
   )
   abort_invalid(
-    !is_condition_value(check), "check", "Must be TRUE or FALSE (one logical value or number, not NA)",
+    !is_condition_value(check, uses = c("and", "if")), "check", "Must be TRUE or FALSE (one logical value or number, not NA)",
     class = "pknca_error_options_flag_invalid"
   )
   current <- get("options", envir=.PKNCAEnv)

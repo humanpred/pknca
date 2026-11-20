@@ -73,12 +73,8 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
   # The errors name the argument of the calling function (pk.calc.auc() and
   # the others), which has the same name
   abort_invalid(
-    !is_condition_value(check, factor_ok = TRUE), "check", "Must be TRUE or FALSE (one value, not NA)",
+    !is_condition_value(check), "check", "Must be TRUE or FALSE (one value, not NA)",
     class = "pknca_error_check_invalid", call = rlang::caller_env()
-  )
-  abort_invalid(
-    !(is.numeric(lambda.z) || all(is.na(lambda.z))), "lambda.z", "Must be numeric (or NA)",
-    class = "pknca_error_lambdaz_invalid", call = rlang::caller_env()
   )
   if (check) {
     assert_conc_time(conc = conc, time = time)
@@ -116,6 +112,10 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
   if (auc.type %in% "AUCinf") {
     # Only AUCinf uses lambda.z and clast; clast is checked after the
     # concentration and time checks, which its default relies on
+    abort_invalid(
+      !(is.numeric(lambda.z) || all(is.na(lambda.z))), "lambda.z", "Must be numeric (or NA)",
+      class = "pknca_error_lambdaz_invalid", call = rlang::caller_env()
+    )
     abort_invalid(
       length(lambda.z) == 0, "lambda.z", "Must have length 1, but has length 0",
       class = "pknca_error_lambdaz_invalid", call = rlang::caller_env()

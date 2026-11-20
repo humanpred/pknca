@@ -118,7 +118,7 @@ pk.calc.auxcint <- function(conc, time,
   # The errors name the argument of the calling function (pk.calc.aucint() and
   # the others), which has the same name
   abort_invalid(
-    !(is.numeric(lambda.z) || all(is.na(lambda.z))) || (auc.type %in% "AUCinf" && length(lambda.z) == 0),
+    auc.type %in% "AUCinf" && (!(is.numeric(lambda.z) || all(is.na(lambda.z))) || length(lambda.z) == 0),
     "lambda.z", "Must be numeric (or NA)",
     class = "pknca_error_lambdaz_invalid", call = rlang::caller_env()
   )

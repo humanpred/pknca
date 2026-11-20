@@ -120,7 +120,7 @@ summary.PKNCAresults <- function(object, ...,
     class = "pknca_error_summary_string_invalid"
   )
   abort_invalid(
-    !is_condition_value(summarize_n, na_ok = TRUE), "summarize_n", "Must be TRUE, FALSE, or NA (one value)",
+    !is_condition_value(summarize_n, uses = c("if", "and"), na_ok = TRUE), "summarize_n", "Must be TRUE, FALSE, or NA (one value)",
     class = "pknca_error_summary_n_invalid"
   )
 

@@ -870,7 +870,7 @@ test_that("AUCinf and AUMCinf refuse a clast or lambda.z that they cannot use, n
     fixed = TRUE
   )
   expect_error(
-    pk.calc.auc(conc, time, interval = c(0, 24), lambda.z = "0.1"),
+    pk.calc.auc(conc, time, interval = c(0, Inf), auc.type = "AUCinf", lambda.z = "0.1"),
     class = "pknca_error_lambdaz_invalid",
     regexp = "Assertion on 'lambda.z' failed: Must be numeric (or NA).",
     fixed = TRUE
@@ -897,4 +897,23 @@ test_that("AUCinf and AUMCinf refuse a clast or lambda.z that they cannot use, n
     as.numeric(pk.calc.auc.inf.obs(conc, time, clast.obs = 1, lambda.z = 0.1)),
     expected_last + 1/0.1
   )
+})
+
+test_that("an argument that the calculation does not use is not checked, whatever it is", {
+  conc <- c(0, 6, 8, 6, 4, 2, 1)
+  time <- c(0, 1, 2, 4, 8, 12, 24)
+  a_date <- as.Date("2020-01-01")
+  expect_equal(
+    as.numeric(pk.calc.auc(conc, time, interval = c(0, 12), lambda.z = a_date, clast = a_date)),
+    as.numeric(pk.calc.auc(conc, time, interval = c(0, 12)))
+  )
+  expect_equal(
+    as.numeric(pk.calc.aucint(conc, time, interval = c(0, 8), lambda.z = a_date, clast = a_date)),
+    as.numeric(pk.calc.aucint(conc, time, interval = c(0, 8)))
+  )
+  # An interval that does not start at an IV bolus is NA before the AUC is used
+  for (bad in list("0.1", list(0.1))) {
+    expect_true(is.na(pk.calc.auciv.int(conc, time, start = 0, end = 8, time.dose = 0, auc = bad)))
+    expect_true(is.na(pk.calc.aumciv.int(conc, time, start = 0, end = 8, time.dose = 0, aumc = bad)))
+  }
 })

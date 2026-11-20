@@ -2551,7 +2551,7 @@ pk.calc.ceoi <- function(conc, time, duration.dose=NA, check=TRUE) {
     class = "pknca_error_duration_dose_invalid"
   )
   abort_invalid(
-    !is_condition_value(check, factor_ok = TRUE), "check", "Must be TRUE or FALSE (one value, not NA)",
+    !is_condition_value(check), "check", "Must be TRUE or FALSE (one value, not NA)",
     class = "pknca_error_check_invalid"
   )
   if (check) {
