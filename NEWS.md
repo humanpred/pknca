@@ -368,11 +368,19 @@ the generated intervals:
     by default.
   * A parameter registered with `add.interval.col()` after PKNCA is loaded does
     not get a ratio.
+  * A ratio applies where its base does:  it has its base's route, dosing, and
+    sample type (`ratio.ceoi` is for an IV infusion, as `ceoi` is).
+  * `interval_add_param()` and `interval_remove_param()` with `param_pattern`
+    select what they selected before:  a new ratio is selected only when the
+    pattern does not also select its base, so `param_pattern = "clast.obs"`
+    selects `clast.obs` alone, and `param_pattern = "^ratio[.]"` selects the
+    ratios.
   * A new ratio's `PPTESTCD` is its name until a controlled-terminology code is
     confirmed, so most are longer than the 8 characters SDTM allows; its
     `PPTEST` and description are kept within 40 characters (by using the base's
-    name in place of its pretty name when needed).  The six ratios that existed (`ratio.cmax`, `ratio.auclast`,
-    `ratio.aucinf.obs`, `ratio.aucinf.pred`, `ratio.aucint.last`, and
+    name in place of its pretty name when needed).  The six ratios that existed
+    (`ratio.cmax`, `ratio.auclast`, `ratio.aucinf.obs`, `ratio.aucinf.pred`,
+    `ratio.aucint.last`, and
     `ratio.aucint.all`) now come from the rule, in their places, with their
     codes, descriptions, and results unchanged.
   * A name of the form `ratio.<parameter>` that the rule does not make is an
@@ -381,14 +389,14 @@ the generated intervals:
     `pknca_error_invalid_param_name`) that says why:  the base is an AUMC,
     dose-normalized, secondary, an earlier name, not calculated by a function
     of its own, not a concentration, AUC, or amount, or registered after
-    PKNCA was loaded.
+    PKNCA was loaded.  The message of those errors, which lists the names that
+    are not allowed, now ends with that reason for each such name.
 
 * `set_intervals()` adds rows to the units table that `PKNCAdata()` built for a
   requested parameter that has none, such as one registered with
   `add.interval.col()` after the data object was built (@billdenney; PR number
-  to add).  The table that `PKNCAdata()` builds is marked with the
-  `"pknca_units_automatic"` attribute for this; a units table given to
-  `PKNCAdata()` is kept as given.
+  to add).  A units table given to `PKNCAdata()`, or a built one that was
+  edited, is kept as it is.
 
 * The earlier names of renamed parameters (such as `cl.obs` for `cl.inf.obs`
   and `cav` for `cav.last`) are declared with the new `historical_names`

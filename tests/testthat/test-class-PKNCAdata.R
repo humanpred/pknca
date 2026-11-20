@@ -448,14 +448,12 @@ test_that("PKNCAdata units (#336)", {
   o_conc <- PKNCAconc(data = d_conc, conc~time, concu = "concu_x", timeu = "timeu_x")
   o_dose <- PKNCAdose(data = d_dose, dose~time, doseu = "doseu_x")
   o_data <- PKNCAdata(o_conc, o_dose)
-  # The table PKNCAdata() builds is marked so that set_intervals() can add rows
-  # to it
-  expect_true(attr(o_data$units, "pknca_units_automatic"))
   expect_equal(
     o_data$units,
-    pknca_units_table(concu = "A", doseu = "D", timeu = "B"),
-    ignore_attr = "pknca_units_automatic"
+    pknca_units_table(concu = "A", doseu = "D", timeu = "B")
   )
+  # The stored table is exactly the one the units table builder gives
+  expect_identical(o_data$units, pknca_units_table(o_data))
   suppressWarnings(o_nca <- pk.nca(o_data))
   expect_true("Cmax (A)" %in% names(summary(o_nca)))
 

@@ -6,10 +6,11 @@
 #'  [PKNCAdata()] completes them (see [check.interval.specification()]):  a
 #'  parameter that the intervals do not name is added as a column that does not
 #'  request it.
-#'  When [PKNCAdata()] built the units table of the object (see
+#'  When the units table of the object is the one [PKNCAdata()] builds (see
 #'  [pknca_units_table()]), a requested parameter that has no row in it, such
 #'  as one registered with [add.interval.col()] after the object was built,
-#'  gets its rows.  A units table given to [PKNCAdata()] is kept as given.
+#'  gets its rows.  A units table given to [PKNCAdata()], or a built one that
+#'  was edited, is kept as it is.
 #'  It will return the data object with the intervals set.
 #'
 #'  With date-time data, `start` and `end` may be date-times; they are kept
@@ -35,12 +36,14 @@ set_intervals <- function(data, intervals) {
 }
 
 # The units table of `data` with rows for each requested parameter that has
-# none, when the table is the one PKNCAdata() built (marked with the
-# "pknca_units_automatic" attribute); a table given to PKNCAdata() is kept as
-# given.
+# none, when the table is the one PKNCAdata() builds; any other table is kept
+# as given.  A table is the built one when rebuilding it gives the same rows
+# for the parameters it has, and every parameter it lacks was registered after
+# the package was loaded (a table missing a parameter of the package's own was
+# given or edited).
 set_intervals_units <- function(data) {
   units <- data$units
-  if (is.null(units) || !isTRUE(attr(units, "pknca_units_automatic")) || nrow(data$intervals) == 0) {
+  if (is.null(units) || nrow(data$intervals) == 0) {
     return(units)
   }
   param_cols <- intersect(setdiff(names(get.interval.cols()), c("start", "end")), names(data$intervals))
@@ -56,11 +59,29 @@ set_intervals_units <- function(data) {
   }
   rebuilt <- pknca_units_table(data)
   if (is.null(rebuilt) || !identical(names(rebuilt), names(units))) {
-    return(units)  # nocov
+    return(units)
   }
-  ret <- rbind(units, rebuilt[rebuilt$PPTESTCD %in% missing_params, , drop = FALSE])
-  attr(ret, "pknca_units_automatic") <- TRUE
-  ret
+  package_params <- get("interval.cols_package", envir = .PKNCAEnv)
+  lacking <- setdiff(rebuilt$PPTESTCD, units$PPTESTCD)
+  if (any(lacking %in% package_params)) {
+    return(units)
+  }
+  if (!units_tables_equal(rebuilt[rebuilt$PPTESTCD %in% units$PPTESTCD, , drop = FALSE], units)) {
+    return(units)
+  }
+  rbind(units, rebuilt[rebuilt$PPTESTCD %in% missing_params, , drop = FALSE])
+}
+
+# Do two units tables with the same columns have the same rows, in any order?
+units_tables_equal <- function(x, y) {
+  if (nrow(x) != nrow(y)) {
+    return(FALSE)
+  }
+  x_sorted <- x[do.call(order, unname(as.list(x))), , drop = FALSE]
+  y_sorted <- y[do.call(order, unname(as.list(y))), , drop = FALSE]
+  rownames(x_sorted) <- NULL
+  rownames(y_sorted) <- NULL
+  isTRUE(all.equal(x_sorted, y_sorted, check.attributes = FALSE))
 }
 
 #'  Assert Intervals

@@ -89,3 +89,7 @@ local({
 # registry does not depend on what a session has requested.  This file is
 # sourced last.
 register_parameter_rule_members()
+
+# The parameters of the package itself, as opposed to those registered after it
+# is loaded (see set_intervals())
+assign("interval.cols_package", names(get("interval.cols", envir = .PKNCAEnv)), envir = .PKNCAEnv)
