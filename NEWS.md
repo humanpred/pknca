@@ -1258,20 +1258,16 @@ the generated intervals:
     `auclast` does.
   - The IV forms over an interval that starts at an IV bolus after an earlier
     dose.  `aucivint.*` replaces the start of the interval with the
-    back-extrapolated C0, so `aucivint.last`, `aucivint.all`, and what is
+    back-extrapolated C0, so `aucivint.*`, `aumcivint.*`, and what is
     calculated from them do not change with a start imputation.
     `aucivpbext.int.*` is now the percent back-extrapolated relative to the
-    imputed start concentration:  with IV bolus doses at 0 and 24 hours and the
-    predose sample 3 minutes before the second dose, `aucivpbext.int.last`
-    over 24 to 48 hours is 2.01 with `start_cmin` (it was 3.43).  Where the
-    imputed start concentration is above C0, as with `start_predose` on the
-    same data, it is `NA` with a `pknca_warning_auciv_pbext_negative` warning
-    (it was 3.43).  `aucivint.inf.*`, `aumcivint.inf.*`, and what is
-    calculated from them (`cl.ivint.inf.*`, `kel.ivint.inf.*`,
-    `mrt.ivint.inf.*`, `vss.ivint.inf.*`, `vz.ivint.inf.*`, `cav.ivint.inf.*`,
-    `thalf.eff.ivint.inf.*`) now start where the `last` forms do, so for an
-    interval that ends at a sample they equal them:  `aucivint.inf.obs` is
-    20.44 (it was 21.14) and `cl.ivint.inf.obs` 4.89 (it was 4.73).
+    imputed start concentration rather than to a start of 0.  For a bolus
+    profile of `10*exp(-0.15*t)` after each of two doses 24 hours apart,
+    sampled 6 minutes before the second dose, `aucivpbext.int.last` over 24 to
+    48 hours is 1.876 with `start_predose` and 1.875 with `start_cmin` (it was
+    1.928); with `start_conc0` it is 1.928, as before.  Where the imputed start
+    concentration is above C0 (a profile that rises after the dose), it is `NA`
+    with a `pknca_warning_auciv_pbext_negative` warning.
 
   The extrapolation reported in `PPANMETH` follows:  it is "none" where the
   start is now imputed rather than extrapolated, and "AUClast", "AUCall",
