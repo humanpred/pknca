@@ -31,18 +31,18 @@ as-built description, without change.
 - There are six hand-registered `ratio.*` entries
   (R/secondary-parameters.R:398-474), with codes RCMAX, RAUCLST, RAUCIFO,
   RAUCIFP, RAUCINL, and RAUCINA.
-- 54 historical names are in `deprecated_renamed_parameters`
-  (R/deprecated-parameters.R:8), each registered as a full copy of its
-  replacement (R/zzz-pk.calc.dn.R:80).
-  - `assert_intervals()` warns (`pknca_warning_deprecated_parameter`, saying
-    the name "will be an error in the next minor release").
-  - Readers:
-    - deprecated-parameters.R:81 and :88;
-    - zzz-pk.calc.dn.R:81;
-    - pk.calc.all.R:1420 (output-only names);
-    - interval-table.R:162;
-    - exclude_nca.R:995;
-    - set_and_assert_intervals.R:132;
+- 54 historical names, each registered as a full copy of its replacement,
+  were listed by hand before this plan; they are now declared with
+  `historical_names` (see "Historical names in `add.interval.col()`" below),
+  and `pknca_parameter_renames()` lists them.
+  - `assert_intervals()` warns (`pknca_warning_deprecated_parameter`); the
+    old name keeps working.
+  - Readers of the list (each now reads `parameter_renames()`):
+    - deprecated-parameters.R;
+    - pk.calc.all.R (output-only names);
+    - interval-table.R;
+    - exclude_nca.R;
+    - set_and_assert_intervals.R;
     - eight test files.
 - There are 28 SE/DF companions: 12 in auc.R, 12 in auciv.R, and 4 deprecated
   `sparse_*`.  Each is FUN `NA`, depending on its parent.
@@ -154,8 +154,13 @@ To build:
 
 - **Argument:**
   - `historical_names = c("cl.obs")` is a character vector, validated as
-    names that are neither registered nor historical for another parameter
-    (`pknca_error_historical_name_conflict`).
+    names that are neither registered nor historical for another parameter,
+    nor given twice (`pknca_error_historical_name_conflict`), and non-empty
+    and not `NA` (`pknca_error_historical_names_invalid`).
+  - A user who registers a parameter under a historical name gets that
+    parameter (Bill, 2026-11-20: "The user's parameter wins"):  the alias is
+    replaced for the session, in its place, with
+    `pknca_message_historical_name_replaced`.
   - Re-registering a parameter without the argument keeps its historical
     names, so an old name never stops working because of a re-registration.
   - Generated members take theirs by rule from their base (`cav` -> `cav.last`
@@ -163,12 +168,14 @@ To build:
 - **Alias entries (Bill, 2026-11-16: "Generated alias entries"):**
   - `add.interval.col(historical_names = )` is the only place an old name is
     written.  Each old name is registered as an alias entry:  a copy of its
-    parameter marked `historical_of = "<current>"`, tier "uncommon", rebuilt
-    whenever the parameter is registered again and kept at the end of the
-    registry in sorted order.
-  - `deprecated_renamed_parameters`, `register_deprecated_parameter()`, and
-    the copy loop at the end of zzz-pk.calc.dn.R are deleted.
-    `PKNCA.set.summary()` gives an alias its parameter's summary.
+    parameter marked `historical_of = "<current>"`, tier "uncommon", and
+    rebuilt in place whenever the parameter is registered again.
+  - Order:  when the package is loaded, the aliases follow every parameter,
+    in sorted order (`.onLoad()`).  A parameter or alias registered after
+    that is added at the end, after them, as a user parameter was on main.
+  - The hand list and its copy loop are gone; `add.interval.col()` is the
+    only writer.  `PKNCA.set.summary()` gives an alias its parameter's
+    summary, with the aliases last in sorted order.
   - The copies stay in the registry, as aliases, and `get.interval.cols()`
     still lists the old names.  Taking them out of the registry, as an
     earlier draft of this plan said, would need a historical-name lookup at
@@ -179,11 +186,11 @@ To build:
     every reader works unchanged and results are identical to main; an old
     and a current name requested together are both calculated, as on main.
 - **Accessor:**  `pknca_parameter_renames()` returns a data.frame of
-  `historical` and `current`, built from the alias entries; it replaces
-  `deprecated_renamed_parameters` at every reader listed above.
-- **Warning:**  the text changes from "will be an error in the next minor
-  release" to one that promises no removal, for the renamed and the
-  deprecated sparse names alike.
+  `historical` and `current`, built from the alias entries; every reader
+  listed above uses it.
+- **Warning:**  "This NCA parameter is deprecated, and the old name keeps
+  working; use the new name instead", for the renamed and the deprecated
+  sparse names alike, with the same wording in NEWS and the help.
 - **Test:** iterate `pknca_parameter_renames()`.  Each historical name, through
   `pk.nca()`, gives the warning class, the requested PPTESTCD, and the value of
   the current name.

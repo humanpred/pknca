@@ -129,13 +129,17 @@ one.}
 }}
 
 \item{historical_names}{Earlier names of the parameter (a character
-vector), which keep working:  each is registered as an alias of the
-parameter, a copy that calculates the same value under the old name, and a
-request for one warns (\code{pknca_warning_deprecated_parameter}) without any
-plan to remove it.  A name may not be a parameter or an earlier name of
-another parameter (\code{pknca_error_historical_name_conflict}).  \code{NULL} (the
-default) keeps the earlier names the parameter already has, so
-registering it again does not drop them.  See \code{\link[=pknca_parameter_renames]{pknca_parameter_renames()}}.}
+vector):  each is registered as an alias of the parameter, a copy that
+calculates the same value under the old name, and a request for one warns
+(\code{pknca_warning_deprecated_parameter}); the old name keeps working.  A
+name may not be a parameter, an earlier name of another parameter, or
+given twice (\code{pknca_error_historical_name_conflict}), and the names must
+be non-empty and not \code{NA} (\code{pknca_error_historical_names_invalid}).
+\code{NULL} (the default) keeps the earlier names the parameter already has,
+so registering it again does not drop them.  Registering a parameter
+under a name that is an earlier name of another parameter replaces the
+alias for the session, with a \code{pknca_message_historical_name_replaced}
+message.  See \code{\link[=pknca_parameter_renames]{pknca_parameter_renames()}}.}
 }
 \value{
 NULL (Calling this function has a side effect of changing the

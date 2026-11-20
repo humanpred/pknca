@@ -864,9 +864,9 @@ PKNCA.set.summary <- function(name, description, point, spread,
       current[[current_historical]] <- current[[current_name]]
     }
   }
-  # The earlier names come last, in the order of the registry
+  # The earlier names come last, in sorted order
   is_alias <- vapply(X = all_intervals, FUN = function(x) !is.null(x$historical_of), FUN.VALUE = TRUE)
-  historical <- intersect(names(all_intervals)[is_alias], names(current))
+  historical <- sort(intersect(names(all_intervals)[is_alias], names(current)), method = "radix")
   current <- current[c(setdiff(names(current), historical), historical)]
   # Set the summary parameters
   assign("summary", current, envir=.PKNCAEnv)

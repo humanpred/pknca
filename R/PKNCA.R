@@ -39,6 +39,17 @@ utils::globalVariables(".")
   if (requireNamespace("units", quietly = TRUE)) {
     pknca_install_units()
   }
+  # The earlier names of the parameters come after every parameter, so a
+  # parameter registered once the package is loaded follows them
+  assign(
+    "interval.cols", interval_cols_aliases_last(get("interval.cols", envir = .PKNCAEnv)),
+    envir = .PKNCAEnv
+  )
+  for (cache_name in c("interval.cols_sorted", "parameter_classification", "auc_basis_families", "interval.cols_derived", "interval_consistent_sets")) {
+    if (exists(cache_name, envir = .PKNCAEnv, inherits = FALSE)) {
+      rm(list = cache_name, envir = .PKNCAEnv)
+    }
+  }
 } # nocov end
 
 #' Add the units that PKNCA accepts beyond those of udunits

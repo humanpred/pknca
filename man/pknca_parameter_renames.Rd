@@ -17,7 +17,7 @@ parameter is calculated from, as \code{cl.inf.obs} from \code{aucinf.obs}, and t
 words are separated by dots, as \code{count.conc}) keep their earlier names:
 each still calculates, under its old name, the value of the parameter that
 replaced it, and requesting one warns
-(\code{pknca_warning_deprecated_parameter}) without any plan to remove it.  The
+(\code{pknca_warning_deprecated_parameter}); the old name keeps working.  The
 earlier names are declared with the \code{historical_names} argument of
 \code{\link[=add.interval.col]{add.interval.col()}}.
 }
