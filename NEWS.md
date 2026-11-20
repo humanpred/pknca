@@ -1212,6 +1212,38 @@ the generated intervals:
 
 ## Bug fixes
 
+* `start_predose` and `start_predose_conc0` imputation now measure `max_shift`
+  back from the start of the interval (@billdenney).  Before, the window was
+  measured back from time 0, so it was only right for an interval starting at
+  time 0.  For an interval starting later, such as a dosing interval of
+  multiple-dose data or a single dose given at 24 hours, the most recent
+  predose sample was shifted to the start however long before the start it
+  was; for an interval starting before time 0, the window was too narrow.  The
+  defect is present in the released PKNCA 0.12.1 (and since 0.10.0).  Results
+  move only where the predose sample is more than `max_shift` (by default 5%
+  of the interval) before a start other than 0, or within it before a negative
+  start:
+  * With `start_predose`, the start concentration is no longer imputed, so
+    `cstart` is `NA`, `c0` is back-extrapolated instead of taken from the
+    predose sample, and `auclast`, `aucall`, `aumclast`, and `aucinf.obs`
+    are `NA` (an AUC cannot start before the first measurement).  `cmin` no
+    longer includes the shifted predose concentration.  Parameters calculated
+    from these, such as `aucpext.inf.obs` and `cl.inf.obs`, move with them.
+  * With `start_predose_conc0`, a concentration of 0 is imputed at the start
+    instead, so `cstart` and `cmin` become 0, `c0` is back-extrapolated, and
+    the AUCs start from 0.
+  * With the chain `"start_predose,start_cmin"`, the start concentration is the
+    interval minimum instead of the predose sample, so `cstart`, `c0`, and the
+    AUCs move.
+  * Automatically generated intervals use `start_predose_conc0` for a single
+    dose and `start_predose` at steady state, so they move in the same way
+    when the dose is not at time 0.  `count.conc` and `tlag`, which are
+    calculated from the imputed profile, move with them.
+  * For an interval starting before time 0, the reverse:  a predose sample
+    within the window is now shifted where it was not before.
+  * `start_conc0`, `start_cmin`, and `end_conc_drop` already used the interval
+    start and end; their results are unchanged.
+
 * `mrt.iv.*`, `mrt.ivint.*`, `mrt.ivmd.*`, and everything calculated from them
   (`vss.iv.*`, `vss.ivint.*`, `vss.ivmd.*`, `kel.iv.*`, `thalf.eff.iv.*`) are
   now correct, and one value per interval, when an interval has more than one

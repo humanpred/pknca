@@ -199,10 +199,11 @@ pknca_register_impute_method(
 )
 
 #' @eval pknca_rd_impute_method("PKNCA_impute_method_start_predose")
-#' @param max_shift The maximum amount of time to shift a concentration forward
-#'   (defaults to 5% of the interval duration, i.e. `0.05*(end - start)`, if
-#'   `is.finite(end)`, and when `is.infinite(end)`, defaults to 5% of the time
-#'   from start to `max(time)`)
+#' @param max_shift The maximum amount of time to shift a concentration forward,
+#'   measured back from `start` (so a predose sample is shifted when
+#'   `start - time <= max_shift`).  Defaults to 5% of the interval duration,
+#'   i.e. `0.05*(end - start)`, if `is.finite(end)`, and when
+#'   `is.infinite(end)`, defaults to 5% of the time from start to `max(time)`.
 #' @inheritParams pk.nca.interval
 #' @export
 PKNCA_impute_method_start_predose <- function(conc, time, start, end, conc.group, time.group, ..., max_shift = NA_real_, options = list()) {
@@ -227,7 +228,8 @@ PKNCA_impute_method_start_predose <- function(conc, time, start, end, conc.group
     mask_predose <- !is.na(time.group) & !is.na(conc.group) & time.group < start
     if (any(mask_predose)) {
       time_predose <- max(time.group[mask_predose])
-      if ((-time_predose) <= max_shift) {
+      # The shift is measured from the start of the interval, not from time 0
+      if ((start - time_predose) <= max_shift) {
         mask_predose_change <- time.group %in% time_predose & !is.na(conc.group)
         ret_predose <- data.frame(conc = conc.group[mask_predose_change], time = start)
         ret <- dplyr::bind_rows(ret_predose, ret)

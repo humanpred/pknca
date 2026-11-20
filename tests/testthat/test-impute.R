@@ -149,6 +149,100 @@ test_that("PKNCA_impute_method_start_predose", {
   )
 })
 
+test_that("start_predose measures max_shift back from the interval start, not from time 0", {
+  # The window is 5% of the 24-hour interval, so 1.2 hours before the start
+  for (start in c(0, 24)) {
+    # Inside the window:  0.5 hours before the start is shifted to the start
+    expect_equal(
+      PKNCA_impute_method_start_predose(
+        conc = 2:3, time = start + 1:2, start = start, end = start + 24,
+        conc.group = 1:3, time.group = start + c(-0.5, 1:2)
+      ),
+      data.frame(conc = 1:3, time = start + 0:2),
+      info = paste("start", start)
+    )
+    # Outside the window:  10 hours before the start is not shifted
+    expect_equal(
+      PKNCA_impute_method_start_predose(
+        conc = 2:3, time = start + 1:2, start = start, end = start + 24,
+        conc.group = 1:3, time.group = start + c(-10, 1:2)
+      ),
+      data.frame(conc = 2:3, time = start + 1:2),
+      info = paste("start", start)
+    )
+    # A given max_shift is measured from the start, too
+    expect_equal(
+      PKNCA_impute_method_start_predose(
+        conc = 2:3, time = start + 1:2, start = start, end = start + 24,
+        conc.group = 1:3, time.group = start + c(-10, 1:2), max_shift = 10
+      ),
+      data.frame(conc = 1:3, time = start + 0:2),
+      info = paste("start", start)
+    )
+    # With an infinite end, the window is 5% of the time from the start to the
+    # last sample (24 hours here)
+    expect_equal(
+      PKNCA_impute_method_start_predose(
+        conc = 2:4, time = start + c(1:2, 24), start = start, end = Inf,
+        conc.group = 1:4, time.group = start + c(-2, 1:2, 24)
+      ),
+      data.frame(conc = 2:4, time = start + c(1:2, 24)),
+      info = paste("start", start)
+    )
+    # start_predose_conc0 falls back to start_conc0 when the predose sample is
+    # outside the window
+    expect_equal(
+      PKNCA_impute_method_start_predose_conc0(
+        conc = 2:3, time = start + 1:2, start = start, end = start + 24,
+        conc.group = 1:3, time.group = start + c(-10, 1:2)
+      ),
+      PKNCA_impute_method_start_conc0(conc = 2:3, time = start + 1:2, start = start),
+      info = paste("start", start)
+    )
+  }
+  # An interval starting before time 0:  the window is 0.05*25 = 1.25 hours, so
+  # a sample 1 hour before the start is shifted
+  expect_equal(
+    PKNCA_impute_method_start_predose(
+      conc = 2:3, time = 1:2, start = -1, end = 24,
+      conc.group = 1:3, time.group = c(-2, 1:2)
+    ),
+    data.frame(conc = 1:3, time = c(-1, 1:2))
+  )
+})
+
+test_that("pk.nca() gives the same start_predose result for an interval starting at 0 or 24", {
+  # The predose sample is 12 hours before the start of the interval, outside
+  # the 1.2-hour window
+  d_conc <- data.frame(id = 1, time = c(-12, 1, 2, 4, 8, 12, 24), conc = c(2.5, 7, 9, 7, 5, 3, 1.2))
+  d_res <- list()
+  for (start in c(0, 24)) {
+    d_conc_shifted <- d_conc
+    d_conc_shifted$time <- d_conc$time + start
+    intervals <- data.frame(start = start, end = start + 24, cstart = TRUE, auclast = TRUE, impute = "start_predose")
+    o_data <- PKNCAdata(PKNCAconc(d_conc_shifted, conc ~ time | id), intervals = intervals)
+    d_res[[as.character(start)]] <- suppressWarnings(as.data.frame(pk.nca(o_data)))
+  }
+  expect_equal(d_res[["0"]]$PPTESTCD, c("auclast", "cstart"))
+  expect_equal(d_res[["24"]]$PPORRES, d_res[["0"]]$PPORRES)
+  expect_equal(d_res[["24"]]$exclude, d_res[["0"]]$exclude)
+  # Nothing is shifted to the start, so there is no start concentration and
+  # AUClast cannot start at the interval start
+  expect_equal(d_res[["24"]]$PPORRES, c(NA_real_, NA_real_))
+
+  # A predose sample 0.5 hours before the start is shifted, so cstart is that
+  # sample and AUClast starts from it at the interval start
+  d_conc_inside <- data.frame(id = 1, time = c(23.5, 25, 26, 28, 32, 36, 48), conc = c(2.5, 7, 9, 7, 5, 3, 1.2))
+  intervals <- data.frame(start = 24, end = 48, cstart = TRUE, auclast = TRUE, impute = "start_predose")
+  d_res_inside <-
+    as.data.frame(pk.nca(PKNCAdata(PKNCAconc(d_conc_inside, conc ~ time | id), intervals = intervals)))
+  expect_equal(d_res_inside$PPORRES[d_res_inside$PPTESTCD == "cstart"], 2.5)
+  expect_equal(
+    d_res_inside$PPORRES[d_res_inside$PPTESTCD == "auclast"],
+    as.numeric(pk.calc.auc.last(conc = c(2.5, 7, 9, 7, 5, 3, 1.2), time = c(0, 1, 2, 4, 8, 12, 24)))
+  )
+})
+
 test_that("PKNCA_impute_method_start_predose with degenerate data (#361)", {
   # All concentrations missing: a missing predose concentration is not shifted,
   # so no missing value is added at the start time

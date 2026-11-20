@@ -57,10 +57,11 @@ PKNCA_impute_method_end_conc_drop(conc, time, end, ..., options = list())
 
 \item{time.group}{Time of all concentrations measured for the group}
 
-\item{max_shift}{The maximum amount of time to shift a concentration forward
-(defaults to 5\% of the interval duration, i.e. \code{0.05*(end - start)}, if
-\code{is.finite(end)}, and when \code{is.infinite(end)}, defaults to 5\% of the time
-from start to \code{max(time)})}
+\item{max_shift}{The maximum amount of time to shift a concentration forward,
+measured back from \code{start} (so a predose sample is shifted when
+\code{start - time <= max_shift}).  Defaults to 5\% of the interval duration,
+i.e. \code{0.05*(end - start)}, if \code{is.finite(end)}, and when
+\code{is.infinite(end)}, defaults to 5\% of the time from start to \code{max(time)}.}
 }
 \value{
 A data.frame with one column named conc with imputed concentrations
