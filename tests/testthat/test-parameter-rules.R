@@ -439,3 +439,25 @@ test_that("a name the metabolite ratio rule does not make says why", {
     regexp = "the current name \\('mr.cav.last'\\)"
   )
 })
+
+test_that("an intervals row covering every analyte gives NA metabolite ratios, the metabolite's included", {
+  # The row covers the parent too, so its own group matches group_ref.  This
+  # pins the rule as built for every secondary parameter; judging such a row
+  # group by group would change it.
+  intervals_all <- data.frame(start = 0, end = 8, auclast = TRUE, cmax = TRUE, mr.cmax = TRUE)
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc_mr, conc ~ time | subject / analyte),
+      intervals = intervals_all,
+      group_ref = data.frame(analyte = "parent")
+    )
+  expect_warning(
+    d_res <- as.data.frame(pk.nca(o_data)),
+    class = "pknca_warning_secondary_auto_reference"
+  )
+  d_mr <- d_res[d_res$PPTESTCD == "mr.cmax", ]
+  expect_equal(nrow(d_mr), 4)
+  expect_true(all(is.na(d_mr$PPORRES)))
+  expect_true(all(grepl("The interval's own group matches `group_ref`, so there is no distinct reference", d_mr$exclude, fixed = TRUE)))
+  expect_setequal(d_mr$analyte, c("parent", "metab"))
+})

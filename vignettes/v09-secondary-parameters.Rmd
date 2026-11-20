@@ -254,7 +254,11 @@ Nothing in a data set says which analyte is the parent and which the metabolite,
 so a metabolite ratio has to be told.  The metabolite to parent ratio of a
 parameter is `mr.<parameter>` (for example, `mr.aucinf.obs`), and requesting
 one without `group_ref` (or a `mr.<parameter>_ref` pointer) is an error
-(`pknca_error_mr_needs_parent`):
+(`pknca_error_mr_needs_parent`).  The intervals row that requests it must be the
+metabolite's own, so the intervals need the analyte column:  a row without it
+covers the parent too, its own group then matches `group_ref`, and every result
+of the ratio, the metabolite's included, is `NA` because "The interval's own
+group matches `group_ref`, so there is no distinct reference":
 
 ```{r group-ref-parameter-specific}
 d_conc_two <-

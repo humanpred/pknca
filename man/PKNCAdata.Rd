@@ -129,7 +129,12 @@ references to the plasma profiles and
 \code{group_ref = data.frame(PCTEST = "midazolam")} directs metabolite ratios
 (\verb{mr.<parameter>}) to the parent analyte.  A metabolite ratio requires
 \code{group_ref} or a \verb{<parameter>_ref} pointer
-(\code{pknca_error_mr_needs_parent}).  The same data.frame with a \code{parameter} column
+(\code{pknca_error_mr_needs_parent}), and the intervals row requesting it must
+be the metabolite's own (the intervals need the analyte column):  a row
+that covers every analyte also covers the parent, so its own group matches
+\code{group_ref} and every result, the metabolite's included, is \code{NA} with the
+reason "The interval's own group matches \code{group_ref}, so there is no
+distinct reference".  The same data.frame with a \code{parameter} column
 applies each row only to the secondary parameter it names, and the columns
 a parameter's rows leave \code{NA} do not apply to it, so one table can steer
 renal clearance by \code{PCSPEC} and a metabolite ratio by \code{PCTEST}:
