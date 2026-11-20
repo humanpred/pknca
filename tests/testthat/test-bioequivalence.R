@@ -734,3 +734,25 @@ test_that("be_compare raises input errors directly instead of skipping every fra
     )
   )
 })
+
+test_that("be_fit_model_single() refuses a scaling that is not one TRUE or FALSE", {
+  ds <- be_dataset(generate_be_williams(), "treatment", "R", "auclast")
+  expect_error(be_fit_model_single(ds$data, "anova", scaling = NA), class = "pknca_error_be_scaling_invalid")
+  expect_error(be_fit_model_single(ds$data, "anova", scaling = c(TRUE, FALSE)), class = "pknca_error_be_scaling_invalid")
+})
+
+test_that("a BE column given as more than one name is refused, and an empty one is searched for", {
+  d <- generate_be_williams()
+  expect_error(
+    be_dataset(d, "treatment", "R", "auclast", subject = c("subject", "period")),
+    class = "pknca_error_be_column_invalid"
+  )
+  expect_error(
+    be_dataset(d, "treatment", "R", "auclast", period = 1),
+    class = "pknca_error_be_column_invalid"
+  )
+  expect_equal(
+    be_dataset(d, "treatment", "R", "auclast", subject = character(0)),
+    be_dataset(d, "treatment", "R", "auclast")
+  )
+})

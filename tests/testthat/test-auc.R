@@ -841,3 +841,19 @@ test_that("the sparse estimators report under the unified parameter names", {
     class = "pknca_error_sparse_aumc_method"
   )
 })
+
+test_that("AUCinf and AUMCinf refuse a clast or lambda.z that is not one number", {
+  conc <- c(0, 6, 8, 6, 4, 2, 1)
+  time <- c(0, 1, 2, 4, 8, 12, 24)
+  expect_error(pk.calc.auc.inf.obs(conc, time, clast.obs = numeric(0), lambda.z = 0.1), class = "pknca_error_clast_invalid")
+  expect_error(pk.calc.auc.inf.obs(conc, time, clast.obs = c(1, 2), lambda.z = 0.1), class = "pknca_error_clast_invalid")
+  expect_error(pk.calc.auc.inf.pred(conc, time, clast.pred = numeric(0), lambda.z = 0.1), class = "pknca_error_clast_invalid")
+  expect_error(pk.calc.auc.inf.obs(conc, time, clast.obs = 1, lambda.z = numeric(0)), class = "pknca_error_lambdaz_invalid")
+  expect_error(pk.calc.aumc.inf.obs(conc, time, clast.obs = numeric(0), lambda.z = 0.1), class = "pknca_error_clast_invalid")
+  expect_error(pk.calc.aumc.inf.pred(conc, time, clast.pred = 1, lambda.z = numeric(0)), class = "pknca_error_lambdaz_invalid")
+  # One number is accepted
+  expect_equal(
+    as.numeric(pk.calc.auc.inf.obs(conc, time, clast.obs = 1, lambda.z = 0.1)),
+    as.numeric(pk.calc.auc.last(conc, time)) + 1/0.1
+  )
+})

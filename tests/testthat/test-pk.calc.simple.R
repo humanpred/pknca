@@ -864,3 +864,19 @@ test_that("count.conc and count.conc.measured count imputed concentrations by va
   # by both even though it was not measured at that time
   expect_equal(counts("start_cmin"), c(conc = 7, measured = 7))
 })
+
+test_that("swing and ceoi refuse an argument that is not one number", {
+  expect_error(pk.calc.swing(numeric(0), 1), class = "pknca_error_cmax_invalid")
+  expect_error(pk.calc.swing(10, numeric(0)), class = "pknca_error_cmin_invalid")
+  expect_error(pk.calc.swing(10, c(1, 2)), class = "pknca_error_cmin_invalid")
+  expect_equal(pk.calc.swing(10, 2), 400)
+  expect_error(
+    pk.calc.ceoi(conc = c(0, 5, 3), time = c(0, 1, 2), duration.dose = numeric(0)),
+    class = "pknca_error_duration_dose_invalid"
+  )
+  expect_error(
+    pk.calc.ceoi(conc = c(0, 5, 3), time = c(0, 1, 2), duration.dose = c(1, 2)),
+    class = "pknca_error_duration_dose_invalid"
+  )
+  expect_equal(pk.calc.ceoi(conc = c(0, 5, 3), time = c(0, 1, 2), duration.dose = 1), 5)
+})

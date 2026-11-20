@@ -1674,3 +1674,20 @@ test_that("the Tobit half-life works for sparse data with the LLOQ of the mean p
     regexp = "lloq must be provided"
   )
 })
+
+test_that("half-life refuses a tmax or tlast that is not one number and gives the reason for a missing tmax", {
+  conc <- c(0, 6, 8, 6, 4, 2, 1)
+  time <- c(0, 1, 2, 4, 8, 12, 24)
+  expect_error(pk.calc.half.life(conc, time, tmax = numeric(0)), class = "pknca_error_tmax_invalid")
+  expect_error(pk.calc.half.life(conc, time, tmax = c(1, 2)), class = "pknca_error_tmax_invalid")
+  expect_error(pk.calc.half.life(conc, time, tlast = numeric(0)), class = "pknca_error_tlast_invalid")
+  ret <- pk.calc.half.life(conc, time, tmax = NA)
+  expect_equal(attr(ret, "exclude"), "Tmax is missing")
+  expect_true(is.na(ret$lambda.z))
+  expect_true(is.na(ret$half.life))
+  expect_null(ret$tmax)
+  # A missing tlast does not stop the fit; clast.pred is missing
+  ret_tlast <- pk.calc.half.life(conc, time, tlast = NA)
+  expect_equal(ret_tlast$lambda.z, pk.calc.half.life(conc, time)$lambda.z)
+  expect_true(is.na(ret_tlast$clast.pred))
+})

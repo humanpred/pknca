@@ -1370,3 +1370,29 @@ test_that("the AUMC over an interval is weighted from its start when the start a
     as.numeric(pk.calc.aumc(conc = conc[6:11], time = time[6:11] - start)) + tail_aumc
   )
 })
+
+test_that("aucint refuses a lambda.z or clast that is not one number", {
+  conc <- c(0, 6, 8, 6, 4, 2, 1)
+  time <- c(0, 1, 2, 4, 8, 12, 24)
+  expect_error(
+    pk.calc.aucint.inf.obs(conc = conc, time = time, start = 0, end = 30, clast.obs = 1, lambda.z = numeric(0)),
+    class = "pknca_error_lambdaz_invalid"
+  )
+  expect_error(
+    pk.calc.aucint.inf.obs(conc = conc, time = time, start = 0, end = 30, clast.obs = 1, lambda.z = c(0.1, 0.2)),
+    class = "pknca_error_lambdaz_invalid"
+  )
+  expect_error(
+    pk.calc.aucint.inf.obs(conc = conc, time = time, start = 0, end = 30, clast.obs = numeric(0), lambda.z = 0.1),
+    class = "pknca_error_clast_invalid"
+  )
+  expect_error(
+    pk.calc.aucint.inf.pred(conc = conc, time = time, start = 0, end = 30, clast.pred = c(1, 2), lambda.z = 0.1),
+    class = "pknca_error_clast_invalid"
+  )
+  # A missing lambda.z is not an error:  within the data the AUC is AUClast
+  expect_equal(
+    as.numeric(pk.calc.aucint.inf.obs(conc = conc, time = time, start = 0, end = 24, clast.obs = 1, lambda.z = NA)),
+    as.numeric(pk.calc.aucint.last(conc = conc, time = time, start = 0, end = 24))
+  )
+})

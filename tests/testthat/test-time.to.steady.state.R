@@ -804,3 +804,22 @@ test_that("pk.tss.stepwise.linear does not warn for failures when steady state i
   )
   expect_equal(res, data.frame(tss.stepwise.linear = 7))
 })
+
+test_that("the time to steady state refuses a zero-length tss.fraction, min.points, or level", {
+  tmpdata <- data.frame(conc = c(0, 5, 8, 9, 9.5, 9.7, 9.8), time = 0:6, subject = 1, treatment = "A")
+  expect_error(
+    pk.tss.monoexponential(conc = tmpdata$conc, time = tmpdata$time, subject = tmpdata$subject,
+                           treatment = tmpdata$treatment, time.dosing = 0:6, tss.fraction = numeric(0)),
+    class = "pknca_error_tss_argument_invalid"
+  )
+  expect_error(
+    pk.tss.stepwise.linear(conc = tmpdata$conc, time = tmpdata$time, subject = tmpdata$subject,
+                           treatment = tmpdata$treatment, time.dosing = 0:6, min.points = numeric(0)),
+    class = "pknca_error_tss_argument_invalid"
+  )
+  expect_error(
+    pk.tss.stepwise.linear(conc = tmpdata$conc, time = tmpdata$time, subject = tmpdata$subject,
+                           treatment = tmpdata$treatment, time.dosing = 0:6, level = numeric(0)),
+    class = "pknca_error_tss_argument_invalid"
+  )
+})

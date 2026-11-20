@@ -706,3 +706,12 @@ test_that("Preferred units with unit columns convert the groups that need it and
   df_nca_dose <- as.data.frame(pk.nca(o_data_dose))
   expect_equal(df_nca_dose$PPSTRES[df_nca_dose$PPTESTCD == "cmax.dn"], c(10, 10))
 })
+
+test_that("a zero-length unit is refused, while NA means no unit", {
+  expect_error(pknca_units_table(concu = character(0)), class = "pknca_error_units_zero_length")
+  expect_error(pknca_units_table(timeu = character(0)), class = "pknca_error_units_zero_length")
+  expect_equal(
+    pknca_units_table(concu = NA_character_, timeu = "hr"),
+    pknca_units_table(timeu = "hr")
+  )
+})

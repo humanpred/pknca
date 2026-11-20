@@ -1188,3 +1188,44 @@ test_that("the stratum calculation gives NA for a stratum of one animal, as the 
   expected <- sparse_var_matrix_reference(sparse_pk)
   expect_true(is.na(expected))
 })
+
+test_that("the sparse AUCinf and AUMCinf refuse half-life inputs that are not one value", {
+  hl <- sparse_inf_half_life(d_sparse_inf)
+  for (current_fun in list(pk.calc.aucinf.obs_sparse, pk.calc.aumcinf.obs_sparse)) {
+    expect_error(
+      current_fun(
+        conc = d_sparse_inf$conc, time = d_sparse_inf$time, subject = d_sparse_inf$subject,
+        lambda.z = numeric(0), lambda.z.time.first = hl$lambda.z.time.first,
+        lambda.z.time.last = hl$lambda.z.time.last, lambda.z.n.points = hl$lambda.z.n.points
+      ),
+      class = "pknca_error_lambdaz_invalid"
+    )
+    expect_error(
+      current_fun(
+        conc = d_sparse_inf$conc, time = d_sparse_inf$time, subject = d_sparse_inf$subject,
+        lambda.z = hl$lambda.z, lambda.z.time.first = hl$lambda.z.time.first,
+        lambda.z.time.last = hl$lambda.z.time.last, lambda.z.n.points = integer(0)
+      ),
+      class = "pknca_error_lambdaz_invalid"
+    )
+    # A missing number of half-life points gives the estimate without its
+    # delta-method standard error
+    expect_warning(
+      result <-
+        current_fun(
+          conc = d_sparse_inf$conc, time = d_sparse_inf$time, subject = d_sparse_inf$subject,
+          lambda.z = hl$lambda.z, lambda.z.time.first = hl$lambda.z.time.first,
+          lambda.z.time.last = hl$lambda.z.time.last, lambda.z.n.points = NA
+        ),
+      class = "pknca_warning_sparse_lambda_z_points"
+    )
+    expected <-
+      current_fun(
+        conc = d_sparse_inf$conc, time = d_sparse_inf$time, subject = d_sparse_inf$subject,
+        lambda.z = hl$lambda.z, lambda.z.time.first = hl$lambda.z.time.first,
+        lambda.z.time.last = hl$lambda.z.time.last, lambda.z.n.points = hl$lambda.z.n.points
+      )
+    expect_equal(result[[1]], expected[[1]])
+    expect_true(is.na(result[[2]]))
+  }
+})

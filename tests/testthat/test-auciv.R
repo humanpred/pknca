@@ -861,3 +861,22 @@ test_that("aucivint for an interval starting at an IV infusion is the AUCint", {
   expect_equal(value_of("vss.ivint.last", 12), mrt_second*100/auc_second)
   expect_equal(value_of("kel.ivint.last", 12), 1/mrt_second)
 })
+
+test_that("the IV AUC corrections refuse a c0 or AUXC that is not one number", {
+  conc <- c(10, 6, 4, 2, 1)
+  time <- c(0, 1, 2, 4, 8)
+  expect_error(
+    pk.calc.auciv(conc = conc, time = time, c0 = numeric(0), auc = 20),
+    class = "pknca_error_c0_invalid"
+  )
+  expect_error(
+    pk.calc.auciv(conc = conc, time = time, c0 = 12, auc = numeric(0)),
+    class = "pknca_error_auxc_invalid"
+  )
+  expect_error(
+    pk.calc.auciv.int(
+      conc = conc, time = time, start = 0, end = 8, time.dose = 0, route = "intravascular", auc = c(1, 2)
+    ),
+    class = "pknca_error_auxc_invalid"
+  )
+})

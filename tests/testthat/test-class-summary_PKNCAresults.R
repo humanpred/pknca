@@ -664,3 +664,19 @@ test_that("summary() joins ordered factor groups whose levels differ between the
   expect_equal(d_summary_all$N, "2")
   expect_equal(d_summary_all$cmax, "3.46 [20.6]")
 })
+
+test_that("summary() refuses a not_calculated or not_requested that is not one string, and a point summary that is not one value", {
+  d_conc <- data.frame(id = rep(1:2, each = 4), time = rep(c(0, 1, 2, 4), 2), conc = c(0, 5, 3, 1, 0, 6, 4, 2))
+  o_data <- PKNCAdata(PKNCAconc(d_conc, conc ~ time | id), intervals = data.frame(start = 0, end = 4, cmax = TRUE))
+  o_nca <- pk.nca(o_data)
+  expect_error(summary(o_nca, not_calculated = c("NC", "x")), class = "pknca_error_summary_string_invalid")
+  expect_error(summary(o_nca, not_requested = character(0)), class = "pknca_error_summary_string_invalid")
+  # NA is a string here:  the cell is NA
+  expect_s3_class(summary(o_nca, not_calculated = NA_character_), "summary_PKNCAresults")
+  original <- PKNCA.set.summary()$cmax
+  withr::defer(
+    PKNCA.set.summary(name = "cmax", description = original$description, point = original$point, spread = original$spread, rounding = original$rounding)
+  )
+  PKNCA.set.summary(name = "cmax", description = "two values", point = range, spread = stats::sd)
+  expect_error(summary(o_nca), class = "pknca_error_summary_point_invalid")
+})

@@ -606,3 +606,10 @@ test_that("PKNCA_options_defaults reads defaults without changing the current op
   expect_error(PKNCA_options_defaults(NA_character_), regexp = "missing")
   expect_error(PKNCA_options_defaults(character()), regexp = "length >= 1")
 })
+
+test_that("PKNCA.options() refuses default and check that are not one TRUE or FALSE", {
+  expect_error(PKNCA.options(default = c(TRUE, FALSE)), class = "pknca_error_options_flag_invalid")
+  expect_error(PKNCA.options(default = NA), class = "pknca_error_options_flag_invalid")
+  expect_error(PKNCA.options(check = logical(0)), class = "pknca_error_options_flag_invalid")
+  expect_error(PKNCA.options(check = "yes"), class = "pknca_error_options_flag_invalid")
+})
