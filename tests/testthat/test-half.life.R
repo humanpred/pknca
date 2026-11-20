@@ -1675,14 +1675,19 @@ test_that("the Tobit half-life works for sparse data with the LLOQ of the mean p
   )
 })
 
-test_that("half-life refuses a tmax or tlast that is not one number and gives the reason for a missing tmax", {
+test_that("half-life refuses a tmax or tlast that is not one number, and a missing tmax leaves no points", {
   conc <- c(0, 6, 8, 6, 4, 2, 1)
   time <- c(0, 1, 2, 4, 8, 12, 24)
   expect_error(pk.calc.half.life(conc, time, tmax = numeric(0)), class = "pknca_error_tmax_invalid")
   expect_error(pk.calc.half.life(conc, time, tmax = c(1, 2)), class = "pknca_error_tmax_invalid")
   expect_error(pk.calc.half.life(conc, time, tlast = numeric(0)), class = "pknca_error_tlast_invalid")
-  ret <- pk.calc.half.life(conc, time, tmax = NA)
-  expect_equal(attr(ret, "exclude"), "Tmax is missing")
+  # The terminal phase is after Tmax, so a missing Tmax leaves no point for it,
+  # as when pk.nca() gives the Tmax of an interval with no measurement
+  expect_warning(
+    ret <- pk.calc.half.life(conc, time, tmax = NA),
+    class = "pknca_warning_halflife_too_few_points"
+  )
+  expect_equal(attr(ret, "exclude"), "Too few points for half-life calculation (min.hl.points=3 with only 0 points)")
   expect_true(is.na(ret$lambda.z))
   expect_true(is.na(ret$half.life))
   expect_null(ret$tmax)

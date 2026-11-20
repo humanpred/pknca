@@ -1239,7 +1239,8 @@ the generated intervals:
     (`pknca_error_tss_argument_invalid`).
 
   Four calls that stopped now give a result:  `pk.calc.half.life()` with
-  `tmax = NA` gives `NA` with the reason "Tmax is missing"; the sparse
+  `tmax = NA` gives `NA` with too few points after Tmax, as `pk.nca()`
+  already did for an interval with no measurement; the sparse
   AUCinf and AUMCinf with `lambda.z.n.points = NA` give the estimate without
   its standard error and warn (`pknca_warning_sparse_lambda_z_points`);
   `be_dataset()` of results whose concentration data have no groups looks

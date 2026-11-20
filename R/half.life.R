@@ -324,14 +324,6 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
     abort_check(checkmate::check_number(tlast, na.ok = TRUE), "tlast", class = "pknca_error_tlast_invalid")
     ret$tlast <- tlast
   }
-  if (!missing(tmax) && is.na(tmax)) {
-    # The terminal phase is found after Tmax, so a given Tmax that is missing
-    # leaves none
-    attr(ret, "exclude") <- "Tmax is missing"
-    if (!missing(tmax)) ret$tmax <- NULL
-    if (!missing(tlast)) ret$tlast <- NULL
-    return(ret)
-  }
 
   # When all concentrations are the same (non-zero) value cannot compute half-life (#503)
   if (isTRUE(stats::sd(data$log_conc[is.finite(data$log_conc)], na.rm = TRUE) == 0)) {
@@ -346,9 +338,10 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
   if (!is_tobit) {
     # Data frame to use for computation of half-life
     if (allow.tmax.in.half.life) {
-      dfK <- data[as.numeric(data$time) >= as.numeric(ret$tmax), ]
+      # A missing Tmax leaves no point after it (`%in% TRUE`), so too few points
+      dfK <- data[(as.numeric(data$time) >= as.numeric(ret$tmax)) %in% TRUE, ]
     } else {
-      dfK <- data[as.numeric(data$time) > as.numeric(ret$tmax), ]
+      dfK <- data[(as.numeric(data$time) > as.numeric(ret$tmax)) %in% TRUE, ]
     }
     # Every candidate span ends at the last point, so a span that may not start
     # before min.hl.start.time cannot include any point before it (0 does not
@@ -444,9 +437,9 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
     # Data frame for Tobit: all non-NA points after tmax (including BLQ),
     # sorted ascending by time
     if (allow.tmax.in.half.life) {
-      dfK_all <- data_tobit[data_tobit$time >= ret$tmax, ]
+      dfK_all <- data_tobit[(data_tobit$time >= ret$tmax) %in% TRUE, ]
     } else {
-      dfK_all <- data_tobit[data_tobit$time > ret$tmax, ]
+      dfK_all <- data_tobit[(data_tobit$time > ret$tmax) %in% TRUE, ]
     }
     if (min.hl.start.time > 0) {
       dfK_all <- dfK_all[dfK_all$time >= min.hl.start.time, ]
