@@ -572,8 +572,8 @@ the generated intervals:
 
 * The method (`PPANMETH`) column for an `aucint` or `aumcint` parameter reports
   whether the calculation was dose-aware and how the region after Tlast was
-  handled:  with the half-life, with `AUCall` when the half-life is not
-  estimable, or not at all when the interval ends at or before Tlast (#539).
+  handled:  with the half-life, or not at all when the interval ends at or
+  before Tlast (#539).
 
 * Concentration and dose times may be date-times (POSIXct) or dates (Date,
   taken as 08:00).  `PKNCAdata()` checks them and keeps them, and `pk.nca()`
@@ -1310,6 +1310,26 @@ the generated intervals:
     place of the error.  `pk.calc.auciv_pbext()` treats an `auciv` below `auc`
     by no more than floating-point noise as 0 percent.
 
+* A reason for exclusion that reaches a parameter through more than one input
+  is given once in the `exclude` column (@billdenney).  With too few points
+  for a half-life, `kel.obs` was excluded with "Too few points for half-life
+  calculation (min.hl.points=3 with only 2 points); Too few points for
+  half-life calculation (min.hl.points=3 with only 2 points)" and is now
+  excluded with that reason once.  Only the `exclude` text changes, never a
+  value or whether a result is excluded.  It changes for the parameters
+  calculated from the half-life and from other excluded results, such as
+  `aucinf.pred`, `aucivinf.*`, `aumcinf.*`, `aucpext.*`, `cl`, `kel`, `mrt`,
+  `thalf.eff`, `vss`, and `vz`, with their IV and multiple-dose forms.
+
+* `aucivint.inf.*` and `aumcivint.inf.*` are excluded with the half-life's
+  reason when the half-life changes the segment they replace (the trough
+  after an earlier dose, estimated with it).  Otherwise they keep the
+  exclusion of the `aucint.inf.*` or `aumcint.inf.*` they start from, which
+  carries the half-life's reason when that used it.  For this, a function
+  that calculates a parameter can name the arguments that did not enter its
+  result in an `exclude_unused_args` attribute (see
+  `vignette("v80-writing-parameter-functions")`). (@billdenney)
+
 * `mrt.iv.*`, `mrt.ivint.*`, `mrt.ivmd.*`, and everything calculated from them
   (`vss.iv.*`, `vss.ivint.*`, `vss.ivmd.*`, `kel.iv.*`, `thalf.eff.iv.*`) are
   now correct, and one value per interval, when an interval has more than one
@@ -1453,6 +1473,16 @@ the generated intervals:
   when they used it.  An interval that ends at or before Tlast is interpolated
   throughout, so it is calculated and reported even when the half-life is
   excluded or was not estimable (#270, #450).
+
+* An interval AUC or AUMC to infinity (`aucint.inf.obs`, `aucint.inf.pred`,
+  `aumcint.inf.obs`, `aumcint.inf.pred`, the IV forms `aucivint.inf.*` and
+  `aumcivint.inf.*`, and the parameters calculated from them) whose interval
+  ends after the last measurable concentration is `NA` when the half-life is
+  not estimable, as in PKNCA 0.12.1.  It is excluded with the half-life's
+  reason followed by "the half-life is NA".  An interval that ends at or before
+  the last measurable concentration is still calculated.  During development
+  the region after the last measurable concentration fell back to `AUCall`
+  instead; that value was never released. (@billdenney)
 
 * `aucint` parameters use the route and duration of dosing, so an
   intravenous bolus within the interval is no longer treated as an
