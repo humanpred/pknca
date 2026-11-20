@@ -361,7 +361,10 @@ the generated intervals:
   include the area after the interval.  New `aucivint.inf.obs` and
   `aucivint.inf.pred` complete the IV interval AUCs (`aucint.inf.obs` and
   `aucint.inf.pred` with C0 back-extrapolated, as `aucivint.last` and
-  `aucivint.all` are).  The new parameters are in the `"uncommon"` tier, so
+  `aucivint.all` are); the segment they replace starts from the concentration
+  that `aucint.inf.*` estimated at the start with the half-life, so over an
+  interval that ends at a sample they equal `aucivint.last`, as do the AUMC
+  forms and what is calculated from them.  The new parameters are in the `"uncommon"` tier, so
   `pknca_interval_table()` offers the ones matching the interval's AUC basis
   when `tier = "all"` or when `include` names them or their concept.  CDISC
   PKPARMCD has no codes for them, so they carry sponsor-defined PPTESTCD codes

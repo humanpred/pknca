@@ -17,7 +17,11 @@ pk.calc.auxciv.int(
   duration.dose = 0,
   auxc,
   fun_auxcint_last,
-  options = list()
+  options = list(),
+  auc.type = "AUClast",
+  lambda.z = NA,
+  clast = NA,
+  fun_auxcint = NULL
 )
 
 pk.calc.auciv.int(
@@ -29,7 +33,10 @@ pk.calc.auciv.int(
   route = "extravascular",
   duration.dose = 0,
   auc,
-  options = list()
+  options = list(),
+  auc.type = "AUClast",
+  lambda.z = NA,
+  clast = NA
 )
 
 pk.calc.aumciv.int(
@@ -41,7 +48,10 @@ pk.calc.aumciv.int(
   route = "extravascular",
   duration.dose = 0,
   aumc,
-  options = list()
+  options = list(),
+  auc.type = "AUClast",
+  lambda.z = NA,
+  clast = NA
 )
 }
 \arguments{
@@ -58,10 +68,18 @@ dose, as for \code{\link[=pk.calc.aucint]{pk.calc.aucint()}}, so a bolus must be
 
 \item{fun_auxcint_last}{The AUClast-type AUXCint function
 (\code{\link[=pk.calc.aucint.last]{pk.calc.aucint.last()}} or \code{\link[=pk.calc.aumcint.last]{pk.calc.aumcint.last()}}) used for the segment
-that is replaced}
+that is replaced when \code{auc.type} is not \code{"AUCinf"}}
 
 \item{options}{List of changes to the default PKNCA options (see
 \code{PKNCA.options()})}
+
+\item{auc.type, lambda.z, clast}{The AUC type of \code{auxc} and, for \code{"AUCinf"},
+the half-life inputs it was calculated with}
+
+\item{fun_auxcint}{The AUXCint function (\code{\link[=pk.calc.aucint]{pk.calc.aucint()}} or
+\code{\link[=pk.calc.aumcint]{pk.calc.aumcint()}}) used for the segment that is replaced when \code{auc.type}
+is \code{"AUCinf"}, so that the segment starts from the concentration that
+\code{auxc} estimated at the start of the interval (with \code{lambda.z})}
 
 \item{auc}{The AUC over the interval from the AUCint family}
 

@@ -159,7 +159,13 @@ pknca_concept(pk.calc.auciv) <- "auc"
 #' @param auxc The AUXC over the interval from the AUCint or AUMCint family
 #' @param fun_auxcint_last The AUClast-type AUXCint function
 #'   ([pk.calc.aucint.last()] or [pk.calc.aumcint.last()]) used for the segment
-#'   that is replaced
+#'   that is replaced when `auc.type` is not `"AUCinf"`
+#' @param fun_auxcint The AUXCint function ([pk.calc.aucint()] or
+#'   [pk.calc.aumcint()]) used for the segment that is replaced when `auc.type`
+#'   is `"AUCinf"`, so that the segment starts from the concentration that
+#'   `auxc` estimated at the start of the interval (with `lambda.z`)
+#' @param auc.type,lambda.z,clast The AUC type of `auxc` and, for `"AUCinf"`,
+#'   the half-life inputs it was calculated with
 #' @inheritParams PKNCA.choose.option
 #' @return The AUXC over the interval with C0 back-extrapolated
 #' @family AUC calculations
@@ -167,7 +173,8 @@ pknca_concept(pk.calc.auciv) <- "auc"
 #' @export
 pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extravascular",
                                duration.dose = 0,
-                               auxc, fun_auxcint_last, options = list()) {
+                               auxc, fun_auxcint_last, options = list(),
+                               auc.type = "AUClast", lambda.z = NA, clast = NA, fun_auxcint = NULL) {
   if (is.na(auxc)) {
     return(structure(NA_real_, exclude = "AUCint is not calculated"))
   }
@@ -221,14 +228,24 @@ pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extra
   # Both segments come from the same AUXCint function, so they use its time
   # scale and integration method.  The trough segment interpolates the same
   # data that `auxc` did, so a warning about that interpolation repeats one
-  # that calculating `auxc` already gave.
+  # that calculating `auxc` already gave.  It is calculated as `auxc` was:  an
+  # AUCinf-type `auxc` may estimate the concentration at the start with the
+  # half-life, and the segment it replaces must start from that concentration.
+  trough_args <-
+    list(
+      conc = conc, time = time, start = start, end = data_after$time[1],
+      time.dose = time.dose, route = route, duration.dose = duration.dose,
+      options = options
+    )
+  if (identical(auc.type, "AUCinf")) {
+    trough_fun <- fun_auxcint
+    trough_args <- c(trough_args, list(auc.type = "AUCinf", lambda.z = lambda.z, clast = clast))
+  } else {
+    trough_fun <- fun_auxcint_last
+  }
   segment_trough <-
     withCallingHandlers(
-      fun_auxcint_last(
-        conc = conc, time = time, start = start, end = data_after$time[1],
-        time.dose = time.dose, route = route, duration.dose = duration.dose,
-        options = options
-      ),
+      do.call(trough_fun, trough_args),
       pknca_warning_interp_extrap_conc_dose = muffle_warning_condition
     )
   segment_c0 <-
@@ -250,11 +267,12 @@ muffle_warning_condition <- function(cnd) {
 #' @export
 pk.calc.auciv.int <- function(conc, time, start, end, time.dose, route = "extravascular",
                               duration.dose = 0,
-                              auc, options = list()) {
+                              auc, options = list(), auc.type = "AUClast", lambda.z = NA, clast = NA) {
   pk.calc.auxciv.int(
     conc = conc, time = time, start = start, end = end,
     time.dose = time.dose, route = route, duration.dose = duration.dose,
-    auxc = auc, fun_auxcint_last = pk.calc.aucint.last, options = options
+    auxc = auc, fun_auxcint_last = pk.calc.aucint.last, options = options,
+    auc.type = auc.type, lambda.z = lambda.z, clast = clast, fun_auxcint = pk.calc.aucint
   )
 }
 
@@ -266,11 +284,12 @@ pknca_concept(pk.calc.auciv.int) <- "auc"
 #' @export
 pk.calc.aumciv.int <- function(conc, time, start, end, time.dose, route = "extravascular",
                                duration.dose = 0,
-                               aumc, options = list()) {
+                               aumc, options = list(), auc.type = "AUClast", lambda.z = NA, clast = NA) {
   pk.calc.auxciv.int(
     conc = conc, time = time, start = start, end = end,
     time.dose = time.dose, route = route, duration.dose = duration.dose,
-    auxc = aumc, fun_auxcint_last = pk.calc.aumcint.last, options = options
+    auxc = aumc, fun_auxcint_last = pk.calc.aumcint.last, options = options,
+    auc.type = auc.type, lambda.z = lambda.z, clast = clast, fun_auxcint = pk.calc.aumcint
   )
 }
 
@@ -443,7 +462,8 @@ add.interval.col(
   desc = "AUCint,inf,obs, IV back-extrap C0",
   sparse = FALSE,
   formalsmap = list(auc = "aucint.inf.obs", conc = "conc.group", time = "time.group", time.dose = "time.dose.group",
-                    route = "route.group", duration.dose = "duration.dose.group"),
+                    route = "route.group", duration.dose = "duration.dose.group",
+                    auc.type = I("AUCinf"), lambda.z = "lambda.z", clast = "clast.obs"),
   # The bolus at the start of the interval makes this IV bolus only
   selection = list(route = "iv_bolus"),
   pptestcd_cdisc="AUCIVIIO",
@@ -459,7 +479,8 @@ add.interval.col(
   desc = "AUCint,inf,pred, IV back-extrap C0",
   sparse = FALSE,
   formalsmap = list(auc = "aucint.inf.pred", conc = "conc.group", time = "time.group", time.dose = "time.dose.group",
-                    route = "route.group", duration.dose = "duration.dose.group"),
+                    route = "route.group", duration.dose = "duration.dose.group",
+                    auc.type = I("AUCinf"), lambda.z = "lambda.z", clast = "clast.pred"),
   # The bolus at the start of the interval makes this IV bolus only
   selection = list(route = "iv_bolus"),
   pptestcd_cdisc="AUCIVIIP",
@@ -816,7 +837,8 @@ add.interval.col(
   desc = "AUMCint,inf,pred, IV back-extrap C0",
   sparse = FALSE,
   formalsmap = list(aumc = "aumcint.inf.pred", conc = "conc.group", time = "time.group", time.dose = "time.dose.group",
-                    route = "route.group", duration.dose = "duration.dose.group"),
+                    route = "route.group", duration.dose = "duration.dose.group",
+                    auc.type = I("AUCinf"), lambda.z = "lambda.z", clast = "clast.pred"),
   # The bolus at the start of the interval makes this IV bolus only
   selection = list(route = "iv_bolus"),
   pptestcd_cdisc = "AUMIVIIP",
@@ -832,7 +854,8 @@ add.interval.col(
   desc = "AUMCint,inf,obs, IV back-extrap C0",
   sparse = FALSE,
   formalsmap = list(aumc = "aumcint.inf.obs", conc = "conc.group", time = "time.group", time.dose = "time.dose.group",
-                    route = "route.group", duration.dose = "duration.dose.group"),
+                    route = "route.group", duration.dose = "duration.dose.group",
+                    auc.type = I("AUCinf"), lambda.z = "lambda.z", clast = "clast.obs"),
   # The bolus at the start of the interval makes this IV bolus only
   selection = list(route = "iv_bolus"),
   pptestcd_cdisc = "AUMIVIIO",
