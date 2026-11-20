@@ -262,6 +262,33 @@ test_that("set_intervals() adds units rows for a parameter registered after the 
   expect_equal(o_data_given_set$units$PPTESTCD, "cmax")
 })
 
+test_that("a ratio with no row in a units table given to PKNCAdata() is an error, or NA units when allowed", {
+  intervals <- intervals_rule
+  intervals$cmin <- TRUE
+  intervals$ratio.cmin <- c(FALSE, TRUE)
+  intervals$ratio.cmin_ref <- c(NA, "ref")
+  o_conc <- PKNCAconc(d_conc_rule, conc~time|period+subject, concu = "ng/mL", timeu = "hr")
+  units_built <- PKNCAdata(o_conc, intervals = intervals)$units
+  units_given <- units_built[units_built$PPTESTCD != "ratio.cmin", ]
+  o_data <- PKNCAdata(o_conc, intervals = intervals, units = units_given)
+  # The table is kept as given, without the row
+  expect_false("ratio.cmin" %in% o_data$units$PPTESTCD)
+  expect_error(
+    pk.nca(o_data),
+    class = "pknca_error_units_partial_missing",
+    regexp = "missing for: ratio.cmin"
+  )
+  o_data_allowed <- PKNCAdata(o_conc, intervals = intervals, units = units_given, options = list(allow_partial_missing_units = TRUE))
+  expect_warning(
+    d_res <- as.data.frame(pk.nca(o_data_allowed)),
+    class = "pknca_warning_units_partial_missing"
+  )
+  expect_true(is.na(d_res$PPORRESU[d_res$PPTESTCD == "ratio.cmin"]))
+  # cmin is 0 in the reference interval, so the ratio is NA too
+  expect_true(is.na(d_res$PPORRES[d_res$PPTESTCD == "ratio.cmin"]))
+  expect_equal(unique(d_res$PPORRESU[d_res$PPTESTCD == "cmin"]), "ng/mL")
+})
+
 test_that("interval_add_param(), interval_add_secondary(), and pknca_interval_table() use a ratio they are given", {
   ret <- interval_add_param(data.frame(start = 0, end = 24, cmin = TRUE), param = "ratio.cmin")
   expect_true(ret$ratio.cmin)

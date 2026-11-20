@@ -713,9 +713,9 @@ add.interval.col <- function(name,
   }
   checkmate::assert_character(x = FUN, len = 1, any.missing = TRUE) # allows NA
   checkmate::assert_logical(x = sparse, len = 1, any.missing=FALSE)
-  # Retired in 0.12.1.9000, so the error first ships in the release after
-  # 0.12.1; the argument can be removed entirely in the next minor release
-  # after that.
+  # The argument is retired:  `sparse = TRUE` is an error saying how to register
+  # a sparse-only parameter, and the default `sparse = FALSE` is accepted so
+  # that existing calls keep working.
   if (isTRUE(sparse)) {
     rlang::abort(
       sprintf(
@@ -836,11 +836,27 @@ add.interval.col <- function(name,
   # The classification and the values cached per parameter are derived from
   # the whole registry (what a parameter requires depends on everything
   # upstream of it), so any registration can change them.
-  for (cache_name in c("parameter_classification", "auc_basis_families", "interval.cols_derived", "interval_consistent_sets")) {
-    if (exists(cache_name, envir=.PKNCAEnv)) {
-      rm(list=cache_name, envir=.PKNCAEnv)
+  interval_cols_clear_caches()
+}
+
+# The values cached from the registry, which every registration can change.
+# The dependency sort order ("interval.cols_sorted") is not among them:
+# sort_interval_cols() uses it only while it names the registry's entries in
+# their current order, so a registration that adds or moves an entry makes it
+# stale by itself, and keeping it saves a re-sort when a parameter is
+# registered again in place.
+interval_cols_cache_names <- function() {
+  c("parameter_classification", "auc_basis_families", "interval.cols_derived", "interval_consistent_sets")
+}
+
+# Clear the values cached from the registry (see interval_cols_cache_names())
+interval_cols_clear_caches <- function() {
+  for (cache_name in interval_cols_cache_names()) {
+    if (exists(cache_name, envir = .PKNCAEnv, inherits = FALSE)) {
+      rm(list = cache_name, envir = .PKNCAEnv)
     }
   }
+  invisible(NULL)
 }
 
 # Sort the interval columns by dependencies.

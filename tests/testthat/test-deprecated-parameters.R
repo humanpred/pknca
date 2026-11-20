@@ -10,11 +10,15 @@ test_that("every earlier name is registered as an alias of its replacement", {
   expect_false(any(parameter_renames() %in% names(parameter_renames())))
   # The tier is the one field that differs (an earlier name is never common),
   # beside the fields that link the two
-  compared_fields <-
-    setdiff(union(names(cols[["cl.inf.obs"]]), names(cols[["cl.obs"]])), c("tier", "historical_names", "historical_of"))
-  for (old in names(parameter_renames())) {
+  alias_fields <- c("tier", "historical_names", "historical_of")
+  for (old in pknca_parameter_renames()$historical) {
     new <- parameter_renames()[[old]]
+    # Every field of either entry, so a field one of them lacks is a difference
+    compared_fields <- setdiff(union(names(cols[[old]]), names(cols[[new]])), alias_fields)
     expect_equal(cols[[old]][compared_fields], cols[[new]][compared_fields], info = old)
+    expect_equal(cols[[old]]$historical_of, new, info = old)
+    expect_null(cols[[old]]$historical_names, info = old)
+    expect_true(old %in% cols[[new]]$historical_names, info = old)
     expect_equal(cols[[old]]$tier, "uncommon", info = old)
     expect_equal(summary_instructions[[old]], summary_instructions[[new]], info = old)
   }
@@ -255,4 +259,29 @@ test_that("interval_cols_aliases_last() puts the aliases after the parameters, s
       a = list(), b_old = list(historical_of = "b"), b = list(), a_old = list(historical_of = "a"), c = list()
     )
   expect_named(PKNCA:::interval_cols_aliases_last(current), c("a", "b", "c", "a_old", "b_old"))
+})
+
+test_that("interval_cols_clear_caches() clears every cache of the registry, and results do not change", {
+  d_conc <- data.frame(conc = c(0, 2, 4, 3, 2, 1, 0.5), time = c(0, 0.5, 1, 2, 4, 8, 12))
+  o_data <- PKNCAdata(PKNCAconc(d_conc, conc~time), intervals = data.frame(start = 0, end = Inf, cl.inf.obs = TRUE, auclast = TRUE))
+  d_before <- suppressWarnings(as.data.frame(pk.nca(o_data)))
+  # Fill every cache
+  PKNCA:::parameter_classification()
+  PKNCA:::interval_consistent_sets()
+  cache_names <- PKNCA:::interval_cols_cache_names()
+  expect_equal(
+    cache_names,
+    c("parameter_classification", "auc_basis_families", "interval.cols_derived", "interval_consistent_sets")
+  )
+  for (cache_name in cache_names) {
+    if (!exists(cache_name, envir = PKNCA:::.PKNCAEnv, inherits = FALSE)) {
+      # A placeholder, which the clearing below removes
+      assign(cache_name, "filled", envir = PKNCA:::.PKNCAEnv)
+    }
+  }
+  PKNCA:::interval_cols_clear_caches()
+  for (cache_name in cache_names) {
+    expect_false(exists(cache_name, envir = PKNCA:::.PKNCAEnv, inherits = FALSE), info = cache_name)
+  }
+  expect_identical(suppressWarnings(as.data.frame(pk.nca(o_data))), d_before)
 })
