@@ -1830,7 +1830,10 @@ print.be_dataset <- function(x, ...) {
 #' @export
 be_fit_model_single <- function(ds_ep, model_type = c("lmer", "nlme", "anova", "isc", "gls"), scaling = TRUE) {
   model_type <- match.arg(model_type)
-  abort_check(checkmate::check_flag(scaling), "scaling", class = "pknca_error_be_scaling_invalid")
+  abort_invalid(
+    !is_condition_value(scaling), "scaling", "Must be TRUE or FALSE (one logical value or number, not NA)",
+    class = "pknca_error_be_scaling_invalid"
+  )
   fit <-
     switch(
       model_type,

@@ -352,3 +352,23 @@ assert_unit <- function(unit, data) {
     rlang::abort(unit_col, class = "pknca_error_invalid_unit")
   }
 }
+
+# Stop with the classed error `class` when `invalid` is TRUE, saying what
+# `arg` (the argument as the user gave it) must be.  The checks of the simple
+# calculation functions refuse only the inputs that already failed before the
+# checks were added, so a call that returned a value keeps returning it.
+abort_invalid <- function(invalid, arg, requirement, class, call = rlang::caller_env()) {
+  abort_check(if (isTRUE(invalid)) requirement else TRUE, arg, class = class, call = call)
+}
+
+# Can `x` be the condition of `if ()`:  one logical value or number (or, with
+# `factor_ok`, a factor)?  One NA of any type is accepted only with `na_ok`.
+is_condition_value <- function(x, factor_ok = FALSE, na_ok = FALSE) {
+  if (length(x) != 1 || is.list(x)) {
+    return(FALSE)
+  }
+  if (is.na(x)) {
+    return(na_ok)
+  }
+  is.logical(x) || is.numeric(x) || (factor_ok && is.factor(x))
+}

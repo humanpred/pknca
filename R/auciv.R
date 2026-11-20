@@ -41,6 +41,9 @@
 #'   by `fun_auxc` when `auc.type` is `"AUCinf"` (`clast.obs` gives AUCinf,obs
 #'   and `clast.pred` gives AUCinf,pred)
 #'
+#' @param auxc_name The name of `auxc` in an error message:  the argument as
+#'   the calling function names it (`auc` or `aumc`)
+#'
 #' @return The AUXC calculated using `c0`
 #'
 #' @family AUC calculations
@@ -48,9 +51,7 @@
 #' @export
 pk.calc.auxciv <- function(conc, time, c0, auxc, fun_auxc_last, fun_auxc,
                            auc.type = NULL, lambda.z = NA, clast = NA,
-                           ..., options = list(), check = TRUE) {
-  abort_check(checkmate::check_number(c0, na.ok = TRUE), "c0", class = "pknca_error_c0_invalid")
-  abort_check(checkmate::check_number(auxc, na.ok = TRUE), "auxc", class = "pknca_error_auxc_invalid")
+                           ..., options = list(), check = TRUE, auxc_name = "auxc") {
   if (check) {
     assert_conc_time(conc = conc, time = time)
     data <-
@@ -64,7 +65,19 @@ pk.calc.auxciv <- function(conc, time, c0, auxc, fun_auxc_last, fun_auxc,
   }
   if (nrow(data) == 0) {
     return(structure(NA_real_, exclude = "No data for AUC calculation"))
-  } else if (is.na(c0)) {
+  }
+  # The errors name the argument of the calling function (pk.calc.auciv() or
+  # pk.calc.aumciv())
+  abort_invalid(
+    length(c0) != 1 || (is.character(c0) && !is.na(c0)), "c0", "Must be one number (or NA)",
+    class = "pknca_error_c0_invalid", call = rlang::caller_env()
+  )
+  abort_invalid(
+    (is.character(auxc) && !(length(auxc) == 1 && is.na(auxc))) || is.list(auxc), auxc_name,
+    "Must be a number (or NA)",
+    class = "pknca_error_auxc_invalid", call = rlang::caller_env()
+  )
+  if (is.na(c0)) {
     return(structure(NA_real_, exclude = "c0 is not calculated"))
   }
   if (0 %in% data$time) {
@@ -120,7 +133,8 @@ pk.calc.auciv <- function(conc, time, c0, auc, auc.type = NULL,
     clast = clast,
     ...,
     options = options,
-    check = check
+    check = check,
+    auxc_name = "auc"
   )
 }
 
@@ -159,14 +173,22 @@ pknca_concept(pk.calc.auciv) <- "auc"
 #'   ([pk.calc.aucint.last()] or [pk.calc.aumcint.last()]) used for the segment
 #'   that is replaced
 #' @inheritParams PKNCA.choose.option
+#' @param auxc_name The name of `auxc` in an error message:  the argument as
+#'   the calling function names it (`auc` or `aumc`)
 #' @return The AUXC over the interval with C0 back-extrapolated
 #' @family AUC calculations
 #' @family AUMC calculations
 #' @export
 pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extravascular",
                                duration.dose = 0,
-                               auxc, fun_auxcint_last, options = list()) {
-  abort_check(checkmate::check_number(auxc, na.ok = TRUE), "auxc", class = "pknca_error_auxc_invalid")
+                               auxc, fun_auxcint_last, options = list(), auxc_name = "auxc") {
+  # The error names the argument of the calling function (pk.calc.auciv.int()
+  # or pk.calc.aumciv.int())
+  abort_invalid(
+    length(auxc) != 1 || ((is.character(auxc) || is.list(auxc)) && !all(is.na(auxc))), auxc_name,
+    "Must be one number (or NA)",
+    class = "pknca_error_auxc_invalid", call = rlang::caller_env()
+  )
   if (is.na(auxc)) {
     return(structure(NA_real_, exclude = "AUCint is not calculated"))
   }
@@ -243,7 +265,7 @@ pk.calc.auciv.int <- function(conc, time, start, end, time.dose, route = "extrav
   pk.calc.auxciv.int(
     conc = conc, time = time, start = start, end = end,
     time.dose = time.dose, route = route, duration.dose = duration.dose,
-    auxc = auc, fun_auxcint_last = pk.calc.aucint.last, options = options
+    auxc = auc, fun_auxcint_last = pk.calc.aucint.last, options = options, auxc_name = "auc"
   )
 }
 
@@ -259,7 +281,7 @@ pk.calc.aumciv.int <- function(conc, time, start, end, time.dose, route = "extra
   pk.calc.auxciv.int(
     conc = conc, time = time, start = start, end = end,
     time.dose = time.dose, route = route, duration.dose = duration.dose,
-    auxc = aumc, fun_auxcint_last = pk.calc.aumcint.last, options = options
+    auxc = aumc, fun_auxcint_last = pk.calc.aumcint.last, options = options, auxc_name = "aumc"
   )
 }
 
@@ -638,6 +660,7 @@ pk.calc.aumciv <- function(conc, time, c0, aumc, auc.type = NULL,
     clast = clast,
     ...,
     options = options,
+    auxc_name = "aumc",
     check = check
   )
 }

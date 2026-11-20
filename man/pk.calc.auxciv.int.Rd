@@ -17,7 +17,8 @@ pk.calc.auxciv.int(
   duration.dose = 0,
   auxc,
   fun_auxcint_last,
-  options = list()
+  options = list(),
+  auxc_name = "auxc"
 )
 
 pk.calc.auciv.int(
@@ -62,6 +63,9 @@ that is replaced}
 
 \item{options}{List of changes to the default PKNCA options (see
 \code{PKNCA.options()})}
+
+\item{auxc_name}{The name of \code{auxc} in an error message:  the argument as
+the calling function names it (\code{auc} or \code{aumc})}
 
 \item{auc}{The AUC over the interval from the AUCint family}
 

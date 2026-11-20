@@ -613,3 +613,15 @@ test_that("PKNCA.options() refuses default and check that are not one TRUE or FA
   expect_error(PKNCA.options(check = logical(0)), class = "pknca_error_options_flag_invalid")
   expect_error(PKNCA.options(check = "yes"), class = "pknca_error_options_flag_invalid")
 })
+
+test_that("PKNCA.options() names the flag it refuses and keeps a number as before", {
+  expect_error(
+    PKNCA.options(default = NA),
+    class = "pknca_error_options_flag_invalid",
+    regexp = "Assertion on 'default' failed: Must be TRUE or FALSE (one logical value or number, not NA).",
+    fixed = TRUE
+  )
+  # A number is a flag, as before
+  expect_equal(PKNCA.options(default = 1), PKNCA.options(default = TRUE))
+  expect_equal(PKNCA.options(check = 0), PKNCA.options())
+})

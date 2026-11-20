@@ -1696,3 +1696,30 @@ test_that("half-life refuses a tmax or tlast that is not one number, and a missi
   expect_equal(ret_tlast$lambda.z, pk.calc.half.life(conc, time)$lambda.z)
   expect_true(is.na(ret_tlast$clast.pred))
 })
+
+test_that("pk.calc.half.life() names the input it refuses and keeps what gave a value", {
+  conc <- c(0, 6, 8, 6, 4, 2, 1)
+  time <- c(0, 1, 2, 4, 8, 12, 24)
+  expect_error(
+    pk.calc.half.life(conc, time, tmax = c(1, 2)),
+    class = "pknca_error_tmax_invalid",
+    regexp = "Assertion on 'tmax' failed: Must have length 1.",
+    fixed = TRUE
+  )
+  expect_error(
+    pk.calc.half.life(conc, time, tlast = numeric(0)),
+    class = "pknca_error_tlast_invalid",
+    regexp = "Assertion on 'tlast' failed: Must have length 1.",
+    fixed = TRUE
+  )
+  expect_error(
+    pk.calc.half.life(conc, time, manually.selected.points = logical(0)),
+    class = "pknca_error_manually_selected_points_invalid",
+    regexp = "Assertion on 'manually.selected.points' failed: Must be TRUE or FALSE (one value, not NA).",
+    fixed = TRUE
+  )
+  # What gave a value still gives it:  a logical or factor Tmax
+  expected <- pk.calc.half.life(conc, time, tmax = 1, tlast = 24)
+  expect_equal(pk.calc.half.life(conc, time, tmax = TRUE, tlast = 24)$lambda.z, expected$lambda.z)
+  expect_no_error(pk.calc.half.life(conc, time, tmax = factor("2"), tlast = 24))
+})

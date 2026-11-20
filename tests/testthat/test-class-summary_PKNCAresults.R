@@ -680,3 +680,33 @@ test_that("summary() refuses a not_calculated or not_requested that is not one s
   PKNCA.set.summary(name = "cmax", description = "two values", point = range, spread = stats::sd)
   expect_error(summary(o_nca), class = "pknca_error_summary_point_invalid")
 })
+
+test_that("summary() names the input it refuses and keeps what gave a value", {
+  d_conc <- data.frame(id = rep(1:2, each = 4), time = rep(c(0, 1, 2, 4), 2), conc = c(0, 5, 3, 1, 0, 6, 4, 2))
+  o_nca <- pk.nca(PKNCAdata(PKNCAconc(d_conc, conc ~ time | id), intervals = data.frame(start = 0, end = 4, cmax = TRUE)))
+  expect_error(
+    summary(o_nca, not_calculated = c("NC", "x")),
+    class = "pknca_error_summary_string_invalid",
+    regexp = "Assertion on 'not_calculated' failed: Must have length 1.",
+    fixed = TRUE
+  )
+  expect_error(
+    summary(o_nca, not_requested = character(0)),
+    class = "pknca_error_summary_string_invalid",
+    regexp = "Assertion on 'not_requested' failed: Must have length 1, but has length 0.",
+    fixed = TRUE
+  )
+  for (bad in list(logical(0), c(TRUE, FALSE))) {
+    expect_error(
+      summary(o_nca, summarize_n = bad),
+      class = "pknca_error_summary_n_invalid",
+      regexp = "Assertion on 'summarize_n' failed: Must be TRUE, FALSE, or NA (one value).",
+      fixed = TRUE
+    )
+  }
+  # What gave a value still gives it:  a number for either string, and NA
+  expected <- summary(o_nca)
+  expect_equal(summary(o_nca, not_calculated = 0), expected)
+  expect_equal(summary(o_nca, not_requested = 1), expected)
+  expect_equal(summary(o_nca, not_calculated = NA), expected)
+})

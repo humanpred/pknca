@@ -756,3 +756,38 @@ test_that("a BE column given as more than one name is refused, and an empty one 
     be_dataset(d, "treatment", "R", "auclast")
   )
 })
+
+test_that("be_fit_model_single() names a scaling it refuses and keeps a number as before", {
+  ds <- be_dataset(generate_be_williams(), "treatment", "R", "auclast")
+  expect_error(
+    be_fit_model_single(ds$data, "anova", scaling = NA),
+    class = "pknca_error_be_scaling_invalid",
+    regexp = "Assertion on 'scaling' failed: Must be TRUE or FALSE (one logical value or number, not NA).",
+    fixed = TRUE
+  )
+  expect_error(
+    be_dataset(generate_be_williams(), "treatment", "R", "auclast", subject = c("subject", "period")),
+    class = "pknca_error_be_column_invalid",
+    regexp = "Assertion on 'subject' failed",
+    fixed = TRUE
+  )
+  expect_equal(
+    be_extract_param(be_fit_model_single(ds$data, "anova", scaling = 1), ds$data),
+    be_extract_param(be_fit_model_single(ds$data, "anova", scaling = TRUE), ds$data)
+  )
+})
+
+test_that("be_dataset() of results without groups looks for the subject column by name", {
+  o_nca <-
+    pk.nca(PKNCAdata(
+      PKNCAconc(data.frame(time = c(0, 1, 2, 4), conc = c(0, 4, 3, 1)), conc ~ time),
+      intervals = data.frame(start = 0, end = 4, cmax = TRUE)
+    ))
+  expect_equal(as_PKNCAconc(o_nca)$columns$subject, character(0))
+  expect_error(
+    be_dataset(o_nca, reference_col = "start", reference_value = 0, endpoints = "cmax"),
+    class = "pknca_error_be_subject_column_not_found",
+    regexp = "tried: USUBJID, subject, Subject, ID, id",
+    fixed = TRUE
+  )
+})

@@ -1233,41 +1233,54 @@ the generated intervals:
 
 ## Bug fixes
 
-* Arguments that must be one value are checked, so a zero-length or longer
-  value gives a classed error naming the argument instead of an R error such
-  as "argument is of length zero" or "invalid 'x' length" (@billdenney).
-  `pk.nca()` always gives these one value, so its results do not change.
-  The checks and their classes:
-  - `lambda.z` and `clast` of the AUCinf, AUMCinf, and AUCint functions
-    (`pknca_error_lambdaz_invalid`, `pknca_error_clast_invalid`), and the
-    half-life inputs of the sparse AUCinf and AUMCinf functions
-    (`pknca_error_lambdaz_invalid`);
-  - `c0` and the AUC or AUMC of the IV corrections (`pk.calc.auciv()` and its
-    siblings; `pknca_error_c0_invalid`, `pknca_error_auxc_invalid`);
-  - `cmax` and `cmin` of `pk.calc.swing()`, `duration.dose` of
-    `pk.calc.ceoi()`, and `tmax` and `tlast` of `pk.calc.half.life()`;
-  - `not_calculated` and `not_requested` of `summary()`, and a summary
-    function (`PKNCA.set.summary(point = )`) that returns more than one value
-    (`pknca_error_summary_string_invalid`,
-    `pknca_error_summary_point_invalid`);
-  - `default` and `check` of `PKNCA.options()`
-    (`pknca_error_options_flag_invalid`), `scaling` of
-    `be_fit_model_single()` (`pknca_error_be_scaling_invalid`), and the
-    `subject`, `period`, and `sequence` columns of `be_dataset()`
-    (`pknca_error_be_column_invalid`);
-  - a zero-length unit (`pknca_error_units_zero_length`), and a zero-length
-    `tss.fraction`, `min.points`, or `level` of the time to steady state
-    (`pknca_error_tss_argument_invalid`).
+* Arguments of the calculation functions that stopped with an R error (such as
+  "argument is of length zero", "missing value where TRUE/FALSE needed", or
+  "invalid 'x' length") now give a classed error that names the argument as
+  the caller gave it (@billdenney).  Only those inputs are refused:  a call
+  that returned a value still returns the same value, and an argument is
+  checked only where the calculation uses it (for example, `lambda.z` and
+  `clast` only for AUCinf).  `pk.nca()` results do not change.  The classes,
+  each with an input that gives it:
+  - `pknca_error_lambdaz_invalid`:  `lambda.z = "0.1"` for
+    `pk.calc.auc(auc.type = "AUCinf")`, `pk.calc.aucint()`, and their AUMC
+    forms, and a `lambda.z`, `lambda.z.time.first`, `lambda.z.time.last`, or
+    `lambda.z.n.points` that is not one number for the sparse AUCinf and
+    AUMCinf (`lambda.z = c(0.1, 0.2)`); the message names which one.
+  - `pknca_error_clast_invalid`:  `clast = character(0)` for AUCinf.
+  - `pknca_error_c0_invalid` and `pknca_error_auxc_invalid`:  `c0 = c(1, 2)`
+    or `auc = "10"` for `pk.calc.auciv()`, and the same for its siblings; the
+    message names `auc` or `aumc`.
+  - `pknca_error_tmax_invalid` and `pknca_error_tlast_invalid`:
+    `tmax = c(1, 2)` for `pk.calc.half.life()`.
+  - `pknca_error_manually_selected_points_invalid`:
+    `manually.selected.points = logical(0)` for `pk.calc.half.life()`.
+  - `pknca_error_duration_dose_invalid`:  `duration.dose = c(1, 2)` for
+    `pk.calc.ceoi()`.
+  - `pknca_error_check_invalid`:  `check = c(TRUE, TRUE)` for `pk.calc.auc()`
+    and its siblings, or `check = logical(0)` for `pk.calc.ceoi()`.
+  - `pknca_error_summary_string_invalid`, `pknca_error_summary_n_invalid`, and
+    `pknca_error_summary_point_invalid`:  `not_calculated = c("a", "b")`,
+    `summarize_n = c(TRUE, FALSE)`, or a summary function
+    (`PKNCA.set.summary(point = )`) that returns more than one value, for
+    `summary()`.
+  - `pknca_error_options_flag_invalid`:  `PKNCA.options(default = NA)`.
+  - `pknca_error_be_scaling_invalid` and `pknca_error_be_column_invalid`:
+    `scaling = NA` for `be_fit_model_single()`, or `subject = c("a", "b")`
+    for `be_dataset()`.  `be_dataset()` of results whose concentration data
+    have no groups now looks for the subject column by name, as for a data
+    frame, and says which names it tried when none is there
+    (`pknca_error_be_subject_column_not_found`).
+  - `pknca_error_units_zero_length`:  a zero-length unit, and
+    `pknca_error_tss_argument_invalid`:  a zero-length `tss.fraction`,
+    `min.points`, or `level` of the time to steady state.
 
-  Four calls that stopped now give a result:  `pk.calc.half.life()` with
+  Calls that stopped and now give a result:  `pk.calc.half.life()` with
   `tmax = NA` gives `NA` with too few points after Tmax, as `pk.nca()`
-  already did for an interval with no measurement; the sparse
-  AUCinf and AUMCinf with `lambda.z.n.points = NA` give the estimate without
-  its standard error and warn (`pknca_warning_sparse_lambda_z_points`);
-  `be_dataset()` of results whose concentration data have no groups looks
-  for the subject column by name, as for a data frame, and says which
-  names it tried when none is there; and `summary()` with
-  `not_calculated = NA` works when the summary counts subjects.
+  already did for an interval with no measurement; the sparse AUCinf and
+  AUMCinf with `lambda.z.n.points = NA` give the estimate without its
+  standard error and warn (`pknca_warning_sparse_lambda_z_points`); and
+  `summary()` with `not_calculated = NA` (or another single value of a type
+  other than text) works when the summary counts subjects.
 * `pk.calc.tlag()` skips missing concentrations, as `pk.calc.cmax()` and the
   other simple parameters do, and gains a `check` argument like theirs
   (reported by @kawasakin, #723; @billdenney, #727).  Two results change:  a

@@ -2546,7 +2546,14 @@ add.interval.col("swing",
 #' @family NCA parameters for concentrations during the intervals
 #' @export
 pk.calc.ceoi <- function(conc, time, duration.dose=NA, check=TRUE) {
-  abort_check(checkmate::check_number(duration.dose, na.ok = TRUE), "duration.dose", class = "pknca_error_duration_dose_invalid")
+  abort_invalid(
+    length(duration.dose) != 1, "duration.dose", "Must have length 1",
+    class = "pknca_error_duration_dose_invalid"
+  )
+  abort_invalid(
+    !is_condition_value(check, factor_ok = TRUE), "check", "Must be TRUE or FALSE (one value, not NA)",
+    class = "pknca_error_check_invalid"
+  )
   if (check) {
     assert_conc_time(conc = conc, time = time)
   }

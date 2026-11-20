@@ -862,21 +862,44 @@ test_that("aucivint for an interval starting at an IV infusion is the AUCint", {
   expect_equal(value_of("kel.ivint.last", 12), 1/mrt_second)
 })
 
-test_that("the IV AUC corrections refuse a c0 or AUXC that is not one number", {
+test_that("the IV AUC corrections refuse a c0 or AUXC that they cannot use, naming the argument", {
   conc <- c(10, 6, 4, 2, 1)
   time <- c(0, 1, 2, 4, 8)
   expect_error(
     pk.calc.auciv(conc = conc, time = time, c0 = numeric(0), auc = 20),
-    class = "pknca_error_c0_invalid"
+    class = "pknca_error_c0_invalid",
+    regexp = "Assertion on 'c0' failed: Must be one number (or NA).",
+    fixed = TRUE
   )
   expect_error(
-    pk.calc.auciv(conc = conc, time = time, c0 = 12, auc = numeric(0)),
-    class = "pknca_error_auxc_invalid"
+    pk.calc.auciv(conc = conc, time = time, c0 = 12, auc = "20"),
+    class = "pknca_error_auxc_invalid",
+    regexp = "Assertion on 'auc' failed: Must be a number (or NA).",
+    fixed = TRUE
+  )
+  expect_error(
+    pk.calc.aumciv(conc = conc, time = time, c0 = 12, aumc = list(20)),
+    class = "pknca_error_auxc_invalid",
+    regexp = "Assertion on 'aumc' failed",
+    fixed = TRUE
   )
   expect_error(
     pk.calc.auciv.int(
       conc = conc, time = time, start = 0, end = 8, time.dose = 0, route = "intravascular", auc = c(1, 2)
     ),
-    class = "pknca_error_auxc_invalid"
+    class = "pknca_error_auxc_invalid",
+    regexp = "Assertion on 'auc' failed: Must be one number (or NA).",
+    fixed = TRUE
+  )
+  # What gave a value still gives it:  no data is NA whatever c0 is, and a
+  # vector AUC is used as before
+  expect_true(is.na(pk.calc.auciv(numeric(0), numeric(0), c0 = c(1, 2), auc = 3, check = FALSE)))
+  expect_equal(
+    as.numeric(pk.calc.auciv(conc = conc, time = time, c0 = 12, auc = c(20, 30))),
+    as.numeric(pk.calc.auciv(conc = conc, time = time, c0 = 12, auc = 20)) + c(0, 10)
+  )
+  expect_equal(
+    as.numeric(pk.calc.auciv(conc = conc, time = time, c0 = TRUE, auc = 20)),
+    as.numeric(pk.calc.auciv(conc = conc, time = time, c0 = 1, auc = 20))
   )
 })

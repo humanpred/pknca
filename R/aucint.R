@@ -66,6 +66,8 @@
 #'   data), [interp.extrap.conc()] is used instead and the calculation is not
 #'   dose-aware.  If only some `time.dose` values are `NA`, the result is `NA`
 #'   because that dose cannot be placed on the timeline.
+#' @param .clast_name The name of `clast` in an error message:  the argument
+#'   as the calling function names it (such as `clast.obs`)
 #' @param fun_linear,fun_log,fun_inf Integration functions for linear,
 #'   logarithmic, and infinite extrapolation methods.
 #' @param ... Additional arguments passed to `pk.calc.auxc` and
@@ -93,7 +95,8 @@ pk.calc.auxcint <- function(conc, time,
                             fun_linear,
                             fun_log,
                             fun_inf,
-                            ...) {
+                            ...,
+                            .clast_name = "clast") {
   # Check inputs
   auc.type <- match.arg(auc.type)
   method <- PKNCA.choose.option(name="auc.method", value=method, options=options)
@@ -112,7 +115,13 @@ pk.calc.auxcint <- function(conc, time,
     assert_conc_time(conc, time)
   }
   interval <- assert_intervaltime_single(interval = interval, start = start, end = end)
-  abort_check(checkmate::check_number(lambda.z, na.ok = TRUE), "lambda.z", class = "pknca_error_lambdaz_invalid")
+  # The errors name the argument of the calling function (pk.calc.aucint() and
+  # the others), which has the same name
+  abort_invalid(
+    !(is.numeric(lambda.z) || all(is.na(lambda.z))) || (auc.type %in% "AUCinf" && length(lambda.z) == 0),
+    "lambda.z", "Must be numeric (or NA)",
+    class = "pknca_error_lambdaz_invalid", call = rlang::caller_env()
+  )
   if (dose_aware) {
     # A concentration measured after the dose that follows the interval is
     # affected by that dose, so it is neither integrated nor interpolated or
@@ -216,7 +225,10 @@ pk.calc.auxcint <- function(conc, time,
     clast_obs <- pk.calc.clast.obs(conc=data$conc, time=data$time)
     # `clast` is checked here, where it is first used:  its default is
     # calculated from the concentrations left after the dose-aware window above
-    abort_check(checkmate::check_number(clast, na.ok = TRUE), "clast", class = "pknca_error_clast_invalid")
+    abort_invalid(
+      length(clast) != 1 || is.character(clast) || is.list(clast), .clast_name, "Must be one number (or NA)",
+      class = "pknca_error_clast_invalid", call = rlang::caller_env()
+    )
     all_times <- c(data$time, missing_times)
     time_after_tlast <- all_times[all_times > tlast & all_times <= interval[2]]
     if (is.na(clast)) {
@@ -459,7 +471,7 @@ pk.calc.aucint.inf.obs <- function(conc, time, start=NULL, end=NULL, time.dose, 
                  start=start, end=end,
                  time.dose=time.dose,
                  route=route, duration.dose=duration.dose,
-                 lambda.z=lambda.z, clast=clast.obs,
+                 lambda.z=lambda.z, clast=clast.obs, .clast_name = "clast.obs",
                  options=options, ...,
                  auc.type="AUCinf")
 }
@@ -478,7 +490,7 @@ pk.calc.aucint.inf.pred <- function(conc, time, start=NULL, end=NULL, time.dose,
                  start=start, end=end,
                  time.dose=time.dose,
                  route=route, duration.dose=duration.dose,
-                 lambda.z=lambda.z, clast=clast.pred,
+                 lambda.z=lambda.z, clast=clast.pred, .clast_name = "clast.pred",
                  options=options, ...,
                  auc.type="AUCinf")
 }
@@ -607,7 +619,7 @@ pk.calc.aumcint.inf.obs <- function(conc, time, start=NULL, end=NULL, time.dose,
                   start=start, end=end,
                   time.dose=time.dose,
                   route=route, duration.dose=duration.dose,
-                  lambda.z=lambda.z, clast=clast.obs,
+                  lambda.z=lambda.z, clast=clast.obs, .clast_name = "clast.obs",
                   options=options, ...,
                   auc.type="AUCinf")
 }
@@ -626,7 +638,7 @@ pk.calc.aumcint.inf.pred <- function(conc, time, start=NULL, end=NULL, time.dose
                   start=start, end=end,
                   time.dose=time.dose,
                   route=route, duration.dose=duration.dose,
-                  lambda.z=lambda.z, clast=clast.pred,
+                  lambda.z=lambda.z, clast=clast.pred, .clast_name = "clast.pred",
                   options=options, ...,
                   auc.type="AUCinf")
 }

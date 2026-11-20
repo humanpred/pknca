@@ -1198,3 +1198,20 @@ test_that("a dose-normalized zero over a zero dose stays NaN and says why", {
 test_that("ctrough for an interval with no finite end says so", {
   expect_equal(pk.calc.ctrough(1:5, 0:4, Inf), structure(NA_real_, exclude = "The interval has no finite end"))
 })
+
+test_that("ceoi names the input it refuses and keeps what gave a value", {
+  expect_error(
+    pk.calc.ceoi(conc = c(0, 5, 3), time = c(0, 1, 2), duration.dose = c(1, 2)),
+    class = "pknca_error_duration_dose_invalid",
+    regexp = "Assertion on 'duration.dose' failed: Must have length 1.",
+    fixed = TRUE
+  )
+  expect_error(
+    pk.calc.ceoi(conc = c(0, 5, 3), time = c(0, 1, 2), duration.dose = 1, check = logical(0)),
+    class = "pknca_error_check_invalid",
+    regexp = "Assertion on 'check' failed: Must be TRUE or FALSE (one value, not NA).",
+    fixed = TRUE
+  )
+  # What gave a value still gives it:  a logical duration is a number
+  expect_equal(pk.calc.ceoi(conc = c(0, 5, 3), time = c(0, 1, 2), duration.dose = TRUE), 5)
+})

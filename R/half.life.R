@@ -154,6 +154,11 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
                               first.tmax=NULL,
                               allow.tmax.in.half.life=NULL,
                               check=TRUE) {
+  abort_invalid(
+    !is_condition_value(manually.selected.points, factor_ok = TRUE), "manually.selected.points",
+    "Must be TRUE or FALSE (one value, not NA)",
+    class = "pknca_error_manually_selected_points_invalid"
+  )
   # Resolve hl_method: explicit argument takes match.arg; missing uses PKNCA.options
   if (missing(hl_method)) {
     hl_method <- PKNCA.choose.option(name = "hl_method", value = NULL, options = options)
@@ -315,13 +320,19 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
   if (missing(tmax)) {
     ret$tmax <- pk.calc.tmax(data$conc, data$time, first.tmax=first.tmax, check=FALSE)
   } else {
-    abort_check(checkmate::check_number(tmax, na.ok = TRUE), "tmax", class = "pknca_error_tmax_invalid")
+    abort_invalid(
+      !is.null(tmax) && length(tmax) != 1, "tmax", "Must have length 1",
+      class = "pknca_error_tmax_invalid"
+    )
     ret$tmax <- tmax
   }
   if (missing(tlast)) {
     ret$tlast <- pk.calc.tlast(data$conc, data$time, check=FALSE)
   } else {
-    abort_check(checkmate::check_number(tlast, na.ok = TRUE), "tlast", class = "pknca_error_tlast_invalid")
+    abort_invalid(
+      !is.null(tlast) && length(tlast) != 1, "tlast", "Must have length 1",
+      class = "pknca_error_tlast_invalid"
+    )
     ret$tlast <- tlast
   }
 

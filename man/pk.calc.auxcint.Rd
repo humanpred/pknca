@@ -34,7 +34,8 @@ pk.calc.auxcint(
   fun_linear,
   fun_log,
   fun_inf,
-  ...
+  ...,
+  .clast_name = "clast"
 )
 
 pk.calc.aucint(conc, time, ..., options = list())
@@ -194,6 +195,9 @@ logarithmic, and infinite extrapolation methods.}
 
 \item{...}{Additional arguments passed to \code{pk.calc.auxc} and
 \code{interp.extrap.conc}}
+
+\item{.clast_name}{The name of \code{clast} in an error message:  the argument
+as the calling function names it (such as \code{clast.obs})}
 }
 \value{
 The AUXC for an interval of time as a number

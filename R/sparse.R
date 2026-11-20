@@ -253,7 +253,9 @@ sparse_pk_weighted <- function(sparse_pk) {
 #' @param lambda.z The elimination rate of the mean profile
 #' @param lambda.z.time.first,lambda.z.time.last,lambda.z.n.points The first
 #'   and last time and the number of points of the half-life fit to the mean
-#'   profile (used with `lambda_z_se = "delta"`)
+#'   profile (used with `lambda_z_se = "delta"`).  When `lambda.z.n.points` is
+#'   `NA`, the estimate is returned with the standard error and degrees of
+#'   freedom `NA` and a `pknca_warning_sparse_lambda_z_points` warning.
 #' @returns A list with the `estimate`, its standard error (`se`), the
 #'   degrees of freedom (`df`), and the method used for \eqn{C_0}
 #'   (`c0_method`, `NA` when \eqn{C_0} was not back-extrapolated)

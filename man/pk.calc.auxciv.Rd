@@ -19,7 +19,8 @@ pk.calc.auxciv(
   clast = NA,
   ...,
   options = list(),
-  check = TRUE
+  check = TRUE,
+  auxc_name = "auxc"
 )
 
 pk.calc.auciv(
@@ -92,6 +93,9 @@ to \code{pk.calc.auxc}}
 \code{PKNCA.options()})}
 
 \item{check}{Run \code{\link[=assert_conc_time]{assert_conc_time()}}?}
+
+\item{auxc_name}{The name of \code{auxc} in an error message:  the argument as
+the calling function names it (\code{auc} or \code{aumc})}
 
 \item{auc}{The AUC calculated without C0 back-extrapolation}
 

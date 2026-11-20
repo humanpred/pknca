@@ -111,8 +111,18 @@ summary.PKNCAresults <- function(object, ...,
     not_calculated <- not.calculated.string
   }
   # nocov end
-  abort_check(checkmate::check_string(not_requested, na.ok = TRUE), "not_requested", class = "pknca_error_summary_string_invalid")
-  abort_check(checkmate::check_string(not_calculated, na.ok = TRUE), "not_calculated", class = "pknca_error_summary_string_invalid")
+  abort_invalid(
+    !is.null(not_requested) && length(not_requested) == 0, "not_requested", "Must have length 1, but has length 0",
+    class = "pknca_error_summary_string_invalid"
+  )
+  abort_invalid(
+    length(not_calculated) != 1, "not_calculated", "Must have length 1",
+    class = "pknca_error_summary_string_invalid"
+  )
+  abort_invalid(
+    !is_condition_value(summarize_n, na_ok = TRUE), "summarize_n", "Must be TRUE, FALSE, or NA (one value)",
+    class = "pknca_error_summary_n_invalid"
+  )
 
   ## Simple inputs ####
   group_cols <- get_summary_PKNCAresults_drop_group(object = object, drop_group = drop_group)

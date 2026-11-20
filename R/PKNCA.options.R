@@ -570,8 +570,14 @@ pair_r_squared_factors <- function(x, name) {
 #' PKNCA.options(auc.method="lin up/log down", min.hl.points=3)
 #' @export
 PKNCA.options <- function(..., default=FALSE, check=FALSE, name, value) {
-  abort_check(checkmate::check_flag(default), "default", class = "pknca_error_options_flag_invalid")
-  abort_check(checkmate::check_flag(check), "check", class = "pknca_error_options_flag_invalid")
+  abort_invalid(
+    !is_condition_value(default), "default", "Must be TRUE or FALSE (one logical value or number, not NA)",
+    class = "pknca_error_options_flag_invalid"
+  )
+  abort_invalid(
+    !is_condition_value(check), "check", "Must be TRUE or FALSE (one logical value or number, not NA)",
+    class = "pknca_error_options_flag_invalid"
+  )
   current <- get("options", envir=.PKNCAEnv)
   # If the options have not been initialized, initialize them and then proceed.
   if (is.null(current) && !default) {

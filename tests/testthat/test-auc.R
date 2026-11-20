@@ -842,18 +842,59 @@ test_that("the sparse estimators report under the unified parameter names", {
   )
 })
 
-test_that("AUCinf and AUMCinf refuse a clast or lambda.z that is not one number", {
+test_that("AUCinf and AUMCinf refuse a clast or lambda.z that they cannot use, naming the argument", {
   conc <- c(0, 6, 8, 6, 4, 2, 1)
   time <- c(0, 1, 2, 4, 8, 12, 24)
-  expect_error(pk.calc.auc.inf.obs(conc, time, clast.obs = numeric(0), lambda.z = 0.1), class = "pknca_error_clast_invalid")
-  expect_error(pk.calc.auc.inf.obs(conc, time, clast.obs = c(1, 2), lambda.z = 0.1), class = "pknca_error_clast_invalid")
-  expect_error(pk.calc.auc.inf.pred(conc, time, clast.pred = numeric(0), lambda.z = 0.1), class = "pknca_error_clast_invalid")
-  expect_error(pk.calc.auc.inf.obs(conc, time, clast.obs = 1, lambda.z = numeric(0)), class = "pknca_error_lambdaz_invalid")
+  expect_error(
+    pk.calc.auc.inf.obs(conc, time, clast.obs = numeric(0), lambda.z = 0.1),
+    class = "pknca_error_clast_invalid",
+    regexp = "Assertion on 'clast.obs' failed: Must be a number (or NA).",
+    fixed = TRUE
+  )
+  expect_error(
+    pk.calc.auc.inf.pred(conc, time, clast.pred = "1", lambda.z = 0.1),
+    class = "pknca_error_clast_invalid",
+    regexp = "Assertion on 'clast.pred' failed",
+    fixed = TRUE
+  )
+  expect_error(
+    pk.calc.auc(conc, time, interval = c(0, Inf), auc.type = "AUCinf", lambda.z = 0.1, clast = list(1)),
+    class = "pknca_error_clast_invalid",
+    regexp = "Assertion on 'clast' failed",
+    fixed = TRUE
+  )
+  expect_error(
+    pk.calc.auc.inf.obs(conc, time, clast.obs = 1, lambda.z = numeric(0)),
+    class = "pknca_error_lambdaz_invalid",
+    regexp = "Assertion on 'lambda.z' failed: Must have length 1, but has length 0.",
+    fixed = TRUE
+  )
+  expect_error(
+    pk.calc.auc(conc, time, interval = c(0, 24), lambda.z = "0.1"),
+    class = "pknca_error_lambdaz_invalid",
+    regexp = "Assertion on 'lambda.z' failed: Must be numeric (or NA).",
+    fixed = TRUE
+  )
   expect_error(pk.calc.aumc.inf.obs(conc, time, clast.obs = numeric(0), lambda.z = 0.1), class = "pknca_error_clast_invalid")
   expect_error(pk.calc.aumc.inf.pred(conc, time, clast.pred = 1, lambda.z = numeric(0)), class = "pknca_error_lambdaz_invalid")
-  # One number is accepted
+  expect_error(
+    pk.calc.auc(conc, time, interval = c(0, 24), check = c(TRUE, TRUE)),
+    class = "pknca_error_check_invalid",
+    regexp = "Assertion on 'check' failed: Must be TRUE or FALSE (one value, not NA).",
+    fixed = TRUE
+  )
+  # What gave a value still gives it:  an argument that the calculation does
+  # not use is not checked, and a vector is used as before
+  expected_last <- as.numeric(pk.calc.auc.last(conc, time))
+  expect_equal(as.numeric(pk.calc.auc.last(conc, time, clast = c(1, 2))), expected_last)
+  expect_equal(as.numeric(pk.calc.auc(conc, time, interval = c(0, 24), lambda.z = numeric(0))), expected_last)
+  expect_equal(as.numeric(pk.calc.auc(conc, time, interval = c(0, 24), lambda.z = c(0.1, 0.2))), expected_last)
+  expect_equal(
+    as.numeric(pk.calc.auc.inf.obs(conc, time, clast.obs = TRUE, lambda.z = 0.1)),
+    expected_last + 1/0.1
+  )
   expect_equal(
     as.numeric(pk.calc.auc.inf.obs(conc, time, clast.obs = 1, lambda.z = 0.1)),
-    as.numeric(pk.calc.auc.last(conc, time)) + 1/0.1
+    expected_last + 1/0.1
   )
 })
