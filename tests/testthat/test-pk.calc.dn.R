@@ -2,7 +2,7 @@ test_that("pk.calc.dn", {
   # Ensure correct calculation
   expect_equal(pk.calc.dn(1, 5), 0.2)
   expect_equal(pk.calc.dn(NA, 5), NA_real_)
-  expect_equal(pk.calc.dn(1, NA), NA_real_)
+  expect_equal(pk.calc.dn(1, NA), structure(NA_real_, exclude = "Dose is missing"))
 })
 
 test_that("pk.calc.cmax", {

@@ -13,7 +13,8 @@ pk.calc.cl(dose, auc)
 }
 \value{
 the numeric value of the total (CL) or observed oral clearance
-(CL/F)
+(CL/F).  A result of length one that is \code{NA} because of missing or unusable data
+has the reason in its "exclude" attribute, which \code{\link[=pk.nca]{pk.nca()}} reports.
 }
 \description{
 Calculate the (observed oral) clearance

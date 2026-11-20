@@ -17,6 +17,10 @@ method 1}
 \item{auc2}{The AUC from 0 to infinity or 0 to tau administered in route or
 method 2}
 }
+\value{
+The bioavailability.  A result of length one that is \code{NA} because of missing or unusable data
+has the reason in its "exclude" attribute, which \code{\link[=pk.nca]{pk.nca()}} reports.
+}
 \description{
 Calculate the absolute (or relative) bioavailability
 }

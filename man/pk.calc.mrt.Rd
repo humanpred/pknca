@@ -52,7 +52,11 @@ data)}
 \item{tau}{The dosing interval}
 }
 \value{
-the numeric value of the mean residence time
+the numeric value of the mean residence time.  A result of length one that is \code{NA} because of missing or unusable data
+has the reason in its "exclude" attribute, which \code{\link[=pk.nca]{pk.nca()}} reports.
+
+The mean residence time.  A result of length one that is \code{NA} because of missing or unusable data
+has the reason in its "exclude" attribute, which \code{\link[=pk.nca]{pk.nca()}} reports.
 }
 \description{
 Calculate the mean residence time (MRT) for single-dose data or linear
