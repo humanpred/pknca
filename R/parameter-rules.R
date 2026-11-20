@@ -247,7 +247,13 @@ ratio_rule_make <- function(base, spec) {
     formalsmap = list(test = base, reference = pknca_ref(base)),
     depends = base,
     pptestcd_cdisc = pptestcd,
-    pptest_cdisc = sprintf("Ratio of %s to Reference", label),
+    # SDTM limits PPTEST to 40 characters, as for the description
+    pptest_cdisc =
+      rule_desc_fit(c(
+        sprintf("Ratio of %s to Reference", label),
+        sprintf("Ratio of %s to Reference", base),
+        sprintf("Ratio of %s to Ref", base)
+      )),
     selection = list(concept = "parameter_ratio"),
     summary =
       list(

@@ -369,7 +369,9 @@ the generated intervals:
   * A parameter registered with `add.interval.col()` after PKNCA is loaded does
     not get a ratio.
   * A new ratio's `PPTESTCD` is its name until a controlled-terminology code is
-    confirmed.  The six ratios that existed (`ratio.cmax`, `ratio.auclast`,
+    confirmed, so most are longer than the 8 characters SDTM allows; its
+    `PPTEST` and description are kept within 40 characters (by using the base's
+    name in place of its pretty name when needed).  The six ratios that existed (`ratio.cmax`, `ratio.auclast`,
     `ratio.aucinf.obs`, `ratio.aucinf.pred`, `ratio.aucint.last`, and
     `ratio.aucint.all`) now come from the rule, in their places, with their
     codes, descriptions, and results unchanged.
