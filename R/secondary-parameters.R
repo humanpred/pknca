@@ -527,6 +527,7 @@ expand_secondary_auto <- function(intervals, requested_secondary, conc, group_re
                                   ref_vary = NULL) {
   links <- data.frame(param = character(0), ref_id = character(0))
   failures <- list()
+  group_entries <- list()
   original_rows <- seq_len(nrow(intervals))
   for (p in requested_secondary) {
     ref_col <- paste0(p, "_ref")
@@ -539,11 +540,30 @@ expand_secondary_auto <- function(intervals, requested_secondary, conc, group_re
         next
       }
       found <-
-        find_secondary_reference(
+        find_secondary_reference_groups(
           intervals, r, p, info, conc,
           group_ref = group_ref_for_param(group_ref, p),
           ref_vary = interval_ref_vary(intervals, r, p, default = ref_vary)
         )
+      if (is.list(found)) {
+        # The row is judged group by group.  When every group has the same
+        # reference, and it is not the row itself, one pointer names it, as for
+        # a row with one group; with no reference for any group, the row fails
+        # as a whole.
+        signatures <- secondary_override_signatures(found$overrides)
+        if (!any(is.na(found$reasons))) {
+          found <- paste(unique(found$reasons), collapse = "; ")
+        } else if (all(is.na(found$reasons)) && length(unique(signatures)) == 1 &&
+                   !any(found$same_row)) {
+          found <- found$overrides[[1]]
+        } else {
+          by_group <- expand_secondary_groups(intervals, r, p, info, found, conc)
+          intervals <- by_group$intervals
+          links <- rbind(links, by_group$links)
+          group_entries <- c(group_entries, by_group$entries)
+          next
+        }
+      }
       if (is.null(found)) {
         if (is_metabolite_ratio(p)) {
           # Only `group_ref` can say which analyte is the parent
@@ -589,7 +609,10 @@ expand_secondary_auto <- function(intervals, requested_secondary, conc, group_re
       do.call(rbind, failures)
     }
   rownames(failures) <- NULL
-  list(intervals = intervals, secondary_auto = list(links = links, failures = failures))
+  list(
+    intervals = intervals,
+    secondary_auto = list(links = links, failures = failures, groups = group_entries)
+  )
 }
 
 # How the automatic linkage is announced.  Creating a whole reference interval
@@ -685,10 +708,19 @@ interval_override_values <- function(groups, j, cols) {
 }
 
 # For one requesting intervals row and secondary parameter, derive the reference
-# group's values from the data.  Returns a named list of group-column overrides
-# on success, a character string holding the failure reason when there is no one
-# reference to use, or NULL when the finder does not apply (the caller then
-# leaves the request alone for the in-interval needs-reference abort).
+# group's values from the data, for each group the row covers.  Returns NULL when
+# the finder does not apply (the caller then leaves the request alone for the
+# in-interval needs-reference abort), a character string holding the reason when
+# no group of the row can have a reference judged at all, or a list with one
+# element per group the row covers:
+#
+# * `groups`:  the groups (a data.frame of the group columns);
+# * `overrides`:  the group-column values of each group's reference, NULL where
+#   it has none;
+# * `reasons`:  why a group has no reference (NA where it has one);
+# * `is_reference`:  the group matches `group_ref`, so it is a reference itself;
+# * `same_row`:  the reference differs only in group columns that the intervals
+#   do not have, so the requesting row covers the reference itself.
 #
 # The rule is mechanical, never a list of parameter names:  the finder applies
 # where the parameter measures an interval collection while everything it
@@ -704,8 +736,8 @@ interval_override_values <- function(groups, j, cols) {
 # the profile (or reports the ambiguity) per instance.  A varying column that
 # the intervals carry is pinned by the reference interval, as in pk.nca(), so
 # it is an ordinary difference here.
-find_secondary_reference <- function(intervals, row, param, info, conc, group_ref,
-                                     ref_vary = character(0)) {
+find_secondary_reference_groups <- function(intervals, row, param, info, conc, group_ref,
+                                            ref_vary = character(0)) {
   st_applicable <-
     !is.null(conc) &&
     !is.null(conc$columns$volume) &&
@@ -758,14 +790,25 @@ find_secondary_reference <- function(intervals, row, param, info, conc, group_re
   if (length(own_idx) == 0) {
     return("The interval matches no group in the concentration data")
   }
-  if (!is.null(group_ref) &&
-      any(interval_match_groups(groups[own_idx, , drop = FALSE], group_ref))) {
-    return("The interval's own group matches `group_ref`, so there is no distinct reference")
-  }
   compare_cols <- setdiff(group_cols, setdiff(ref_vary, names(intervals)))
-  overrides <- list()
-  reasons <- character(0)
-  for (i in own_idx) {
+  # The requesting row can be its own groups' reference only when it calculates
+  # what the reference supplies, so that nothing the row did not request is
+  # added to its results
+  expanded <- interval_expanded_params(intervals[row, , drop = FALSE])
+  row_has_sources <-
+    all(vapply(X = unname(info$ref_args), FUN = function(x) isTRUE(expanded[[x]]), FUN.VALUE = TRUE))
+  n_own <- length(own_idx)
+  overrides <- vector(mode = "list", length = n_own)
+  reasons <- rep(NA_character_, n_own)
+  is_reference <- rep(FALSE, n_own)
+  same_row <- rep(FALSE, n_own)
+  for (k in seq_len(n_own)) {
+    i <- own_idx[k]
+    if (!is.null(group_ref) && interval_match_groups(groups[i, , drop = FALSE], group_ref)) {
+      reasons[k] <- secondary_reference_itself_text("it matches `group_ref`")
+      is_reference[k] <- TRUE
+      next
+    }
     candidates <- setdiff(which(pool), i)
     candidates <-
       candidates[
@@ -775,14 +818,16 @@ find_secondary_reference <- function(intervals, row, param, info, conc, group_re
           FUN.VALUE = TRUE
         )
       ]
-    if (length(candidates) == 0) {
-      reasons <-
-        c(
-          reasons,
-          sprintf(
-            "No reference profile is available for %s",
-            name_value_text(groups[i, , drop = FALSE])
-          )
+    if (length(candidates) == 0 && pool[i]) {
+      # A spot-sample profile is what an interval collection references
+      reasons[k] <- secondary_reference_itself_text("it has no collection volume")
+      is_reference[k] <- TRUE
+      next
+    } else if (length(candidates) == 0) {
+      reasons[k] <-
+        sprintf(
+          "No reference profile is available for %s",
+          name_value_text(groups[i, , drop = FALSE])
         )
       next
     }
@@ -809,45 +854,76 @@ find_secondary_reference <- function(intervals, row, param, info, conc, group_re
           X = nearest,
           FUN = function(j) group_differing_cols(groups, compare_cols, i, j)
         )))
-      reasons <-
-        c(
-          reasons,
-          sprintf(
-            "More than one reference profile is equally close (%s)",
-            paste(
-              sprintf("(%s)", name_value_text(groups[nearest, tied_cols, drop = FALSE])),
-              collapse = ", "
-            )
+      reasons[k] <-
+        sprintf(
+          "More than one reference profile is equally close (%s)",
+          paste(
+            sprintf("(%s)", name_value_text(groups[nearest, tied_cols, drop = FALSE])),
+            collapse = ", "
           )
         )
       next
     }
     differing <- group_differing_cols(groups, compare_cols, i, nearest[1])
     inexpressible <- setdiff(differing, names(intervals))
-    if (length(inexpressible) > 0) {
-      reasons <-
-        c(
-          reasons,
-          sprintf(
-            "Add %s to the intervals so the reference can be expressed, or set '%s_ref'",
-            paste(sprintf("'%s'", inexpressible), collapse = ", "), param
-          )
-        )
+    if (length(inexpressible) > 0 &&
+        (length(inexpressible) < length(differing) || !row_has_sources)) {
+      # The reference differs in a column the intervals pin as well, so it is
+      # not within the requesting row, or the row does not calculate what the
+      # reference supplies; and a reference interval cannot name the columns
+      # the intervals do not have
+      reasons[k] <- secondary_inexpressible_text(inexpressible, param)
       next
     }
-    overrides[[length(overrides) + 1L]] <- interval_override_values(groups, nearest[1], differing)
+    # A reference differing only in columns the intervals do not have is within
+    # the requesting row, which covers every value of those columns
+    same_row[k] <- length(inexpressible) > 0
+    overrides[[k]] <- interval_override_values(groups, nearest[1], differing)
   }
+  groups_own <- groups[own_idx, , drop = FALSE]
+  rownames(groups_own) <- NULL
+  list(
+    groups = groups_own, overrides = overrides, reasons = reasons,
+    is_reference = is_reference, same_row = same_row
+  )
+}
+
+# The reason a group that is a reference itself has no result, and `why` it is
+# one
+secondary_reference_itself_text <- function(why) {
+  sprintf("The profile is the reference itself (%s)", why)
+}
+
+secondary_inexpressible_text <- function(cols, param) {
+  sprintf(
+    "Add %s to the intervals so the reference can be expressed, or set '%s_ref'",
+    paste(sprintf("'%s'", cols), collapse = ", "), param
+  )
+}
+
+# The one reference of every group an intervals row covers, as a pointer can
+# name it:  a named list of group-column overrides, a character string holding
+# the reason there is none, or NULL when the finder does not apply.  A pointer
+# names one reference interval for the whole row, so every group needs the same
+# reference, and the reference cannot be the requesting row itself.
+find_secondary_reference <- function(intervals, row, param, info, conc, group_ref,
+                                     ref_vary = character(0)) {
+  found <-
+    find_secondary_reference_groups(
+      intervals, row, param, info, conc, group_ref = group_ref, ref_vary = ref_vary
+    )
+  if (!is.list(found)) {
+    return(found)
+  }
+  reasons <- found$reasons
+  for (k in which(found$same_row)) {
+    reasons[k] <- secondary_inexpressible_text(names(found$overrides[[k]]), param)
+  }
+  reasons <- reasons[!is.na(reasons)]
   if (length(reasons) > 0) {
     return(paste(unique(reasons), collapse = "; "))
   }
-  # One row carries one pointer, so every group the row applies to has to reach
-  # the same reference.
-  signatures <-
-    vapply(
-      X = overrides,
-      FUN = function(x) name_value_text(as.data.frame(x)),
-      FUN.VALUE = ""
-    )
+  signatures <- secondary_override_signatures(found$overrides)
   if (length(unique(signatures)) > 1) {
     return(
       sprintf(
@@ -856,7 +932,92 @@ find_secondary_reference <- function(intervals, row, param, info, conc, group_re
       )
     )
   }
-  overrides[[1]]
+  found$overrides[[1]]
+}
+
+# The text of each reference's group-column overrides (NA where there is none),
+# which tells the distinct references apart
+secondary_override_signatures <- function(overrides) {
+  vapply(
+    X = overrides,
+    FUN = function(x) if (is.null(x)) NA_character_ else name_value_text(as.data.frame(x)),
+    FUN.VALUE = ""
+  )
+}
+
+# Link the request for `param` on `row` group by group:  each distinct
+# reference of the groups the finder judged (`found`, from
+# find_secondary_reference_groups()) is reused or created, or is the requesting
+# row itself, and announced.  The row's pointer names the first of them, which
+# defers the request to pk_nca_secondary(); the returned entries give each
+# group its own reference, or the reason it has none.
+expand_secondary_groups <- function(intervals, row, param, info, found, conc) {
+  source_params <- unname(info$ref_args)
+  ids <- list()
+  links <- data.frame(param = character(0), ref_id = character(0))
+  entries <- list()
+  signatures <- secondary_override_signatures(found$overrides)
+  for (k in seq_len(nrow(found$groups))) {
+    entry <-
+      list(
+        param = param, row = row, group = found$groups[k, , drop = FALSE],
+        ref_id = NULL, override = list(), reason = found$reasons[k],
+        is_reference = found$is_reference[k]
+      )
+    if (is.na(entry$reason)) {
+      override <- found$overrides[[k]]
+      if (is.null(ids[[signatures[k]]])) {
+        if (found$same_row[k]) {
+          assigned <- interval_assign_ref_ids(intervals, list(row), ref_id = NULL, prefix = "autoref")
+          intervals <- interval_sync_ref_cols(assigned$intervals, param)
+          intervals <- interval_complete_source_params(intervals, row, source_params)
+          linked <-
+            list(
+              id = assigned$ids[[1]], created = FALSE, override = override,
+              start = intervals$start[row], end = intervals$end[row]
+            )
+        } else {
+          linked <-
+            interval_link_found_reference(
+              intervals, row, param, override, source_params, conc, prefix = "autoref"
+            )
+          intervals <- linked$intervals
+        }
+        ids[[signatures[k]]] <- linked$id
+        links <- rbind(links, data.frame(param = param, ref_id = as.character(linked$id)))
+        rlang::inform(
+          secondary_ref_created_text(param, linked),
+          class = "pknca_message_secondary_ref_created"
+        )
+      }
+      entry$ref_id <- ids[[signatures[k]]]
+      entry$override <- override
+    }
+    entries[[k]] <- entry
+  }
+  intervals <- interval_sync_ref_cols(intervals, param)
+  intervals[[param]][row] <- TRUE
+  intervals[[paste0(param, "_ref")]][row] <- ids[[1]]
+  list(intervals = intervals, links = links, entries = entries)
+}
+
+# The entry of `entries` (from expand_secondary_groups()) for the group
+# `own_group`
+secondary_group_entry <- function(entries, own_group) {
+  for (entry in entries) {
+    matches <-
+      vapply(
+        X = names(entry$group),
+        FUN = function(col) own_group[[col]] %in% entry$group[[col]],
+        FUN.VALUE = TRUE
+      )
+    if (all(matches)) {
+      return(entry)
+    }
+  }
+  # Every group with results is a group of the concentration data, which the
+  # finder judged
+  rlang::abort("Please report a bug:  no reference was judged for a group", class = "pknca_error_internal_secondary_group")  # nocov
 }
 
 # Reuse or create the reference interval the finder derived, give it an
@@ -1047,6 +1208,21 @@ stop_secondary_value_missing <- function(param, target, ref_id, group_values, si
   )
 }
 
+# The group of the reference of the instance `own_group`:  its own group with
+# the values the reference interval `ref_row` names, and the values of a
+# group-by-group link (`override`, which names the columns that the intervals do
+# not have as well)
+secondary_ref_group <- function(own_group, intervals, ref_row, override_cols, override) {
+  ret <- own_group
+  for (col in override_cols) {
+    ret[[col]] <- intervals[[col]][ref_row]
+  }
+  for (col in names(override)) {
+    ret[[col]] <- override[[col]]
+  }
+  ret
+}
+
 # The group values a secondary result took its reference side from, as the
 # `<group column>_ref` columns of the result row.  They make the linkage
 # machine-readable (`PPANMETH` says the same thing in prose) and are what the
@@ -1107,6 +1283,12 @@ pk_nca_secondary <- function(results, data_calc) {
     for (r in requested_rows) {
       info <- secondary_param_info(p)
       ref_id <- current_intervals[[rc]][r]
+      # A row judged group by group gives each group its own reference
+      entries <-
+        Filter(
+          f = function(entry) identical(entry$param, p) && identical(entry$row, r),
+          x = auto$groups
+        )
       is_auto <-
         !is.null(auto) &&
         any(auto$links$param %in% p & auto$links$ref_id %in% as.character(ref_id))
@@ -1137,18 +1319,37 @@ pk_nca_secondary <- function(results, data_calc) {
       instances <- secondary_instances(results, own_rows, result_group_cols)
       for (k in seq_len(nrow(instances))) {
         own_group <- instances[k, , drop = FALSE]
-        ref_group <- own_group
-        for (col in override_cols) {
-          ref_group[[col]] <- current_intervals[[col]][ref_row]
-        }
         inputs <- list()      # formal -> value
         excludes <- character(0)
         failed_reason <- NULL
-        if (length(free_cols) > 0) {
+        is_reference <- FALSE
+        ref_row_k <- ref_row
+        entry_override <- list()
+        if (length(entries) > 0) {
+          entry <- secondary_group_entry(entries, own_group)
+          if (is.na(entry$reason)) {
+            ref_row_k <-
+              which(
+                !is.na(current_intervals$interval_id) &
+                  current_intervals$interval_id == entry$ref_id
+              )[1]
+            entry_override <- entry$override
+          } else {
+            failed_reason <- entry$reason
+            is_reference <- entry$is_reference
+          }
+        }
+        ref_group <-
+          if (is.null(failed_reason)) {
+            secondary_ref_group(own_group, current_intervals, ref_row_k, override_cols, entry_override)
+          } else {
+            NULL
+          }
+        if (is.null(failed_reason) && length(free_cols) > 0) {
           candidates <-
             secondary_ref_candidates(
               results, ref_group, free_cols,
-              current_intervals$start[ref_row], current_intervals$end[ref_row],
+              current_intervals$start[ref_row_k], current_intervals$end[ref_row_k],
               unname(info$ref_args), result_group_cols
             )
           if (nrow(candidates) == 1) {
@@ -1206,7 +1407,7 @@ pk_nca_secondary <- function(results, data_calc) {
           found <-
             secondary_lookup(
               results, ref_group,
-              current_intervals$start[ref_row], current_intervals$end[ref_row],
+              current_intervals$start[ref_row_k], current_intervals$end[ref_row_k],
               info$ref_args[[formal]], result_group_cols
             )
           if (found$n > 1) stop_secondary_ambiguous(p, info$ref_args[[formal]], ref_group)
@@ -1236,7 +1437,11 @@ pk_nca_secondary <- function(results, data_calc) {
           # reason, and is counted into the one-per-parameter warning below.
           value <- NA_real_
           excl <- combine_exclude_reasons(c(excludes, failed_reason), NULL)
-          auto_reasons[[p]] <- c(auto_reasons[[p]], failed_reason)
+          if (!is_reference) {
+            # A group that is the reference itself is expected to have no
+            # result where its row's other groups have theirs
+            auto_reasons[[p]] <- c(auto_reasons[[p]], failed_reason)
+          }
         }
         template <- secondary_template(results, own_rows, own_group, result_group_cols)
         template <- secondary_ref_group_cols(template, ref_group, result_group_cols)
@@ -1247,8 +1452,8 @@ pk_nca_secondary <- function(results, data_calc) {
             NA_character_
           } else {
             secondary_ppanmeth(
-              c(override_cols, free_cols), own_group, ref_group,
-              current_intervals$start[ref_row], current_intervals$end[ref_row]
+              unique(c(override_cols, names(entry_override), free_cols)), own_group, ref_group,
+              current_intervals$start[ref_row_k], current_intervals$end[ref_row_k]
             )
           }
         template$exclude <- excl

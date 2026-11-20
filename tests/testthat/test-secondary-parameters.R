@@ -2199,7 +2199,7 @@ test_that("group_ref directs a metabolite ratio to the parent analyte", {
         class = "pknca_warning_secondary_auto_reference"
       )
     )
-  expect_match(warning_text, "own group matches `group_ref`", fixed = TRUE)
+  expect_match(warning_text, "The profile is the reference itself (it matches `group_ref`)", fixed = TRUE)
   d_res <- as.data.frame(res)
   # auclast(parent) = (10+6)/2*12 + (6+2)/2*12 = 144
   # auclast(metabolite) = (4+3)/2*12 + (3+1)/2*12 = 66
@@ -2212,10 +2212,9 @@ test_that("group_ref directs a metabolite ratio to the parent analyte", {
   )
   # The parent has no parent of its own
   expect_true(is.na(d_ratio$PPORRES[d_ratio$PCTEST %in% "midazolam"]))
-  expect_match(
+  expect_equal(
     d_ratio$exclude[d_ratio$PCTEST %in% "midazolam"],
-    "own group matches `group_ref`",
-    fixed = TRUE
+    "The profile is the reference itself (it matches `group_ref`)"
   )
 })
 
@@ -2242,7 +2241,21 @@ test_that("a reference needing a column the intervals lack says to add it", {
   d_clr <- d_res[d_res$PPTESTCD %in% "clr.last", ]
   expect_equal(nrow(d_clr), 2L)
   expect_true(all(is.na(d_clr$PPORRES)))
-  expect_true(all(grepl("PCSPEC", d_clr$exclude, fixed = TRUE)))
+  # The row does not calculate the plasma AUC, so the reference cannot be
+  # within it; the plasma profile is a reference itself
+  expect_equal(
+    d_clr$exclude,
+    rep(
+      paste(
+        "The profile is the reference itself (it has no collection volume)",
+        "Add 'PCSPEC' to the intervals so the reference can be expressed, or set 'clr.last_ref'",
+        sep = "; "
+      ),
+      2
+    )
+  )
+  # Nothing is calculated that the row did not request
+  expect_setequal(unique(d_res$PPTESTCD), c("ae", "clr.last"))
 })
 
 # 5.7.9: the finder only fires where the alternative is the needs-reference
@@ -2607,9 +2620,9 @@ test_that("group_ref that excludes every candidate says so", {
   )
 })
 
-# One interval row carries one pointer, so every group it applies to has to
-# reach the same reference
-test_that("groups of one interval needing different references fail the row", {
+# One interval row is judged group by group, so its groups may have different
+# references
+test_that("groups of one interval needing different references each get their own", {
   d_split <-
     rbind(
       d_conc_sec,
@@ -2625,18 +2638,32 @@ test_that("groups of one interval needing different references fail the row", {
   o_conc_split <- PKNCAconc(d_split, conc~time|PCSPEC+subject, volume = "vol")
   o_data_split <-
     PKNCAdata(o_conc_split, intervals = intervals_sec_urine, options = list(auc.method = "linear"))
-  warning_text <-
-    conditionMessage(
-      expect_warning(
+  # One reference interval for each sample type, each announced
+  expect_no_warning(
+    expect_message(
+      expect_message(
         res <- muffle_interval_warnings(pk.nca(o_data_split)),
-        class = "pknca_warning_secondary_auto_reference"
-      )
+        regexp = "created reference interval 'autoref1' (PCSPEC=plasma, 0-24)",
+        fixed = TRUE,
+        class = "pknca_message_secondary_ref_created"
+      ),
+      regexp = "created reference interval 'autoref2' (PCSPEC=serum, 0-24)",
+      fixed = TRUE,
+      class = "pknca_message_secondary_ref_created"
     )
-  expect_match(warning_text, "need different reference profiles", fixed = TRUE)
-  expect_match(warning_text, "PCSPEC=plasma", fixed = TRUE)
-  expect_match(warning_text, "PCSPEC=serum", fixed = TRUE)
+  )
   d_res <- as.data.frame(res)
-  expect_true(all(is.na(d_res$PPORRES[d_res$PPTESTCD %in% "clr.last"])))
+  d_clr <- d_res[d_res$PPTESTCD %in% "clr.last", ]
+  d_clr <- d_clr[order(d_clr$subject), ]
+  # ae(urine) = 2*100 + 1*150 = 350 for both subjects; auclast(plasma,
+  # subject 1) = 144; auclast(serum, subject 2) = (9+5)/2*12 + (5+2)/2*12 = 126
+  expect_equal(d_clr$PPORRES, c(350/144, 350/126))
+  expect_equal(d_clr$PCSPEC_ref, c("plasma", "serum"))
+  expect_equal(
+    d_clr$PPANMETH,
+    c("Reference interval: PCSPEC=plasma, 0-24", "Reference interval: PCSPEC=serum, 0-24")
+  )
+  expect_equal(d_clr$exclude, c(NA_character_, NA_character_))
 })
 
 # Group values may be factors, and the intervals hold their labels
@@ -3247,7 +3274,7 @@ test_that("the finder does not take the interval's own profile in another period
   # time, not a reference.
   expect_equal(
     find_two_periods(intervals_two_periods, "period"),
-    "No reference profile is available for PCSPEC=plasma, period=1, subject=1; No reference profile is available for PCSPEC=plasma, period=2, subject=1"
+    "The profile is the reference itself (it has no collection volume)"
   )
   # Without the period varying, the other period's plasma profile is the nearest
   # candidate, one column away

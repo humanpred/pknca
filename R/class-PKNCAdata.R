@@ -81,12 +81,15 @@
 #'   `group_ref = data.frame(PCTEST = "midazolam")` directs metabolite ratios
 #'   (`mr.<parameter>`) to the parent analyte.  A metabolite ratio requires
 #'   `group_ref` or a `<parameter>_ref` pointer
-#'   (`pknca_error_mr_needs_parent`), and the intervals row requesting it must
-#'   be the metabolite's own (the intervals need the analyte column):  a row
-#'   that covers every analyte also covers the parent, so its own group matches
-#'   `group_ref` and every result, the metabolite's included, is `NA` with the
-#'   reason "The interval's own group matches `group_ref`, so there is no
-#'   distinct reference".  The same data.frame with a `parameter` column
+#'   (`pknca_error_mr_needs_parent`).  An intervals row is judged group by
+#'   group:  in a row that covers every analyte, each metabolite gets its ratio
+#'   to the parent, and the parent's own result is `NA` with the reason "The
+#'   profile is the reference itself (it matches `group_ref`)".  When the
+#'   reference differs only in group columns the intervals do not have, the
+#'   row is its own reference, as long as it calculates the values the
+#'   reference supplies; otherwise a reference interval is created for it.  The
+#'   groups of one row may have different references.  The same data.frame with
+#'   a `parameter` column
 #'   applies each row only to the secondary parameter it names, and the columns
 #'   a parameter's rows leave `NA` do not apply to it, so one table can steer
 #'   renal clearance by `PCSPEC` and a metabolite ratio by `PCTEST`:

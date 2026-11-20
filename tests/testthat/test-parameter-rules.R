@@ -457,10 +457,9 @@ test_that("a name the metabolite ratio rule does not make says why", {
   )
 })
 
-test_that("an intervals row covering every analyte gives NA metabolite ratios, the metabolite's included", {
-  # The row covers the parent too, so its own group matches group_ref.  This
-  # pins the rule as built for every secondary parameter; judging such a row
-  # group by group would change it.
+test_that("an intervals row covering every analyte gives the metabolite its ratio and the parent NA", {
+  # The row is judged group by group:  the metabolite's reference is the
+  # parent within the same row, and the parent is the reference itself
   intervals_all <- data.frame(start = 0, end = 8, auclast = TRUE, cmax = TRUE, mr.cmax = TRUE)
   o_data <-
     PKNCAdata(
@@ -468,15 +467,63 @@ test_that("an intervals row covering every analyte gives NA metabolite ratios, t
       intervals = intervals_all,
       group_ref = data.frame(analyte = "parent")
     )
+  expect_no_warning(
+    expect_message(
+      d_res <- as.data.frame(pk.nca(o_data)),
+      regexp = "Secondary parameter 'mr.cmax': using (analyte=parent, 0-8) as the reference interval 'autoref1'.",
+      fixed = TRUE,
+      class = "pknca_message_secondary_ref_created"
+    )
+  )
+  # Nothing is calculated that the row did not request
+  expect_setequal(unique(d_res$PPTESTCD), c("auclast", "cmax", "mr.cmax"))
+  d_mr <- d_res[d_res$PPTESTCD == "mr.cmax", ]
+  d_mr <- d_mr[order(d_mr$subject, d_mr$analyte), ]
+  expect_equal(d_mr$analyte, c("metab", "parent", "metab", "parent"))
+  # cmax:  subject 1, parent 10 and metabolite 3; subject 2, 12 and 4
+  expect_equal(d_mr$PPORRES, c(3/10, NA, 4/12, NA))
+  expect_equal(d_mr$analyte_ref, c("parent", NA, "parent", NA))
+  expect_equal(
+    d_mr$PPANMETH,
+    c("Reference interval: analyte=parent, 0-8", NA, "Reference interval: analyte=parent, 0-8", NA)
+  )
+  expect_equal(
+    d_mr$exclude,
+    c(NA, "The profile is the reference itself (it matches `group_ref`)",
+      NA, "The profile is the reference itself (it matches `group_ref`)")
+  )
+  # The same values as with one row per analyte
+  o_data_split <-
+    PKNCAdata(
+      PKNCAconc(d_conc_mr, conc ~ time | subject / analyte),
+      intervals = intervals_mr,
+      group_ref = data.frame(analyte = "parent")
+    )
+  d_split <- suppressMessages(as.data.frame(pk.nca(o_data_split)))
+  d_split_mr <- d_split[d_split$PPTESTCD == "mr.cmax", ]
+  expect_equal(
+    d_split_mr$PPORRES[order(d_split_mr$subject)],
+    d_mr$PPORRES[d_mr$analyte == "metab"]
+  )
+})
+
+test_that("an intervals row covering only the parent gives NA metabolite ratios with a warning", {
+  intervals_parent <- data.frame(analyte = "parent", start = 0, end = 8, cmax = TRUE, mr.cmax = TRUE)
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc_mr[d_conc_mr$analyte == "parent", ], conc ~ time | subject / analyte),
+      intervals = intervals_parent,
+      group_ref = data.frame(analyte = "parent")
+    )
   expect_warning(
     d_res <- as.data.frame(pk.nca(o_data)),
+    regexp = "The profile is the reference itself (it matches `group_ref`)",
+    fixed = TRUE,
     class = "pknca_warning_secondary_auto_reference"
   )
   d_mr <- d_res[d_res$PPTESTCD == "mr.cmax", ]
-  expect_equal(nrow(d_mr), 4)
-  expect_true(all(is.na(d_mr$PPORRES)))
-  expect_true(all(grepl("The interval's own group matches `group_ref`, so there is no distinct reference", d_mr$exclude, fixed = TRUE)))
-  expect_setequal(d_mr$analyte, c("parent", "metab"))
+  expect_equal(d_mr$PPORRES, c(NA_real_, NA_real_))
+  expect_equal(d_mr$exclude, rep("The profile is the reference itself (it matches `group_ref`)", 2))
 })
 
 test_that("param_pattern selects what it selected before the new ratios were registered", {

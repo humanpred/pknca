@@ -411,6 +411,26 @@ the generated intervals:
   units are "fraction"; the molar form (`"mol/mol"`, through per-analyte units
   tables) is not yet available.
 
+* A secondary parameter whose reference is found automatically is judged group
+  by group within an intervals row (@billdenney; PR number to add).  A row
+  covering every analyte gives each metabolite its `mr.<base>` (or
+  `ratio.<base>`) to the parent, and the parent's own result is `NA` with the
+  reason "The profile is the reference itself (it matches `group_ref`)"; before,
+  every result of such a row, the metabolites' included, was `NA`.  The row is
+  its own reference when the reference differs only in group columns the
+  intervals do not have and the row calculates what the reference supplies (as
+  a metabolite ratio's base is), so the intervals no longer need the analyte
+  column.  The groups of one row may have different references (for example, a
+  plasma reference for one subject and a serum reference for another), each
+  created and announced as before, where before the row's results were `NA`
+  with "The interval's groups need different reference profiles".  A spot
+  sample with no other spot sample to compare against is the reference itself
+  for renal clearance ("it has no collection volume").  Results that had a
+  value keep it; only results that were `NA` gain one, and a result that stays
+  `NA` may give a different reason.  A group that is the reference itself
+  raises no `pknca_warning_secondary_auto_reference` when other groups of its
+  row have their results.
+
 * `set_intervals()` adds rows to the units table that `PKNCAdata()` built for a
   requested parameter that has none, such as one registered with
   `add.interval.col()` after the data object was built (@billdenney; PR number
