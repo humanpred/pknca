@@ -250,9 +250,9 @@ test_that("pk.calc.auciv_pbext handles edge cases correctly", {
   expect_warning(
     expect_equal(
       pk.calc.auciv_pbext(conc = c(0, 1), time = c(0, 1), auc = 5, auciv = 3),
-      structure(NA_real_, exclude = "The concentration measured at the dose time is above C0")
+      structure(NA_real_, exclude = "The concentration at the dose time (measured or imputed) is above C0")
     ),
-    regexp = "The AUC with C0 is less than the AUC without it:  the concentration measured at the dose time is above C0",
+    regexp = "The AUC with C0 is less than the AUC without it:  the concentration at the dose time (measured, or imputed for the interval) is above C0,",
     fixed = TRUE,
     class = "pknca_warning_auciv_pbext_negative"
   )
@@ -265,14 +265,14 @@ test_that("pk.calc.auciv_pbext handles edge cases correctly", {
   expect_warning(
     expect_equal(
       pk.calc.auciv_pbext(conc = c(1, 1), time = c(0, 1), auc = 2e-10, auciv = 1e-10),
-      structure(NA_real_, exclude = "The concentration measured at the dose time is above C0")
+      structure(NA_real_, exclude = "The concentration at the dose time (measured or imputed) is above C0")
     ),
     class = "pknca_warning_auciv_pbext_negative"
   )
   expect_warning(
     expect_equal(
       pk.calc.auciv_pbext(conc = c(1, 1), time = c(0, 1), auc = 1e-9, auciv = 0),
-      structure(NA_real_, exclude = "The concentration measured at the dose time is above C0")
+      structure(NA_real_, exclude = "The concentration at the dose time (measured or imputed) is above C0")
     ),
     class = "pknca_warning_auciv_pbext_negative"
   )
@@ -281,7 +281,7 @@ test_that("pk.calc.auciv_pbext handles edge cases correctly", {
   expect_warning(
     expect_equal(
       pk.calc.auciv_pbext(conc = c(1, 1), time = c(0, 1), auc = 0.3 * (1 + 1e-7), auciv = 0.3),
-      structure(NA_real_, exclude = "The concentration measured at the dose time is above C0")
+      structure(NA_real_, exclude = "The concentration at the dose time (measured or imputed) is above C0")
     ),
     class = "pknca_warning_auciv_pbext_negative"
   )
@@ -393,7 +393,7 @@ test_that("after an earlier dose, a trough above the back-extrapolated C0 gives 
     expect_equal(unname(res$value[current]), NA_real_, info = current)
     expect_equal(
       unname(res$exclude[current]),
-      "The concentration measured at the dose time is above C0",
+      "The concentration at the dose time (measured or imputed) is above C0",
       info = current
     )
   }

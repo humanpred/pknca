@@ -54,7 +54,16 @@ In brief, the built-in methods work as follows:
 The development version of PKNCA also adds `PKNCA_impute_method_end_conc_drop`
 (used as `"end_conc_drop"`), which drops a concentration observed exactly at
 the interval end -- such as a predose sample for the next dose -- from that
-interval's calculation.
+interval's calculation.  The interval AUCs (`aucint.*`) drop it too:  the
+interval AUC then ends at the last remaining sample, and `aucint.inf.*`
+extrapolates from that sample to the interval end with the half-life.
+
+Imputation applies to every parameter of the interval, including the interval
+AUCs (`aucint.*`, `aumcint.*`, and their IV forms), which also read the
+group's samples outside the interval to estimate the concentrations at its
+boundaries:  within the interval they read the imputed data, and when the
+imputation sets the concentration at the start, they do not read the samples
+before it.
 
 ## How does imputation occur?
 
@@ -174,7 +183,10 @@ In addition to the above, the function may take named arguments of:
 
 * `start` and `end` to indicate the start and end time of the interval, and
 * `conc.group` and `time.group` to indicate the concentrations and times that
-  have not been filtered for the interval.
+  have not been filtered for the interval.  These are what the method itself
+  receives; the method's result replaces the part within the interval for the
+  interval AUCs (`aucint.*` and the related parameters), so a user-defined
+  method changes them as it changes `auclast`.
 
 Values given per observation (the urine volume and collection duration,
 `include_half.life`, `exclude_half.life`, and a per-observation `lloq`) follow

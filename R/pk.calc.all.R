@@ -561,8 +561,25 @@ impute_conc_time <- function(impute_funs, conc, time, start, end,
 # `volume`, and `duration.conc`; one that is NULL in either is NULL in the
 # result.  A group observation with a missing time is kept, as it is not within
 # the interval.
+#
+# When the imputation sets the concentration at `start` (adding it or changing
+# a measured one), the group's observations before `start` are dropped:  they
+# only estimate the concentration at `start`, which is now given, and a
+# concentration of 0 imputed after a positive one would otherwise be cleaned
+# away as a BLQ value in the middle of the profile.
 impute_group_data <- function(group, imputed, start, end) {
+  if (!(length(start) == 1 && length(end) == 1 && !is.na(start) && !is.na(end) && start < end)) {
+    rlang::abort(
+      "Please report a bug.  impute_group_data() needs one interval with start < end",
+      class = "pknca_error_internal_impute_group_interval"
+    )
+  }
   mask_outside <- !((group$time >= start & group$time <= end) %in% TRUE)
+  imputed_start <- imputed$conc[imputed$time %in% start]
+  group_start <- group$conc[group$time %in% start]
+  if (length(imputed_start) > 0 && !identical(imputed_start, group_start)) {
+    mask_outside <- mask_outside & !((group$time < start) %in% TRUE)
+  }
   ret <- list()
   for (current_name in names(group)) {
     if (!is.null(group[[current_name]]) && !is.null(imputed[[current_name]])) {

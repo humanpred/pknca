@@ -1213,15 +1213,20 @@ the generated intervals:
 ## Bug fixes
 
 * `aucint.*` and `aumcint.*`, their IV forms (`aucivint.*`, `aumcivint.*`,
-  `aucivpbext.int.*`), and everything calculated from them (`cav.int.*`,
+  `aucivpbext.int.*` and its earlier names `aucivpbextint.last` and
+  `aucivpbextint.all`), and everything calculated from them (`cav.int.*`,
   `cl.int.*`, `kel.int.*`, `mrt.int.*`, `thalf.eff.int.*`, `vss.int.*`,
   `vz.int.*`, and their `ivint` forms) now use the interval's imputation, as
   `auclast` and the other AUCs already did (@billdenney).  They are
   calculated from all of the group's data, so that the concentration at an
   interval boundary can be estimated from the samples outside it; within the
-  interval, those data are now the imputed ones.  Values change in three
-  cases, and no other parameter changes:
-  - a start imputation (`start_predose`, `start_cmin`, `start_predose_conc0`,
+  interval, those data are now the imputed ones, and when the imputation sets
+  the concentration at the start of the interval, the samples before the
+  start are not used.  Every imputation method reaches them, including a
+  user-defined `PKNCA_impute_method_*()` function.  With no imputation,
+  nothing changes.  Values change in these cases, and no other parameter
+  changes:
+  - A start imputation (`start_predose`, `start_cmin`, `start_predose_conc0`,
     or a chain of them) where no sample is at the start of the interval:  the
     start is the imputed concentration instead of an estimate from the
     samples around it.  With the predose sample drawn 3 minutes before the
@@ -1229,14 +1234,41 @@ the generated intervals:
     without dosing data), equal to `auclast`; at steady state over 24 to 48
     hours it is 90.93 (it was 90.43).  The default intervals for
     multiple-dose data, which use `aucint.last` with `start_cmin` or
-    `start_predose`, change in the same way.
+    `start_predose`, change in the same way.  `aumcint.*` changes only where
+    the first segment is integrated with the logarithmic method (a falling
+    concentration), because the AUMC weights the start by a time of 0.
   - `start_conc0` where a nonzero concentration is measured at the start:
-    the start is 0, as for `auclast` (76.04; it was 76.54).
+    the start is 0, as for `auclast` (76.04; it was 76.54).  Where a positive
+    sample comes before the start, the imputed 0 is now used:  without dosing
+    data and with 0.3 measured 3 minutes before the dose, `aucint.last` over
+    0 to 24 hours is 76.04 (it was 76.33), equal to `auclast`, and
+    `aucint.inf.obs` equals `aucint.last` when the interval ends at a sample
+    (76.04; it was 76.19 with dosing data).
   - `end_conc_drop`:  the sample at the end of the interval is dropped, as for
-    `auclast`, so the end is estimated from the samples before it.
-    `aucint.last` over 0 to 24 hours with the last sample at 24 hours is the
-    AUC to the previous sample (56.40; it was 76.04), and `aucint.inf.obs` is
-    extrapolated with the half-life (73.60; it was 76.54).
+    `auclast`.  The interval AUC then ends at the last remaining sample, and
+    `aucint.inf.*` extrapolates from it to the interval end with the
+    half-life.  With doses at 0, 24, and 48 hours, samples at 25, 26, 28, 32,
+    36, and 48 hours, and the 48-hour sample dropped, `aucint.last` over 24 to
+    48 hours is 66.85 (it was 90.43), ending at 36 hours, and
+    `aucint.inf.obs` is 87.73 (it was 90.92).
+  - A user-defined imputation method:  the interval AUCs use its result, as
+    `auclast` does.
+  - The IV forms over an interval that starts at an IV bolus after an earlier
+    dose.  `aucivint.*` replaces the start of the interval with the
+    back-extrapolated C0, so `aucivint.last`, `aucivint.all`, and what is
+    calculated from them do not change with a start imputation.
+    `aucivpbext.int.*` is now the percent back-extrapolated relative to the
+    imputed start concentration:  with IV bolus doses at 0 and 24 hours and the
+    predose sample 3 minutes before the second dose, `aucivpbext.int.last`
+    over 24 to 48 hours is 2.01 with `start_cmin` (it was 3.43).  Where the
+    imputed start concentration is above C0, as with `start_predose` on the
+    same data, it is `NA` with a `pknca_warning_auciv_pbext_negative` warning
+    (it was 3.43).  `aucivint.inf.*`, `aumcivint.inf.*`, and what is
+    calculated from them (`cl.ivint.inf.*`, `kel.ivint.inf.*`,
+    `mrt.ivint.inf.*`, `vss.ivint.inf.*`, `vz.ivint.inf.*`, `cav.ivint.inf.*`,
+    `thalf.eff.ivint.inf.*`) now start where the `last` forms do, so for an
+    interval that ends at a sample they equal them:  `aucivint.inf.obs` is
+    20.44 (it was 21.14) and `cl.ivint.inf.obs` 4.89 (it was 4.73).
 
   The extrapolation reported in `PPANMETH` follows:  it is "none" where the
   start is now imputed rather than extrapolated, and "AUClast", "AUCall",
@@ -1249,6 +1281,7 @@ the generated intervals:
   `PKNCA_impute_method_` prefix is treated as the method without it.  A
   single method without the prefix is unchanged.  An unknown method, alone
   or in a chain, is still refused only when `pk.nca()` runs.
+
 * `aucivint.*` and `aumcivint.*` over an interval that starts at the first
   dose now use a nonzero concentration measured at the dose time as C0, as
   `aucivlast` does, so they equal `aucint.*` and `aumcint.*` and the percent

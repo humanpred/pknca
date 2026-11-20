@@ -526,12 +526,12 @@ add.interval.col(
 #'   `conc.origin`), so `NA` is returned.
 #'
 #'   When `auciv` is less than `auc` by more than `sqrt(.Machine$double.eps)`
-#'   times the larger of the two, the concentration measured at the dose time is
-#'   above the C0 that `auciv` used, and the result is `NA` with that reason and
-#'   a `pknca_warning_auciv_pbext_negative` warning; within the tolerance, the
-#'   result is 0.  In [pk.nca()] only the interval forms give this, after an
-#'   earlier dose, where the measured value is the trough and C0 is
-#'   back-extrapolated.  The other forms use a nonzero measured value at the
+#'   times the larger of the two, the concentration at the dose time (measured,
+#'   or imputed for the interval) is above the C0 that `auciv` used, and the
+#'   result is `NA` with that reason and a `pknca_warning_auciv_pbext_negative`
+#'   warning; within the tolerance, the result is 0.  In [pk.nca()] only the
+#'   interval forms give this, after an earlier dose, where the value at the
+#'   dose time is the trough and C0 is back-extrapolated.  The other forms use a nonzero measured value at the
 #'   dose time as C0 (the first method of [pk.calc.c0()]), so they reach it only
 #'   when called directly with an `auciv` from a lower `c0`.
 #' @param auc The AUC calculated without C0 back-extrapolation 
@@ -568,15 +568,15 @@ pk.calc.auciv_pbext <- function(conc, time, auc, auciv, ..., options = list(), c
     rlang::warn(
       paste(
         "The AUC with C0 is less than the AUC without it:  the concentration",
-        "measured at the dose time is above C0, so the percent back-extrapolated",
-        "is not calculated"
+        "at the dose time (measured, or imputed for the interval) is above C0,",
+        "so the percent back-extrapolated is not calculated"
       ),
       class = "pknca_warning_auciv_pbext_negative"
     )
     return(
       structure(
         NA_real_,
-        exclude = "The concentration measured at the dose time is above C0"
+        exclude = "The concentration at the dose time (measured or imputed) is above C0"
       )
     )
   }
