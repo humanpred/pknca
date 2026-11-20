@@ -50,8 +50,26 @@ test_that("every registered CDISC PPTESTCD is <=8 characters and PPTEST is <=40 
   # still fails loud.
   known_length_violation <- c("count.conc.measured", "count_conc_measured")
   to_check <- codes[!(codes$parameter %in% known_length_violation), ]
+  # A parameter made by a rule (pknca_parameter_rules()) has no invented code:
+  # until a controlled-terminology code is confirmed, its PPTESTCD is its name,
+  # which may be longer than 8 characters
+  rules <- pknca_parameter_rules()
+  rule_members <-
+    unlist(lapply(
+      seq_len(nrow(rules)),
+      function(i) paste0(rules$prefix[i], ".", strsplit(rules$bases[i], split = ", ", fixed = TRUE)[[1]])
+    ))
+  no_confirmed_code <- to_check$parameter %in% rule_members & to_check$pptestcd_cdisc == to_check$parameter
+  # Every rule member but the six ratios that have codes
+  expect_setequal(
+    unique(to_check$parameter[no_confirmed_code]),
+    setdiff(
+      rule_members,
+      paste0("ratio.", c("cmax", "auclast", "aucinf.obs", "aucinf.pred", "aucint.last", "aucint.all"))
+    )
+  )
 
-  over_code <- to_check[nchar(to_check$pptestcd_cdisc) > 8, c("parameter", "variant", "pptestcd_cdisc")]
+  over_code <- to_check[nchar(to_check$pptestcd_cdisc) > 8 & !no_confirmed_code, c("parameter", "variant", "pptestcd_cdisc")]
   expect_equal(nrow(over_code), 0L, info = paste(capture.output(print(over_code)), collapse = "\n"))
 
   over_test <- to_check[nchar(to_check$pptest_cdisc) > 40, c("parameter", "variant", "pptest_cdisc")]
