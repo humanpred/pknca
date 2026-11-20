@@ -1247,7 +1247,10 @@ the generated intervals:
   @kawasakin, #723; @billdenney, #727).  In `pk.nca()`, an interval whose
   concentrations are all missing stopped with "Please report a bug" when
   `swing` was requested, which stopped the calculation for every subject, and
-  now gives `NA` for that interval.
+  now gives `NA` for that interval.  `pk.calc.swing()` gives one value for
+  each pair of `cmax` and `cmin`; a vector of `cmax` with one `cmin` gives the
+  values it gave before, except that with a `cmin` of zero or below the result
+  is one `Inf` for each `cmax` (before, a single `Inf`).
 
 * A simple parameter that is `NA` because of missing or unusable data now says
   why in the `exclude` column of `pk.nca()` results, where the column was

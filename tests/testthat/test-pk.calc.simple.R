@@ -777,6 +777,14 @@ test_that("pk.calc.swing", {
                info="Swing handle Ctrough=0")
   expect_equal(pk.calc.swing(100, -1), Inf,
                info="Swing handle Ctrough<0")
+  expect_identical(pk.calc.swing(0, 0), Inf)
+  # One value for each pair, as the released version gave for a vector of cmax
+  expect_identical(pk.calc.swing(cmax = c(10, 20), cmin = 1), c(900, 1900))
+  expect_identical(pk.calc.swing(cmax = numeric(0), cmin = 1), numeric(0))
+  expect_identical(
+    pk.calc.swing(cmax = c(10, 20, NA, 5, 5, 0), cmin = c(1, 4, 1, NA, 0, 0)),
+    c(900, 400, NA, NA, Inf, Inf)
+  )
 })
 
 test_that("pk.calc.ceoi", {

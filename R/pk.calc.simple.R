@@ -2509,17 +2509,16 @@ add.interval.col("deg.fluc",
 #'
 #' @details swing is `100*(cmax - cmin)/cmin`.
 #'
-#' @returns The swing above the minimum concentration.  If `cmin` is zero, then
-#'   the result is infinity; if `cmin` or `cmax` is missing, it is `NA`.
+#' @returns The swing above the minimum concentration, one value for each pair
+#'   of `cmax` and `cmin`.  If `cmin` is zero, then the result is infinity; if
+#'   `cmin` or `cmax` is missing, it is `NA`.
 #' @export
 pk.calc.swing <- function(cmax, cmin) {
-  if (is.na(cmin) || is.na(cmax)) {
-    NA_real_
-  } else if (cmin > 0) {
-    100*(cmax - cmin)/cmin
-  } else {
-    Inf
-  }
+  ret <- 100*(cmax - cmin)/cmin
+  # A cmin at or below zero gives infinity, also where the division does not
+  # (a cmax of zero, or a negative cmin)
+  ret[!is.na(cmax) & !is.na(cmin) & cmin <= 0] <- Inf
+  ret
 }
 
 pknca_concept(pk.calc.swing) <- "fluctuation"
