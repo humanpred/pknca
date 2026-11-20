@@ -45,11 +45,7 @@ utils::globalVariables(".")
     "interval.cols", interval_cols_aliases_last(get("interval.cols", envir = .PKNCAEnv)),
     envir = .PKNCAEnv
   )
-  for (cache_name in c("interval.cols_sorted", "parameter_classification", "auc_basis_families", "interval.cols_derived", "interval_consistent_sets")) {
-    if (exists(cache_name, envir = .PKNCAEnv, inherits = FALSE)) {
-      rm(list = cache_name, envir = .PKNCAEnv)
-    }
-  }
+  interval_cols_clear_caches()
 } # nocov end
 
 #' Add the units that PKNCA accepts beyond those of udunits
