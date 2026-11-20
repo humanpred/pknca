@@ -220,6 +220,23 @@ duplicate_check <- function(object, data_type) {
     # report duplication.
     mask_dup[!mask_excluded] <- duplicated(current_data[!mask_excluded, key_cols, drop = FALSE])
   }
+  abort_duplicate_rows(mask_dup = mask_dup, key_cols = key_cols, data_type = data_type)
+  object
+}
+
+#' Stop when any rows are duplicated
+#'
+#' @param mask_dup A logical vector, `TRUE` for each row that repeats an
+#'   earlier one
+#' @param key_cols The names of the columns that identify a row
+#' @param data_type The name of the type of data for error reporting
+#' @param class Classes of the error in addition to
+#'   `"pknca_error_duplicate_rows"` (which is always the last one)
+#' @returns `NULL` invisibly, or an error with the row numbers in its `rows`
+#'   field
+#' @keywords Internal
+#' @noRd
+abort_duplicate_rows <- function(mask_dup, key_cols, data_type, class = character()) {
   if (any(mask_dup)) {
     rlang::abort(
       sprintf(
@@ -228,11 +245,11 @@ duplicate_check <- function(object, data_type) {
         data_type,
         paste(which(mask_dup), collapse = ", ")
       ),
-      class = "pknca_error_duplicate_rows",
+      class = c(class, "pknca_error_duplicate_rows"),
       rows = which(mask_dup)
     )
   }
-  object
+  invisible(NULL)
 }
 
 #' Set units for a PKNCAconc or PKNCAdose object

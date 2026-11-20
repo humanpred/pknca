@@ -10,7 +10,8 @@ pk.tss.monoexponential(
   tss.fraction = 0.9,
   output = c("population", "popind", "individual", "single"),
   check = TRUE,
-  verbose = FALSE
+  verbose = FALSE,
+  level = 0.95
 )
 }
 \arguments{
@@ -23,17 +24,26 @@ steady-state}
 population estimate for time to steady-state (from an nlme model), \code{popind}
 is the individual estimate (from an nlme model), \code{individual} fits each
 individual separately with a gnls model (requires more than one individual;
-use \code{single} for one individual), and \code{single} fits all the data to a
-single gnls model.}
+use \code{single} for one individual), and \code{single} fits all the data of each
+treatment (or all the data, without treatment) to one gnls model.}
 
 \item{check}{See \code{\link[=pk.tss.data.prep]{pk.tss.data.prep()}}.}
 
 \item{verbose}{Describe models as they are run, show convergence of the model
 (passed to the nlme function), and additional details while running.}
+
+\item{level}{The confidence level of the intervals of the estimates (in the
+\code{"estimates"} attribute).  With \code{\link[=pk.tss]{pk.tss()}}, \code{level} is also the level of
+the stepwise linear test.}
 }
 \value{
-A scalar float for the first time when steady-state is achieved or
-\code{NA} if it is not observed.
+A data frame with the requested \verb{tss.monoexponential.*} columns,
+and \code{subject} and \code{treatment} columns for the outputs that are by subject
+or by treatment.  The population output has one row per subject (and
+treatment).  A monoexponential Tss is estimated from the fitted curve, so
+it can be later than the last trough; \code{NA} means that the fit failed.  The
+attribute \code{"estimates"} says how each estimate came about (see
+\code{\link[=pk.tss]{pk.tss()}}).
 }
 \description{
 Trough concentrations are selected as concentrations at the time of dosing.
@@ -41,6 +51,60 @@ An exponential curve is then fit through the data with a different magnitude
 by treatment (as a factor) and a random steady-state concentration and time
 to stead-state by subject (see \code{random.effects} argument).
 }
+\details{
+The population model is selected by AIC from several candidates (Ctrough,ss
+and Tss for all treatments or by treatment, with random effects on either
+or both).  Every warning raised while a candidate's \code{nlme()} call runs is
+kept as a warning of that fit:  those of the selected model are given as one
+\code{pknca_warning_tss_population_fit_warning} that quotes them, and those of
+the other candidates are not given because they do not bear on the
+estimate (with \code{verbose = TRUE}, each candidate's warnings are shown as a
+\code{pknca_message_tss_candidate_warnings} message with the candidate's
+description).  Because the warnings are caught as they are raised, a
+candidate is not stopped by its warnings even with \code{options(warn = 2)}.
+The gnls fits of the \code{individual} and
+\code{single} outputs give \code{pknca_warning_tss_individual_fit_failed} when a fit
+fails (its estimate is \code{NA}) and \code{pknca_warning_tss_individual_fit_warning}
+when a fit that gives an estimate warns.
+}
+\section{Confidence intervals}{
+
+
+The \code{"estimates"} attribute gives a confidence interval (\code{lower} and
+\code{upper}) where one can be defended:
+
+\describe{
+\item{population}{The approximate (Wald) interval of \code{nlme::intervals()}
+for the fixed effect of Tss:  the estimate plus or minus a t quantile
+times the standard error from the linearized covariance of nlme
+(\code{vcov()} of the fit, without the small-sample factor that \code{summary()}
+gives the standard errors of a maximum likelihood fit).  nlme gives the
+fixed effects of these models the degrees of freedom of the innermost
+level:  the number of troughs, less the number of subjects, less the
+fixed effects other than the first (51 for 56 troughs from 4 subjects
+with one Ctrough,ss and one Tss; 297 for 310 troughs from 10 subjects
+with both by two treatments).  So the t quantile reflects the number of
+troughs, not the number of subjects that Tss varies between, and with
+few subjects the interval is likely too narrow.  It also assumes that
+the monoexponential model is right, that the random effects and
+residuals are normal and the residuals have constant variance, and that
+the linearization holds near the estimate.  It is symmetric on the Tss
+scale, so with poor data it can include zero or negative values; it is
+reported as computed.}
+\item{individual, and single with one subject}{The approximate (Wald)
+interval of \code{nlme::intervals()} for the gnls fit:  a t quantile with the
+number of troughs less two degrees of freedom.  It assumes independent,
+normal residuals with constant variance; with few troughs, its coverage
+is approximate.}
+\item{popind}{None:  these are predictions of random effects, for which
+nlme gives no standard errors.}
+\item{single with several subjects}{None:  the troughs of a subject are
+correlated, so an interval that treats them as independent is too
+narrow.  Without \code{subject}, the number of subjects is not known, so there
+is no interval either.}
+}
+}
+
 \references{
 Maganti, L., Panebianco, D.L. & Maes, A.L. Evaluation of Methods for
 Estimating Time to Steady State with Examples from Phase 1 Studies. AAPS J

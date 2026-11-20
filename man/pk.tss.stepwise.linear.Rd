@@ -25,8 +25,14 @@ pk.tss.stepwise.linear(
 \item{check}{See \code{\link[=pk.tss.data.prep]{pk.tss.data.prep()}}}
 }
 \value{
-A scalar float for the first time when steady-state is achieved or
-\code{NA} if it is not observed.
+A data frame with one row and the column \code{tss.stepwise.linear}:  the
+first dose time from which the slope is not significant, or \code{NA} when
+there is none (steady state is not observed, the models could not be fit,
+or there are fewer than \code{min.points} dose times).  The slope is common to
+all treatments, so the estimate is too.  The attribute \code{"estimates"} says
+which of these it is (see \code{\link[=pk.tss]{pk.tss()}}).  There is no confidence interval
+for the estimate:  it is the first dose time of a sequence of tests, which
+has no derived sampling distribution.
 }
 \description{
 A linear slope is fit through the data to find when it becomes

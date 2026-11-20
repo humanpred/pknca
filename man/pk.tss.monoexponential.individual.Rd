@@ -8,7 +8,9 @@ monoexponential time to steady-state.}
 pk.tss.monoexponential.individual(
   data,
   output = c("individual", "single"),
-  verbose = FALSE
+  verbose = FALSE,
+  level = 0.95,
+  subject_given = TRUE
 )
 }
 \arguments{
@@ -18,12 +20,17 @@ contain at least columns for \code{subject}, \code{time}, \code{conc}, and \code
 \item{output}{a character vector requesting the output types.}
 
 \item{verbose}{Show verbose output.}
+
+\item{level}{The confidence level of the intervals}
+
+\item{subject_given}{Was a subject given?  (Without a \code{subject} column in
+\code{data}, this says whether the data have one subject or an unknown number.)}
 }
 \value{
-A data frame with either one row (if \code{population} output is
-provided) or one row per subject (if \code{popind} is provided).  The columns
-will be named \code{tss.monoexponential.population} and/or
-\code{tss.monoexponential.popind}.
+A data frame with one row per treatment (or one row, without
+treatment) for \code{single}, and one row per subject (and treatment) for
+\code{individual}, with columns \code{tss.monoexponential.single} and/or
+\code{tss.monoexponential.individual}.
 }
 \description{
 This function is not intended to be called directly.  Please use
