@@ -572,8 +572,8 @@ the generated intervals:
 
 * The method (`PPANMETH`) column for an `aucint` or `aumcint` parameter reports
   whether the calculation was dose-aware and how the region after Tlast was
-  handled:  with the half-life, with `AUCall` when the half-life is not
-  estimable, or not at all when the interval ends at or before Tlast (#539).
+  handled:  with the half-life, or not at all when the interval ends at or
+  before Tlast (#539).
 
 * Concentration and dose times may be date-times (POSIXct) or dates (Date,
   taken as 08:00).  `PKNCAdata()` checks them and keeps them, and `pk.nca()`
@@ -1380,6 +1380,16 @@ the generated intervals:
   when they used it.  An interval that ends at or before Tlast is interpolated
   throughout, so it is calculated and reported even when the half-life is
   excluded or was not estimable (#270, #450).
+
+* An interval AUC or AUMC to infinity (`aucint.inf.obs`, `aucint.inf.pred`,
+  `aumcint.inf.obs`, `aumcint.inf.pred`, the IV forms `aucivint.inf.*` and
+  `aumcivint.inf.*`, and the parameters calculated from them) whose interval
+  ends after the last measurable concentration is `NA` when the half-life is
+  not estimable, as in PKNCA 0.12.1.  It is excluded with the half-life's
+  reason followed by "the half-life is NA".  An interval that ends at or before
+  the last measurable concentration is still calculated.  During development
+  the region after the last measurable concentration fell back to `AUCall`
+  instead; that value was never released. (@billdenney)
 
 * `aucint` parameters use the route and duration of dosing, so an
   intravenous bolus within the interval is no longer treated as an

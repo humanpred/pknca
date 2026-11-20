@@ -32,7 +32,7 @@
 #'   \item{`AUCinf`}{is extrapolated with `lambda.z` (in other words, with the
 #'     half-life), always using the logarithmic trapezoidal rule to align with
 #'     the exponential decay that the half-life describes.  When `lambda.z` is
-#'     not estimable and the interval is finite, `AUCall` is used instead.}
+#'     `NA` (the half-life is not estimable), the result is `NA`.}
 #' }
 #'
 #' When the interval ends at or before Tlast, no extrapolation happens and
@@ -173,13 +173,9 @@ pk.calc.auxcint <- function(conc, time,
       # where it is estimated below.
       auc_type_calc <- "AUClast"
     } else if (is.na(lambda.z)) {
-      if (is.infinite(interval[2])) {
-        # Without a half-life there is no finite tail to fall back to
-        return(structure(NA_real_, exclude = "the half-life is NA"))
-      }
-      # With no estimable half-life, the tail of the interval is the AUCall
-      # triangle instead (#508)
-      auc_type_calc <- "AUCall"
+      # The region after Tlast is extrapolated with the half-life, so without
+      # one it cannot be calculated
+      return(structure(NA_real_, exclude = "the half-life is NA"))
     } else {
       lambda_z_used <- TRUE
     }
@@ -363,8 +359,6 @@ pk.calc.auxcint <- function(conc, time,
       pknca_extrap_method_halflife
     } else if (!extrapolates) {
       "none"
-    } else if (auc.type %in% "AUCinf") {
-      "AUCall (half-life not estimable)"
     } else {
       auc.type
     }

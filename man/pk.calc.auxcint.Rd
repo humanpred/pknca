@@ -260,7 +260,7 @@ below-the-limit-of-quantification measurement and zero after that.}
 \item{\code{AUCinf}}{is extrapolated with \code{lambda.z} (in other words, with the
 half-life), always using the logarithmic trapezoidal rule to align with
 the exponential decay that the half-life describes.  When \code{lambda.z} is
-not estimable and the interval is finite, \code{AUCall} is used instead.}
+\code{NA} (the half-life is not estimable), the result is \code{NA}.}
 }
 
 When the interval ends at or before Tlast, no extrapolation happens and
