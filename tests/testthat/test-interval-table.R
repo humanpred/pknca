@@ -452,3 +452,61 @@ test_that("a parameter included by name but dropped at an infinite end is said t
   expect_no_warning(ret_finite <- pknca_interval_table(0, 24, include = c("cav", "ctrough")))
   expect_true(any(ret_finite$cav) && any(ret_finite$ctrough))
 })
+
+test_that("a chain of imputation methods excludes what any of its methods excludes", {
+  start_cmin_set <- c("count.conc.measured", "tfirst", "cmin", "tmin")
+  # Each single method is unchanged
+  expect_equal(impute_exclusions("start_predose", dosing = "multiple"), "count.conc.measured")
+  expect_equal(impute_exclusions("start_predose", dosing = "single"), c("count.conc.measured", "c0"))
+  expect_equal(impute_exclusions("start_predose_conc0", dosing = "single"), c("count.conc.measured", "c0"))
+  expect_equal(impute_exclusions("start_conc0", dosing = "single"), "count.conc.measured")
+  expect_equal(impute_exclusions("start_cmin", dosing = "multiple"), start_cmin_set)
+  expect_equal(impute_exclusions("end_conc_drop", dosing = "multiple"), "ctrough")
+  expect_equal(impute_exclusions(NA_character_, dosing = "multiple"), character(0))
+  expect_equal(impute_exclusions("", dosing = "multiple"), character(0))
+  # A chain is the union, in either order and with either separator or the
+  # function name prefix
+  expect_setequal(impute_exclusions("start_predose,start_cmin", dosing = "multiple"), start_cmin_set)
+  expect_setequal(impute_exclusions("start_cmin,start_predose", dosing = "multiple"), start_cmin_set)
+  expect_setequal(impute_exclusions("start_predose start_cmin", dosing = "multiple"), start_cmin_set)
+  expect_setequal(
+    impute_exclusions("PKNCA_impute_method_start_predose, PKNCA_impute_method_start_cmin", dosing = "multiple"),
+    start_cmin_set
+  )
+  expect_setequal(impute_exclusions("PKNCA_impute_method_start_cmin", dosing = "multiple"), start_cmin_set)
+  expect_setequal(
+    impute_exclusions("start_predose,start_cmin", dosing = "single"),
+    c(start_cmin_set, "c0")
+  )
+  expect_setequal(
+    impute_exclusions("start_predose,end_conc_drop", dosing = "multiple"),
+    c("count.conc.measured", "ctrough")
+  )
+  # An unknown method excludes nothing here, and the chain is refused where
+  # every method is checked, as an unknown single method is
+  expect_equal(impute_exclusions("start_misspelled", dosing = "multiple"), character(0))
+  expect_setequal(impute_exclusions("start_cmin,start_misspelled", dosing = "multiple"), start_cmin_set)
+  expect_error(assert_impute_method("start_misspelled"), class = "pknca_error_impute_funs_not_found")
+  expect_error(assert_impute_method("start_cmin,start_misspelled"), class = "pknca_error_impute_funs_not_found")
+})
+
+test_that("the interval table splits a chain's rows as it splits its methods' rows", {
+  chain <-
+    pknca_interval_table(
+      24, 48, dosing = "multiple", route = "extravascular", tier = "all",
+      impute = "start_predose,start_cmin"
+    )
+  single <-
+    pknca_interval_table(
+      24, 48, dosing = "multiple", route = "extravascular", tier = "all",
+      impute = "start_cmin"
+    )
+  # The union for the chain is start_cmin's set, so the rows are the same but
+  # for the imputation named on them
+  single$impute[!is.na(single$impute)] <- "start_predose,start_cmin"
+  expect_equal(chain, single)
+  cmin_row <- which(unlist(chain[, "cmin"]) %in% TRUE)
+  expect_true(is.na(chain$impute[cmin_row]))
+  auc_row <- which(unlist(chain[, "aucint.last"]) %in% TRUE)
+  expect_equal(chain$impute[auc_row], "start_predose,start_cmin")
+})

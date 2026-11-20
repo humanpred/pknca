@@ -1370,3 +1370,92 @@ test_that("the AUMC over an interval is weighted from its start when the start a
     as.numeric(pk.calc.aumc(conc = conc[6:11], time = time[6:11] - start)) + tail_aumc
   )
 })
+
+# auclast, aumclast, aucint.last, and aumcint.last for one subject's interval,
+# with the imputation `impute` (NA for none)
+aucint_impute_results <- function(d_conc, d_dose, start, end, impute) {
+  d_interval <-
+    data.frame(start = start, end = end, auclast = TRUE, aumclast = TRUE, aucint.last = TRUE, aumcint.last = TRUE)
+  o_conc <- PKNCAconc(d_conc, conc ~ time | id)
+  o_data <-
+    if (is.null(d_dose)) {
+      PKNCAdata(o_conc, intervals = d_interval, impute = impute)
+    } else {
+      PKNCAdata(o_conc, PKNCAdose(d_dose, dose ~ time | id), intervals = d_interval, impute = impute)
+    }
+  res <- as.data.frame(pk.nca(o_data))
+  stats::setNames(res$PPORRES, res$PPTESTCD)[c("auclast", "aumclast", "aucint.last", "aumcint.last")]
+}
+
+test_that("aucint and aumcint use the interval's imputed concentration at its start", {
+  # The trough is drawn 3 minutes before the dose, so nothing is measured at the
+  # start of the interval
+  d_conc <- data.frame(id = 1, time = c(-0.05, 1, 2, 4, 8, 12, 24), conc = c(1, 6, 8, 6, 4, 2.5, 1))
+  d_dose <- data.frame(id = 1, time = 0, dose = 100)
+  # The same profile with the trough at the start
+  d_conc_at_start <- d_conc
+  d_conc_at_start$time[1] <- 0
+  expected_auc <- as.numeric(pk.calc.auc.last(conc = d_conc_at_start$conc, time = d_conc_at_start$time))
+  expected_aumc <- as.numeric(pk.calc.aumc.last(conc = d_conc_at_start$conc, time = d_conc_at_start$time))
+  for (current_impute in c("start_predose", "start_cmin", "start_predose,start_cmin")) {
+    res <- aucint_impute_results(d_conc, d_dose, start = 0, end = 24, impute = current_impute)
+    expect_equal(res[["aucint.last"]], expected_auc, tolerance = 1e-12, info = current_impute)
+    expect_equal(res[["aucint.last"]], res[["auclast"]], tolerance = 1e-12, info = current_impute)
+    expect_equal(res[["aumcint.last"]], expected_aumc, tolerance = 1e-12, info = current_impute)
+    expect_equal(res[["aumcint.last"]], res[["aumclast"]], tolerance = 1e-12, info = current_impute)
+  }
+  # Without a dose table, the start is the imputed one rather than an
+  # interpolation from the sample before it
+  res_no_dose <- aucint_impute_results(d_conc, NULL, start = 0, end = 24, impute = "start_predose")
+  expect_equal(res_no_dose[["aucint.last"]], expected_auc, tolerance = 1e-12)
+
+  # Without imputation, the group's data are used as they are:  the dose-aware
+  # estimate at the start.  auclast and aumclast each warn that the interval
+  # starts before the first measurement.
+  expect_warning(
+    expect_warning(
+      res_none <- aucint_impute_results(d_conc, d_dose, start = 0, end = 24, impute = NA_character_),
+      class = "pknca_warning_auc_before_first"
+    ),
+    class = "pknca_warning_auc_before_first"
+  )
+  expect_equal(
+    res_none[["aucint.last"]],
+    as.numeric(pk.calc.aucint.last(conc = d_conc$conc, time = d_conc$time, start = 0, end = 24, time.dose = 0)),
+    tolerance = 1e-12
+  )
+  expect_true(is.na(res_none[["auclast"]]))
+})
+
+test_that("aucint uses the imputed start at steady state and the data after the interval for its end", {
+  d_conc <-
+    data.frame(
+      id = 1,
+      time = c(0, 1, 2, 4, 8, 12, 23.95, 25, 26, 28, 32, 36, 48),
+      conc = c(0, 6, 8, 6, 4, 2.5, 1, 7, 9, 7, 5, 3, 1.2)
+    )
+  d_dose <- data.frame(id = 1, time = c(0, 24), dose = 100)
+  res <- aucint_impute_results(d_conc, d_dose, start = 24, end = 48, impute = "start_predose,start_cmin")
+  expect_equal(res[["aucint.last"]], res[["auclast"]], tolerance = 1e-12)
+  expect_equal(res[["aumcint.last"]], res[["aumclast"]], tolerance = 1e-12)
+  # The interval ending between samples interpolates its end from the sample
+  # after it, which is outside the imputed interval
+  res_mid <- aucint_impute_results(d_conc, d_dose, start = 24, end = 30, impute = "start_predose")
+  imputed_conc <- c(1, 7, 9, 7, 5)
+  imputed_time <- c(24, 25, 26, 28, 32)
+  expect_equal(
+    res_mid[["aucint.last"]],
+    as.numeric(pk.calc.aucint.last(conc = imputed_conc, time = imputed_time, start = 24, end = 30, time.dose = 24)),
+    tolerance = 1e-12
+  )
+})
+
+test_that("the group's data within the interval are replaced by the imputed data", {
+  ret <-
+    impute_group_data(
+      group = list(conc = c(5, 1, 6, 8, NA, 3), time = c(-1, -0.05, 1, 2, NA, 30), volume = NULL),
+      imputed = list(conc = c(1, 6, 8), time = c(0, 1, 2), volume = NULL),
+      start = 0, end = 24
+    )
+  expect_equal(ret, list(conc = c(5, 1, 1, 6, 8, 3, NA), time = c(-1, -0.05, 0, 1, 2, 30, NA)))
+})
