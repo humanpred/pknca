@@ -1243,6 +1243,17 @@ the generated intervals:
 
 ## Bug fixes
 
+* `set_intervals()` completes the intervals as `PKNCAdata()` does, adding each
+  parameter that the table does not name as a column that does not request it
+  (@billdenney).  Before, it stored the table as given, so `pk.nca()` failed
+  with "Please report a bug" (in the released PKNCA 0.12.1, "argument is of
+  length zero") for any table that did not name every parameter, including the
+  table the object was built with.  `pk.nca()` also completes intervals that
+  were assigned directly to the object (`data$intervals <- ...`) or that were
+  set before a parameter was registered with `add.interval.col()`.  The
+  `intervals` of the object `set_intervals()` returns now have every parameter
+  column, as those of `PKNCAdata()` always did.
+
 * `mrt.iv.*`, `mrt.ivint.*`, `mrt.ivmd.*`, and everything calculated from them
   (`vss.iv.*`, `vss.ivint.*`, `vss.ivmd.*`, `kel.iv.*`, `thalf.eff.iv.*`) are
   now correct, and one value per interval, when an interval has more than one

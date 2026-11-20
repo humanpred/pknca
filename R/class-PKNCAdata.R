@@ -363,7 +363,6 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
   ret_with_impute$impute <- impute
   # Date-time interval bounds are checked here and converted by pk.nca()
   ret$intervals <- set_intervals(data = ret_with_impute, intervals = intervals)$intervals
-  ret$intervals <- check.interval.specification(ret$intervals, impute = impute)
   # Verify that either everything or nothing is using units
   units_interval_start <- inherits(ret$intervals$start, "units")
   units_interval_end <- inherits(ret$intervals$end, "units")
