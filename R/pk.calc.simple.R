@@ -2454,6 +2454,8 @@ add.interval.col("deg.fluc",
 #'   the result is infinity.
 #' @export
 pk.calc.swing <- function(cmax, cmin) {
+  abort_check(checkmate::check_number(cmax, na.ok = TRUE), "cmax", class = "pknca_error_cmax_invalid")
+  abort_check(checkmate::check_number(cmin, na.ok = TRUE), "cmin", class = "pknca_error_cmin_invalid")
   if (cmin > 0) {
     100*(cmax - cmin)/cmin
   } else {
@@ -2485,6 +2487,7 @@ add.interval.col("swing",
 #' @family NCA parameters for concentrations during the intervals
 #' @export
 pk.calc.ceoi <- function(conc, time, duration.dose=NA, check=TRUE) {
+  abort_check(checkmate::check_number(duration.dose, na.ok = TRUE), "duration.dose", class = "pknca_error_duration_dose_invalid")
   if (check) {
     assert_conc_time(conc = conc, time = time)
   }

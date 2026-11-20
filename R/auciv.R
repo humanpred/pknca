@@ -49,6 +49,8 @@
 pk.calc.auxciv <- function(conc, time, c0, auxc, fun_auxc_last, fun_auxc,
                            auc.type = NULL, lambda.z = NA, clast = NA,
                            ..., options = list(), check = TRUE) {
+  abort_check(checkmate::check_number(c0, na.ok = TRUE), "c0", class = "pknca_error_c0_invalid")
+  abort_check(checkmate::check_number(auxc, na.ok = TRUE), "auxc", class = "pknca_error_auxc_invalid")
   if (check) {
     assert_conc_time(conc = conc, time = time)
     data <-
@@ -164,6 +166,7 @@ pknca_concept(pk.calc.auciv) <- "auc"
 pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extravascular",
                                duration.dose = 0,
                                auxc, fun_auxcint_last, options = list()) {
+  abort_check(checkmate::check_number(auxc, na.ok = TRUE), "auxc", class = "pknca_error_auxc_invalid")
   if (is.na(auxc)) {
     return(structure(NA_real_, exclude = "AUCint is not calculated"))
   }

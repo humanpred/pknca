@@ -27,6 +27,8 @@ pk.tss.stepwise.linear <- function(...,
                                    check=TRUE) {
   # Check inputs
   modeldata <- pk.tss.data.prep(..., check=check)
+  abort_check(checkmate::check_vector(min.points, min.len = 1), "min.points", class = "pknca_error_tss_argument_invalid")
+  abort_check(checkmate::check_vector(level, min.len = 1), "level", class = "pknca_error_tss_argument_invalid")
   if (!length(min.points) == 1) {
     rlang::warn("Only first value of min.points is used", class = "pknca_warning_min_points_length")
     min.points <- min.points[1]

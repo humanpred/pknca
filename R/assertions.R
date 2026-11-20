@@ -198,6 +198,20 @@ assert_lambdaz <- function(lambda.z, any.missing = TRUE, .var.name = checkmate::
   assert_numeric_between(x = lambda.z, lower = 0, any.missing = any.missing, .var.name = .var.name, finite = TRUE)
 }
 
+# Stop with the classed error `class` when `check_result`, the result of a
+# checkmate check_*() function, is not TRUE.  The message is checkmate's, so the
+# error reads as checkmate's assert_*() would, and a test can match the class.
+abort_check <- function(check_result, .var.name, class, call = rlang::caller_env()) {
+  if (!isTRUE(check_result)) {
+    rlang::abort(
+      message = sprintf("Assertion on '%s' failed: %s.", .var.name, check_result),
+      class = class,
+      call = call
+    )
+  }
+  invisible(TRUE)
+}
+
 #' Assert that a value is a valid AUC method
 #'
 #' @param method The method for integration (one of 'lin up/log down',

@@ -112,6 +112,7 @@ pk.calc.auxcint <- function(conc, time,
     assert_conc_time(conc, time)
   }
   interval <- assert_intervaltime_single(interval = interval, start = start, end = end)
+  abort_check(checkmate::check_number(lambda.z, na.ok = TRUE), "lambda.z", class = "pknca_error_lambdaz_invalid")
   if (dose_aware) {
     # A concentration measured after the dose that follows the interval is
     # affected by that dose, so it is neither integrated nor interpolated or
@@ -213,6 +214,9 @@ pk.calc.auxcint <- function(conc, time,
   time_clast <- NULL
   if (auc_type_calc %in% "AUCinf") {
     clast_obs <- pk.calc.clast.obs(conc=data$conc, time=data$time)
+    # `clast` is checked here, where it is first used:  its default is
+    # calculated from the concentrations left after the dose-aware window above
+    abort_check(checkmate::check_number(clast, na.ok = TRUE), "clast", class = "pknca_error_clast_invalid")
     all_times <- c(data$time, missing_times)
     time_after_tlast <- all_times[all_times > tlast & all_times <= interval[2]]
     if (is.na(clast)) {

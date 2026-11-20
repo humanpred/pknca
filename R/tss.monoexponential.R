@@ -38,6 +38,7 @@ pk.tss.monoexponential <- function(...,
                                    verbose=FALSE) {
   # Check inputs
   modeldata <- pk.tss.data.prep(..., check=check)
+  abort_check(checkmate::check_vector(tss.fraction, min.len = 1), "tss.fraction", class = "pknca_error_tss_argument_invalid")
   if (length(tss.fraction) > 1) {
     rlang::warn("Only first value of tss.fraction is being used", class = "pknca_warning_tss_fraction_multiple")
     tss.fraction <- tss.fraction[1]

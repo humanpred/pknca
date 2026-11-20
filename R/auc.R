@@ -68,6 +68,7 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
                          fun_linear, fun_log, fun_inf) {
   # Check the inputs
   method <- PKNCA.choose.option(name="auc.method", value=method, options=options)
+  abort_check(checkmate::check_number(lambda.z, na.ok = TRUE), "lambda.z", class = "pknca_error_lambdaz_invalid")
   if (check) {
     assert_conc_time(conc = conc, time = time)
     data <-
@@ -101,6 +102,8 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
 
   auc.type <- match.arg(auc.type)
   interval <- assert_intervaltime_single(interval = interval)
+  # After the concentration and time checks, which its default relies on
+  abort_check(checkmate::check_number(clast, na.ok = TRUE), "clast", class = "pknca_error_clast_invalid")
 
   if (auc.type %in% "AUCinf" && is.finite(interval[2])) {
     rlang::warn(
@@ -490,6 +493,10 @@ sparse_auxc_result <- function(conc, time, subject, lambda.z = NA,
                                lambda.z.time.first = NA, lambda.z.time.last = NA,
                                lambda.z.n.points = NA, moment, extrapolate,
                                auc.type = "AUClast", iv_bolus = FALSE, name, options) {
+  abort_check(checkmate::check_number(lambda.z, na.ok = TRUE), "lambda.z", class = "pknca_error_lambdaz_invalid")
+  abort_check(checkmate::check_number(lambda.z.time.first, na.ok = TRUE), "lambda.z.time.first", class = "pknca_error_lambdaz_invalid")
+  abort_check(checkmate::check_number(lambda.z.time.last, na.ok = TRUE), "lambda.z.time.last", class = "pknca_error_lambdaz_invalid")
+  abort_check(checkmate::check_count(lambda.z.n.points, na.ok = TRUE), "lambda.z.n.points", class = "pknca_error_lambdaz_invalid")
   lambda_z_se <- PKNCA.choose.option(name="sparse_lambda_z_se", options=options)
   result <-
     sparse_auxc_obs(

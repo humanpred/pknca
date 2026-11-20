@@ -315,12 +315,22 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
   if (missing(tmax)) {
     ret$tmax <- pk.calc.tmax(data$conc, data$time, first.tmax=first.tmax, check=FALSE)
   } else {
+    abort_check(checkmate::check_number(tmax, na.ok = TRUE), "tmax", class = "pknca_error_tmax_invalid")
     ret$tmax <- tmax
   }
   if (missing(tlast)) {
     ret$tlast <- pk.calc.tlast(data$conc, data$time, check=FALSE)
   } else {
+    abort_check(checkmate::check_number(tlast, na.ok = TRUE), "tlast", class = "pknca_error_tlast_invalid")
     ret$tlast <- tlast
+  }
+  if (!missing(tmax) && is.na(tmax)) {
+    # The terminal phase is found after Tmax, so a given Tmax that is missing
+    # leaves none
+    attr(ret, "exclude") <- "Tmax is missing"
+    if (!missing(tmax)) ret$tmax <- NULL
+    if (!missing(tlast)) ret$tlast <- NULL
+    return(ret)
   }
 
   # When all concentrations are the same (non-zero) value cannot compute half-life (#503)

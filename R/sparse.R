@@ -371,6 +371,13 @@ sparse_auxc_obs <- function(conc, time, subject, lambda.z = NA,
           times <= lambda.z.time.last + tolerance &
           means > 0
       )
+    if (is.na(lambda.z.n.points)) {
+      rlang::warn(
+        "The number of half-life points is missing, so the delta-method standard error is not calculated",
+        class = "pknca_warning_sparse_lambda_z_points"
+      )
+      return(list(estimate = estimate, se = NA_real_, df = NA_real_, c0_method = c0$method))
+    }
     if (length(idx_hl) != lambda.z.n.points) {
       rlang::warn(
         sprintf(
