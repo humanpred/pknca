@@ -438,6 +438,12 @@ interval_remove_impute.PKNCAdata <- function(data, target_impute, target_params 
 #' @param param A character vector of NCA parameter names.
 #' @param param_pattern A character vector of regular expressions matching NCA
 #'   parameter names.  One or both of `param` and `param_pattern` must be given.
+#'   A parameter made by a rule (see [pknca_parameter_rules()]) is selected
+#'   only when the pattern does not also select its base, so `"clast.obs"` selects only `clast.obs`, and
+#'   `"^ratio[.]"` selects the ratios; the six ratios that PKNCA registered by
+#'   name before (`ratio.cmax`, `ratio.auclast`, `ratio.aucinf.obs`,
+#'   `ratio.aucinf.pred`, `ratio.aucint.last`, and `ratio.aucint.all`) are
+#'   selected by their base's pattern, as before.
 #' @returns The input with the parameters added or removed.
 #' @seealso [interval_add_impute()], [get.interval.cols()]
 #' @family Interval specifications
