@@ -2,7 +2,10 @@
 #'
 #'  Takes in two objects, the PKNCAdata object and the proposed intervals.
 #'  It will then check that the intervals are valid, given the data object.
-#'  If the intervals are valid, it will set them in the object.
+#'  If the intervals are valid, it will set them in the object, completed as
+#'  [PKNCAdata()] completes them (see [check.interval.specification()]):  a
+#'  parameter that the intervals do not name is added as a column that does not
+#'  request it.
 #'  It will return the data object with the intervals set.
 #'
 #'  With date-time data, `start` and `end` may be date-times; they are kept
@@ -17,7 +20,10 @@
 #' @export
 set_intervals <- function(data, intervals) {
   valid_intervals <- assert_intervals(intervals, data)
-  
+  if (nrow(valid_intervals) > 0) {
+    valid_intervals <-
+      check.interval.specification(valid_intervals, impute = data$impute %||% NA_character_)
+  }
   data$intervals <- valid_intervals
   
   data

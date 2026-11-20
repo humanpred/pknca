@@ -75,7 +75,7 @@ test_that("set_intervals works with valid intervals", {
   
   result <- set_intervals(data = o_data, intervals = data.frame(start = 0, end = 1, cmin = TRUE))
   
-  expect_equal(result$intervals, data.frame(start = 0, end = 1, cmin = TRUE))
+  expect_equal(result$intervals, check.interval.specification(data.frame(start = 0, end = 1, cmin = TRUE)))
 })
 
 test_that("set_intervals works with valid intervals (ungrouped)", {
@@ -84,7 +84,7 @@ test_that("set_intervals works with valid intervals (ungrouped)", {
   
   result <- set_intervals(data = o_data, intervals = data.frame(start = 0, end = 1, cmin = TRUE))
   
-  expect_equal(result$intervals, data.frame(start = 0, end = 1, cmin = TRUE))
+  expect_equal(result$intervals, check.interval.specification(data.frame(start = 0, end = 1, cmin = TRUE)))
 })
 
 test_that("set_intervals fails with invalid intervals", {
@@ -252,7 +252,10 @@ test_that("assert_intervals allows the column that the impute setting names", {
   )
   o_data$impute <- "my_impute"
   expect_identical(assert_intervals(intervals, o_data), intervals)
-  expect_identical(set_intervals(o_data, intervals)$intervals, intervals)
+  expect_identical(
+    set_intervals(o_data, intervals)$intervals,
+    check.interval.specification(intervals, impute = "my_impute")
+  )
   # Only the column that is named is allowed
   expect_error(
     assert_intervals(cbind(intervals, other = "x"), o_data),
@@ -330,4 +333,71 @@ test_that("rows sharing an interval_id may differ in the named impute column", {
     check.interval.specification(intervals, impute = "my_impute")[, names(intervals)],
     intervals
   )
+})
+
+test_that("set_intervals() completes the intervals as PKNCAdata() does, so pk.nca() runs", {
+  d_conc <- data.frame(id = rep(1:2, each = 5), time = rep(c(0, 1, 2, 4, 8), 2), conc = c(0, 6, 8, 4, 2, 0, 3, 4, 2, 1))
+  d_dose <- data.frame(id = 1:2, time = 0, dose = 100)
+  o_conc <- PKNCAconc(d_conc, conc ~ time | id)
+  o_dose <- PKNCAdose(d_dose, dose ~ time | id)
+  intervals <- data.frame(start = 0, end = 8, cmax = TRUE)
+  o_data <- PKNCAdata(o_conc, o_dose, intervals = intervals)
+
+  # The same table
+  o_data_same <- set_intervals(o_data, intervals)
+  expect_identical(o_data_same$intervals, o_data$intervals)
+  expect_identical(as.data.frame(pk.nca(o_data_same)), as.data.frame(pk.nca(o_data)))
+
+  # A table with one more parameter gives what building the object with it does
+  intervals_more <- data.frame(start = 0, end = 8, cmax = TRUE, cmin = TRUE)
+  o_data_more <- set_intervals(o_data, intervals_more)
+  o_data_more_built <- PKNCAdata(o_conc, o_dose, intervals = intervals_more)
+  expect_identical(o_data_more$intervals, o_data_more_built$intervals)
+  d_res_more <- as.data.frame(pk.nca(o_data_more))
+  expect_identical(d_res_more, as.data.frame(pk.nca(o_data_more_built)))
+  expect_equal(d_res_more$PPORRES[d_res_more$PPTESTCD == "cmin"], c(0, 0))
+
+  # An impute column
+  intervals_impute <- data.frame(start = 0.5, end = 8, auclast = TRUE, impute = "start_conc0")
+  o_data_impute <- set_intervals(o_data, intervals_impute)
+  o_data_impute_built <- PKNCAdata(o_conc, o_dose, intervals = intervals_impute)
+  expect_identical(o_data_impute$intervals, o_data_impute_built$intervals)
+  expect_identical(as.data.frame(pk.nca(o_data_impute)), as.data.frame(pk.nca(o_data_impute_built)))
+
+  # A column named by the impute setting
+  intervals_my_impute <- data.frame(start = 0.5, end = 8, auclast = TRUE, my_impute = "start_conc0")
+  o_data_my_impute <- PKNCAdata(o_conc, o_dose, intervals = intervals, impute = "my_impute")
+  o_data_my_impute_built <- PKNCAdata(o_conc, o_dose, intervals = intervals_my_impute, impute = "my_impute")
+  o_data_my_impute <- set_intervals(o_data_my_impute, intervals_my_impute)
+  expect_identical(o_data_my_impute$intervals, o_data_my_impute_built$intervals)
+  expect_identical(
+    as.data.frame(pk.nca(o_data_my_impute)),
+    as.data.frame(pk.nca(o_data_my_impute_built))
+  )
+  # The imputation is used:  auclast starts from the 0 imputed at 0.5
+  expect_identical(
+    as.data.frame(pk.nca(o_data_my_impute)),
+    as.data.frame(pk.nca(o_data_impute_built))
+  )
+})
+
+test_that("pk.nca() completes intervals assigned directly or set before a parameter was registered", {
+  d_conc <- data.frame(id = 1, time = c(0, 1, 2, 4, 8), conc = c(0, 6, 8, 4, 2))
+  o_conc <- PKNCAconc(d_conc, conc ~ time | id)
+  intervals <- data.frame(start = 0, end = 8, cmax = TRUE, cmin = TRUE)
+  o_data_built <- PKNCAdata(o_conc, intervals = intervals)
+  o_data_direct <- PKNCAdata(o_conc, intervals = data.frame(start = 0, end = 8, cmax = TRUE))
+  o_data_direct$intervals <- intervals
+  expect_identical(as.data.frame(pk.nca(o_data_direct)), as.data.frame(pk.nca(o_data_built)))
+
+  local_interval_cols()
+  add.interval.col(
+    name = "conc_mean_set_intervals", FUN = "mean", values = c(FALSE, TRUE),
+    unit_type = "conc", pretty_name = "Mean concentration", desc = "Mean concentration",
+    formalsmap = list(x = "conc"), depends = NULL
+  )
+  expect_false("conc_mean_set_intervals" %in% names(o_data_built$intervals))
+  d_res <- as.data.frame(pk.nca(o_data_built))
+  expect_equal(d_res$PPTESTCD, c("cmax", "cmin"))
+  expect_equal(d_res$PPORRES, c(8, 0))
 })

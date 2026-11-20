@@ -37,7 +37,10 @@ pk.nca <- function(data, verbose=FALSE) {
   }
   intervals_before <- data$intervals
   data <- pknca_datetime_convert(data)
-  if (!identical(intervals_before, data$intervals)) {
+  # Intervals assigned directly to the object, or set before a parameter was
+  # registered, may not name every parameter
+  if (!identical(intervals_before, data$intervals) ||
+      (nrow(data$intervals) > 0 && !all(names(get.interval.cols()) %in% names(data$intervals)))) {
     data$intervals <- check.interval.specification(data$intervals, impute = data$impute)
   }
   results <- data.frame()

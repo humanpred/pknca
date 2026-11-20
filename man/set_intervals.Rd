@@ -17,7 +17,10 @@ The data object with the intervals set.
 \description{
 Takes in two objects, the PKNCAdata object and the proposed intervals.
 It will then check that the intervals are valid, given the data object.
-If the intervals are valid, it will set them in the object.
+If the intervals are valid, it will set them in the object, completed as
+\code{\link[=PKNCAdata]{PKNCAdata()}} completes them (see \code{\link[=check.interval.specification]{check.interval.specification()}}):  a
+parameter that the intervals do not name is added as a column that does not
+request it.
 It will return the data object with the intervals set.
 }
 \details{
