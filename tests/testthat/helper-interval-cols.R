@@ -1,14 +1,17 @@
-# Snapshot the parameter registry and restore it (with its derived caches
-# dropped) when the calling frame exits.  Use in any test that registers or
+# Snapshot the parameter registry and the summary instructions and restore
+# them (with the registry's derived caches dropped) when the calling frame
+# exits.  Use in any test that registers or
 # modifies an interval column, so that no test can leak a temporary parameter
 # or a stale classification into another test file running in the same
 # parallel worker.
 local_interval_cols <- function(env = parent.frame()) {
   saved_cols <- get("interval.cols", envir = PKNCA:::.PKNCAEnv)
   saved_sorted <- get0("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv)
+  saved_summary <- get("summary", envir = PKNCA:::.PKNCAEnv)
   withr::defer(
     {
       assign("interval.cols", saved_cols, envir = PKNCA:::.PKNCAEnv)
+      assign("summary", saved_summary, envir = PKNCA:::.PKNCAEnv)
       if (!is.null(saved_sorted)) {
         assign("interval.cols_sorted", saved_sorted, envir = PKNCA:::.PKNCAEnv)
       } else if (exists("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv, inherits = FALSE)) {
