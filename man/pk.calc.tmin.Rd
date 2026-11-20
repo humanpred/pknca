@@ -21,7 +21,8 @@ then the last is considered Tmin.}
 \item{check}{Run \code{\link[=assert_conc_time]{assert_conc_time()}}?}
 }
 \value{
-The time of the minimum concentration
+The time of the minimum concentration, or \code{NA} with the reason in
+its "exclude" attribute when all concentrations are missing
 }
 \description{
 Input restrictions are:

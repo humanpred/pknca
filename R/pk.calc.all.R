@@ -947,10 +947,13 @@ bind_interval_result <- function(interval_cols, calculated) {
 
 # Combine exclusion reasons from a calculation's inputs with the exclusion the
 # calculation itself set (the "exclude" attribute).  "DO NOT EXCLUDE" on the
-# result wins and clears everything.  Documented in
-# vignettes/v80-writing-parameter-functions.Rmd.
+# result wins and clears everything.  Each input's exclusion may already be
+# several reasons joined with "; ", so they are split before a reason given by
+# more than one input (cmax and cmin of an all-missing profile) is listed once.
+# Documented in vignettes/v80-writing-parameter-functions.Rmd.
 combine_exclude_reasons <- function(from_inputs, from_result) {
-  reasons <- stats::na.omit(c(from_inputs, from_result))
+  reasons <- stats::na.omit(as.character(c(from_inputs, from_result)))
+  reasons <- unique(unlist(strsplit(reasons, split = "; ", fixed = TRUE)))
   if (identical(from_result, "DO NOT EXCLUDE")) {
     NA_character_
   } else if (length(reasons) > 0) {

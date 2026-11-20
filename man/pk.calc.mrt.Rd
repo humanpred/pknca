@@ -10,11 +10,19 @@ multiple-dose data.}
 \usage{
 pk.calc.mrt(auc, aumc)
 
-pk.calc.mrt.iv(auc, aumc, duration.dose, dose, time.dose)
+pk.calc.mrt.iv(auc, aumc, duration.dose, dose = NULL, time.dose = NULL)
 
 pk.calc.mrt.md(auctau, aumctau, aucinf, tau)
 
-pk.calc.mrt.md.iv(auctau, aumctau, aucinf, tau, duration.dose, dose, time.dose)
+pk.calc.mrt.md.iv(
+  auctau,
+  aumctau,
+  aucinf,
+  tau,
+  duration.dose,
+  dose = NULL,
+  time.dose = NULL
+)
 }
 \arguments{
 \item{auc}{the AUC from 0 to infinity or 0 to tau}
@@ -44,7 +52,11 @@ data)}
 \item{tau}{The dosing interval}
 }
 \value{
-the numeric value of the mean residence time
+the numeric value of the mean residence time.  A result of length one that is \code{NA} because of missing or unusable data
+has the reason in its "exclude" attribute, which \code{\link[=pk.nca]{pk.nca()}} reports.
+
+The mean residence time.  A result of length one that is \code{NA} because of missing or unusable data
+has the reason in its "exclude" attribute, which \code{\link[=pk.nca]{pk.nca()}} reports.
 }
 \description{
 Calculate the mean residence time (MRT) for single-dose data or linear

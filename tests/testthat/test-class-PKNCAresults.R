@@ -165,22 +165,29 @@ test_that("PKNCAresults has exclude, when applicable", {
           )
         ]
     ),
-    "Too few points for half-life calculation (min.hl.points=3 with only 0 points)",
+    # half.life is calculated from tmax and tlast, which give their own reason
+    "No concentration is above zero; Too few points for half-life calculation (min.hl.points=3 with only 0 points)",
     info="exclusions are propagated to results"
   )
   expect_equal(
-    unique(
-      o_result_df$exclude[
-        !(o_result_df$ID == 2 &
-            o_result_df$PPTESTCD %in%
-            c("lambda.z", "r.squared", "adj.r.squared", "lambda.z.corrxy", "lambda.z.time.first",
-              "lambda.z.time.last", "lambda.z.n.points", "clast.pred", "half.life", "span.ratio")
-        )
-        ]
-    ),
+    unique(o_result_df$exclude[o_result_df$ID == 1]),
     NA_character_,
     info="exclusions are propagated to results only when applicable"
   )
+  # The other parameters of the all-zero profile say why they are NA
+  id2_other <-
+    o_result_df[
+      o_result_df$ID == 2 &
+        o_result_df$PPTESTCD %in% c("tmax", "tlast", "tlag", "aucpext.inf.obs", "cl.inf.obs"),
+    ]
+  expect_equal(
+    id2_other$exclude[match(c("tmax", "tlast", "tlag", "aucpext.inf.obs", "cl.inf.obs"), id2_other$PPTESTCD)],
+    c(
+      "No concentration is above zero", "No concentration is above zero",
+      "Concentrations never increase", "AUCinf is zero", "AUC is zero or negative"
+    )
+  )
+  expect_true(all(is.na(id2_other$PPORRES)))
 })
 
 test_that("ptr works as a parameter", {
