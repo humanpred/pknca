@@ -54,9 +54,12 @@ In brief, the built-in methods work as follows:
 The development version of PKNCA also adds `PKNCA_impute_method_end_conc_drop`
 (used as `"end_conc_drop"`), which drops a concentration observed exactly at
 the interval end -- such as a predose sample for the next dose -- from that
-interval's calculation.  The interval AUCs (`aucint.*`) drop it too:  the
-interval AUC then ends at the last remaining sample, and `aucint.inf.*`
-extrapolates from that sample to the interval end with the half-life.
+interval's calculation.  The interval AUCs (`aucint.*`) drop it too.  When
+nothing is measured after the end before the next dose, the interval AUC then
+ends at the last remaining sample, and `aucint.inf.*` extrapolates from that
+sample to the interval end with the half-life; when samples follow the end,
+the concentration at the end is estimated from the samples on either side, as
+for any end without a sample.
 
 Imputation applies to every parameter of the interval, including the interval
 AUCs (`aucint.*`, `aumcint.*`, and their IV forms), which also read the

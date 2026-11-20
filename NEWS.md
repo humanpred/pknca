@@ -1248,12 +1248,18 @@ the generated intervals:
     `aucint.inf.obs` equals `aucint.last` when the interval ends at a sample
     (76.04; it was 76.19 with dosing data).
   - `end_conc_drop`:  the sample at the end of the interval is dropped, as for
-    `auclast`.  The interval AUC then ends at the last remaining sample, and
+    `auclast`.  When nothing is measured after the end before the next dose,
+    the interval AUC then ends at the last remaining sample, and
     `aucint.inf.*` extrapolates from it to the interval end with the
-    half-life.  With doses at 0, 24, and 48 hours, samples at 25, 26, 28, 32,
+    half-life:  with doses at 0, 24, and 48 hours, samples at 25, 26, 28, 32,
     36, and 48 hours, and the 48-hour sample dropped, `aucint.last` over 24 to
     48 hours is 66.85 (it was 90.43), ending at 36 hours, and
-    `aucint.inf.obs` is 87.73 (it was 90.92).
+    `aucint.inf.obs` is 87.73 (it was 90.92).  When samples follow the end
+    with no dose at it, the concentration at the end is estimated from the
+    samples on either side, as for any end without a sample:  for a single
+    dose of `10*(exp(-0.1*t) - exp(-t)) + 0.5` sampled at 0, 1, 2, 4, 8, 12,
+    16, 24, and 30 hours, `aucint.last` over 0 to 12 hours is 64.83 (64.76
+    without imputation), while `auclast` ends at 8 hours (47.93).
   - A user-defined imputation method:  the interval AUCs use its result, as
     `auclast` does.
   - The IV forms over an interval that starts at an IV bolus after an earlier
@@ -1263,7 +1269,8 @@ the generated intervals:
     `aucivpbext.int.*` is now the percent back-extrapolated relative to the
     imputed start concentration rather than to a start of 0.  For a bolus
     profile of `10*exp(-0.15*t)` after each of two doses 24 hours apart,
-    sampled 6 minutes before the second dose, `aucivpbext.int.last` over 24 to
+    sampled at 0.25, 0.5, 1, 2, 4, 8, 12, and 23.9 hours after each dose (so 6
+    minutes before the second), `aucivpbext.int.last` over 24 to
     48 hours is 1.876 with `start_predose` and 1.875 with `start_cmin` (it was
     1.928); with `start_conc0` it is 1.928, as before.  Where the imputed start
     concentration is above C0 (a profile that rises after the dose), it is `NA`

@@ -1717,3 +1717,25 @@ test_that("the IV interval forms under each start imputation after an earlier IV
     )
   }
 })
+
+test_that("end_conc_drop with samples after the end estimates the end from them", {
+  # No dose at the end of the interval, and samples after it
+  t <- c(0, 1, 2, 4, 8, 12, 16, 24, 30)
+  d_conc <- data.frame(id = 1, time = t, conc = 10 * (exp(-0.1 * t) - exp(-t)) + 0.5)
+  d_dose <- data.frame(id = 1, time = 0, dose = 1)
+  intervals <- data.frame(start = 0, end = 12, auclast = TRUE, aucint.last = TRUE)
+  res_none <- aucint_impute_params(d_conc, d_dose, intervals)
+  intervals$impute <- "end_conc_drop"
+  res_drop <- aucint_impute_params(d_conc, d_dose, intervals)
+  expect_equal(res_none[["aucint.last"]], 64.75860278, tolerance = 1e-9)
+  expect_equal(res_drop[["aucint.last"]], 64.83397983, tolerance = 1e-9)
+  # auclast ends at the last remaining sample (8 hours)
+  expect_equal(res_drop[["auclast"]], 47.92768249, tolerance = 1e-9)
+  # The end is interpolated between the samples at 8 and 16 hours
+  kept <- t != 12
+  expect_equal(
+    res_drop[["aucint.last"]],
+    as.numeric(pk.calc.aucint.last(conc = d_conc$conc[kept], time = t[kept], start = 0, end = 12, time.dose = 0)),
+    tolerance = 1e-12
+  )
+})
