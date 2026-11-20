@@ -357,15 +357,36 @@ the generated intervals:
   parameter instead of being registered by name (@billdenney; PR number to
   add).  The base is calculated directly, is not dose-normalized, is not
   secondary, and is not an earlier name of another parameter; AUMCs are not
-  bases.  A member becomes a parameter the first time it is named, in the
-  intervals, `interval_add_param()`, `interval_add_secondary()`, or
-  `pknca_interval_table(include = )`, and a results object read in a new
-  session registers the ones it holds.  `pknca_parameter_rules()` lists the
-  rule and its bases.  A new member's `PPTESTCD` is its name until a
-  controlled-terminology code is confirmed; the six ratios that existed
-  (`ratio.cmax`, `ratio.auclast`, `ratio.aucinf.obs`, `ratio.aucinf.pred`,
-  `ratio.aucint.last`, and `ratio.aucint.all`) now come from the rule with
-  their codes, descriptions, and results unchanged.
+  bases.  `pknca_parameter_rules()` lists the rule and its 38 bases.
+  * Every ratio is registered when PKNCA is loaded, so every session has the
+    same parameters.  `get.interval.cols()`, `pknca_parameter_table()`,
+    `pknca_interval_table()`, the intervals `PKNCAdata()` generates, and the
+    units table have 32 more parameters than before (`ratio.<base>` for each
+    base that `pknca_parameter_rules()` lists other than the six below).  They
+    come after the other parameters and before the earlier names, in the order
+    of their bases.  Like every secondary parameter, they are never requested
+    by default.
+  * A parameter registered with `add.interval.col()` after PKNCA is loaded does
+    not get a ratio.
+  * A new ratio's `PPTESTCD` is its name until a controlled-terminology code is
+    confirmed.  The six ratios that existed (`ratio.cmax`, `ratio.auclast`,
+    `ratio.aucinf.obs`, `ratio.aucinf.pred`, `ratio.aucint.last`, and
+    `ratio.aucint.all`) now come from the rule, in their places, with their
+    codes, descriptions, and results unchanged.
+  * A name of the form `ratio.<parameter>` that the rule does not make is an
+    error (`pknca_error_parameter_rule_ineligible`, which is also
+    `pknca_error_invalid_interval_columns` or
+    `pknca_error_invalid_param_name`) that says why:  the base is an AUMC,
+    dose-normalized, secondary, an earlier name, not calculated by a function
+    of its own, not a concentration, AUC, or amount, or registered after
+    PKNCA was loaded.
+
+* `set_intervals()` adds rows to the units table that `PKNCAdata()` built for a
+  requested parameter that has none, such as one registered with
+  `add.interval.col()` after the data object was built (@billdenney; PR number
+  to add).  The table that `PKNCAdata()` builds is marked with the
+  `"pknca_units_automatic"` attribute for this; a units table given to
+  `PKNCAdata()` is kept as given.
 
 * The earlier names of renamed parameters (such as `cl.obs` for `cl.inf.obs`
   and `cav` for `cav.last`) are declared with the new `historical_names`

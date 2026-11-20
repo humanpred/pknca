@@ -47,12 +47,10 @@ kable(
 )
 ```
 
-The ratios in that table are the ones registered so far.  A ratio is made by a
-rule from its base parameter:  `ratio.<base>` is available for any
-concentration, AUC, or amount that is calculated directly (not dose-normalized
-and not itself secondary), and becomes a parameter the first time it is named,
-for example as a column of the intervals.  `pknca_parameter_rules()` lists the
-bases:
+A ratio is made by a rule from its base parameter:  `ratio.<base>` is
+registered, when PKNCA is loaded, for every concentration, AUC, or amount that
+is calculated directly (not dose-normalized and not itself secondary).
+`pknca_parameter_rules()` lists the bases:
 
 ```{r ratio-rule-bases}
 strsplit(pknca_parameter_rules()$bases, split = ", ")[[1]]

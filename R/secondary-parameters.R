@@ -395,11 +395,15 @@ pk.calc.ratio <- function(test, reference) {
   ret
 }
 
-# Ratios are made by rule (see R/parameter-rules.R):  `ratio.<base>` for any
+# Ratios are made by rule (see R/parameter-rules.R):  `ratio.<base>` for every
 # eligible base.  The six that had their own registrations are made here, in the
-# same place, so that they are always registered and keep their order.
-add_parameter_rule(prefix = "ratio", eligible = ratio_rule_eligible, make = ratio_rule_make)
-resolve_parameter_name(paste0("ratio.", names(ratio_overrides())))
+# same place, so that they keep their order; the others are made at the end of
+# R/zzz-pk.calc.dn.R, once every base is registered.
+add_parameter_rule(
+  prefix = "ratio", eligible = ratio_rule_eligible, make = ratio_rule_make,
+  refusal = ratio_rule_refusal
+)
+register_parameter_rule_members(prefix = "ratio", bases = names(ratio_overrides()))
 
 # Parameters in this one-row interval that are deferred to the cross-interval
 # pass: requested, and with a non-NA reference pointer.
@@ -1709,7 +1713,6 @@ interval_secondary_auto <- function(intervals, param, target_groups, conc,
 interval_edit_secondary <- function(intervals, param, reference, target_groups, ref_id,
                                     conc = NULL, group_ref = NULL, ref_vary = NULL,
                                     ref_vary_default = NULL) {
-  resolve_parameter_name(param)
   assert_secondary_param(intervals, param)
   assert_ref_vary_arg(ref_vary)
   if (is.null(reference) && !is.null(group_ref)) {

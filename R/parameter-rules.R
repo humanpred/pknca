@@ -1,34 +1,34 @@
 # Rules that make registry members from a base parameter.
 #
 # A rule has a prefix, an `eligible(base, spec)` predicate on a registered
-# base's entry, and a `make(base, spec)` function returning the arguments for
+# base's entry, a `make(base, spec)` function returning the arguments for
 # add.interval.col() (and, optionally, a `summary` list for
-# PKNCA.set.summary()).  `<prefix>.<base>` becomes a parameter the first time
-# its name is looked up through resolve_parameter_name(), so a member is an
-# ordinary registry entry from then on.
+# PKNCA.set.summary()), and a `refusal(base, spec)` function saying why a base
+# is not eligible.  `<prefix>.<base>` is registered for every eligible base
+# when the package is built (at the end of R/zzz-pk.calc.dn.R), so a member is
+# an ordinary registry entry and every session has the same registry.
 
 #' Add a rule that makes NCA parameters from a base parameter
-#'
-#' A name `<prefix>.<base>` that is not registered becomes a parameter, the
-#' first time it is looked up, when `base` is a registered parameter for which
-#' `eligible()` is `TRUE`.
 #'
 #' @param prefix The prefix of the member names (without the trailing `.`)
 #' @param eligible A function of `base` (the base parameter name) and `spec`
 #'   (its registry entry from [get.interval.cols()]) giving `TRUE` when a member
-#'   can be made from it
+#'   is made from it
 #' @param make A function of `base` and `spec` giving a list of arguments for
 #'   [add.interval.col()] (without `name`), and optionally an element `summary`
 #'   with the arguments for [PKNCA.set.summary()] (without `name`)
+#' @param refusal A function of `base` and `spec` giving one sentence saying why
+#'   no member is made from an ineligible base
 #' @returns `NULL`, invisibly
 #' @keywords Internal
 #' @noRd
-add_parameter_rule <- function(prefix, eligible, make) {
+add_parameter_rule <- function(prefix, eligible, make, refusal) {
   checkmate::assert_string(prefix, min.chars = 1, pattern = "^[A-Za-z][A-Za-z0-9_]*$")
   checkmate::assert_function(eligible, args = c("base", "spec"))
   checkmate::assert_function(make, args = c("base", "spec"))
+  checkmate::assert_function(refusal, args = c("base", "spec"))
   rules <- get0("parameter_rules", envir = .PKNCAEnv, inherits = FALSE, ifnotfound = list())
-  rules[[prefix]] <- list(prefix = prefix, eligible = eligible, make = make)
+  rules[[prefix]] <- list(prefix = prefix, eligible = eligible, make = make, refusal = refusal)
   assign("parameter_rules", rules, envir = .PKNCAEnv)
   invisible(NULL)
 }
@@ -37,12 +37,13 @@ add_parameter_rule <- function(prefix, eligible, make) {
 #'
 #' Some NCA parameters are not registered one by one but made by a rule from a
 #' base parameter:  `ratio.<base>` is the ratio of `<base>` to its value in a
-#' reference interval.  A member is made the first time its name is used, for
-#' example in an interval specification.
+#' reference interval.  A member is registered for every eligible base when
+#' PKNCA is loaded; a parameter registered later with [add.interval.col()] does
+#' not get one.
 #'
 #' @returns A data frame with one row per rule:  `prefix` (members are named
-#'   `<prefix>.<base>`) and `bases` (the registered parameters a member can be
-#'   made from, separated by commas)
+#'   `<prefix>.<base>`) and `bases` (the registered parameters a member is made
+#'   from, separated by commas)
 #' @examples
 #' pknca_parameter_rules()
 #' @family Interval specifications
@@ -53,73 +54,54 @@ pknca_parameter_rules <- function() {
   bases <-
     vapply(
       X = rules,
-      FUN = function(rule) paste(parameter_rule_bases(rule, all_intervals), collapse = ", "),
+      FUN = function(rule) paste(parameter_rule_bases(rule, all_intervals, registered = TRUE), collapse = ", "),
       FUN.VALUE = ""
     )
   data.frame(prefix = names(rules), bases = unname(bases))
 }
 
-# The registered parameters that `rule` can make a member from
-parameter_rule_bases <- function(rule, all_intervals = get.interval.cols()) {
+# The registered parameters that `rule` makes a member from, in registry order;
+# with `registered = TRUE`, only those whose member is registered
+parameter_rule_bases <- function(rule, all_intervals = get("interval.cols", envir = .PKNCAEnv),
+                                 registered = FALSE) {
   is_base <-
     vapply(
       X = names(all_intervals),
       FUN = function(base) isTRUE(rule$eligible(base = base, spec = all_intervals[[base]])),
       FUN.VALUE = TRUE
     )
+  if (registered) {
+    is_base <- is_base & paste0(rule$prefix, ".", names(all_intervals)) %in% names(all_intervals)
+  }
   names(all_intervals)[is_base]
 }
 
-#' Register any rule-made parameters among `name`
-#'
-#' @param name Parameter names (a character vector)
-#' @returns `name`, unchanged.  Each name that is not registered and that a rule
-#'   can make is registered as a side effect; any other name is left for the
-#'   caller to accept or refuse.
-#' @keywords Internal
-#' @noRd
-resolve_parameter_name <- function(name) {
+# Register the members of the rules that are not registered yet:  those of
+# `bases` (every eligible base when `NULL`) for the rule `prefix` (every rule
+# when `NULL`).  The members are added in the registry order of their bases.
+register_parameter_rule_members <- function(prefix = NULL, bases = NULL) {
   rules <- get0("parameter_rules", envir = .PKNCAEnv, inherits = FALSE, ifnotfound = list())
-  if (length(rules) == 0 || length(name) == 0) {
-    return(name)
+  if (!is.null(prefix)) {
+    rules <- rules[prefix]
   }
-  # The unsorted registry:  sorting needs every dependency to be registered,
-  # which is not yet so while the package is being sourced
-  all_names <- names(get("interval.cols", envir = .PKNCAEnv))
-  for (current_name in setdiff(unique(stats::na.omit(name)), all_names)) {
-    for (rule in rules) {
-      prefix_dot <- paste0(rule$prefix, ".")
-      if (startsWith(current_name, prefix_dot)) {
-        base <- substring(current_name, nchar(prefix_dot) + 1)
-        all_intervals <- get("interval.cols", envir = .PKNCAEnv)
-        if (base %in% names(all_intervals) && isTRUE(rule$eligible(base = base, spec = all_intervals[[base]]))) {
-          register_parameter_rule_member(rule = rule, base = base, spec = all_intervals[[base]])
-          break
+  for (rule in rules) {
+    # The unsorted registry:  sorting needs every dependency to be registered,
+    # which is not yet so while the package is being sourced
+    all_intervals <- get("interval.cols", envir = .PKNCAEnv)
+    current_bases <- bases %||% parameter_rule_bases(rule, all_intervals)
+    for (base in current_bases) {
+      if (!(paste0(rule$prefix, ".", base) %in% names(all_intervals))) {
+        if (!isTRUE(rule$eligible(base = base, spec = all_intervals[[base]]))) {
+          rlang::abort(
+            sprintf("Please report a bug.  '%s' is not an eligible base of the '%s' rule", base, rule$prefix),
+            class = "pknca_error_internal_parameter_rule_base"
+          )
         }
+        register_parameter_rule_member(rule = rule, base = base, spec = all_intervals[[base]])
       }
     }
   }
-  name
-}
-
-# Register any rule-made parameters named by interval columns:  a parameter
-# column, or its `_ref` or `_ref_vary` column
-resolve_interval_parameter_names <- function(col_names) {
-  resolve_parameter_name(unique(c(
-    col_names,
-    sub(pattern = "_ref$", replacement = "", x = col_names),
-    sub(pattern = "_ref_vary$", replacement = "", x = col_names)
-  )))
-  invisible(col_names)
-}
-
-# Register the rule-made parameters of a results object, which may have been
-# saved in a session where they were registered and read in one where they are
-# not yet
-resolve_results_parameter_names <- function(object) {
-  resolve_interval_parameter_names(names(object$data$intervals))
-  resolve_parameter_name(unique(object$result$PPTESTCD))
-  invisible(object)
+  invisible(NULL)
 }
 
 # Register the member of `rule` made from `base`
@@ -133,6 +115,35 @@ register_parameter_rule_member <- function(rule, base, spec) {
     do.call(PKNCA.set.summary, c(list(name = name), summary_args))
   }
   invisible(name)
+}
+
+# For each of `name` that has the form `<rule prefix>.<registered parameter>`
+# but is not registered, one sentence saying why the rule makes no such
+# parameter (named by `name`)
+parameter_rule_refusals <- function(name) {
+  rules <- get0("parameter_rules", envir = .PKNCAEnv, inherits = FALSE, ifnotfound = list())
+  all_intervals <- get("interval.cols", envir = .PKNCAEnv)
+  ret <- character()
+  for (current_name in setdiff(unique(name), names(all_intervals))) {
+    for (rule in rules) {
+      prefix_dot <- paste0(rule$prefix, ".")
+      base <- substring(current_name, nchar(prefix_dot) + 1)
+      if (startsWith(current_name, prefix_dot) && base %in% names(all_intervals)) {
+        reason <-
+          if (isTRUE(rule$eligible(base = base, spec = all_intervals[[base]]))) {
+            sprintf(
+              "'%s' was registered after PKNCA was loaded, and members of '%s' are made only for the parameters registered when PKNCA is loaded",
+              base, rule$prefix
+            )
+          } else {
+            rule$refusal(base = base, spec = all_intervals[[base]])
+          }
+        ret[current_name] <- sprintf("'%s' is not a parameter:  %s.", current_name, reason)
+        break
+      }
+    }
+  }
+  ret
 }
 
 # Is the registry entry `spec` a secondary parameter (calculated with a value
@@ -173,6 +184,29 @@ ratio_rule_eligible <- function(base, spec) {
     spec$unit_type %in% c("conc", "auc", "amount") &&
     is.null(spec$historical_of) &&
     !parameter_spec_is_secondary(spec)
+}
+
+# Why `base` has no ratio, in the order of the conditions above
+ratio_rule_refusal <- function(base, spec) {
+  if (!is.null(spec$historical_of)) {
+    sprintf(
+      "'%s' is an earlier name of '%s', and a ratio is made only of the current name ('ratio.%s')",
+      base, spec$historical_of, spec$historical_of
+    )
+  } else if (parameter_spec_is_secondary(spec)) {
+    sprintf("'%s' is calculated with a value from a reference interval, and a ratio is not made of it", base)
+  } else if (spec$unit_type %in% c("conc_dosenorm", "auc_dosenorm", "aumc_dosenorm")) {
+    sprintf("'%s' is dose-normalized, and a ratio is made of the parameter before dose normalization", base)
+  } else if (spec$unit_type %in% "aumc") {
+    sprintf("'%s' is an AUMC, and a ratio is made only of a concentration, an AUC, or an amount", base)
+  } else if (is.null(spec$FUN) || is.na(spec$FUN)) {
+    sprintf("'%s' is not calculated by a function of its own, and a ratio is not made of it", base)
+  } else {
+    sprintf(
+      "'%s' is not a concentration, an AUC, or an amount (its unit type is '%s'), and a ratio is made only of those",
+      base, spec$unit_type
+    )
+  }
 }
 
 # The description is limited to 40 characters (SDTM PPTEST); a label that is too

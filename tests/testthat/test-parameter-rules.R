@@ -10,6 +10,17 @@ ratio_six_expected <-
     data.frame(base = "aucint.all", label = "AUCint,all", pptestcd = "RAUCINA")
   )
 
+# The bases of the ratio rule, in the order of get.interval.cols()
+ratio_bases_expected <-
+  c(
+    "auclast", "aucall", "aucint.last", "aucint.all", "aucivint.last", "aucivint.all", "c0", "cmax",
+    "cmin", "clast.obs", "cav.last", "cav.int.last", "cav.int.all", "cav.all", "cav.ivint.last",
+    "cav.ivint.all", "ctrough", "cstart", "ceoi", "aucabove.predose.all", "aucabove.trough.all", "ae",
+    "aucivlast", "aucivall", "cav.iv.last", "cav.iv.all", "aucinf.obs", "aucinf.pred",
+    "aucint.inf.obs", "aucint.inf.pred", "aucivint.inf.obs", "aucivint.inf.pred", "aucivinf.obs",
+    "aucivinf.pred", "cav.int.inf.obs", "cav.int.inf.pred", "cav.ivint.inf.obs", "cav.ivint.inf.pred"
+  )
+
 d_conc_rule <-
   data.frame(
     subject = 1,
@@ -54,26 +65,69 @@ test_that("the six earlier ratios are made by the rule with their fields unchang
   }
 })
 
-test_that("a ratio of any eligible base is made when it is first requested", {
-  local_interval_cols()
-  expect_false("ratio.cmin" %in% names(get.interval.cols()))
+test_that("pknca_parameter_rules() lists the ratio rule and exactly its 38 bases", {
+  rules <- pknca_parameter_rules()
+  expect_equal(rules$prefix, "ratio")
+  expect_equal(strsplit(rules$bases, split = ", ", fixed = TRUE)[[1]], ratio_bases_expected)
+})
+
+test_that("every ratio is registered when PKNCA is loaded, after the parameters and before the earlier names", {
+  all_intervals <- get.interval.cols()
+  all_names <- names(all_intervals)
+  members <- paste0("ratio.", ratio_bases_expected)
+  expect_true(all(members %in% all_names))
+  expect_equal(sum(startsWith(all_names, "ratio.")), 38L)
+  # The 32 that were not registered one by one come right before the earlier
+  # names, in the order of their bases; the six keep their places among the
+  # parameters
+  is_alias <- vapply(X = all_intervals, FUN = function(x) !is.null(x$historical_of), FUN.VALUE = TRUE)
+  first_alias <- which(is_alias)[1]
+  expect_true(all(is_alias[first_alias:length(all_names)]))
+  new_members <- setdiff(members, paste0("ratio.", ratio_six_expected$base))
+  expect_equal(all_names[(first_alias - 32):(first_alias - 1)], new_members)
+  for (member in members) {
+    spec <- all_intervals[[member]]
+    base <- sub("^ratio[.]", "", member)
+    expect_equal(spec$FUN, "pk.calc.ratio", info = member)
+    expect_equal(spec$depends, base, info = member)
+    expect_equal(spec$unit_type, "fraction", info = member)
+    expect_equal(spec$formalsmap, list(test = base, reference = pknca_ref(base)), info = member)
+    expect_equal(spec$tier, "uncommon", info = member)
+    expect_equal(spec$selection, list(concept = "parameter_ratio"), info = member)
+    # SDTM limits PPTEST to 40 characters
+    expect_lte(nchar(spec$desc), 40)
+  }
+  spec_cmin <- all_intervals[["ratio.cmin"]]
+  expect_equal(spec_cmin$pretty_name, "Ratio of Cmin to reference")
+  expect_equal(spec_cmin$pptestcd_cdisc, "ratio.cmin")
+  expect_equal(
+    PKNCA.set.summary()[["ratio.cmin"]]$description,
+    "geometric mean and geometric coefficient of variation"
+  )
+})
+
+test_that("no generated interval requests a ratio", {
+  members <- paste0("ratio.", ratio_bases_expected)
+  for (dosing in c("single", "multiple", "steady_state")) {
+    interval_table <- pknca_interval_table(start = 0, end = 24, dosing = dosing, route = "extravascular")
+    expect_true(all(members %in% names(interval_table)), info = dosing)
+    expect_false(any(unlist(interval_table[members])), info = dosing)
+  }
+  d_dose <- data.frame(subject = 1, time = 0, dose = 1)
+  o_data <-
+    suppressWarnings(PKNCAdata(
+      PKNCAconc(d_conc_rule[d_conc_rule$period == "test", ], conc ~ time | subject),
+      PKNCAdose(d_dose, dose ~ time | subject)
+    ))
+  expect_false(any(unlist(o_data$intervals[members])))
+})
+
+test_that("a ratio of a base other than the six calculates", {
   intervals <- intervals_rule
   intervals$cmin <- TRUE
   intervals$ratio.cmin <- c(FALSE, TRUE)
   intervals$ratio.cmin_ref <- c(NA, "ref")
   o_data <- PKNCAdata(PKNCAconc(d_conc_rule, conc~time|period+subject), intervals = intervals)
-  spec <- get.interval.cols()[["ratio.cmin"]]
-  expect_equal(spec$FUN, "pk.calc.ratio")
-  expect_equal(spec$unit_type, "fraction")
-  expect_equal(spec$pretty_name, "Ratio of Cmin to reference")
-  expect_equal(spec$pptestcd_cdisc, "ratio.cmin")
-  expect_equal(spec$depends, "cmin")
-  expect_equal(spec$formalsmap, list(test = "cmin", reference = pknca_ref("cmin")))
-  expect_equal(spec$selection, list(concept = "parameter_ratio"))
-  expect_equal(
-    PKNCA.set.summary()[["ratio.cmin"]]$description,
-    "geometric mean and geometric coefficient of variation"
-  )
   # cmin is 0 in the reference interval, and a ratio to zero is NA
   d_res <- as.data.frame(pk.nca(o_data))
   expect_true(is.na(d_res$PPORRES[d_res$PPTESTCD %in% "ratio.cmin"]))
@@ -88,80 +142,133 @@ test_that("a ratio of any eligible base is made when it is first requested", {
   expect_equal(d_res_clast$PPORRES[d_res_clast$PPTESTCD %in% "ratio.clast.obs"], 2)
 })
 
-test_that("a name the rule cannot make is refused as an unknown column", {
-  local_interval_cols()
+test_that("a name the rule does not make says why", {
   o_conc <- PKNCAconc(d_conc_rule, conc~time|period+subject)
-  for (current_name in c("ratio.aumclast", "ratio.cmax.dn", "ratio.ratio.cmax", "ratio.cav", "ratio.auclast_se", "ratio.notaparameter")) {
+  refused <-
+    c(
+      ratio.aumclast = "'aumclast' is an AUMC",
+      ratio.cmax.dn = "'cmax.dn' is dose-normalized",
+      ratio.ratio.cmax = "'ratio.cmax' is calculated with a value from a reference interval",
+      ratio.cav = "'cav' is an earlier name of 'cav.last', and a ratio is made only of the current name \\('ratio.cav.last'\\)",
+      ratio.auclast_se = "'auclast_se' is not calculated by a function of its own",
+      ratio.tmax = "'tmax' is not a concentration, an AUC, or an amount \\(its unit type is 'time'\\)"
+    )
+  for (current_name in names(refused)) {
     intervals <- intervals_rule
     intervals[[current_name]] <- c(FALSE, TRUE)
-    expect_error(PKNCAdata(o_conc, intervals = intervals), info = current_name)
+    expect_error(
+      PKNCAdata(o_conc, intervals = intervals),
+      class = "pknca_error_parameter_rule_ineligible",
+      regexp = paste0("'", current_name, "' is not a parameter:  ", refused[[current_name]]),
+      info = current_name
+    )
+    # Still the error for a column that is not allowed
+    expect_error(
+      PKNCAdata(o_conc, intervals = intervals),
+      class = "pknca_error_invalid_interval_columns",
+      info = current_name
+    )
+    expect_error(
+      interval_add_param(data.frame(start = 0, end = 24), param = current_name),
+      class = "pknca_error_parameter_rule_ineligible",
+      regexp = refused[[current_name]],
+      info = current_name
+    )
     expect_false(current_name %in% names(get.interval.cols()), info = current_name)
   }
-})
-
-test_that("pknca_parameter_rules() lists the ratio rule and its bases", {
-  rules <- pknca_parameter_rules()
-  expect_equal(rules$prefix, "ratio")
-  bases <- strsplit(rules$bases, split = ", ", fixed = TRUE)[[1]]
-  expect_true(all(c("cmax", "cmin", "auclast", "aucinf.obs", "aucint.last", "clast.obs", "ae") %in% bases))
-  expect_false(any(c("aumclast", "cmax.dn", "ratio.cmax", "cav", "auclast_se", "tmax", "cl.last") %in% bases))
-})
-
-test_that("every base the ratio rule lists makes a member that depends on it", {
-  local_interval_cols()
-  bases <- strsplit(pknca_parameter_rules()$bases, split = ", ", fixed = TRUE)[[1]]
-  expect_gt(length(bases), 6)
-  for (base in bases) {
-    member <- paste0("ratio.", base)
-    PKNCA:::resolve_parameter_name(member)
-    spec <- get.interval.cols()[[member]]
-    expect_equal(spec$depends, base, info = member)
-    expect_equal(spec$unit_type, "fraction", info = member)
-    expect_equal(spec$formalsmap$reference, pknca_ref(base), info = member)
-    # SDTM limits PPTEST to 40 characters
-    expect_lte(nchar(spec$desc), 40)
-  }
-  # Members are not bases:  the rule does not make ratios of ratios
-  expect_equal(strsplit(pknca_parameter_rules()$bases, split = ", ", fixed = TRUE)[[1]], bases)
-})
-
-test_that("a results object read in a session without its rule-made parameters registers them", {
-  local_interval_cols()
+  # A name that is not of the form ratio.<parameter> gets the plain error
   intervals <- intervals_rule
-  intervals$clast.obs <- TRUE
-  intervals$ratio.clast.obs <- c(FALSE, TRUE)
-  intervals$ratio.clast.obs_ref <- c(NA, "ref")
-  o_nca <- pk.nca(PKNCAdata(PKNCAconc(d_conc_rule, conc~time|period+subject), intervals = intervals))
-  # Unregister the member, as in a new session
-  current <- get("interval.cols", envir = PKNCA:::.PKNCAEnv)
-  current[["ratio.clast.obs"]] <- NULL
-  assign("interval.cols", current, envir = PKNCA:::.PKNCAEnv)
-  rm("interval.cols_sorted", envir = PKNCA:::.PKNCAEnv)
-  expect_false("ratio.clast.obs" %in% names(get.interval.cols()))
-  d_res <- as.data.frame(o_nca)
-  expect_true("ratio.clast.obs" %in% names(get.interval.cols()))
-  expect_equal(d_res$PPORRES[d_res$PPTESTCD %in% "ratio.clast.obs"], 2)
-  expect_s3_class(summary(o_nca), "summary_PKNCAresults")
+  intervals$ratio.notaparameter <- c(FALSE, TRUE)
+  err <- expect_error(PKNCAdata(o_conc, intervals = intervals), class = "pknca_error_invalid_interval_columns")
+  expect_false(inherits(err, "pknca_error_parameter_rule_ineligible"))
 })
 
-test_that("interval_add_param(), interval_add_secondary(), and pknca_interval_table() make a ratio they are given", {
+test_that("a parameter registered after PKNCA is loaded gets no ratio", {
   local_interval_cols()
-  expect_false("ratio.cmin" %in% names(get.interval.cols()))
+  add.interval.col(
+    "conc_mean_rule", FUN = "mean", values = c(FALSE, TRUE), unit_type = "conc",
+    pretty_name = "Mean concentration", desc = "Mean concentration", formalsmap = list(x = "conc")
+  )
+  expect_false("ratio.conc_mean_rule" %in% names(get.interval.cols()))
+  expect_false("conc_mean_rule" %in% strsplit(pknca_parameter_rules()$bases, split = ", ", fixed = TRUE)[[1]])
+  intervals <- intervals_rule
+  intervals$ratio.conc_mean_rule <- c(FALSE, TRUE)
+  expect_error(
+    PKNCAdata(PKNCAconc(d_conc_rule, conc~time|period+subject), intervals = intervals),
+    class = "pknca_error_parameter_rule_ineligible",
+    regexp = "'conc_mean_rule' was registered after PKNCA was loaded"
+  )
+})
+
+test_that("the registry, the interval table, and the units table do not depend on the ratios requested before", {
+  registry_names <- function() names(get.interval.cols())
+  table_names <- function() names(pknca_interval_table(start = 0, end = 24))
+  o_units <-
+    PKNCAdata(
+      PKNCAconc(d_conc_rule, conc~time|period+subject, concu = "ng/mL", timeu = "hr"),
+      intervals = data.frame(start = 0, end = 8, cmax = TRUE)
+    )
+  before <- list(registry = registry_names(), table = table_names(), units = pknca_units_table(o_units))
+  expect_true(all(c("ratio.cmin", "ratio.ctrough", "ratio.cstart") %in% o_units$units$PPTESTCD))
+  # Ratios requested through the data object, pk.nca(), and the interval helpers
+  intervals <- intervals_rule
+  intervals$cmin <- TRUE
+  intervals$ratio.cmin <- c(FALSE, TRUE)
+  intervals$ratio.cmin_ref <- c(NA, "ref")
+  pk.nca(PKNCAdata(PKNCAconc(d_conc_rule, conc~time|period+subject), intervals = intervals))
+  interval_add_param(data.frame(start = 0, end = 24, ctrough = TRUE), param = "ratio.ctrough")
+  pknca_interval_table(start = 0, end = 24, include = "ratio.cstart")
+  after <- list(registry = registry_names(), table = table_names(), units = pknca_units_table(o_units))
+  expect_identical(after, before)
+})
+
+test_that("set_intervals() adds units rows for a parameter registered after the data object was built", {
+  local_interval_cols()
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc_rule, conc~time|period+subject, concu = "ng/mL", timeu = "hr"),
+      intervals = data.frame(start = 0, end = 8, cmax = TRUE)
+    )
+  add.interval.col(
+    "conc_mean_units", FUN = "mean", values = c(FALSE, TRUE), unit_type = "conc",
+    pretty_name = "Mean concentration", desc = "Mean concentration", formalsmap = list(x = "conc")
+  )
+  expect_false("conc_mean_units" %in% o_data$units$PPTESTCD)
+  o_data_set <- set_intervals(o_data, data.frame(start = 0, end = 8, conc_mean_units = TRUE))
+  expect_equal(
+    o_data_set$units[o_data_set$units$PPTESTCD %in% "conc_mean_units", "PPORRESU"],
+    "ng/mL"
+  )
+  # The other rows are unchanged
+  expect_equal(o_data_set$units[seq_len(nrow(o_data$units)), ], o_data$units, ignore_attr = "row.names")
+  d_res <- as.data.frame(pk.nca(o_data_set))
+  expect_equal(d_res$PPORRESU[d_res$PPTESTCD == "conc_mean_units"], c("ng/mL", "ng/mL"))
+
+  # A units table given to PKNCAdata() is kept as given
+  units_given <- o_data$units[o_data$units$PPTESTCD %in% "cmax", ]
+  o_data_given <-
+    PKNCAdata(
+      PKNCAconc(d_conc_rule, conc~time|period+subject, concu = "ng/mL", timeu = "hr"),
+      intervals = data.frame(start = 0, end = 8, cmax = TRUE),
+      units = units_given
+    )
+  o_data_given_set <- set_intervals(o_data_given, data.frame(start = 0, end = 8, conc_mean_units = TRUE))
+  expect_null(attr(o_data_given$units, "pknca_units_automatic"))
+  expect_identical(o_data_given_set$units, o_data_given$units)
+  expect_equal(o_data_given_set$units$PPTESTCD, "cmax")
+})
+
+test_that("interval_add_param(), interval_add_secondary(), and pknca_interval_table() use a ratio they are given", {
   ret <- interval_add_param(data.frame(start = 0, end = 24, cmin = TRUE), param = "ratio.cmin")
   expect_true(ret$ratio.cmin)
-  expect_true("ratio.cmin" %in% names(get.interval.cols()))
 
-  expect_false("ratio.ctrough" %in% names(get.interval.cols()))
   ret_secondary <-
     interval_add_secondary(
       data.frame(period = c("reference", "test"), start = 0, end = 24, ctrough = TRUE),
       param = "ratio.ctrough", reference = data.frame(period = "reference")
     )
   expect_equal(ret_secondary$ratio.ctrough_ref, c(NA, ret_secondary$interval_id[1]))
-  expect_true("ratio.ctrough" %in% names(get.interval.cols()))
 
-  expect_false("ratio.cstart" %in% names(get.interval.cols()))
   ret_table <- pknca_interval_table(start = 0, end = 24, dosing = "multiple", route = "extravascular", include = "ratio.cstart")
-  expect_true("ratio.cstart" %in% names(get.interval.cols()))
-  expect_true("ratio.cstart" %in% names(ret_table))
+  expect_true(ret_table$ratio.cstart)
 })

@@ -162,7 +162,9 @@ test_that("the multiple-dose family is the closure of the declared seeds", {
       "ctrough", "ctrough.dn", "ptr", "deg.fluc", "swing",
       "aucabove.trough.all",
       "mrt.md.inf.obs", "mrt.md.inf.pred", "vss.md.inf.obs", "vss.md.inf.pred",
-      "mrt.ivmd.inf.obs", "mrt.ivmd.inf.pred", "vss.ivmd.inf.obs", "vss.ivmd.inf.pred"
+      "mrt.ivmd.inf.obs", "mrt.ivmd.inf.pred", "vss.ivmd.inf.obs", "vss.ivmd.inf.pred",
+      # The ratios of two of them
+      "ratio.ctrough", "ratio.aucabove.trough.all"
     ))
   )
 })
@@ -233,8 +235,18 @@ test_that("secondary marks the parameters needing more than one profile", {
       "clr.last", "clr.all", "clr.inf.obs", "clr.inf.pred",
       "clr.int.last", "clr.int.all", "clr.int.inf.obs", "clr.int.inf.pred",
       # Compares the same parameter between two profiles
-      "ratio.cmax", "ratio.auclast", "ratio.aucinf.obs", "ratio.aucinf.pred",
-      "ratio.aucint.last", "ratio.aucint.all"
+      paste0(
+        "ratio.",
+        c(
+          "auclast", "aucall", "aucint.last", "aucint.all", "aucivint.last", "aucivint.all", "c0",
+          "cmax", "cmin", "clast.obs", "cav.last", "cav.int.last", "cav.int.all", "cav.all",
+          "cav.ivint.last", "cav.ivint.all", "ctrough", "cstart", "ceoi", "aucabove.predose.all",
+          "aucabove.trough.all", "ae", "aucivlast", "aucivall", "cav.iv.last", "cav.iv.all",
+          "aucinf.obs", "aucinf.pred", "aucint.inf.obs", "aucint.inf.pred", "aucivint.inf.obs",
+          "aucivint.inf.pred", "aucivinf.obs", "aucivinf.pred", "cav.int.inf.obs",
+          "cav.int.inf.pred", "cav.ivint.inf.obs", "cav.ivint.inf.pred"
+        )
+      )
     ))
   )
   # Fe needs only the amount excreted and the dose, both from one profile
@@ -276,7 +288,14 @@ test_that("the bolus-only set is exactly what back-extrapolation reaches without
   from_back_extrapolation <-
     intersect(unique(unlist(lapply(seeds, get.parameter.deps))), names(classification$route))
   expect_equal(sort(bolus_only), sort(setdiff(from_back_extrapolation, needs_duration)))
-  expect_length(setdiff(bolus_only, names(parameter_renames())), 57L)
+  bolus_only_current <- setdiff(bolus_only, names(parameter_renames()))
+  expect_length(bolus_only_current, 72L)
+  # 15 of them are the ratios of the others that have a ratio
+  expect_equal(
+    sort(bolus_only_current[startsWith(bolus_only_current, "ratio.")]),
+    sort(intersect(paste0("ratio.", bolus_only_current), bolus_only_current))
+  )
+  expect_equal(sum(startsWith(bolus_only_current, "ratio.")), 15L)
 })
 
 test_that("tlag is extravascular", {

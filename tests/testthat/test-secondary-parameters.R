@@ -62,8 +62,8 @@ test_that("declaring pknca_ref() arguments does not change the secondary set", {
       "f.int.inf.obs", "f.int.inf.pred",
       "clr.last", "clr.all", "clr.inf.obs", "clr.inf.pred",
       "clr.int.last", "clr.int.all", "clr.int.inf.obs", "clr.int.inf.pred",
-      "ratio.cmax", "ratio.auclast", "ratio.aucinf.obs", "ratio.aucinf.pred",
-      "ratio.aucint.last", "ratio.aucint.all"
+      # Every ratio the ratio rule makes (see test-parameter-rules.R)
+      paste0("ratio.", strsplit(pknca_parameter_rules()$bases, split = ", ", fixed = TRUE)[[1]])
     ))
   )
   # A pknca_ref() in the formalsmap is by itself enough to be secondary

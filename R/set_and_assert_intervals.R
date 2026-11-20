@@ -6,6 +6,10 @@
 #'  [PKNCAdata()] completes them (see [check.interval.specification()]):  a
 #'  parameter that the intervals do not name is added as a column that does not
 #'  request it.
+#'  When [PKNCAdata()] built the units table of the object (see
+#'  [pknca_units_table()]), a requested parameter that has no row in it, such
+#'  as one registered with [add.interval.col()] after the object was built,
+#'  gets its rows.  A units table given to [PKNCAdata()] is kept as given.
 #'  It will return the data object with the intervals set.
 #'
 #'  With date-time data, `start` and `end` may be date-times; they are kept
@@ -25,8 +29,38 @@ set_intervals <- function(data, intervals) {
       check.interval.specification(valid_intervals, impute = data$impute %||% NA_character_)
   }
   data$intervals <- valid_intervals
+  data$units <- set_intervals_units(data)
   
   data
+}
+
+# The units table of `data` with rows for each requested parameter that has
+# none, when the table is the one PKNCAdata() built (marked with the
+# "pknca_units_automatic" attribute); a table given to PKNCAdata() is kept as
+# given.
+set_intervals_units <- function(data) {
+  units <- data$units
+  if (is.null(units) || !isTRUE(attr(units, "pknca_units_automatic")) || nrow(data$intervals) == 0) {
+    return(units)
+  }
+  param_cols <- intersect(setdiff(names(get.interval.cols()), c("start", "end")), names(data$intervals))
+  is_requested <-
+    vapply(
+      X = param_cols,
+      FUN = function(x) any(!(data$intervals[[x]] %in% c(NA, FALSE))),
+      FUN.VALUE = TRUE
+    )
+  missing_params <- setdiff(param_cols[is_requested], units$PPTESTCD)
+  if (length(missing_params) == 0) {
+    return(units)
+  }
+  rebuilt <- pknca_units_table(data)
+  if (is.null(rebuilt) || !identical(names(rebuilt), names(units))) {
+    return(units)  # nocov
+  }
+  ret <- rbind(units, rebuilt[rebuilt$PPTESTCD %in% missing_params, , drop = FALSE])
+  attr(ret, "pknca_units_automatic") <- TRUE
+  ret
 }
 
 #'  Assert Intervals
@@ -55,7 +89,6 @@ set_intervals <- function(data, intervals) {
 assert_intervals <- function(intervals, data) {
   checkmate::assert_data_frame(intervals)
   checkmate::assert_class(data, classes = "PKNCAdata")
-  resolve_interval_parameter_names(names(intervals))
 
   allowed_columns <-
     c(
@@ -94,22 +127,29 @@ assert_intervals <- function(intervals, data) {
         aumcint.inf.pred.dose = "aumcint.inf.pred"
       )
     hints <- renamed[intersect(names(renamed), invalid_columns)]
+    # A name of the form <rule prefix>.<parameter> says why the rule makes no
+    # such parameter
+    refusals <- parameter_rule_refusals(invalid_columns)
     hint_text <-
-      if (length(hints) > 0) {
-        paste0(
-          "  ",
-          paste(sprintf("'%s' is now named '%s'.", names(hints), hints), collapse = "  ")
-        )
-      } else {
-        ""
-      }
+      paste(
+        c(
+          "",
+          sprintf("'%s' is now named '%s'.", names(hints), hints),
+          refusals
+        ),
+        collapse = "  "
+      )
     rlang::abort(
       sprintf(
         "The following columns in 'intervals' are not allowed: %s%s",
         paste(invalid_columns, collapse = ", "),
         hint_text
       ),
-      class = "pknca_error_invalid_interval_columns"
+      class =
+        c(
+          if (length(refusals) > 0) "pknca_error_parameter_rule_ineligible",
+          "pknca_error_invalid_interval_columns"
+        )
     )
   }
 

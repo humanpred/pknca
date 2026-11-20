@@ -8,14 +8,15 @@ pknca_parameter_rules()
 }
 \value{
 A data frame with one row per rule:  \code{prefix} (members are named
-\verb{<prefix>.<base>}) and \code{bases} (the registered parameters a member can be
-made from, separated by commas)
+\verb{<prefix>.<base>}) and \code{bases} (the registered parameters a member is made
+from, separated by commas)
 }
 \description{
 Some NCA parameters are not registered one by one but made by a rule from a
 base parameter:  \verb{ratio.<base>} is the ratio of \verb{<base>} to its value in a
-reference interval.  A member is made the first time its name is used, for
-example in an interval specification.
+reference interval.  A member is registered for every eligible base when
+PKNCA is loaded; a parameter registered later with \code{\link[=add.interval.col]{add.interval.col()}} does
+not get one.
 }
 \examples{
 pknca_parameter_rules()

@@ -106,7 +106,6 @@ PKNCAresults <- function(result, data, exclude = NULL) {
 #' @returns A data.frame (or usually a tibble) of results
 #' @export
 as.data.frame.PKNCAresults <- function(x, ..., out_format = c('long', 'wide', 'cdisc'), filter_requested = FALSE, filter_excluded = FALSE, grpid_cols = NULL, grpid_numeric = NULL, out.format = deprecated()) {
-  resolve_results_parameter_names(x)
   if (!filter_excluded) {
     ret <- x$result
   } else {

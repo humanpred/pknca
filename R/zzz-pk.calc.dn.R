@@ -83,3 +83,9 @@ local({
       spread=business.geocv)
   }
 })
+
+# Every parameter a rule makes (such as `ratio.<base>`; see
+# R/parameter-rules.R) is registered here, once every base is, so that the
+# registry does not depend on what a session has requested.  This file is
+# sourced last.
+register_parameter_rule_members()

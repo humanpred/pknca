@@ -216,16 +216,24 @@ assert_param_name <- function(param) {
   checkmate::assert_character(param, any.missing = FALSE, min.chars = 1)
   missing_param <- setdiff(param, names(get.interval.cols()))
   if (length(missing_param) > 0) {
+    refusals <- parameter_rule_refusals(missing_param)
     rlang::abort(
-      sprintf(
-        ngettext(
-          length(missing_param),
-          msg1 = "%s is not a valid PKNCA parameter name",
-          msg2 = "%s are not valid PKNCA parameter names"
+      paste0(
+        sprintf(
+          ngettext(
+            length(missing_param),
+            msg1 = "%s is not a valid PKNCA parameter name",
+            msg2 = "%s are not valid PKNCA parameter names"
+          ),
+          paste(missing_param, collapse = ", ")
         ),
-        paste(missing_param, collapse = ", ")
+        if (length(refusals) > 0) paste0("  ", paste(refusals, collapse = "  "))
       ),
-      class = "pknca_error_invalid_param_name"
+      class =
+        c(
+          if (length(refusals) > 0) "pknca_error_parameter_rule_ineligible",
+          "pknca_error_invalid_param_name"
+        )
     )
   }
   param

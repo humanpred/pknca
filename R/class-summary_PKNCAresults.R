@@ -113,7 +113,6 @@ summary.PKNCAresults <- function(object, ...,
   # nocov end
 
   ## Simple inputs ####
-  resolve_results_parameter_names(object)
   group_cols <- get_summary_PKNCAresults_drop_group(object = object, drop_group = drop_group)
   subject_col <- as_PKNCAconc(object)$columns$subject
   has_subject_col <- length(subject_col) > 0

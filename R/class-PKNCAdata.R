@@ -369,8 +369,12 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
 
   # Insert the unit conversion table
   if (missing(units)) {
-    # Use the new automatic units table builder
+    # Use the new automatic units table builder; the mark lets set_intervals()
+    # add the rows of a parameter registered later
     ret$units <- pknca_units_table(ret)
+    if (!is.null(ret$units)) {
+      attr(ret$units, "pknca_units_automatic") <- TRUE
+    }
   } else {
 
     checkmate::assert_data_frame(units)
@@ -385,6 +389,8 @@ PKNCAdata.default <- function(data.conc, data.dose, ...,
 
     checkmate::assert_data_frame(units, min.rows = 1)
 
+    # A table given here is kept as given, even one copied from a built table
+    attr(units, "pknca_units_automatic") <- NULL
     ret$units <- units
   }
 
