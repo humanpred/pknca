@@ -5,7 +5,7 @@
 #' words are separated by dots, as `count.conc`) keep their earlier names:
 #' each still calculates, under its old name, the value of the parameter that
 #' replaced it, and requesting one warns
-#' (`pknca_warning_deprecated_parameter`) without any plan to remove it.  The
+#' (`pknca_warning_deprecated_parameter`); the old name keeps working.  The
 #' earlier names are declared with the `historical_names` argument of
 #' [add.interval.col()].
 #'

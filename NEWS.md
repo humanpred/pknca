@@ -138,7 +138,7 @@ the dosing including dose amount and route.
   earlier); the other eight were added during this development version and are
   deprecated before their first release.  They still calculate and still give
   the values they always gave, warning once per session with the unified name to
-  use instead, **and they will be an error in the next minor release**.  The
+  use instead; the old names keep working.  The
   functions behind them (`pk.calc.sparse_auclast()`, `var_sparse_auc()`,
   `cov_holder()`, and the rest) are not deprecated:  they are what the unified
   estimators call.
@@ -375,6 +375,13 @@ the generated intervals:
   still warns (`pknca_warning_deprecated_parameter`), and the warning no longer
   says the name "will be an error in the next minor release":  earlier names,
   and the deprecated sparse names, keep working.  No result changes.
+  * A parameter that a user registers under an earlier name (for example,
+    `add.interval.col("cl.obs", ...)`) is that user's parameter, as before:
+    it replaces the alias for the session, in the alias's place in
+    `get.interval.cols()`, with a `pknca_message_historical_name_replaced`
+    message.
+  * A parameter registered after the package is loaded comes after the
+    earlier names in `get.interval.cols()`, as before.
 
 * Cav is available for every AUC that covers only the interval, as `cav.last`
   (from `auclast`), `cav.all` (from `aucall`) and, for IV bolus dosing, `cav.iv.last`, `cav.iv.all`,

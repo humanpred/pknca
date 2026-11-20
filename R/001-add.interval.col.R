@@ -397,15 +397,29 @@ assert_selection <- function(selection, name) {
 #' @param historical_names Its earlier names
 #' @param current The registry before the registration
 #' @returns `NULL`, invisibly, or the error
-#'   `pknca_error_historical_name_conflict`
+#'   `pknca_error_historical_name_conflict` or
+#'   `pknca_error_historical_names_invalid`
 #' @keywords Internal
 #' @noRd
 assert_historical_names <- function(name, historical_names, current) {
   alias_of <- vapply(X = current, FUN = function(x) if (is.null(x$historical_of)) NA_character_ else x$historical_of, FUN.VALUE = "")
-  # `name` itself may not be an earlier name of another parameter
-  if (!is.na(alias_of[name]) && !identical(unname(alias_of[name]), name)) {
+  is_valid <-
+    checkmate::test_character(
+      x = historical_names, min.chars = 1, any.missing = FALSE, null.ok = TRUE
+    )
+  if (!is_valid) {
     rlang::abort(
-      sprintf("'%s' is an earlier name of '%s', so it cannot be registered as a parameter", name, alias_of[name]),
+      sprintf("The earlier names of '%s' must be a character vector of non-empty names without NA", name),
+      class = "pknca_error_historical_names_invalid"
+    )
+  }
+  duplicated_historical <- unique(historical_names[duplicated(historical_names)])
+  if (length(duplicated_historical) > 0) {
+    rlang::abort(
+      sprintf(
+        "%s given more than once as an earlier name of '%s'",
+        paste0("'", duplicated_historical, "'", collapse = ", "), name
+      ),
       class = "pknca_error_historical_name_conflict"
     )
   }
@@ -435,27 +449,36 @@ assert_historical_names <- function(name, historical_names, current) {
 
 # Rebuild the alias entries of the registry from the parameters'
 # `historical_names`:  each earlier name is a copy of its parameter, marked
-# with `historical_of`, at the end of the registry and in sorted order, so that
-# a re-registered parameter is copied again and the order of the parameters
-# does not depend on when their aliases were declared.  An alias is "uncommon"
-# so that no default selection offers an old name.
+# with `historical_of`, so that a re-registered parameter is copied again.  An
+# alias that exists keeps its place, an alias that is no longer declared is
+# dropped, and a new one is added at the end (new ones in sorted order).  An
+# alias is "uncommon" so that no default selection offers an old name.
 interval_cols_refresh_aliases <- function(current) {
   is_alias <- vapply(X = current, FUN = function(x) !is.null(x$historical_of), FUN.VALUE = TRUE)
-  current <- current[!is_alias]
-  aliases <- list()
-  for (current_name in names(current)) {
+  declared <- character()
+  for (current_name in names(current)[!is_alias]) {
     for (current_historical in current[[current_name]]$historical_names) {
-      alias <- current[[current_name]]
-      alias$historical_names <- NULL
-      alias$tier <- "uncommon"
-      alias$historical_of <- current_name
-      aliases[[current_historical]] <- alias
+      declared[current_historical] <- current_name
     }
   }
-  if (length(aliases) == 0) {
-    return(current)
+  current <- current[!is_alias | names(current) %in% names(declared)]
+  new_aliases <- sort(as.character(setdiff(names(declared), names(current))), method = "radix")
+  for (current_historical in c(intersect(names(current), names(declared)), new_aliases)) {
+    alias <- current[[declared[[current_historical]]]]
+    alias$historical_names <- NULL
+    alias$tier <- "uncommon"
+    alias$historical_of <- declared[[current_historical]]
+    current[[current_historical]] <- alias
   }
-  c(current, aliases[sort(names(aliases), method = "radix")])
+  current
+}
+
+# The registry as the package builds it:  the parameters in the order they were
+# registered, then the aliases in sorted order.  A parameter (or alias)
+# registered after the package is loaded is added at the end, after these.
+interval_cols_aliases_last <- function(current) {
+  is_alias <- vapply(X = current, FUN = function(x) !is.null(x$historical_of), FUN.VALUE = TRUE)
+  c(current[!is_alias], current[sort(names(current)[is_alias], method = "radix")])
 }
 
 #' Add columns for calculations within PKNCA intervals
@@ -516,13 +539,17 @@ interval_cols_refresh_aliases <- function(current) {
 #'   formula (e.g. assumptions or method details).  Displayed alongside the
 #'   formula in documentation tables.
 #' @param historical_names Earlier names of the parameter (a character
-#'   vector), which keep working:  each is registered as an alias of the
-#'   parameter, a copy that calculates the same value under the old name, and a
-#'   request for one warns (`pknca_warning_deprecated_parameter`) without any
-#'   plan to remove it.  A name may not be a parameter or an earlier name of
-#'   another parameter (`pknca_error_historical_name_conflict`).  `NULL` (the
-#'   default) keeps the earlier names the parameter already has, so
-#'   registering it again does not drop them.  See [pknca_parameter_renames()].
+#'   vector):  each is registered as an alias of the parameter, a copy that
+#'   calculates the same value under the old name, and a request for one warns
+#'   (`pknca_warning_deprecated_parameter`); the old name keeps working.  A
+#'   name may not be a parameter, an earlier name of another parameter, or
+#'   given twice (`pknca_error_historical_name_conflict`), and the names must
+#'   be non-empty and not `NA` (`pknca_error_historical_names_invalid`).
+#'   `NULL` (the default) keeps the earlier names the parameter already has,
+#'   so registering it again does not drop them.  Registering a parameter
+#'   under a name that is an earlier name of another parameter replaces the
+#'   alias for the session, with a `pknca_message_historical_name_replaced`
+#'   message.  See [pknca_parameter_renames()].
 #' @param tier How commonly the parameter is reported:  `"common"` for one
 #'   that belongs in a default report for at least one context, or
 #'   `"uncommon"` (the default) for one that is calculated only when asked for
@@ -670,9 +697,6 @@ add.interval.col <- function(name,
                              historical_names=NULL) {
   # Check inputs
   checkmate::assert_character(x = name, len = 1, min.chars = 1, any.missing = FALSE)
-  checkmate::assert_character(
-    x = historical_names, min.chars = 1, any.missing = FALSE, unique = TRUE, null.ok = TRUE
-  )
   # `<name>_ref` columns in an interval specification are the reference-interval
   # pointers for secondary parameters, `<name>_ref_vary` columns declare the
   # group columns those references may differ in, and `interval_id` names
@@ -762,6 +786,24 @@ add.interval.col <- function(name,
   validate_cdisc_arg(pptest_cdisc, "pptest_cdisc")
 
   current <- get("interval.cols", envir=.PKNCAEnv)
+  replaced_alias_of <- current[[name]]$historical_of
+  if (!is.null(replaced_alias_of)) {
+    # The user's parameter wins over an earlier name:  the name stops being an
+    # alias for the session, and the parameter keeps the alias's place
+    current[[replaced_alias_of]]$historical_names <-
+      setdiff(current[[replaced_alias_of]]$historical_names, name)
+    if (length(current[[replaced_alias_of]]$historical_names) == 0) {
+      current[[replaced_alias_of]]$historical_names <- NULL
+    }
+    current[[name]]$historical_of <- NULL
+    rlang::inform(
+      sprintf(
+        "'%s' was an earlier name of '%s'; it is now the parameter being registered, and it no longer gives the value of '%s' in this session",
+        name, replaced_alias_of, replaced_alias_of
+      ),
+      class = "pknca_message_historical_name_replaced"
+    )
+  }
   if (is.null(historical_names)) {
     historical_names <- current[[name]]$historical_names
   }

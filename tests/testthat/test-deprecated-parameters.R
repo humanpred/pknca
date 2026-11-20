@@ -174,9 +174,85 @@ test_that("add.interval.col() checks earlier names and keeps them when a paramet
     add.interval.col("test.other", FUN = NA, unit_type = "unitless", pretty_name = "Test", historical_names = "test.other"),
     class = "pknca_error_historical_name_conflict"
   )
-  # An earlier name cannot be registered as a parameter
+  # An earlier name given twice, or not as non-empty names
   expect_error(
-    add.interval.col("test_old", FUN = NA, unit_type = "unitless", pretty_name = "Test"),
-    class = "pknca_error_historical_name_conflict"
+    add.interval.col("test.other", FUN = NA, unit_type = "unitless", pretty_name = "Test", historical_names = c("a", "a")),
+    class = "pknca_error_historical_name_conflict",
+    regexp = "'a' given more than once as an earlier name of 'test.other'"
   )
+  for (bad in list(1, NA_character_, "", c("b", NA))) {
+    expect_error(
+      add.interval.col("test.other", FUN = NA, unit_type = "unitless", pretty_name = "Test", historical_names = bad),
+      class = "pknca_error_historical_names_invalid"
+    )
+  }
+  expect_false("test.other" %in% names(get.interval.cols()))
+})
+
+test_that("a parameter registered under an earlier name replaces the alias for the session", {
+  local_interval_cols()
+  cols_before <- get.interval.cols()
+  position <- match("cl.obs", names(cols_before))
+  expect_equal(cols_before[["cl.obs"]]$historical_of, "cl.inf.obs")
+  expect_message(
+    add.interval.col(
+      "cl.obs", FUN = "mean", values = c(FALSE, TRUE), unit_type = "conc",
+      pretty_name = "My clearance", desc = "My clearance", formalsmap = list(x = "conc")
+    ),
+    class = "pknca_message_historical_name_replaced",
+    regexp = "'cl.obs' was an earlier name of 'cl.inf.obs'"
+  )
+  cols <- get.interval.cols()
+  # The user's parameter, in the place the alias had
+  expect_equal(match("cl.obs", names(cols)), position)
+  expect_equal(names(cols), names(cols_before))
+  expect_null(cols[["cl.obs"]]$historical_of)
+  expect_equal(cols[["cl.obs"]]$FUN, "mean")
+  expect_equal(cols[["cl.obs"]]$pretty_name, "My clearance")
+  # cl.obs was the one earlier name of cl.inf.obs, which now has none
+  expect_equal(cols_before[["cl.inf.obs"]]$historical_names, "cl.obs")
+  expect_null(cols[["cl.inf.obs"]]$historical_names)
+  expect_false("cl.obs" %in% pknca_parameter_renames()$historical)
+  expect_equal(nrow(pknca_parameter_renames()), 53L)
+  # Registering cl.inf.obs again does not bring the alias back
+  spec <- cols[["cl.inf.obs"]]
+  do.call(add.interval.col, c(list(name = "cl.inf.obs"), spec[setdiff(names(spec), c("historical_names", "historical_of"))]))
+  expect_equal(get.interval.cols()[["cl.obs"]]$FUN, "mean")
+
+  # pk.nca() calculates the user's parameter, without the deprecation warning
+  d_conc <- data.frame(conc = c(0, 2, 4, 3, 2, 1, 0.5), time = c(0, 0.5, 1, 2, 4, 8, 12))
+  intervals <- data.frame(start = 0, end = Inf, cl.obs = TRUE)
+  expect_no_warning(
+    d_res <- as.data.frame(pk.nca(PKNCAdata(PKNCAconc(d_conc, conc~time), intervals = intervals)))
+  )
+  expect_equal(d_res$PPTESTCD, "cl.obs")
+  expect_equal(d_res$PPORRES, mean(d_conc$conc))
+})
+
+test_that("a parameter registered after the package is loaded comes after the earlier names", {
+  local_interval_cols()
+  cols_before <- names(get.interval.cols())
+  add.interval.col(
+    "test.after.load", FUN = "mean", values = c(FALSE, TRUE), unit_type = "conc",
+    pretty_name = "Test", desc = "Test", formalsmap = list(x = "conc")
+  )
+  expect_equal(names(get.interval.cols()), c(cols_before, "test.after.load"))
+  # Its own earlier names follow it, and the package's aliases stay in place
+  add.interval.col(
+    "test.after.load.2", FUN = "mean", values = c(FALSE, TRUE), unit_type = "conc",
+    pretty_name = "Test", desc = "Test", formalsmap = list(x = "conc"),
+    historical_names = c("test_z_old", "test_a_old")
+  )
+  expect_equal(
+    names(get.interval.cols()),
+    c(cols_before, "test.after.load", "test.after.load.2", "test_a_old", "test_z_old")
+  )
+})
+
+test_that("interval_cols_aliases_last() puts the aliases after the parameters, sorted", {
+  current <-
+    list(
+      a = list(), b_old = list(historical_of = "b"), b = list(), a_old = list(historical_of = "a"), c = list()
+    )
+  expect_named(PKNCA:::interval_cols_aliases_last(current), c("a", "b", "c", "a_old", "b_old"))
 })
