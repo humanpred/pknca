@@ -1212,6 +1212,44 @@ the generated intervals:
 
 ## Bug fixes
 
+* `aucint.*` and `aumcint.*`, their IV forms (`aucivint.*`, `aumcivint.*`,
+  `aucivpbext.int.*`), and everything calculated from them (`cav.int.*`,
+  `cl.int.*`, `kel.int.*`, `mrt.int.*`, `thalf.eff.int.*`, `vss.int.*`,
+  `vz.int.*`, and their `ivint` forms) now use the interval's imputation, as
+  `auclast` and the other AUCs already did (@billdenney).  They are
+  calculated from all of the group's data, so that the concentration at an
+  interval boundary can be estimated from the samples outside it; within the
+  interval, those data are now the imputed ones.  Values change in three
+  cases, and no other parameter changes:
+  - a start imputation (`start_predose`, `start_cmin`, `start_predose_conc0`,
+    or a chain of them) where no sample is at the start of the interval:  the
+    start is the imputed concentration instead of an estimate from the
+    samples around it.  With the predose sample drawn 3 minutes before the
+    dose, `aucint.last` over 0 to 24 hours is 76.54 (it was 76.04, or 76.66
+    without dosing data), equal to `auclast`; at steady state over 24 to 48
+    hours it is 90.93 (it was 90.43).  The default intervals for
+    multiple-dose data, which use `aucint.last` with `start_cmin` or
+    `start_predose`, change in the same way.
+  - `start_conc0` where a nonzero concentration is measured at the start:
+    the start is 0, as for `auclast` (76.04; it was 76.54).
+  - `end_conc_drop`:  the sample at the end of the interval is dropped, as for
+    `auclast`, so the end is estimated from the samples before it.
+    `aucint.last` over 0 to 24 hours with the last sample at 24 hours is the
+    AUC to the previous sample (56.40; it was 76.04), and `aucint.inf.obs` is
+    extrapolated with the half-life (73.60; it was 76.54).
+
+  The extrapolation reported in `PPANMETH` follows:  it is "none" where the
+  start is now imputed rather than extrapolated, and "AUClast", "AUCall",
+  or "half-life" where the end is now estimated after `end_conc_drop`.
+
+* `pknca_interval_table()` keeps a parameter out of a chain of imputation
+  methods (such as `"start_predose,start_cmin"`) when any method in the
+  chain would make the imputed value its answer; before, a chain kept no
+  parameter out (@billdenney).  A method written with its
+  `PKNCA_impute_method_` prefix is treated as the method without it.  A
+  single method without the prefix is unchanged.  An unknown method, alone
+  or in a chain, is still refused only when `pk.nca()` runs.
+
 * `mrt.iv.*`, `mrt.ivint.*`, `mrt.ivmd.*`, and everything calculated from them
   (`vss.iv.*`, `vss.ivint.*`, `vss.ivmd.*`, `kel.iv.*`, `thalf.eff.iv.*`) are
   now correct, and one value per interval, when an interval has more than one
