@@ -191,6 +191,7 @@ resolve_selection <- function(x, available, arg_name) {
     return(character(0))
   }
   checkmate::assert_character(x, any.missing = FALSE, min.chars = 1)
+  resolve_parameter_name(x)
   classification <- parameter_classification()
   known_params <- names(classification$concept)
   unknown <- setdiff(x, c(known_params, pknca_concepts()))

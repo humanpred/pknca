@@ -215,6 +215,7 @@ interval_resolve_params <- function(param, param_pattern) {
   all_params <- setdiff(names(get.interval.cols()), c("start", "end"))
   ret <- character(0)
   if (!is.null(param)) {
+    resolve_parameter_name(param)
     ret <- c(ret, assert_param_name(param))
   }
   if (!is.null(param_pattern)) {

@@ -46,6 +46,7 @@ Other Interval specifications:
 \code{\link[=pknca_interval_table]{pknca_interval_table()}},
 \code{\link[=pknca_match_route]{pknca_match_route()}},
 \code{\link[=pknca_parameter_renames]{pknca_parameter_renames()}},
+\code{\link[=pknca_parameter_rules]{pknca_parameter_rules()}},
 \code{\link[=pknca_presets]{pknca_presets()}},
 \code{\link[=pknca_ref]{pknca_ref()}}
 }

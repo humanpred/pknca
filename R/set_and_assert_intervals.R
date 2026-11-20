@@ -49,6 +49,7 @@ set_intervals <- function(data, intervals) {
 assert_intervals <- function(intervals, data) {
   checkmate::assert_data_frame(intervals)
   checkmate::assert_class(data, classes = "PKNCAdata")
+  resolve_interval_parameter_names(names(intervals))
 
   allowed_columns <-
     c(

@@ -395,93 +395,11 @@ pk.calc.ratio <- function(test, reference) {
   ret
 }
 
-add.interval.col("ratio.cmax",
-                 FUN="pk.calc.ratio",
-                 values=c(FALSE, TRUE),
-                 unit_type="fraction",
-                 pretty_name="Ratio of Cmax to reference",
-                 desc="Ratio of Cmax to reference",
-                 formalsmap=list(test="cmax",
-                                 reference=pknca_ref("cmax")),
-                 depends="cmax",
-                 pptestcd_cdisc="RCMAX",
-                 pptest_cdisc="Ratio of Cmax to Reference",
-                 selection = list(concept = "parameter_ratio"))
-
-add.interval.col("ratio.auclast",
-                 FUN="pk.calc.ratio",
-                 values=c(FALSE, TRUE),
-                 unit_type="fraction",
-                 pretty_name="Ratio of AUClast to reference",
-                 desc="Ratio of AUClast to reference",
-                 formalsmap=list(test="auclast",
-                                 reference=pknca_ref("auclast")),
-                 depends="auclast",
-                 pptestcd_cdisc="RAUCLST",
-                 pptest_cdisc="Ratio of AUClast to Reference",
-                 selection = list(concept = "parameter_ratio"))
-
-add.interval.col("ratio.aucinf.obs",
-                 FUN="pk.calc.ratio",
-                 values=c(FALSE, TRUE),
-                 unit_type="fraction",
-                 pretty_name="Ratio of AUCinf,obs to reference",
-                 desc="Ratio of AUCinf,obs to reference",
-                 formalsmap=list(test="aucinf.obs",
-                                 reference=pknca_ref("aucinf.obs")),
-                 depends="aucinf.obs",
-                 pptestcd_cdisc="RAUCIFO",
-                 pptest_cdisc="Ratio of AUCinf,obs to Reference",
-                 selection = list(concept = "parameter_ratio"))
-
-add.interval.col("ratio.aucinf.pred",
-                 FUN="pk.calc.ratio",
-                 values=c(FALSE, TRUE),
-                 unit_type="fraction",
-                 pretty_name="Ratio of AUCinf,pred to reference",
-                 desc="Ratio of AUCinf,pred to reference",
-                 formalsmap=list(test="aucinf.pred",
-                                 reference=pknca_ref("aucinf.pred")),
-                 depends="aucinf.pred",
-                 pptestcd_cdisc="RAUCIFP",
-                 pptest_cdisc="Ratio of AUCinf,pred to Reference",
-                 selection = list(concept = "parameter_ratio"))
-
-add.interval.col("ratio.aucint.last",
-                 FUN="pk.calc.ratio",
-                 values=c(FALSE, TRUE),
-                 unit_type="fraction",
-                 pretty_name="Ratio of AUCint,last to reference",
-                 desc="Ratio of AUCint,last to reference",
-                 formalsmap=list(test="aucint.last",
-                                 reference=pknca_ref("aucint.last")),
-                 depends="aucint.last",
-                 pptestcd_cdisc="RAUCINL",
-                 pptest_cdisc="Ratio of AUCint,last to Reference",
-                 selection = list(concept = "parameter_ratio"))
-
-add.interval.col("ratio.aucint.all",
-                 FUN="pk.calc.ratio",
-                 values=c(FALSE, TRUE),
-                 unit_type="fraction",
-                 pretty_name="Ratio of AUCint,all to reference",
-                 desc="Ratio of AUCint,all to reference",
-                 formalsmap=list(test="aucint.all",
-                                 reference=pknca_ref("aucint.all")),
-                 depends="aucint.all",
-                 pptestcd_cdisc="RAUCINA",
-                 pptest_cdisc="Ratio of AUCint,all to Reference",
-                 selection = list(concept = "parameter_ratio"))
-
-PKNCA.set.summary(
-  name = paste0(
-    "ratio.",
-    c("cmax", "auclast", "aucinf.obs", "aucinf.pred", "aucint.last", "aucint.all")
-  ),
-  description = "geometric mean and geometric coefficient of variation",
-  point = business.geomean,
-  spread = business.geocv
-)
+# Ratios are made by rule (see R/parameter-rules.R):  `ratio.<base>` for any
+# eligible base.  The six that had their own registrations are made here, in the
+# same place, so that they are always registered and keep their order.
+add_parameter_rule(prefix = "ratio", eligible = ratio_rule_eligible, make = ratio_rule_make)
+resolve_parameter_name(paste0("ratio.", names(ratio_overrides())))
 
 # Parameters in this one-row interval that are deferred to the cross-interval
 # pass: requested, and with a non-NA reference pointer.
@@ -1791,6 +1709,7 @@ interval_secondary_auto <- function(intervals, param, target_groups, conc,
 interval_edit_secondary <- function(intervals, param, reference, target_groups, ref_id,
                                     conc = NULL, group_ref = NULL, ref_vary = NULL,
                                     ref_vary_default = NULL) {
+  resolve_parameter_name(param)
   assert_secondary_param(intervals, param)
   assert_ref_vary_arg(ref_vary)
   if (is.null(reference) && !is.null(group_ref)) {

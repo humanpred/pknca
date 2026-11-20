@@ -31,6 +31,7 @@
 #' @seealso The vignette "Selection of Calculation Intervals"
 #' @export
 check.interval.specification <- function(x, impute = NA_character_) {
+  resolve_interval_parameter_names(names(x))
   if (!is.data.frame(x)) {
     # Just a warning and let as.data.frame make it an error if it can't be
     # coerced.

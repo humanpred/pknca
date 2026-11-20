@@ -36,6 +36,9 @@ exclude <- function(object, reason, mask, FUN)
 #' @describeIn exclude The general case for data exclusion
 #' @export
 exclude.default <- function(object, reason, mask, FUN) {
+  if (inherits(object, "PKNCAresults")) {
+    resolve_results_parameter_names(object)
+  }
   dataname <- getDataName(object)
   # Check inputs
   if (missing(mask) && !missing(FUN)) {

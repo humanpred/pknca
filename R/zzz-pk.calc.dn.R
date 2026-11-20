@@ -14,6 +14,10 @@ local({
   for (n in c("auclast", "aucall", "aucinf.obs", "aucinf.pred",
               "aumclast", "aumcall", "aumcinf.obs", "aumcinf.pred",
               "cmax", "cmin", "clast.obs", "clast.pred", "cav.last", "ctrough")) {
+    if (parameter_spec_is_secondary(get.interval.cols()[[n]])) {
+      # A dose-normalized ratio has no meaning; a secondary base would make one
+      rlang::abort(sprintf("%s is secondary and cannot be dose-normalized", n), class = "pknca_error_dn_secondary")  # nocov
+    }
     current_unit_type <- get.interval.cols()[[n]]$unit_type
     current_pretty_name <- get.interval.cols()[[n]]$pretty_name
     current_pptestcd_cdisc <- get.interval.cols()[[n]]$pptestcd_cdisc
