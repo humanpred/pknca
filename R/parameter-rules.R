@@ -170,9 +170,20 @@ rule_member_selection <- function(spec, concept) {
   c(list(concept = concept), inherited)
 }
 
-# A parameter made by a rule, other than the ratios with a controlled-terminology
-# code (which were registered by name before), and its base:  a named character
-# vector of bases, named by member
+# The rule members that a `param_pattern` matching their base also selects:
+# the six ratios that were registered by name before ratios were made by rule.
+# A pattern such as "cmax" selected ratio.cmax then, so it still does; every
+# other member is selected only by a pattern that does not select its base
+# (see parameter_pattern_match()), so that a pattern selects what it selected
+# before the members were registered.
+parameter_pattern_base_members <- c(
+  "ratio.cmax", "ratio.auclast", "ratio.aucinf.obs", "ratio.aucinf.pred",
+  "ratio.aucint.last", "ratio.aucint.all"
+)
+
+# A parameter made by a rule, other than those in
+# parameter_pattern_base_members, and its base:  a named character vector of
+# bases, named by member
 parameter_rule_members_new <- function(all_names = names(get.interval.cols())) {
   rules <- get0("parameter_rules", envir = .PKNCAEnv, inherits = FALSE, ifnotfound = list())
   ret <- character()
@@ -183,7 +194,7 @@ parameter_rule_members_new <- function(all_names = names(get.interval.cols())) {
     keep <- bases %in% all_names
     ret <- c(ret, stats::setNames(bases[keep], members[keep]))
   }
-  ret[!(names(ret) %in% paste0("ratio.", names(ratio_overrides())))]
+  ret[!(names(ret) %in% parameter_pattern_base_members)]
 }
 
 # The parameters among `all_params` that `pattern` selects.  A parameter made

@@ -27,7 +27,13 @@ interval_remove_param(
 \item{param}{A character vector of NCA parameter names.}
 
 \item{param_pattern}{A character vector of regular expressions matching NCA
-parameter names.  One or both of \code{param} and \code{param_pattern} must be given.}
+parameter names.  One or both of \code{param} and \code{param_pattern} must be given.
+A parameter made by a rule (see \code{\link[=pknca_parameter_rules]{pknca_parameter_rules()}}) is selected
+only when the pattern does not also select its base, so \code{"clast.obs"} selects only \code{clast.obs}, and
+\code{"^ratio[.]"} selects the ratios; the six ratios that PKNCA registered by
+name before (\code{ratio.cmax}, \code{ratio.auclast}, \code{ratio.aucinf.obs},
+\code{ratio.aucinf.pred}, \code{ratio.aucint.last}, and \code{ratio.aucint.all}) are
+selected by their base's pattern, as before.}
 
 \item{target_groups}{A data.frame of group values restricting the change to
 matching intervals.  Every column must match (and) for at least one row of

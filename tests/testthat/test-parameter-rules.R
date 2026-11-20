@@ -499,6 +499,21 @@ test_that("param_pattern selects what it selected before the new ratios were reg
     grep("^ratio[.]", x = all_params, value = TRUE)
   )
   expect_length(PKNCA:::parameter_pattern_match("^ratio[.]", all_params), 38)
+  # interval_remove_param() removes what it removed before, for every base:
+  # from a table requesting every parameter, the pattern of the base's exact
+  # name removes the parameters it matched before
+  full <- data.frame(start = 0, end = 24)
+  for (p in all_params) {
+    full[[p]] <- TRUE
+  }
+  full <- check.interval.specification(full)
+  for (base in strsplit(pknca_parameter_rules()$bases, split = ", ", fixed = TRUE)[[1]]) {
+    removed <- suppressWarnings(interval_remove_param(full, param_pattern = base))
+    now_false <- all_params[!vapply(all_params, function(p) isTRUE(removed[[p]]), TRUE)]
+    expect_equal(sort(now_false), sort(grep(base, x = before, value = TRUE)), info = base)
+  }
+  # The six ratios registered by name before still follow their base's pattern
+  expect_true("ratio.cmax" %in% PKNCA:::parameter_pattern_match("cmax", all_params))
   # Through interval_add_param(), as the review found
   for (pattern in c("ctrough", "clast.obs", "cmin")) {
     ret <- interval_add_param(data.frame(start = 0, end = 24, tmax = TRUE), param_pattern = pattern)
