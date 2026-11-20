@@ -219,7 +219,7 @@ interval_resolve_params <- function(param, param_pattern) {
   }
   if (!is.null(param_pattern)) {
     checkmate::assert_character(param_pattern, any.missing = FALSE, min.chars = 1)
-    matched <- unique(unlist(lapply(param_pattern, grep, x = all_params, value = TRUE)))
+    matched <- unique(unlist(lapply(param_pattern, parameter_pattern_match, all_params = all_params)))
     if (length(matched) == 0) {
       rlang::warn(
         sprintf(

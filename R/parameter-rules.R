@@ -161,12 +161,49 @@ parameter_spec_is_secondary <- function(spec, all_intervals = get("interval.cols
   ))
 }
 
+# The selection of a member made from the base registered as `spec`:  its own
+# concept, and the route, dosing, and sample type the base declares, so the
+# member applies where its base does
+rule_member_selection <- function(spec, concept) {
+  inherited <- spec$selection
+  inherited$concept <- NULL
+  c(list(concept = concept), inherited)
+}
+
+# A parameter made by a rule, other than the ratios with a controlled-terminology
+# code (which were registered by name before), and its base:  a named character
+# vector of bases, named by member
+parameter_rule_members_new <- function(all_names = names(get.interval.cols())) {
+  rules <- get0("parameter_rules", envir = .PKNCAEnv, inherits = FALSE, ifnotfound = list())
+  ret <- character()
+  for (rule in rules) {
+    prefix_dot <- paste0(rule$prefix, ".")
+    members <- all_names[startsWith(all_names, prefix_dot)]
+    bases <- substring(members, nchar(prefix_dot) + 1)
+    keep <- bases %in% all_names
+    ret <- c(ret, stats::setNames(bases[keep], members[keep]))
+  }
+  ret[!(names(ret) %in% paste0("ratio.", names(ratio_overrides())))]
+}
+
+# The parameters among `all_params` that `pattern` selects.  A parameter made
+# by a rule is selected only when the pattern does not also select its base, so
+# a pattern that selected a parameter before rule members were registered still
+# selects the same parameters ("clast.obs" does not select ratio.clast.obs),
+# while one aimed at the members ("^ratio[.]") selects them.
+parameter_pattern_match <- function(pattern, all_params) {
+  matched <- grep(pattern, x = all_params, value = TRUE)
+  members <- parameter_rule_members_new(all_params)
+  member_matched <- intersect(matched, names(members))
+  drop <- member_matched[grepl(pattern, x = members[member_matched])]
+  setdiff(matched, drop)
+}
+
 # ratio.<base> ####
 
-# Six ratios had CDISC codes and their own wording before ratios were made by
-# rule; they keep both.  Any other ratio is labelled from its base's pretty
-# name, and its PPTESTCD is its name until a controlled-terminology code is
-# confirmed.
+# The ratios with a controlled-terminology code, with the label used in their
+# wording.  Any other ratio is labelled from its base's pretty name, and its
+# PPTESTCD is its name.
 ratio_overrides <- function() {
   list(
     cmax = list(label = "Cmax", pptestcd = "RCMAX"),
@@ -254,7 +291,7 @@ ratio_rule_make <- function(base, spec) {
         sprintf("Ratio of %s to Reference", base),
         sprintf("Ratio of %s to Ref", base)
       )),
-    selection = list(concept = "parameter_ratio"),
+    selection = rule_member_selection(spec, concept = "parameter_ratio"),
     summary =
       list(
         description = "geometric mean and geometric coefficient of variation",
@@ -294,7 +331,7 @@ mr_rule_make <- function(base, spec) {
     depends = base,
     pptestcd_cdisc = paste0("mr.", base),
     pptest_cdisc = desc,
-    selection = list(concept = "metabolite_ratio"),
+    selection = rule_member_selection(spec, concept = "metabolite_ratio"),
     summary =
       list(
         description = "geometric mean and geometric coefficient of variation",

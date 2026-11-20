@@ -21,10 +21,11 @@ If the intervals are valid, it will set them in the object, completed as
 \code{\link[=PKNCAdata]{PKNCAdata()}} completes them (see \code{\link[=check.interval.specification]{check.interval.specification()}}):  a
 parameter that the intervals do not name is added as a column that does not
 request it.
-When \code{\link[=PKNCAdata]{PKNCAdata()}} built the units table of the object (see
+When the units table of the object is the one \code{\link[=PKNCAdata]{PKNCAdata()}} builds (see
 \code{\link[=pknca_units_table]{pknca_units_table()}}), a requested parameter that has no row in it, such
 as one registered with \code{\link[=add.interval.col]{add.interval.col()}} after the object was built,
-gets its rows.  A units table given to \code{\link[=PKNCAdata]{PKNCAdata()}} is kept as given.
+gets its rows.  A units table given to \code{\link[=PKNCAdata]{PKNCAdata()}}, or a built one that
+was edited, is kept as it is.
 It will return the data object with the intervals set.
 }
 \details{

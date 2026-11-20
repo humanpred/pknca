@@ -396,8 +396,8 @@ pk.calc.ratio <- function(test, reference) {
 }
 
 # Ratios are made by rule (see R/parameter-rules.R):  `ratio.<base>` for every
-# eligible base.  The six that had their own registrations are made here, in the
-# same place, so that they keep their order; the others are made at the end of
+# eligible base.  The ratios with a controlled-terminology code are registered
+# here, among the secondary parameters; the others at the end of
 # R/zzz-pk.calc.dn.R, once every base is registered.
 add_parameter_rule(
   prefix = "ratio", eligible = ratio_rule_eligible, make = ratio_rule_make,
