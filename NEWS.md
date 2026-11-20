@@ -352,6 +352,21 @@ the generated intervals:
 
 ## New features
 
+* A ratio of any concentration, AUC, or amount to its value in a reference
+  interval is available as `ratio.<base>`, made by a rule from the base
+  parameter instead of being registered by name (@billdenney; PR number to
+  add).  The base is calculated directly, is not dose-normalized, is not
+  secondary, and is not an earlier name of another parameter; AUMCs are not
+  bases.  A member becomes a parameter the first time it is named, in the
+  intervals, `interval_add_param()`, `interval_add_secondary()`, or
+  `pknca_interval_table(include = )`, and a results object read in a new
+  session registers the ones it holds.  `pknca_parameter_rules()` lists the
+  rule and its bases.  A new member's `PPTESTCD` is its name until a
+  controlled-terminology code is confirmed; the six ratios that existed
+  (`ratio.cmax`, `ratio.auclast`, `ratio.aucinf.obs`, `ratio.aucinf.pred`,
+  `ratio.aucint.last`, and `ratio.aucint.all`) now come from the rule with
+  their codes, descriptions, and results unchanged.
+
 * The earlier names of renamed parameters (such as `cl.obs` for `cl.inf.obs`
   and `cav` for `cav.last`) are declared with the new `historical_names`
   argument of `add.interval.col()`, and `pknca_parameter_renames()` lists them
