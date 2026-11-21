@@ -46,14 +46,28 @@
 #'   given, and the rows for each pair of its groups are built when [pk.nca()]
 #'   reports the results.
 #'
+#'   A conversion on a secondary parameter's own row of a given table (a renal
+#'   clearance to "L/hr", or "fraction" to "%") is applied to the composed
+#'   units.
+#'
 #'   A metabolite ratio (`mr.<parameter>`) is a ratio of masses, `"g/g"`, or of
-#'   amounts of substance, `"mol/mol"`, as its parameter's units say.  When the units
-#'   of one analyte are a mass and of the other an amount of substance, the
-#'   ratio is an error (`pknca_error_mr_units_mixed`), and so is one whose two
+#'   amounts of substance, `"mol/mol"`, as its parameter's units say.  The kind
+#'   of amount is read from the numerator of the unit (what it measures):  a
+#'   mass such as `"ng/mL"` or `"hr*ng/mL"`, or an amount of substance such as
+#'   `"nmol/L"` or `"nM"`.  Any other unit (an activity or a count such as
+#'   `"IU/mL"` or `"cpm/g"`, an equivalent such as `"ng eq/mL"`, or a unit
+#'   written in capitals) leaves the ratio a `"fraction"`.  When the units of
+#'   one analyte are a mass and of the other an amount of substance, the ratio
+#'   is an error (`pknca_error_mr_units_mixed`), and so is one whose two
 #'   analytes a given table does not both describe
-#'   (`pknca_error_units_secondary_missing`).  With each analyte converted to
-#'   moles with its own molecular weight, the standardized metabolite ratio is
-#'   the molar ratio; see `vignette("v09-secondary-parameters")`.
+#'   (`pknca_error_units_secondary_missing`, also a
+#'   `pknca_error_units_partial_missing`, which
+#'   `PKNCA.options(allow_partial_missing_units = TRUE)` turns into `NA` units
+#'   and a warning).  With each analyte converted to moles with its own
+#'   molecular weight, the standardized metabolite ratio is the molar ratio; a
+#'   table that converts only the concentration gives a molar `mr.cmax` and a
+#'   mass `mr.auclast`, since each ratio is in the units the table gives its
+#'   parameter.  See `vignette("v09-secondary-parameters")`.
 #' @seealso The `units` argument for [PKNCAdata()]
 #' @examples
 #' pknca_units_table() # only parameters that are unitless
@@ -442,12 +456,20 @@ secondary_unit_side <- function(unit_table, formals_used, args, unit_column) {
 #   `unit_tables`
 # @param pairs The pairs of unit sets to describe, a data.frame of the indexes
 #   `own` and `ref` into `unit_tables`; every pair when NULL
+# @param requested The secondary parameters to describe; every one when NULL
+# @param own_conversions Apply a conversion on the parameter's own row (a table
+#   given to PKNCAdata(); see secondary_pair_units())
 # @returns `units` with the `_ref` columns and the reference-keyed rows added
 # @keywords Internal
 # @noRd
-pknca_units_table_secondary <- function(units, unit_tables, group_values, pairs = NULL) {
+pknca_units_table_secondary <- function(units, unit_tables, group_values, pairs = NULL,
+                                        requested = NULL, own_conversions = FALSE) {
   ref_cols <- paste0(names(group_values), "_ref")
-  units[ref_cols] <- NA_character_
+  # Each `_ref` column has the type of its group column, as the reference
+  # group's values in the pair rows do
+  for (i in seq_along(ref_cols)) {
+    units[[ref_cols[i]]] <- rep(group_values[[i]][NA_integer_], nrow(units))
+  }
   classification <- parameter_classification()
   params <- names(classification$secondary)[classification$secondary]
   has_composition <-
@@ -457,6 +479,9 @@ pknca_units_table_secondary <- function(units, unit_tables, group_values, pairs 
       FUN.VALUE = TRUE
     )
   params <- params[has_composition]
+  if (!is.null(requested)) {
+    params <- intersect(params, requested)
+  }
   n_sets <- nrow(group_values)
   if (is.null(pairs)) {
     pairs <- data.frame(own = rep(seq_len(n_sets), each = n_sets), ref = rep(seq_len(n_sets), times = n_sets))
@@ -519,7 +544,8 @@ pknca_units_table_secondary <- function(units, unit_tables, group_values, pairs 
         secondary_pair_units(
           param = current_param, base = base, u = u, s = s,
           side_factor = own_factors[[own_i]] / ref_factors[[ref_i]],
-          is_mr = is_mr, has_std = has_std, factor_cache = factor_cache
+          is_mr = is_mr, has_std = has_std, factor_cache = factor_cache,
+          own_conversions = own_conversions
         )
       own_values <- group_values[own_i, , drop = FALSE]
       ref_values <- group_values[ref_i, , drop = FALSE]
@@ -566,7 +592,15 @@ pknca_units_table_secondary <- function(units, unit_tables, group_values, pairs 
 # A metabolite ratio (`is_mr`) of two masses is in "g/g" and of two amounts of
 # substance in "mol/mol"; the raw quotient carries that label when the two
 # sides are in the same units, and the quotient of the two units otherwise.
-secondary_pair_units <- function(param, base, u, s, side_factor, is_mr, has_std, factor_cache) {
+#
+# When the two sides are in the same units, or in a units table given to
+# PKNCAdata() (`own_conversions`), a conversion on the parameter's own row ("fraction" to "%", or a clearance to "L/hr") is then
+# applied to the composed standardized units when they convert to it:  with the
+# row's own factor when they are the units it converts from, and otherwise as a
+# unit conversion.  The table PKNCAdata() builds converts each side to the
+# preferred units, so its composed units are already the ones to report.
+secondary_pair_units <- function(param, base, u, s, side_factor, is_mr, has_std, factor_cache,
+                                 own_conversions = FALSE) {
   if (anyNA(u)) {
     # Units the two sides do not both know say nothing the parameter's
     # registered units do not
@@ -587,32 +621,38 @@ secondary_pair_units <- function(param, base, u, s, side_factor, is_mr, has_std,
   std_factor <- side_factor * pknca_unit_reconcile_factor_cached(factor_cache, from = s[1], to = s[2])
   if (identical(u[1], u[2])) {
     ret_orig <- if (is.na(label)) base$PPORRESU else label
-    if (!has_std) {
-      ret_std <- NA_character_
-      ret_factor <- NA_real_
-    } else if (is.na(std_factor)) {
-      ret_std <- pknca_units_quotient(s[1], s[2])
-      ret_factor <- side_factor
-    } else if (!is.na(label_std)) {
-      ret_std <- label_std
-      ret_factor <- std_factor
-    } else {
-      ret_std <- base$PPSTRESU
-      ret_factor <- base$conversion_factor * std_factor
-    }
   } else {
     ret_orig <- pknca_units_quotient(u[1], u[2])
-    if (!is.na(std_factor)) {
-      ret_std <- if (is.na(label_std)) "fraction" else label_std
-      ret_factor <- std_factor
-    } else if (has_std) {
-      # Not a pure number, but the sides may still have standardized units of
-      # their own, and the quotient of those is the composite's
-      ret_std <- pknca_units_quotient(s[1], s[2])
-      ret_factor <- side_factor
-    } else {
-      ret_std <- NA_character_
-      ret_factor <- NA_real_
+  }
+  if (!has_std) {
+    ret_std <- if (identical(u[1], u[2]) || is.na(std_factor)) NA_character_ else "fraction"
+    ret_factor <- if (is.na(ret_std)) NA_real_ else std_factor
+  } else if (is.na(std_factor)) {
+    ret_std <- pknca_units_quotient(s[1], s[2])
+    ret_factor <- side_factor
+  } else {
+    ret_std <- if (is.na(label_std)) "fraction" else label_std
+    ret_factor <- std_factor
+  }
+  if (!has_std && !is.na(label_std) && !is.na(ret_std)) {
+    ret_std <- label_std
+  }
+  # With the same units on both sides the row's own conversion applies as it
+  # stands, in any table
+  own_conversion <-
+    (own_conversions || identical(u[1], u[2])) && has_std && !is.na(ret_std) && !is.na(base$PPSTRESU) &&
+    !identical(base$PPSTRESU, base$PPORRESU) &&
+    !(base$PPSTRESU %in% c(ret_std, "g/g", "mol/mol"))
+  if (own_conversion) {
+    to_own <-
+      if (identical(ret_std, base$PPORRESU) || (identical(u[1], u[2]) && ret_std %in% c("fraction", label_std))) {
+        base$conversion_factor
+      } else {
+        pknca_unit_reconcile_factor_cached(factor_cache, from = ret_std, to = base$PPSTRESU)
+      }
+    if (!is.na(to_own)) {
+      ret_std <- base$PPSTRESU
+      ret_factor <- ret_factor * to_own
     }
   }
   data.frame(
@@ -656,24 +696,43 @@ secondary_unit_side_factor <- function(unit_table, formals_used, args, has_std) 
 }
 
 # The kind of amount a unit measures:  "g" for a mass, "mol" for an amount of
-# substance, and NA when it names neither or both (an activity such as "IU",
-# or a missing unit).  It is read from the unit's own symbols, a mass or an
-# amount of substance with an optional SI prefix ("ng", "mcg", "nmol", and
-# "nM" for nmol/L), so that it does not need the units package.
+# substance, and NA for anything else (an activity such as "IU/g", a count, an
+# equivalent such as "ng eq/mL", a volume, or a missing unit).  The amount is
+# read from the unit's numerator (the part before its first "/" outside
+# parentheses), which, apart from time units (the "hr" of "hr*ng/mL"), must be
+# one symbol:  a mass or an amount of substance with an optional SI prefix
+# ("ng", "mcg", "nmol", and "nM" for nmol/L), matched as written.  It does not
+# need the units package.
 pknca_units_amount_basis <- function(unit) {
   if (length(unit) != 1 || is.na(unit)) {
     return(NA_character_)
   }
-  symbols <- strsplit(as.character(unit), split = "[^A-Za-z\u00b5\u03bc]+")[[1]]
+  symbols <- strsplit(pknca_units_numerator(as.character(unit)), split = "[^A-Za-z\u00b5\u03bc]+")[[1]]
+  time_symbols <- c("s", "sec", "min", "h", "hr", "hour", "hours", "d", "day", "days", "wk", "week", "weeks", "y", "yr", "year", "years")
+  symbols <- symbols[nzchar(symbols) & !(symbols %in% time_symbols)]
+  if (length(symbols) != 1) {
+    return(NA_character_)
+  }
   prefix <- "(Y|Z|E|P|T|G|M|k|h|da|d|c|m|u|\u00b5|\u03bc|n|p|f|a|z|y)?"
-  is_mass <- any(grepl(paste0("^", prefix, "g$"), symbols) | symbols %in% "mcg")
-  is_molar <- any(grepl(paste0("^", prefix, "(mol|M)$"), symbols))
-  if (is_mass && !is_molar) {
+  if (grepl(paste0("^", prefix, "g$"), symbols) || symbols %in% "mcg") {
     "g"
-  } else if (is_molar && !is_mass) {
+  } else if (grepl(paste0("^", prefix, "(mol|M)$"), symbols)) {
     "mol"
   } else {
     NA_character_
+  }
+}
+
+# The part of a unit before its first "/" outside parentheses, which is what
+# the unit measures ("hr*ng" of "hr*ng/mL"); the whole unit when it has none
+pknca_units_numerator <- function(unit) {
+  chars <- strsplit(unit, split = "")[[1]]
+  depth <- cumsum((chars == "(") - (chars == ")"))
+  slash <- which(chars == "/" & depth == 0)
+  if (length(slash) == 0) {
+    unit
+  } else {
+    substr(unit, 1, slash[1] - 1)
   }
 }
 
@@ -1053,7 +1112,7 @@ pknca_unit_conversion <- function(result, units, allow_partial_missing_units = F
     }
     # The units table that PKNCAdata() builds holds group values as character
     ret <- left_join_by_value(ret, units, by = intersect(names(ret), names(units)))
-    abort_mr_units_unmatched(ret, units)
+    abort_mr_units_unmatched(ret, units, allow_partial_missing_units = allow_partial_missing_units)
     mask_missing_units <- is.na(ret$PPORRESU)
     if (any(mask_missing_units)) {
       msg_missing <-
@@ -1121,7 +1180,10 @@ pknca_units_table_join_pairs <- function(units, result) {
         ]
       }
     )
-  pknca_units_table_secondary(units, unit_tables, group_values, pairs = pairs)
+  pknca_units_table_secondary(
+    units, unit_tables, group_values,
+    pairs = pairs, requested = unique(result$PPTESTCD[with_ref]), own_conversions = TRUE
+  )
 }
 
 # One text key per row of `data`, from its values in `cols`
@@ -1132,30 +1194,27 @@ units_group_keys <- function(data, cols) {
 # A metabolite ratio result that found no units row names a pair of groups the
 # units table cannot describe:  the two analytes' units are a mass and an amount
 # of substance (`pknca_error_mr_units_mixed`), or the table lacks the units of
-# one of them (`pknca_error_units_secondary_missing`).  Either is an error, not
-# a ratio reported in the wrong units.
-abort_mr_units_unmatched <- function(result, units) {
+# one of them (`pknca_error_units_secondary_missing`, which is also a
+# `pknca_error_units_partial_missing`, the error of any other result without
+# units).  Either is an error, not a ratio reported in the wrong units, except
+# that `allow_partial_missing_units` lets units be missing, as for any other
+# result (pknca_unit_conversion() then warns).
+abort_mr_units_unmatched <- function(result, units, allow_partial_missing_units = FALSE) {
   ref_cols <- grep("_ref$", names(units), value = TRUE)
   if (length(ref_cols) == 0) {
     return(invisible(NULL))
   }
   mask <- is.na(result$PPORRESU) & units_rows_mr(result)
   mask <- mask & rowSums(!is.na(result[, ref_cols, drop = FALSE])) > 0
-  if (!any(mask)) {
-    return(invisible(NULL))
-  }
-  i <- which(mask)[1]
-  param <- result$PPTESTCD[i]
   group_cols <- sub("_ref$", "", ref_cols)
-  own_group <- result[i, group_cols, drop = FALSE]
-  ref_group <- stats::setNames(result[i, ref_cols, drop = FALSE], group_cols)
-  base <- unname(secondary_param_info(param)$own_args[[1]])
   single <- units[rowSums(!is.na(units[, ref_cols, drop = FALSE])) == 0, , drop = FALSE]
-  own_units <- units_of_group(single, own_group, base)
-  ref_units <- units_of_group(single, ref_group, base)
-  own_text <- name_value_text(own_group)
-  ref_text <- name_value_text(ref_group)
-  if (!is.na(own_units[["PPORRESU"]]) && !is.na(ref_units[["PPORRESU"]])) {
+  for (i in which(mask)) {
+    param <- result$PPTESTCD[i]
+    own_group <- result[i, group_cols, drop = FALSE]
+    ref_group <- stats::setNames(result[i, ref_cols, drop = FALSE], group_cols)
+    base <- unname(secondary_param_info(param)$own_args[[1]])
+    own_units <- units_of_group(single, own_group, base)
+    ref_units <- units_of_group(single, ref_group, base)
     mixed <-
       pknca_units_amount_mixed(own_units[["PPORRESU"]], ref_units[["PPORRESU"]]) ||
       pknca_units_amount_mixed(own_units[["PPSTRESU"]], ref_units[["PPSTRESU"]])
@@ -1163,20 +1222,25 @@ abort_mr_units_unmatched <- function(result, units) {
       rlang::abort(
         sprintf(
           "Metabolite ratio '%s' would divide a mass by an amount of substance:  '%s' of %s is in %s and of %s in %s.  Give both analytes mass units or both molar units.",
-          param, base, own_text, units_text(own_units), ref_text, units_text(ref_units)
+          param, base, name_value_text(own_group), units_text(own_units),
+          name_value_text(ref_group), units_text(ref_units)
         ),
         class = "pknca_error_mr_units_mixed"
       )
     }
+    if (!isTRUE(allow_partial_missing_units)) {
+      rlang::abort(
+        sprintf(
+          "The units table has no units for metabolite ratio '%s' of %s to %s:  it needs the units of '%s' for both.\nThis error can be converted to a warning using `PKNCA.options(allow_partial_missing_units = TRUE)`",
+          param, name_value_text(own_group), name_value_text(ref_group), base
+        ),
+        class = c("pknca_error_units_secondary_missing", "pknca_error_units_partial_missing")
+      )
+    }
   }
-  rlang::abort(
-    sprintf(
-      "The units table has no units for metabolite ratio '%s' of %s to %s:  it needs the units of '%s' for both.",
-      param, own_text, ref_text, base
-    ),
-    class = "pknca_error_units_secondary_missing"
-  )
+  invisible(NULL)
 }
+
 
 # The original and standardized units of `param` for the group `group` in a
 # units table of rows that name no reference group:  a character vector named

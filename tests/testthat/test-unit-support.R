@@ -709,33 +709,55 @@ test_that("Preferred units with unit columns convert the groups that need it and
 
 # Metabolite ratios:  masses, amounts of substance, and each side's conversion
 
-test_that("pknca_units_amount_basis() reads the kind of amount from the unit's symbols", {
+test_that("pknca_units_amount_basis() reads the kind of amount from the unit's numerator", {
   known <-
     rbind(
+      # What a mass or an amount of substance measures
       data.frame(unit = "ng/mL", basis = "g"),
+      data.frame(unit = "ng/ml", basis = "g"),
       data.frame(unit = "hr*ng/mL", basis = "g"),
       data.frame(unit = "(hr^2)*ug/L", basis = "g"),
+      data.frame(unit = "ug/g", basis = "g"),
+      data.frame(unit = "mg/kg", basis = "g"),
       data.frame(unit = "mg", basis = "g"),
       data.frame(unit = "mcg/mL", basis = "g"),
-      data.frame(unit = "\u00b5g/mL", basis = "g"),
-      data.frame(unit = "\u03bcmol/L", basis = "mol"),
+      data.frame(unit = "µg/mL", basis = "g"),
+      data.frame(unit = "μmol/L", basis = "mol"),
       data.frame(unit = "nmol/L", basis = "mol"),
       data.frame(unit = "hr*mmol/L", basis = "mol"),
+      data.frame(unit = "mmol/g", basis = "mol"),
       data.frame(unit = "nM", basis = "mol"),
+      data.frame(unit = "M", basis = "mol"),
+      # A mass in the numerator is a mass, whatever it is per
+      data.frame(unit = "kg/L", basis = "g"),
+      data.frame(unit = "ng/min", basis = "g"),
+      data.frame(unit = "ng/nmol", basis = "g"),
+      # Activities, counts, equivalents, volumes, and units PKNCA does not know
+      data.frame(unit = "IU/g", basis = NA_character_),
+      data.frame(unit = "U/g", basis = NA_character_),
+      data.frame(unit = "Bq/g", basis = NA_character_),
+      data.frame(unit = "cpm/g", basis = NA_character_),
+      data.frame(unit = "copies/g", basis = NA_character_),
+      data.frame(unit = "mEq/g", basis = NA_character_),
+      data.frame(unit = "mL/g", basis = NA_character_),
       data.frame(unit = "IU/mL", basis = NA_character_),
+      data.frame(unit = "ng eq/mL", basis = NA_character_),
+      data.frame(unit = "NG/ML", basis = NA_character_),
       data.frame(unit = "fraction", basis = NA_character_),
-      data.frame(unit = "ng/nmol", basis = NA_character_),
       data.frame(unit = NA_character_, basis = NA_character_)
     )
   for (i in seq_len(nrow(known))) {
     expect_equal(pknca_units_amount_basis(known$unit[i]), known$basis[i], info = known$unit[i])
   }
+  expect_equal(pknca_units_numerator("(hr^2)*ug/L"), "(hr^2)*ug")
+  expect_equal(pknca_units_numerator("ng"), "ng")
   expect_equal(pknca_units_amount_ratio("ng/mL", "ug/L"), "g/g")
   expect_equal(pknca_units_amount_ratio("nmol/L", "nM"), "mol/mol")
   expect_equal(pknca_units_amount_ratio("ng/mL", "nmol/L"), NA_character_)
   expect_equal(pknca_units_amount_ratio("IU/mL", "IU/mL"), NA_character_)
   expect_true(pknca_units_amount_mixed("ng/mL", "nmol/L"))
-  expect_false(pknca_units_amount_mixed("IU/mL", "nmol/L"))
+  # A unit that is neither is never mixed
+  expect_false(pknca_units_amount_mixed("cpm/g", "nmol/L"))
 })
 
 test_that("every metabolite ratio is a ratio of masses or of amounts of substance", {
@@ -991,4 +1013,164 @@ test_that("a zero-length unit is refused, while NA means no unit", {
     pknca_units_table(concu = NA_character_, timeu = "hr"),
     pknca_units_table(timeu = "hr")
   )
+})
+
+# Results of `params` for the metabolite, with the units table `units`, for the
+# two-analyte fixture of these tests grouped by `formula`
+mr_units_results <- function(units, params = "mr.auclast", d_conc = d_conc_mr_units,
+                             formula = conc ~ time | subject / analyte, options = list()) {
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, formula),
+      intervals = intervals_mr_units,
+      group_ref = data.frame(analyte = "parent"),
+      units = units, options = options
+    )
+  d_res <- as.data.frame(suppressMessages(pk.nca(o_data)))
+  d_res[d_res$analyte == "M1" & d_res$PPTESTCD %in% params, ]
+}
+
+# Renal clearance profiles:  urine 350 mg over 0 to 24 hours, and plasma 10, 6,
+# and 2 at 0, 12, and 24 hours (linear AUC 144)
+clr_units_profile <- function(subject, sample_type) {
+  if (sample_type == "urine") {
+    data.frame(subject = subject, PCSPEC = "urine", time = c(0, 24), conc = c(0, 350), vol = 1)
+  } else {
+    data.frame(subject = subject, PCSPEC = "plasma", time = c(0, 12, 24), conc = c(10, 6, 2), vol = NA_real_)
+  }
+}
+
+# clr.last of the urine rows of `d_conc` with the units table `units`
+clr_units_results <- function(d_conc, units) {
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time | PCSPEC + subject, volume = "vol"),
+      intervals = data.frame(PCSPEC = "urine", start = 0, end = 24, ae = TRUE, clr.last = TRUE),
+      units = units, options = list(auc.method = "linear")
+    )
+  d_res <- as.data.frame(suppressMessages(pk.nca(o_data)))
+  d_res <- d_res[d_res$PPTESTCD == "clr.last", ]
+  d_res[order(d_res$subject), ]
+}
+
+test_that("a given units table matches group columns of any type", {
+  for (type in c("integer", "double", "factor", "character")) {
+    d_conc <- d_conc_mr_units
+    d_conc$period <- switch(type, integer = 1L, double = 1, factor = factor("1"), character = "1")
+    units_period <- rbind(units_mr_molar("parent", 325.8), units_mr_molar("M1", 341.8))
+    units_period$period <- d_conc$period[1]
+    d_mr <- mr_units_results(units_period, "mr.auclast", d_conc = d_conc, formula = conc ~ time | period + subject / analyte)
+    expect_equal(d_mr$PPSTRESU, "mol/mol", info = type)
+    expect_equal(d_mr$PPSTRES, d_mr$PPORRES * 325.8 / 341.8, tolerance = 1e-12, info = type)
+  }
+  # Renal clearance with a table per subject (urine 350 mg over 0 to 24 hours,
+  # plasma AUC 144 hr*ng/mL)
+  for (type in c("integer", "double", "factor", "character")) {
+    d_conc <- rbind(clr_units_profile(1, "plasma"), clr_units_profile(1, "urine"), clr_units_profile(2, "plasma"), clr_units_profile(2, "urine"))
+    d_conc$subject <- switch(type, integer = as.integer(d_conc$subject), double = d_conc$subject, factor = factor(d_conc$subject), character = as.character(d_conc$subject))
+    subjects <- unique(d_conc$subject)
+    units_subject <-
+      rbind(
+        cbind(subject = subjects[1], pknca_units_table(concu = "ng/mL", amountu = "mg", timeu = "hr")),
+        cbind(subject = subjects[2], pknca_units_table(concu = "ng/mL", amountu = "mg", timeu = "hr"))
+      )
+    d_clr <- clr_units_results(d_conc, units_subject)
+    expect_equal(d_clr$PPORRES, rep(350/144, 2), info = type)
+    expect_equal(d_clr$PPORRESU, rep("mg/(hr*ng/mL)", 2), info = type)
+  }
+})
+
+test_that("a conversion of a metabolite ratio's own units applies in a single table and a table per analyte", {
+  percent <- data.frame(PPORRESU = "fraction", PPSTRESU = "%", conversion_factor = 100)
+  single <- pknca_units_table(concu = "ng/mL", timeu = "hr", conversions = percent)
+  per_analyte <- rbind(cbind(analyte = "parent", single), cbind(analyte = "M1", single))
+  for (units in list(single, per_analyte)) {
+    d_mr <- mr_units_results(units)
+    expect_equal(d_mr$PPORRESU, "g/g")
+    expect_equal(d_mr$PPSTRESU, "%")
+    expect_equal(d_mr$PPSTRES, d_mr$PPORRES * 100)
+  }
+})
+
+test_that("missing units of a metabolite ratio follow allow_partial_missing_units", {
+  # The metabolite's units are not in the table
+  units_parent <- units_mr_molar("parent", 325.8)
+  expect_error(
+    mr_units_results(units_parent),
+    class = "pknca_error_units_partial_missing"
+  )
+  expect_warning(
+    d_mr <- mr_units_results(units_parent, options = list(allow_partial_missing_units = TRUE)),
+    class = "pknca_warning_units_partial_missing"
+  )
+  expect_equal(d_mr$PPORRESU, NA_character_)
+  expect_false(is.na(d_mr$PPORRES))
+})
+
+test_that("a metabolite ratio of a unit that is neither a mass nor an amount of substance stays a fraction", {
+  d_conc <- d_conc_mr_units
+  d_conc$concu <- "IU/g"
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time | subject / analyte, concu = "concu", timeu = "hr"),
+      intervals = intervals_mr_units, group_ref = data.frame(analyte = "parent")
+    )
+  d_res <- as.data.frame(suppressMessages(pk.nca(o_data)))
+  expect_equal(d_res$PPORRESU[d_res$PPTESTCD == "mr.auclast" & d_res$analyte == "M1"], "fraction")
+  # Against a molar parent, a count per gram is not a mixed pair:  the units
+  # are the quotient of the two
+  d_conc$concu <- ifelse(d_conc$analyte == "parent", "nmol/L", "cpm/g")
+  o_data_counts <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time | subject / analyte, concu = "concu", timeu = "hr"),
+      intervals = intervals_mr_units, group_ref = data.frame(analyte = "parent")
+    )
+  d_res <- as.data.frame(suppressMessages(pk.nca(o_data_counts)))
+  expect_equal(d_res$PPORRESU[d_res$PPTESTCD == "mr.auclast" & d_res$analyte == "M1"], "(hr*cpm/g)/(hr*nmol/L)")
+  expect_false(is.na(d_res$PPORRES[d_res$PPTESTCD == "mr.auclast" & d_res$analyte == "M1"]))
+})
+
+test_that("a given table per group composes the units of a secondary parameter from both groups", {
+  # Renal clearance:  the urine row converts to L/hr, and its time is in
+  # minutes, while the AUC comes from the plasma, in hours
+  d_conc <- rbind(clr_units_profile(1, "plasma"), clr_units_profile(1, "urine"))
+  for (urine_time in c("hr", "min")) {
+    units_sample <-
+      rbind(
+        cbind(
+          PCSPEC = "plasma",
+          pknca_units_table(
+            concu = "ng/mL", amountu = "mg", timeu = "hr",
+            conversions = data.frame(PPORRESU = "mg/(hr*ng/mL)", PPSTRESU = "L/hr")
+          )
+        ),
+        cbind(
+          PCSPEC = "urine",
+          pknca_units_table(
+            concu = "ng/mL", amountu = "mg", timeu = urine_time,
+            conversions = data.frame(PPORRESU = sprintf("mg/(%s*ng/mL)", urine_time), PPSTRESU = "L/hr")
+          )
+        )
+      )
+    d_clr <- clr_units_results(d_conc, units_sample)
+    expect_equal(d_clr$PPORRES, 350/144, info = urine_time)
+    expect_equal(d_clr$PPORRESU, "mg/(hr*ng/mL)", info = urine_time)
+    expect_equal(d_clr$PPSTRES, 350/144 * 1000, info = urine_time)
+    expect_equal(d_clr$PPSTRESU, "L/hr", info = urine_time)
+  }
+  # Ratios between analytes with time in hours and minutes
+  units_time <-
+    rbind(
+      cbind(analyte = "parent", pknca_units_table(concu = "ng/mL", timeu = "hr")),
+      cbind(analyte = "M1", pknca_units_table(concu = "ng/mL", timeu = "min"))
+    )
+  d_mr <- mr_units_results(units_time, c("mr.auclast", "ratio.cmax"))
+  d_auc <- d_mr[d_mr$PPTESTCD == "mr.auclast", ]
+  expect_equal(d_auc$PPORRESU, "(min*ng/mL)/(hr*ng/mL)")
+  expect_equal(d_auc$PPSTRESU, "g/g")
+  expect_equal(d_auc$PPSTRES, d_auc$PPORRES / 60)
+  # cmax is in the same units for both, so its ratio is unchanged
+  d_cmax <- d_mr[d_mr$PPTESTCD == "ratio.cmax", ]
+  expect_equal(d_cmax$PPORRESU, "fraction")
+  expect_equal(d_cmax$PPSTRES, 40 / 100)
 })
