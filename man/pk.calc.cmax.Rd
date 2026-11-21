@@ -16,7 +16,7 @@ pk.calc.cmin(conc, check = TRUE)
 }
 \value{
 a number for the maximum concentration or NA if all concentrations
-are missing
+are missing, with the reason in its "exclude" attribute
 }
 \description{
 Determine maximum observed PK concentration

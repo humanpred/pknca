@@ -2,12 +2,20 @@
 #'
 #' @param parameter Parameter to dose normalize
 #' @param dose Dose in units compatible with the area under the curve
-#' @returns a number for dose normalized AUC
+#' @returns a number for dose normalized AUC.  A result of length one has the
+#'   reason in its "exclude" attribute when it is `NA` because the dose is
+#'   missing, or `NaN` because the parameter and the dose are both zero.
 #' @examples
 #' pk.calc.dn(90, 10)
 #' @export
 pk.calc.dn <- function(parameter, dose) {
-  parameter/dose
+  # A missing parameter carries its own reason from its calculation
+  ret <- na_with_reason(parameter/dose, mask = !is.na(parameter) & is.na(dose), reason = "Dose is missing")
+  # 0/0 stays NaN, as it was; its reason says why
+  if (length(ret) == 1 && is.nan(ret) && isTRUE(dose == 0)) {
+    attr(ret, "exclude") <- "Dose is zero"
+  }
+  ret
 }
 
 local({

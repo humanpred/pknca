@@ -353,7 +353,8 @@ test_that("Calculations when no dose info is given", {
         "AUC: lin up/log down",
         rep("", 2)
       ),
-      exclude=NA_character_
+      # cl.last cannot be calculated without a dose, and says so
+      exclude=rep(c(NA_character_, NA_character_, "Dose is missing"), 2)
     )
   )
 })
@@ -1246,7 +1247,7 @@ test_that("impute_conc_time applies each imputation function in order", {
     impute_conc_time(
       impute_funs = c("PKNCA_impute_method_start_conc0", "PKNCA_impute_method_end_conc_drop"),
       conc = c(1, 2, 3), time = c(1, 2, 4), start = 0, end = 4,
-      conc.group = c(1, 2, 3), time.group = c(1, 2, 4), options = list()
+      conc.group = c(1, 2, 3), time.group = c(1, 2, 4), options = list(), drop_missing_start = TRUE
     ),
     data.frame(conc = c(0, 1, 2), time = c(0, 1, 2)),
     ignore_attr = "row.names"
@@ -1256,7 +1257,7 @@ test_that("impute_conc_time applies each imputation function in order", {
     impute_conc_time(
       impute_funs = character(),
       conc = c(1, 2), time = c(1, 2), start = 0, end = 4,
-      conc.group = c(1, 2), time.group = c(1, 2), options = list()
+      conc.group = c(1, 2), time.group = c(1, 2), options = list(), drop_missing_start = TRUE
     ),
     data.frame(conc = c(1, 2), time = c(1, 2))
   )
@@ -1274,7 +1275,7 @@ test_that("impute_conc_time carries every per-observation value with its observa
     impute_conc_time(
       impute_funs = c("PKNCA_impute_method_start_conc0", "PKNCA_impute_method_end_conc_drop"),
       conc = c(1, 2, 3), time = c(1, 2, 4), start = 0, end = 4,
-      conc.group = c(1, 2, 3), time.group = c(1, 2, 4), options = list(),
+      conc.group = c(1, 2, 3), time.group = c(1, 2, 4), options = list(), drop_missing_start = TRUE,
       obs_values = obs$values, obs_fill = obs$fill
     ),
     data.frame(
@@ -1284,6 +1285,210 @@ test_that("impute_conc_time carries every per-observation value with its observa
     ),
     ignore_attr = "row.names"
   )
+})
+
+test_that("impute_conc_time gives a missing start row's values to no observation with the methods that treat it as absent", {
+  # The missing start row carries values unlike the others' (duration 9, both
+  # half-life flags, lloq 9) and no collection volume; without it, the lloq of
+  # the profile is constant
+  args <-
+    list(
+      conc = c(NA, 40, 80, 130), time = c(0, 1, 2, 4),
+      volume = c(NA, NA, NA, NA), duration.conc = c(9, 1, 1, 1),
+      include_half.life = c(TRUE, FALSE, TRUE, TRUE), exclude_half.life = c(TRUE, FALSE, FALSE, FALSE),
+      lloq = c(9, 1, 1, 1)
+    )
+  args_absent <- lapply(X = args, FUN = `[`, -1)
+  chains <-
+    list(
+      "PKNCA_impute_method_start_cmin",
+      "PKNCA_impute_method_start_predose",
+      "PKNCA_impute_method_start_predose_conc0",
+      c("PKNCA_impute_method_start_predose", "PKNCA_impute_method_start_conc0"),
+      c("PKNCA_impute_method_start_predose", "PKNCA_impute_method_start_cmin")
+    )
+  for (current in chains) {
+    for (predose in c(TRUE, FALSE)) {
+      expect_equal(
+        do.call(impute_test_obs_chain, c(list(impute_funs = current, predose = predose), args)),
+        do.call(impute_test_obs_chain, c(list(impute_funs = current, predose = predose), args_absent)),
+        ignore_attr = "row.names",
+        info = paste(c(current, predose), collapse = " ")
+      )
+    }
+  }
+  # The added start observation has the fill values, with the lloq of the rows
+  # left
+  expect_equal(
+    do.call(impute_test_obs_chain, c(list(impute_funs = "PKNCA_impute_method_start_cmin", predose = FALSE), args)),
+    data.frame(
+      conc = c(40, 40, 80, 130), time = c(0, 1, 2, 4), volume = c(0, NA, NA, NA), duration.conc = c(NA, 1, 1, 1),
+      include_half.life = c(NA, FALSE, TRUE, TRUE), exclude_half.life = c(NA, FALSE, FALSE, FALSE),
+      lloq = c(1, 1, 1, 1)
+    ),
+    ignore_attr = "row.names"
+  )
+  expect_equal(
+    do.call(impute_test_obs_chain, c(list(impute_funs = "PKNCA_impute_method_start_predose", predose = TRUE), args)),
+    data.frame(
+      conc = c(5, 40, 80, 130), time = c(0, 1, 2, 4), volume = c(0, NA, NA, NA), duration.conc = c(NA, 1, 1, 1),
+      include_half.life = c(NA, FALSE, TRUE, TRUE), exclude_half.life = c(NA, FALSE, FALSE, FALSE),
+      lloq = c(1, 1, 1, 1)
+    ),
+    ignore_attr = "row.names"
+  )
+  # start_conc0 likewise:  the missing row is dropped and its zero is added
+  # with the values of an added observation
+  expect_equal(
+    do.call(impute_test_obs_chain, c(list(impute_funs = "PKNCA_impute_method_start_conc0", predose = FALSE), args)),
+    data.frame(
+      conc = c(0, 40, 80, 130), time = c(0, 1, 2, 4), volume = c(0, NA, NA, NA), duration.conc = c(NA, 1, 1, 1),
+      include_half.life = c(NA, FALSE, TRUE, TRUE), exclude_half.life = c(NA, FALSE, FALSE, FALSE),
+      lloq = c(1, 1, 1, 1)
+    ),
+    ignore_attr = "row.names"
+  )
+  expect_equal(
+    do.call(impute_test_obs_chain, c(list(impute_funs = "PKNCA_impute_method_start_conc0", predose = FALSE), args)),
+    do.call(impute_test_obs_chain, c(list(impute_funs = "PKNCA_impute_method_start_conc0", predose = FALSE), args_absent)),
+    ignore_attr = "row.names"
+  )
+  # A measured start concentration is still replaced with 0 in place, so it
+  # keeps its values
+  args_measured <- args
+  args_measured$conc[1] <- 7
+  expect_equal(
+    do.call(impute_test_obs_chain, c(list(impute_funs = "PKNCA_impute_method_start_conc0", predose = FALSE), args_measured)),
+    data.frame(
+      conc = c(0, 40, 80, 130), time = c(0, 1, 2, 4), volume = rep(NA_real_, 4), duration.conc = c(9, 1, 1, 1),
+      include_half.life = c(TRUE, FALSE, TRUE, TRUE), exclude_half.life = c(TRUE, FALSE, FALSE, FALSE),
+      lloq = c(9, 1, 1, 1)
+    ),
+    ignore_attr = "row.names"
+  )
+})
+
+# The results from 0 to 8 of one urine profile with the imputation `impute`,
+# as a named list of the values and of the exclusions
+impute_test_urine <- function(d_conc, impute) {
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time | id, volume = "vol", duration = "dur"),
+      PKNCAdose(data.frame(id = 1, time = 0, dose = 100), dose ~ time | id),
+      intervals = data.frame(start = 0, end = 8, ae = TRUE, fe = TRUE, erint = TRUE, ermax = TRUE, cstart = TRUE, auclast = TRUE),
+      impute = impute
+    )
+  res <- as.data.frame(suppressWarnings(suppressMessages(pk.nca(o_data))))
+  list(value = stats::setNames(res$PPORRES, res$PPTESTCD), exclude = stats::setNames(res$exclude, res$PPTESTCD))
+}
+
+test_that("a collection with a missing concentration stays in the amount excreted, whatever start imputation is requested", {
+  # The collection at 0 has a volume (9) and no concentration:  its amount is
+  # unknown, so the amount excreted stays missing, with the reason
+  d_conc <- data.frame(id = 1, time = c(0, 2, 4, 8), conc = c(NA, 40, 20, 10), vol = c(9, 1, 1, 1), dur = c(0, 2, 2, 4))
+  reason <- "1 of 4 concentrations are missing; At least one concentration associated with a collection volume was missing"
+  for (current in c(NA_character_, "start_cmin", "start_predose", "start_predose_conc0", "start_predose,start_cmin")) {
+    res <- impute_test_urine(d_conc, current)
+    expect_equal(unname(res$value[c("ae", "fe", "erint")]), rep(NA_real_, 3), info = current)
+    expect_equal(unname(res$exclude[c("ae", "fe", "erint")]), rep(reason, 3), info = current)
+    # The excretion rate of the interval is unknown too
+    expect_equal(unname(res$value["ermax"]), NA_real_, info = current)
+    expect_equal(unname(res$exclude["ermax"]), reason, info = current)
+    # The start row stays, so the start methods see a row there and impute
+    # nothing
+    expect_equal(unname(res$value[c("cstart", "auclast")]), c(NA_real_, NA_real_), info = current)
+  }
+  # start_conc0 forces the start to zero by design, so the collection is
+  # counted as zero
+  res <- impute_test_urine(d_conc, "start_conc0")
+  expect_equal(unname(res$value[c("ae", "fe", "cstart")]), c(70, 0.7, 0))
+  expect_equal(unname(res$exclude["ae"]), NA_character_)
+  # Without the collection there is nothing missing
+  res <- impute_test_urine(d_conc[-1, ], "start_cmin")
+  expect_equal(unname(res$value["ae"]), 70)
+  expect_equal(unname(res$exclude["ae"]), NA_character_)
+})
+
+test_that("a profile with any collection volume keeps a missing start row, whatever its own volume", {
+  # The start row has neither a concentration nor a volume, but the profile is
+  # a set of collections (the other rows have volumes), so the row stays and
+  # every chain gives what the start methods give with a row at the start
+  d_conc <- data.frame(id = 1, time = c(0, 2, 4, 6, 8), conc = c(NA, 40, 30, 20, 10), vol = c(NA, 6, 7, 8, 9), dur = 2)
+  chains <-
+    c(
+      NA_character_, "start_cmin", "start_predose", "start_predose_conc0", "start_predose,start_cmin",
+      "start_conc0", "start_predose,start_conc0"
+    )
+  for (current in chains) {
+    res <- impute_test_urine(d_conc, current)
+    conc0 <- current %in% c("start_conc0", "start_predose,start_conc0")
+    expect_equal(unname(res$value[c("ae", "fe", "erint")]), rep(NA_real_, 3), info = current)
+    expect_equal(
+      unname(res$exclude[c("ae", "fe", "erint")]),
+      rep(if (conc0) "1 of 5 volumes are missing" else "1 of 5 concentrations and volumes are missing", 3),
+      info = current
+    )
+    expect_equal(unname(res$value["ermax"]), 120, info = current)
+    expect_equal(unname(res$value[c("cstart", "auclast")]), if (conc0) c(0, 187.701163) else c(NA_real_, NA_real_), tolerance = 1e-6, info = current)
+  }
+})
+
+# The plasma results (cstart, cmax, auclast from 0 to 12 with start_cmin) of
+# an object whose groups are matrices, with a volume column
+impute_test_plasma_results <- function(d_conc) {
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time | id / matrix, volume = "vol", duration = "dur"),
+      PKNCAdose(data.frame(id = 1, time = 0, dose = 100), dose ~ time | id),
+      intervals = data.frame(start = 0, end = 12, auclast = TRUE, cstart = TRUE, cmax = TRUE),
+      impute = "start_cmin"
+    )
+  res <- as.data.frame(suppressWarnings(suppressMessages(pk.nca(o_data))))
+  res <- res[res$matrix == "plasma", c("PPTESTCD", "PPORRES", "exclude")]
+  rownames(res) <- NULL
+  res
+}
+
+test_that("the plasma groups of an object that also holds urine give what they give alone", {
+  d_plasma <- data.frame(id = 1, matrix = "plasma", time = c(0, 0.25, 0.5, 1, 2, 4, 8, 12), conc = c(NA, 40, 80, 130, 200, 240, 150, 60), vol = NA_real_, dur = 0)
+  d_urine <- data.frame(id = 1, matrix = "urine", time = c(0, 2, 4, 8, 12), conc = c(NA, 40, 20, 10, 5), vol = c(9, 1, 1, 1, 1), dur = c(0, 2, 2, 4, 4))
+  plasma_mixed <- impute_test_plasma_results(rbind(d_plasma, d_urine))
+  plasma_alone <- impute_test_plasma_results(d_plasma)
+  expect_identical(plasma_mixed, plasma_alone)
+  # The plasma missing start row is no row:  start_cmin imputes Cmin (40)
+  expect_equal(plasma_alone$PPORRES[plasma_alone$PPTESTCD == "cstart"], 40)
+})
+
+test_that("one row with a volume makes a profile one of collections", {
+  # A stray volume on one row is enough:  the missing start row stays, so
+  # start_cmin imputes nothing and the start concentration is missing
+  d_conc <- data.frame(id = 1, time = c(0, 2, 4, 8), conc = c(NA, 40, 20, 10), vol = c(NA, NA, 1, NA), dur = c(0, 2, 2, 4))
+  res <- impute_test_urine(d_conc, "start_cmin")
+  expect_equal(unname(res$value[c("cstart", "auclast")]), c(NA_real_, NA_real_))
+})
+
+test_that("a urine profile with every volume missing follows the rule for a profile without volumes", {
+  # Subject 1 has no volume at all, so its profile is not taken for
+  # collections:  the missing start row is dropped and start_cmin imputes Cmin
+  # (10) there.  Its amount excreted is missing either way, because no volume
+  # is known.  Subject 2 is a set of collections and keeps its missing start.
+  d_conc <-
+    data.frame(
+      id = rep(1:2, each = 4), time = c(0, 2, 4, 8), conc = c(NA, 40, 20, 10),
+      vol = c(NA, NA, NA, NA, 9, 1, 1, 1), dur = c(0, 2, 2, 4)
+    )
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time | id, volume = "vol", duration = "dur"),
+      PKNCAdose(data.frame(id = 1:2, time = 0, dose = 100), dose ~ time | id),
+      intervals = data.frame(start = 0, end = 8, ae = TRUE, cstart = TRUE, auclast = TRUE),
+      impute = "start_cmin"
+    )
+  res <- as.data.frame(suppressWarnings(suppressMessages(pk.nca(o_data))))
+  value_1 <- stats::setNames(res$PPORRES[res$id == 1], res$PPTESTCD[res$id == 1])
+  value_2 <- stats::setNames(res$PPORRES[res$id == 2], res$PPTESTCD[res$id == 2])
+  expect_equal(unname(value_1[c("ae", "cstart", "auclast")]), c(NA, 10, 165.4156), tolerance = 1e-6)
+  expect_equal(unname(value_2[c("ae", "cstart", "auclast")]), c(NA_real_, NA_real_, NA_real_))
 })
 
 test_that("impute_obs_values keeps only the per-observation values, with the value an added observation gets", {
