@@ -1095,29 +1095,31 @@ test_that("aucivint.inf.* give each reason for exclusion once, and none for the 
   expect_true(is.na(res_inf$exclude[["cl.ivint.inf.obs"]]))
 })
 
-test_that("aucivint.inf.* over a tail beyond the last sample are NA without a half-life", {
-  # A bolus with nothing measured at the dose, every point excluded from the
-  # half-life, and an interval that ends 24 after the last sample
+test_that("aucivint.inf.* report how the AUCint they start from handled the region after Tlast", {
+  # A bolus with nothing measured at the dose, the half-life usable or every
+  # point excluded from it, and an interval ending at the last sample or 24
+  # after it
   t <- c(0.5, 1, 2, 4, 8, 12, 24)
-  params <- c("aucivint.last", "aucivint.inf.obs", "aucivint.inf.pred", "aumcivint.inf.obs", "aumcivint.inf.pred")
-  reason_halflife <- "Too few points for half-life calculation (min.hl.points=3 with only 0 points)"
-  # One dose, interval 0 to 48; and doses at 0 and 24, interval 24 to 72
-  d_conc_single <- data.frame(id = 1, time = t, conc = 10 * exp(-0.15 * t), excl = TRUE)
+  params_inf <- c("aucivint.inf.obs", "aucivint.inf.pred", "aumcivint.inf.obs", "aumcivint.inf.pred")
+  params <- c("aucivint.last", "aumcivint.last", "aucint.inf.obs", params_inf)
+  # One dose, interval from 0; and doses at 0 and 24, interval from 24, with
+  # the trough at 24 not measured, so it is estimated from the first profile
+  d_conc_single <- data.frame(id = 1, time = t, conc = 10 * exp(-0.15 * t))
   t_multiple <- c(t, 24 + t)
   d_conc_multiple <-
     data.frame(
       id = 1, time = t_multiple,
-      conc = 10 * exp(-0.15 * t_multiple) + ifelse(t_multiple > 24, 10 * exp(-0.15 * (t_multiple - 24)), 0),
-      excl = TRUE
+      conc = 10 * exp(-0.15 * t_multiple) + ifelse(t_multiple > 24, 10 * exp(-0.15 * (t_multiple - 24)), 0)
     )
+  d_conc_multiple <- d_conc_multiple[d_conc_multiple$time != 24, ]
   cases <-
     list(
       single = list(conc = d_conc_single, dose_time = 0, start = 0),
       multiple = list(conc = d_conc_multiple, dose_time = c(0, 24), start = 24)
     )
-  for (case in names(cases)) {
-    current <- cases[[case]]
-    intervals <- data.frame(start = current$start, end = current$start + 48)
+  nca_case <- function(current, end, excl) {
+    current$conc$excl <- excl
+    intervals <- data.frame(start = current$start, end = current$start + end)
     for (param in params) {
       intervals[[param]] <- TRUE
     }
@@ -1127,18 +1129,68 @@ test_that("aucivint.inf.* over a tail beyond the last sample are NA without a ha
         PKNCAdose(data.frame(id = 1, time = current$dose_time, dose = 100), dose ~ time | id, route = "intravascular"),
         intervals = intervals
       ))))
-    value <- stats::setNames(res$PPORRES, res$PPTESTCD)
-    exclude <- stats::setNames(res$exclude, res$PPTESTCD)
-    # The last form needs no half-life
-    expect_false(is.na(value[["aucivint.last"]]), info = case)
-    for (param in setdiff(params, "aucivint.last")) {
-      expect_equal(value[[param]], NA_real_, info = paste(case, param))
-      expect_equal(
-        exclude[[param]],
-        paste(reason_halflife, "the half-life is NA", "AUCint is not calculated", sep = "; "),
-        info = paste(case, param)
+    list(
+      value = stats::setNames(res$PPORRES, res$PPTESTCD),
+      method = stats::setNames(res$PPANMETH, res$PPTESTCD),
+      exclude = stats::setNames(res$exclude, res$PPTESTCD)
+    )
+  }
+  for (case in names(cases)) {
+    # The half-life enters:  the tail is extrapolated with it
+    with_hl <- nca_case(cases[[case]], end = 48, excl = FALSE)
+    # The half-life is needed and not estimable:  the tail is AUCall, which is
+    # AUClast with nothing measured after Tlast
+    fallback <- nca_case(cases[[case]], end = 48, excl = TRUE)
+    # The half-life is not needed:  the interval ends at the last sample
+    not_needed <- nca_case(cases[[case]], end = 24, excl = TRUE)
+    for (param in params_inf) {
+      info <- paste(case, param)
+      last_param <- if (startsWith(param, "aumc")) "aumcivint.last" else "aucivint.last"
+      expect_gt(with_hl$value[[param]], with_hl$value[[last_param]])
+      expect_match(with_hl$method[[param]], "Extrapolation: half-life", fixed = TRUE, info = info)
+      expect_equal(with_hl$exclude[[param]], NA_character_, info = info)
+      expect_equal(fallback$value[[param]], fallback$value[[last_param]], info = info)
+      expect_match(
+        fallback$method[[param]], "Extrapolation: AUCall (half-life not estimable)",
+        fixed = TRUE, info = info
       )
+      expect_equal(fallback$exclude[[param]], NA_character_, info = info)
+      expect_equal(not_needed$value[[param]], not_needed$value[[last_param]], info = info)
+      expect_match(not_needed$method[[param]], "Extrapolation: none", fixed = TRUE, info = info)
+      expect_equal(not_needed$exclude[[param]], NA_character_, info = info)
     }
+    # The method is the one of the AUCint the IV form starts from
+    expect_equal(fallback$method[["aucivint.inf.obs"]], fallback$method[["aucint.inf.obs"]], info = case)
+  }
+  # The values, from the probe of each case
+  expect_equal(
+    nca_case(cases$single, end = 48, excl = TRUE)$value[["aucivint.inf.obs"]],
+    64.84509, tolerance = 1e-6
+  )
+  expect_equal(
+    nca_case(cases$multiple, end = 48, excl = TRUE)$value[["aucivint.inf.obs"]],
+    66.61689, tolerance = 1e-6
+  )
+})
+
+test_that("the half-life exclusions of exclude() treat aucivint.inf.* as aucint.inf.*", {
+  # A bolus with a usable half-life, over an interval ending at the last sample
+  # (no extrapolation) and one ending after it (the half-life extrapolates)
+  t <- c(0.5, 1, 2, 4, 8, 12, 24)
+  intervals <- data.frame(start = 0, end = c(24, 48), aucint.inf.obs = TRUE, aucivint.inf.obs = TRUE)
+  res <-
+    pk.nca(PKNCAdata(
+      PKNCAconc(data.frame(id = 1, time = t, conc = 10 * exp(-0.15 * t)), conc ~ time | id),
+      PKNCAdose(data.frame(id = 1, time = 0, dose = 100), dose ~ time | id, route = "intravascular"),
+      intervals = intervals
+    ))
+  # A span ratio no half-life meets
+  d_excl <- as.data.frame(exclude(res, FUN = exclude_nca_span.ratio(1000)))
+  for (param in c("aucint.inf.obs", "aucivint.inf.obs")) {
+    excl <- d_excl$exclude[d_excl$PPTESTCD %in% param]
+    names(excl) <- d_excl$end[d_excl$PPTESTCD %in% param]
+    expect_true(is.na(excl[["24"]]), info = param)
+    expect_equal(excl[["48"]], "span.ratio < 1000", info = param)
   }
 })
 

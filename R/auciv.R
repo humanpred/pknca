@@ -189,6 +189,14 @@ pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extra
   }
   route <- rep_len(route, length(time.dose))
   duration.dose <- rep_len(duration.dose, length(time.dose))
+  # The AUXCint that `auxc` is:  its method says how the region after Tlast was
+  # handled, which an AUCinf-type form reports as its own
+  method_args <-
+    list(
+      conc = conc, time = time, start = start, end = end, time.dose = time.dose,
+      route = route, duration.dose = duration.dose, auc.type = "AUCinf",
+      lambda.z = lambda.z, clast = clast, options = options
+    )
   dose_at_start <- !is.na(time.dose) & time.dose == start & route %in% "intravascular"
   if (any(dose_at_start & is.na(duration.dose))) {
     return(auxciv_int_result(structure(NA_real_, exclude = "dose duration is missing"), auc.type))
@@ -196,7 +204,7 @@ pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extra
   if (any(dose_at_start & !(duration.dose %in% 0))) {
     # An infusion starts from the concentration before it, which the AUCint
     # already uses, so there is nothing to back-extrapolate
-    return(auxciv_int_result(auxc, auc.type))
+    return(auxciv_int_result(auxc, auc.type, fun_auxcint = fun_auxcint, method_args = method_args))
   }
   if (!any(dose_at_start)) {
     return(
@@ -223,7 +231,7 @@ pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extra
   earlier_dose <- any(!is.na(time.dose) & time.dose < start)
   conc_at_start <- data$conc[data$time == start]
   if (!earlier_dose && length(conc_at_start) == 1 && !(conc_at_start %in% 0)) {
-    return(auxciv_int_result(auxc, auc.type))
+    return(auxciv_int_result(auxc, auc.type, fun_auxcint = fun_auxcint, method_args = method_args))
   }
   # The profile after the dose at the start of the interval:  within the
   # interval and before the next dose
@@ -277,17 +285,29 @@ pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extra
   }
   auxciv_int_result(
     auxc - as.numeric(segment_trough) + as.numeric(segment_c0),
-    auc.type = auc.type, segment_uses_halflife = segment_uses_halflife
+    auc.type = auc.type, segment_uses_halflife = segment_uses_halflife,
+    fun_auxcint = fun_auxcint, method_args = method_args
   )
 }
 
 # The result of pk.calc.auxciv.int(), `value`.  An AUCinf-type form receives
 # lambda.z and clast only to calculate the segment of `auxc` that is replaced
 # (the half-life that `auxc` itself used reaches the result through `auxc`), so
-# their exclusion reasons apply only when that segment uses the half-life.
-auxciv_int_result <- function(value, auc.type, segment_uses_halflife = FALSE) {
+# their exclusion reasons apply only when that segment uses the half-life.  A
+# calculated AUCinf-type form reports the method of the AUXCint it starts from
+# (`fun_auxcint` called with `method_args`), so it says whether the region after
+# Tlast used the half-life or AUCall, as that AUXCint does.
+auxciv_int_result <- function(value, auc.type, segment_uses_halflife = FALSE,
+                              fun_auxcint = NULL, method_args = NULL) {
   if (identical(auc.type, "AUCinf") && !segment_uses_halflife) {
     attr(value, "exclude_unused_args") <- c("lambda.z", "clast")
+  }
+  if (identical(auc.type, "AUCinf") && !is.null(method_args)) {
+    auxc_calculated <-
+      suppressWarnings(suppressMessages(
+        tryCatch(do.call(fun_auxcint, method_args), error = function(e) NULL)
+      ))
+    attr(value, "method") <- attr(auxc_calculated, "method")
   }
   value
 }

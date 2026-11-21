@@ -195,6 +195,21 @@ the dosing including dose amount and route.
   relying on `%in%`'s implicit list coercion downstream instead of failing
   clearly. Passing a list now raises an error instead.
 
+* An interval AUC or AUMC to infinity (`aucint.inf.obs`, `aucint.inf.pred`,
+  and what is calculated from them, such as `cav.int.inf.*`) over a finite
+  interval that runs past the last measurable concentration, when the
+  half-life is not estimable, uses `AUCall` for the region after the last
+  measurable concentration, and the method (`PPANMETH`) column says so
+  ("Extrapolation: AUCall (half-life not estimable)").  PKNCA 0.12.1 gave `NA`
+  there, excluded with the half-life's reason.  For example, for
+  `10*(exp(-0.15*t) - exp(-2*t))` sampled at 0, 0.5, 1, 2, 4, 8, 12, and 24
+  hours with every point excluded from the half-life, `aucint.inf.obs` and
+  `aucint.inf.pred` over 0 to 48 hours are 59.24, not excluded, where PKNCA
+  0.12.1 gave `NA` with "Too few points for half-life calculation
+  (min.hl.points=3 with only 0 points)".  The new `aumcint.inf.*`,
+  `aucivint.inf.*`, and `aumcivint.inf.*` do the same, and the IV forms report
+  the method of the interval AUC they start from (@billdenney).
+
 ## Changes to automatically generated calculation intervals
 
 When `PKNCAdata()` is given no `intervals`, the intervals it generates now take
@@ -1252,7 +1267,11 @@ the generated intervals:
   reason when the half-life changes the segment they replace (the trough
   after an earlier dose, estimated with it).  Otherwise they keep the
   exclusion of the `aucint.inf.*` or `aumcint.inf.*` they start from, which
-  carries the half-life's reason when that used it.  For this, a function
+  carries the half-life's reason when that used it.  They report that
+  interval AUC's method (`PPANMETH`), so the half-life rules of `exclude()`
+  (such as `exclude_nca_span.ratio()`) exclude them only where the half-life
+  extrapolated, as for `aucint.inf.*`; with no method reported they were
+  excluded wherever the half-life was.  For this, a function
   that calculates a parameter can name the arguments that did not enter its
   result in an `exclude_unused_args` attribute (see
   `vignette("v80-writing-parameter-functions")`). (@billdenney)
@@ -1414,7 +1433,9 @@ the generated intervals:
   interval being calculated.
 
 * `aucint.inf.pred` and `aumcint.inf.pred` no longer fail with `tlast (...) must
-  occur exactly once in time` when the interval ends at infinity.  The
+  occur exactly once in time` when the interval ends at infinity.  (In PKNCA
+  0.12.1, with IV data, the whole interval failed instead, with "Please report
+  a bug ... the condition has length > 1".)  The
   concentration at tlast is calculated twice so that integration up to tlast
   uses `clast.obs` and integration after tlast starts from `clast.pred`.  When
   nothing in the interval follows tlast, extrapolation to infinity is analytic
