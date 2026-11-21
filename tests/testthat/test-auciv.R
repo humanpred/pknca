@@ -1173,6 +1173,39 @@ test_that("aucivint.inf.* report how the AUCint they start from handled the regi
   )
 })
 
+test_that("aucivint.inf.* say the half-life only when it enters their value", {
+  # Doses at 0 and 24 with the trough at 24 not measured:  aucint.inf.obs
+  # estimates its start with the half-life, and the IV form replaces that start
+  # with C0, so over an interval ending at the last sample the half-life does
+  # not enter the IV form's value
+  t <- c(0.5, 1, 2, 4, 8, 12, 23.9, 24.5, 25, 26, 28, 32, 36, 48)
+  conc <- 10 * exp(-0.15 * t) + ifelse(t > 24, 10 * exp(-0.15 * (t - 24)), 0)
+  params <- c("aucint.inf.obs", "aucivint.last", "aucivint.inf.obs", "aumcivint.last", "aumcivint.inf.obs")
+  intervals <- data.frame(start = 24, end = 48)
+  for (param in params) {
+    intervals[[param]] <- TRUE
+  }
+  res <-
+    pk.nca(PKNCAdata(
+      PKNCAconc(data.frame(id = 1, time = t, conc = conc), conc ~ time | id),
+      PKNCAdose(data.frame(id = 1, time = c(0, 24), dose = 100), dose ~ time | id, route = "intravascular"),
+      intervals = intervals
+    ))
+  d_res <- as.data.frame(exclude(res, FUN = exclude_nca_span.ratio(1000)))
+  value <- stats::setNames(d_res$PPORRES, d_res$PPTESTCD)
+  method <- stats::setNames(d_res$PPANMETH, d_res$PPTESTCD)
+  excl <- stats::setNames(d_res$exclude, d_res$PPTESTCD)
+  expect_match(method[["aucint.inf.obs"]], "Extrapolation: half-life", fixed = TRUE)
+  expect_equal(excl[["aucint.inf.obs"]], "span.ratio < 1000")
+  expect_equal(value[["aucivint.inf.obs"]], value[["aucivint.last"]])
+  expect_equal(value[["aucivint.inf.obs"]], 66.61689, tolerance = 1e-6)
+  expect_equal(value[["aumcivint.inf.obs"]], value[["aumcivint.last"]])
+  for (param in c("aucivint.inf.obs", "aumcivint.inf.obs")) {
+    expect_match(method[[param]], "Extrapolation: none", fixed = TRUE, info = param)
+    expect_equal(excl[[param]], NA_character_, info = param)
+  }
+})
+
 test_that("the half-life exclusions of exclude() treat aucivint.inf.* as aucint.inf.*", {
   # A bolus with a usable half-life, over an interval ending at the last sample
   # (no extrapolation) and one ending after it (the half-life extrapolates)
