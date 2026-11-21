@@ -1601,7 +1601,13 @@ test_that("a numeric conc.na is the value of a missing start concentration, so t
         expect_equal(unname(res$value[c("count.conc", "cstart", "aucabove.predose.all")]), c(8, 0, 1836.33993274182), info = info)
       } else {
         expect_equal(unname(res$value[c("count.conc", "cstart", "aucabove.predose.all")]), c(7, NA, NA), info = info)
-        expect_equal(unname(res$exclude["aucabove.predose.all"]), "Missing concentration to be above", info = info)
+        # The predose concentration it is above is cstart, which is missing;
+        # its reason comes first, as for any result calculated from it
+        expect_equal(
+          unname(res$exclude["aucabove.predose.all"]),
+          "No non-missing concentration at the start of the interval; Missing concentration to be above",
+          info = info
+        )
       }
     }
   }
