@@ -1341,10 +1341,12 @@ the generated intervals:
   after an earlier dose, estimated with it).  Otherwise they keep the
   exclusion of the `aucint.inf.*` or `aumcint.inf.*` they start from, which
   carries the half-life's reason when that used it.  They report the method
-  (`PPANMETH`) of that interval AUC, so the half-life rules of `exclude()`
-  (such as `exclude_nca_span.ratio()`) exclude them only where the half-life
-  extrapolated, as for `aucint.inf.*`; with no method reported they were
-  excluded wherever the half-life was.  For this, a function
+  (`PPANMETH`) of that interval AUC, with the extrapolation "none" where the
+  half-life does not enter their own value (a start that the interval AUC
+  estimated with the half-life is replaced by C0), so the half-life rules of
+  `exclude()` (such as `exclude_nca_span.ratio()`) exclude them only where the
+  half-life enters; with no method reported they were excluded wherever the
+  half-life was.  For this, a function
   that calculates a parameter can name the arguments that did not enter its
   result in an `exclude_unused_args` attribute (see
   `vignette("v80-writing-parameter-functions")`). (@billdenney)

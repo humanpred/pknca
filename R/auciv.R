@@ -197,6 +197,10 @@ pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extra
       route = route, duration.dose = duration.dose, auc.type = "AUCinf",
       lambda.z = lambda.z, clast = clast, options = options
     )
+  # The same AUXCint without the half-life, to tell whether the half-life
+  # enters the result
+  method_args_without <- method_args
+  method_args_without$lambda.z <- NA_real_
   dose_at_start <- !is.na(time.dose) & time.dose == start & route %in% "intravascular"
   if (any(dose_at_start & is.na(duration.dose))) {
     return(auxciv_int_result(structure(NA_real_, exclude = "dose duration is missing"), auc.type))
@@ -204,7 +208,14 @@ pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extra
   if (any(dose_at_start & !(duration.dose %in% 0))) {
     # An infusion starts from the concentration before it, which the AUCint
     # already uses, so there is nothing to back-extrapolate
-    return(auxciv_int_result(auxc, auc.type, fun_auxcint = fun_auxcint, method_args = method_args))
+    return(
+      auxciv_int_result(
+        auxc, auc.type,
+        halflife_enters =
+          identical(auc.type, "AUCinf") && !function_value_same(fun_auxcint, method_args_without, auxc),
+        fun_auxcint = fun_auxcint, method_args = method_args
+      )
+    )
   }
   if (!any(dose_at_start)) {
     return(
@@ -231,7 +242,14 @@ pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extra
   earlier_dose <- any(!is.na(time.dose) & time.dose < start)
   conc_at_start <- data$conc[data$time == start]
   if (!earlier_dose && length(conc_at_start) == 1 && !(conc_at_start %in% 0)) {
-    return(auxciv_int_result(auxc, auc.type, fun_auxcint = fun_auxcint, method_args = method_args))
+    return(
+      auxciv_int_result(
+        auxc, auc.type,
+        halflife_enters =
+          identical(auc.type, "AUCinf") && !function_value_same(fun_auxcint, method_args_without, auxc),
+        fun_auxcint = fun_auxcint, method_args = method_args
+      )
+    )
   }
   # The profile after the dose at the start of the interval:  within the
   # interval and before the next dose
@@ -277,29 +295,39 @@ pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extra
       conc = c(c0, data_after$conc[1]), time = c(start, data_after$time[1]),
       start = start, end = data_after$time[1], options = options
     )
-  segment_uses_halflife <- FALSE
+  value <- auxc - as.numeric(segment_trough) + as.numeric(segment_c0)
+  halflife_enters <- FALSE
   if (identical(auc.type, "AUCinf")) {
+    # The half-life enters the result when the result changes without it.  A
+    # start that `auxc` estimated with the half-life is in the replaced segment
+    # as well, so it cancels; the region after Tlast does not.
     trough_args_without <- trough_args
     trough_args_without$lambda.z <- NA_real_
-    segment_uses_halflife <- !function_value_same(trough_fun, trough_args_without, segment_trough)
+    value_without <-
+      call_without_warnings(fun_auxcint, method_args_without) -
+      call_without_warnings(trough_fun, trough_args_without) +
+      as.numeric(segment_c0)
+    halflife_enters <- !isTRUE(all.equal(value_without, as.numeric(value)))
   }
   auxciv_int_result(
-    auxc - as.numeric(segment_trough) + as.numeric(segment_c0),
-    auc.type = auc.type, segment_uses_halflife = segment_uses_halflife,
+    value, auc.type = auc.type, halflife_enters = halflife_enters,
     fun_auxcint = fun_auxcint, method_args = method_args
   )
 }
 
 # The result of pk.calc.auxciv.int(), `value`.  An AUCinf-type form receives
-# lambda.z and clast only to calculate the segment of `auxc` that is replaced
-# (the half-life that `auxc` itself used reaches the result through `auxc`), so
-# their exclusion reasons apply only when that segment uses the half-life.  A
-# calculated AUCinf-type form reports the method of the AUXCint it starts from
-# (`fun_auxcint` called with `method_args`), so it says whether the region after
-# Tlast used the half-life or AUCall, as that AUXCint does.
-auxciv_int_result <- function(value, auc.type, segment_uses_halflife = FALSE,
+# lambda.z and clast only to calculate the AUXCint it starts from and the
+# segment of it that is replaced, so whether the half-life enters the result
+# (`halflife_enters`, the result changing without it) decides both its exclusion
+# and its method:  the exclusion reasons of lambda.z and clast apply only when
+# it enters (the half-life that `auxc` used reaches the result through `auxc`
+# too), and a calculated AUCinf-type form reports the method of the AUXCint it
+# starts from (`fun_auxcint` called with `method_args`), with the
+# extrapolation "none" in place of "half-life" when the half-life does not
+# enter.
+auxciv_int_result <- function(value, auc.type, halflife_enters = FALSE,
                               fun_auxcint = NULL, method_args = NULL) {
-  if (identical(auc.type, "AUCinf") && !segment_uses_halflife) {
+  if (identical(auc.type, "AUCinf") && !halflife_enters) {
     attr(value, "exclude_unused_args") <- c("lambda.z", "clast")
   }
   if (identical(auc.type, "AUCinf") && !is.null(method_args)) {
@@ -307,17 +335,28 @@ auxciv_int_result <- function(value, auc.type, segment_uses_halflife = FALSE,
       suppressWarnings(suppressMessages(
         tryCatch(do.call(fun_auxcint, method_args), error = function(e) NULL)
       ))
-    attr(value, "method") <- attr(auxc_calculated, "method")
+    method <- attr(auxc_calculated, "method")
+    if (!halflife_enters) {
+      method[method %in% paste0(pknca_extrap_method_prefix, pknca_extrap_method_halflife)] <-
+        paste0(pknca_extrap_method_prefix, "none")
+    }
+    attr(value, "method") <- method
   }
   value
+}
+
+# `fun` called with `args` as a number, with the warnings and messages it gives
+# muffled (calculating the result gave them already), and NA when it fails
+call_without_warnings <- function(fun, args) {
+  suppressWarnings(suppressMessages(
+    tryCatch(as.numeric(do.call(fun, args)), error = function(e) NA_real_)
+  ))
 }
 
 # Does `fun` called with `args` give `value` (with the warnings it gives
 # muffled, as calculating `value` gave them already)?
 function_value_same <- function(fun, args, value) {
-  recomputed <-
-    suppressWarnings(suppressMessages(tryCatch(do.call(fun, args), error = function(e) NA_real_)))
-  isTRUE(all.equal(as.numeric(recomputed), as.numeric(value)))
+  isTRUE(all.equal(call_without_warnings(fun, args), as.numeric(value)))
 }
 
 # Muffle a warning condition (as a calling handler)
