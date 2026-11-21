@@ -1312,3 +1312,39 @@ test_that("pk.calc.auciv.int() called as before gives the value it gave, and AUC
     class = "pknca_error_auxciv_int_fun_missing"
   )
 })
+
+test_that("the IV interval AUC to infinity reads lambda.z only where the interval AUC uses it", {
+  conc <- c(0, 2, 4, 3, 2, 1, 0.5)
+  time <- c(0, 0.5, 1, 2, 4, 8, 12)
+  # The segment the IV form replaces is within the data, where the half-life is
+  # not read, so a lambda.z that is not a number gives the same value
+  expected <-
+    pk.calc.auciv.int(
+      conc, time, start = 0, end = 24, time.dose = 0, route = "intravascular",
+      auc = 10, auc.type = "AUCinf", lambda.z = 0.2, clast = 1
+    )
+  expect_equal(as.numeric(expected), 10.5)
+  for (lambda_z in list(numeric(0), logical(0), as.Date("2020-01-01"))) {
+    expect_equal(
+      as.numeric(
+        pk.calc.auciv.int(
+          conc, time, start = 0, end = 24, time.dose = 0, route = "intravascular",
+          auc = 10, auc.type = "AUCinf", lambda.z = lambda_z, clast = 1
+        )
+      ),
+      10.5
+    )
+  }
+  # The interval AUC itself refuses it where it extrapolates with it
+  expect_error(
+    pk.calc.aucint(conc, time, start = 0, end = 24, auc.type = "AUCinf", lambda.z = numeric(0)),
+    class = "pknca_error_lambdaz_invalid",
+    regexp = "Assertion on 'lambda.z' failed: Must be numeric (or NA).",
+    fixed = TRUE
+  )
+  # and not within the data
+  expect_equal(
+    as.numeric(pk.calc.aucint(conc, time, start = 0, end = 8, auc.type = "AUCinf", lambda.z = numeric(0))),
+    as.numeric(pk.calc.aucint(conc, time, start = 0, end = 8, auc.type = "AUClast"))
+  )
+})
