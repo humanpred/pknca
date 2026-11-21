@@ -29,6 +29,11 @@
 #' @export
 pk.nca <- function(data, verbose=FALSE) {
   assert_PKNCAdata(data)
+  # PKNCAdose() refused a negative dose amount; a mutate() or join on the
+  # dose data afterwards may have made one
+  if (inherits(data$dose, "PKNCAdose")) {
+    assert_dose_not_negative(data$dose)
+  }
   # Date-time times and intervals and difftime durations become numbers here,
   # so that intervals can change after PKNCAdata().  The results keep the
   # converted data, which is the data the calculations used.

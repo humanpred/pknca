@@ -8,6 +8,14 @@ the dosing including dose amount and route.
 
 ## Breaking changes
 
+* A negative numeric dose amount is an error (`pknca_error_dose_negative`,
+  naming the first rows and their count), in `PKNCAdose()` and again in
+  `pk.nca()` for a dose made negative later, for example by `mutate()`
+  (@billdenney).  Code that passed a negative dose before now stops.  A zero
+  or missing dose amount is allowed as before, a dose row excluded with
+  `exclude` is not checked, and a dose column that is not numeric is not
+  checked here.
+
 * The excretion rates `ertlst`, `ermax`, `ertmax`, and `erlst` are now `NA`
   when a collection with a volume has no concentration, as `ae`, `fe`, and
   `erint` already were (@billdenney, #729).  They were calculated
@@ -1242,6 +1250,16 @@ the generated intervals:
   inputs such as `conc`, `time`, and `dose`.
 
 ## Bug fixes
+
+* `PKNCAdose()` with a `rate` column now works with more than one dose row
+  (@billdenney, #728).  It stopped with "'length = 2' in coercion
+  to 'logical(1)'", because the dose amounts were passed where the name of the
+  dose column was expected; one row worked by accident.  Each dose's duration
+  is its amount divided by its rate.  A `rate` with no dose amount (a formula
+  without a left side) is now the error `pknca_error_rate_without_dose`; it
+  was `pknca_error_dose_invalid_duration` with one row and an error without a
+  class with more.  A direct `setDuration(object, rate = 5, dose = NA)`
+  returned a duration of 0 and is now that error too.
 
 * `pk.calc.tlag()` skips missing concentrations, as `pk.calc.cmax()` and the
   other simple parameters do, and gains a `check` argument like theirs

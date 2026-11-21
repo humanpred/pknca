@@ -16,9 +16,12 @@
 #'   column from the `data`, and if given as a number, it is the value for all
 #'   doses.  Only one may be given, and if neither is given, then the dose is
 #'   assumed to be a bolus (`duration=0`).  If `rate` is given, then the dose
-#'   amount must be given (the left hand side of the `formula`).  A numeric
-#'   duration is in the time unit of the analysis; a difftime duration is
-#'   converted to that unit in [PKNCAdata()].
+#'   amount must be given (the left hand side of the `formula`;
+#'   `pknca_error_rate_without_dose` otherwise), and the duration of each dose
+#'   is its amount divided by its rate.  A missing dose amount or rate, or a
+#'   rate of zero, gives no valid duration (`pknca_error_dose_invalid_duration`).
+#'   A numeric duration is in the time unit of the analysis; a difftime
+#'   duration is converted to that unit in [PKNCAdata()].
 #' @param time.nominal (optional) The name of the nominal time column (if the
 #'   main time variable is actual time.  The `time.nominal` is not used during
 #'   calculations; it is available to assist with data summary and checking.
@@ -43,6 +46,12 @@
 #'   same dose is given in every interval.  When given as a two-sided
 #'   formula, both the dose amount and time are used directly from the
 #'   data.
+#'
+#'   A negative numeric dose amount is an error (`pknca_error_dose_negative`,
+#'   naming the rows), here and again in [pk.nca()] for a dose made negative
+#'   later (for example by `mutate()`).  A zero or missing amount is allowed,
+#'   and a row excluded with `exclude` is not checked.  A dose column that is
+#'   not numeric is not checked here.
 #' @family PKNCA objects
 #' @export
 PKNCAdose <- function(data, ...)
@@ -152,6 +161,7 @@ PKNCAdose.data.frame <- function(data, formula, route, rate, duration,
       class = "pknca_error_partial_missing_indepvar"
     )
   }
+  assert_dose_not_negative(ret)
   if (length(parsed_form$time) == 1 && inherits(data[[parsed_form$time]], "Date")) {
     pknca_warn_date_time(time_col = parsed_form$time, data_type = "dose")
   }
@@ -160,8 +170,8 @@ PKNCAdose.data.frame <- function(data, formula, route, rate, duration,
   } else {
     ret <- setRoute(ret, route)
   }
-  ret <- setDuration.PKNCAdose(ret, duration=duration,
-                               rate=rate, dose=getDepVar.PKNCAdose(ret))
+  # The dose is the column name, which setDuration.PKNCAdose() uses by default
+  ret <- setDuration.PKNCAdose(ret, duration=duration, rate=rate)
   if (!missing(time.nominal)) {
     ret <-
       setAttributeColumn(object=ret,
@@ -224,7 +234,9 @@ setRoute.PKNCAdose <- function(object, route, ...) {
 #' @param duration The value to set for the duration or the name of the column
 #'   in the data to use for the duration.
 #' @param rate (for PKNCAdose objects only) The rate of infusion
-#' @param dose (for PKNCAdose objects only) The dose amount
+#' @param dose (for PKNCAdose objects only) The name of the dose column (the
+#'   default, from the formula), or the dose amounts (a value, or one per
+#'   row); used with `rate`
 #' @param ... Arguments passed to another setDuration function
 #' @returns The object with duration set
 #' @export
@@ -245,7 +257,14 @@ setDuration.PKNCAdose <- function(object, duration, rate, dose, ...) {
     # requiring near-equal checks for floating point error.
   } else if (!missing(duration)) {
     object <- setAttributeColumn(object=object, attr_name="duration", col_or_value=duration)
-  } else if (!missing(rate) && !missing(dose) && !is.na(dose)) {
+  } else if (!missing(rate)) {
+    # `dose` is a column name (the default) or the dose amounts
+    if (length(dose) == 0 || all(is.na(dose))) {
+      rlang::abort(
+        "`rate` needs the dose amount (the left side of the formula) to calculate the duration; without a dose amount, give `duration` instead",
+        class = "pknca_error_rate_without_dose"
+      )
+    }
     tmprate <- getColumnValueOrNot(object$data, rate, "rate")
     tmpdose <- getColumnValueOrNot(object$data, dose, "dose")
     duration <- tmpdose$data[[tmpdose$name]]/tmprate$data[[tmprate$name]]
@@ -291,6 +310,42 @@ getDepVar.PKNCAdose <- function(x, ...) {
   } else {
     as.data.frame(x)[, dose_col]
   }
+}
+
+#' Require that no dose amount is negative
+#'
+#' A negative dose amount is invalid input.  A zero amount and a missing
+#' amount are allowed, and an excluded row is not checked, as for the dose
+#' times.  A dose column that is not numeric (character, factor, difftime) is
+#' not checked:  it fails later, where it is used as a number.
+#'
+#' @param object A PKNCAdose object
+#' @returns `object`, invisibly, or the error `pknca_error_dose_negative`
+#'   naming the first rows of the dose data with a negative amount and their
+#'   count
+#' @keywords Internal
+#' @noRd
+assert_dose_not_negative <- function(object) {
+  dose <- getDepVar.PKNCAdose(object)
+  if (!is.numeric(dose)) {
+    return(invisible(object))
+  }
+  # The plain numbers, so that a units column needs no method
+  values <- as.numeric(dose)
+  rows <- which(!is.na(values) & values < 0 & is.na(normalize_exclude(object)))
+  if (length(rows) > 0) {
+    rlang::abort(
+      sprintf(
+        "Dose amounts (column '%s') must not be negative; %d row(s) of the dose data are: %s%s",
+        object$columns$dose,
+        length(rows),
+        paste(utils::head(rows, 5), collapse = ", "),
+        if (length(rows) > 5) ", ..." else ""
+      ),
+      class = "pknca_error_dose_negative"
+    )
+  }
+  invisible(object)
 }
 
 #' @export
