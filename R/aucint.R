@@ -116,12 +116,8 @@ pk.calc.auxcint <- function(conc, time,
   }
   interval <- assert_intervaltime_single(interval = interval, start = start, end = end)
   # The errors name the argument of the calling function (pk.calc.aucint() and
-  # the others), which has the same name
-  abort_invalid(
-    auc.type %in% "AUCinf" && (!(is.numeric(lambda.z) || all(is.na(lambda.z))) || length(lambda.z) == 0),
-    "lambda.z", "Must be numeric (or NA)",
-    class = "pknca_error_lambdaz_invalid", call = rlang::caller_env()
-  )
+  # the others), which has the same name; lambda.z is checked where it is used
+  call <- rlang::caller_env()
   if (dose_aware) {
     # A concentration measured after the dose that follows the interval is
     # affected by that dose, so it is neither integrated nor interpolated or
@@ -182,7 +178,7 @@ pk.calc.auxcint <- function(conc, time,
       # interval.  The concentration at `start` is the exception, handled
       # where it is estimated below.
       auc_type_calc <- "AUClast"
-    } else if (is.na(lambda.z)) {
+    } else if (is.na(abort_invalid_aucint_lambdaz(lambda.z, call))) {
       if (is.infinite(interval[2])) {
         # Without a half-life there is no finite tail to fall back to
         return(structure(NA_real_, exclude = "the half-life is NA"))
@@ -227,7 +223,7 @@ pk.calc.auxcint <- function(conc, time,
     # calculated from the concentrations left after the dose-aware window above
     abort_invalid(
       length(clast) != 1 || is.character(clast) || is.list(clast), .clast_name, "Must be one number (or NA)",
-      class = "pknca_error_clast_invalid", call = rlang::caller_env()
+      class = "pknca_error_clast_invalid", call = call
     )
     all_times <- c(data$time, missing_times)
     time_after_tlast <- all_times[all_times > tlast & all_times <= interval[2]]
@@ -276,7 +272,8 @@ pk.calc.auxcint <- function(conc, time,
           ...
         )
       mask_start <- missing_times == interval[1]
-      if (auc.type %in% "AUCinf" && !extrapolates && !is.na(lambda.z) && any(mask_start)) {
+      if (auc.type %in% "AUCinf" && !extrapolates && any(mask_start) &&
+          !is.na(abort_invalid_aucint_lambdaz(lambda.z, call))) {
         # The concentration at `start` may be extrapolated from the profile
         # before a dose (the trough before the dose that starts the interval).
         # That is past the Tlast of that profile, so it is extrapolated with the
@@ -410,6 +407,18 @@ pk.calc.auxcint <- function(conc, time,
 # spelling it out.
 pknca_extrap_method_prefix <- "Extrapolation: "
 pknca_extrap_method_halflife <- "half-life"
+
+# `lambda.z` where pk.calc.aucint() uses it (to extrapolate after Tlast, or
+# to estimate the concentration at the start), refused with an error that names
+# it in `call` when it is not a number or NA
+abort_invalid_aucint_lambdaz <- function(lambda.z, call) {
+  abort_invalid(
+    !(is.numeric(lambda.z) || all(is.na(lambda.z))) || length(lambda.z) == 0,
+    "lambda.z", "Must be numeric (or NA)",
+    class = "pknca_error_lambdaz_invalid", call = call
+  )
+  lambda.z
+}
 
 #' @describeIn pk.calc.auxcint Calculate AUC over an interval
 #' @export
