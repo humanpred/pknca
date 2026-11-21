@@ -8,6 +8,27 @@ the dosing including dose amount and route.
 
 ## Breaking changes
 
+* A calculation function that returns `NA` because of missing or unusable data
+  now returns it with an `exclude` attribute that gives the reason, as the AUC
+  functions already did, so that `pk.nca()` reports why (@billdenney, #727).
+  The value is unchanged.  The functions are `pk.calc.cmax()`, `pk.calc.cmin()`,
+  `pk.calc.tmax()`, `pk.calc.tmin()`, `pk.calc.tlast()`, `pk.calc.tfirst()`,
+  `pk.calc.clast.obs()`, `pk.calc.aucpext()`, `pk.calc.cl()`, `pk.calc.f()`,
+  `pk.calc.mrt()`, `pk.calc.mrt.iv()`, `pk.calc.mrt.md()`,
+  `pk.calc.mrt.md.iv()`, `pk.calc.cav()`, `pk.calc.ctrough()`,
+  `pk.calc.cstart()`, `pk.calc.ptr()`, `pk.calc.tlag()`, `pk.calc.deg.fluc()`,
+  `pk.calc.ceoi()`, `pk.calc.totdose()`, and `pk.calc.dn()`; the vectorised
+  ones give the attribute only for a result of length one.  For a result `x`
+  such as `pk.calc.cmax(c(NA, NA))`:
+  * these now fail:  `identical(x, NA)`, `isTRUE(all.equal(x, NA))`,
+    `expect_equal(x, NA)`, `expect_identical(x, NA)`, and
+    `expect_equal(x, NA_real_)`;
+  * the attribute is carried by `x * 2` and by `data.frame(a = x)$a`;
+  * `is.na()`, `ifelse()`, `c()`, `sapply()`, `sum()`, `max()`, and `paste()`
+    are unaffected;
+  * `as.numeric(x)` drops the attribute (giving `NA_real_`, where `cmax`,
+    `cmin`, `tmax`, `tmin`, `tlast`, and `tfirst` gave a logical `NA`).
+
 * Parameter names and descriptions follow one style, so some column headers of
   `summary()` and some descriptions change (@billdenney):
   * Pretty names write lambda.z as math (`$\lambda_z$`), including "Number of
@@ -195,6 +216,21 @@ the dosing including dose amount and route.
   relying on `%in%`'s implicit list coercion downstream instead of failing
   clearly. Passing a list now raises an error instead.
 
+* An interval AUC or AUMC to infinity (`aucint.inf.obs`, `aucint.inf.pred`,
+  and what is calculated from them, such as `cav.int.inf.*`) over a finite
+  interval that runs past the last measurable concentration, when the
+  half-life is not estimable, uses `AUCall` for the region after the last
+  measurable concentration, and the method (`PPANMETH`) column says so
+  ("Extrapolation: AUCall (half-life not estimable)").  PKNCA 0.12.1 gave `NA`
+  there, excluded with the half-life's reason.  For example, for
+  `10*(exp(-0.15*t) - exp(-2*t))` sampled at 0, 0.5, 1, 2, 4, 8, 12, and 24
+  hours with every point excluded from the half-life, `aucint.inf.obs` and
+  `aucint.inf.pred` over 0 to 48 hours are 59.24, not excluded, where PKNCA
+  0.12.1 gave `NA` with "Too few points for half-life calculation
+  (min.hl.points=3 with only 0 points)".  The new `aumcint.inf.*`,
+  `aucivint.inf.*`, and `aumcivint.inf.*` do the same, and the IV forms report
+  the method of the interval AUC they start from (@billdenney).
+
 ## Changes to automatically generated calculation intervals
 
 When `PKNCAdata()` is given no `intervals`, the intervals it generates now take
@@ -349,6 +385,126 @@ the generated intervals:
   interval specification, where they were rejected as an unknown column.
 
 (@billdenney, #642)
+
+## Time to steady state (`pk.tss()`)
+
+### Breaking changes
+
+* Time to steady state (`pk.tss()`, `pk.tss.monoexponential()`, and
+  `pk.tss.stepwise.linear()`) changes its results in these ways
+  (@billdenney):
+  * Every result now has the `"estimates"` attribute (see New features), so
+    comparing a result with a plain data frame by `identical()` or
+    `testthat::expect_equal()` fails on the attribute.  Compare without it
+    (for example, `expect_equal(..., ignore_attr = "estimates")`).
+  * The `single` monoexponential output fits each treatment's own troughs.
+    Before, every treatment was given the fit of all the data (in the
+    example data, 27.88 for both treatments where the treatments alone give
+    29.52 and 26.17).  The documentation, which said that `single` fits all
+    the data, now says that it fits each treatment.
+  * The `population` output always has one row per subject, with the
+    subject's `treatment` when the data have more than one treatment (after
+    `subject`, before the estimates).  Before, it had one row without a
+    `subject` column when the selected model had no random effect on Tss,
+    and it had no `treatment` column, so with treatments its rows were
+    cross-joined with the `single` output (24 rows for 12 subjects, each
+    subject under every treatment).  A factor `subject` keeps its levels.
+  * `pk.tss.stepwise.linear()` with fewer dose times than `min.points`
+    returns `data.frame(tss.stepwise.linear = NA_real_)` instead of a bare
+    `NA`, which `pk.tss()` merged into a column named `y`.  The estimate is
+    a numeric `NA` (it was a logical `NA`) when steady state is not found.
+    Code that tests `identical(x, NA)` should read the column instead.
+  * With `subject`, two records for the same subject, treatment (if given),
+    and time are an error (`pknca_error_tss_duplicate_rows`, also
+    `pknca_error_duplicate_rows`) when `check = TRUE`.  Every record given
+    is checked, before missing and BLQ concentrations are handled and
+    before the troughs are selected, so a repeated record is an error even
+    at a time that is not a dose time.  They were fitted together:  plasma
+    and blood rows that no group separated gave a Tss of 31.6 where plasma
+    alone gives 27.1.  Without `subject`, repeated times are pooled troughs
+    and are still allowed.
+  * When `check = TRUE`, a missing value in `subject` or `treatment` is an
+    error (`pknca_error_tss_subject_na` or `pknca_error_tss_treatment_na`).
+    Those rows were used with a missing group.
+  * Of the warnings that nlme gives while fitting the candidate population
+    models, only those of the selected model are given, as one
+    `pknca_warning_tss_population_fit_warning` that quotes them; those of
+    the other candidates do not bear on the estimate and are no longer
+    given.  A gnls fit for `individual` or `single` that fails (`NA`) gives
+    `pknca_warning_tss_individual_fit_failed`, where it was silent (gnls
+    printed its reason), and warnings of a gnls fit that gives an estimate
+    are one `pknca_warning_tss_individual_fit_warning`.  A subject (or
+    treatment) with fewer than three troughs is not fit:  its estimate is
+    `NA` with `pknca_warning_tss_insufficient_data`.  With
+    `verbose = TRUE`, each candidate's warnings are shown as a
+    `pknca_message_tss_candidate_warnings` message.  Because the warnings
+    are caught as they are raised, under `options(warn = 2)` a candidate is
+    no longer dropped for its warnings, so the selected model can differ
+    there; the selected model's warning then becomes the error.
+  * A confidence interval that nlme cannot compute gives
+    `pknca_warning_tss_interval_failed`, and the `"estimates"` attribute
+    says why.
+  * Through `pk.tss()`, the `level` argument is now also the confidence
+    level of the monoexponential intervals (see New features).
+
+* The BLQ rules (`conc.blq`) of time to steady state are applied to each
+  subject's troughs (in each treatment) on their own, so which troughs are
+  fitted can change (@billdenney).  Before, they were applied to all
+  subjects' troughs pooled:  a subject's zero trough between the first and
+  last positive troughs of any subject was "middle" and, with the default
+  rules, dropped, even when it was before the subject's own first positive
+  trough (or after its last), where it is "first" (or "last") and kept.
+  With the rules by Tmax, the pooled Tmax was the first maximum in row
+  order, so the order of the rows changed which troughs were kept.  In
+  PKNCA's test data, with one subject's troughs at 1 to 3 hours below the
+  limit of quantification, that subject's zeros at 2 and 3 hours were
+  dropped and are now kept:  its individual Tss changes from 8.20 to 15.04
+  hours and the population Tss from 4.68 to 4.70.  Data whose only zero
+  troughs are at the first dose of every subject do not change.  A subject
+  whose troughs are all zero keeps them all with the default rules, as
+  `clean.conc.blq()` does for one profile.  Without `subject`, each
+  treatment's troughs are a profile, and without either, all the troughs.
+
+### New features
+
+* `pk.tss()`, `pk.tss.monoexponential()`, and `pk.tss.stepwise.linear()` say
+  how each estimate came about, in an `"estimates"` attribute of their result
+  (a data frame with one row per estimate; see `?pk.tss`).  Its `status`
+  separates what an `NA` could not:  `"estimated"`, `"not_reached"` (steady
+  state is not observed in the data; a monoexponential estimate is still
+  given, extrapolated beyond the last trough, and a stepwise linear one is
+  `NA`), `"fit_failed"`, `"insufficient_data"`, and `"no_random_effect"`.
+  `fit_warning` holds the warnings of the fit that gave the estimate, and
+  `message` says why there is no estimate or no interval.  Read the attribute
+  from the result of the call:  `merge()` and selecting columns drop it, and
+  selecting rows and dplyr verbs keep it unchanged (@billdenney).
+* The `"estimates"` attribute gives confidence intervals (`lower`, `upper`,
+  and `level`) for the monoexponential Tss where one can be defended:  the
+  Wald interval of `nlme::intervals()` for the population Tss (each
+  treatment's, when the selected model has a Tss by treatment), and for the
+  gnls fits of `individual` and of `single` with one subject.  There is none
+  for `popind` (predictions of random effects), for `single` with several
+  subjects (the troughs of a subject are correlated), or for stepwise linear
+  (the first dose time of a sequence of tests); the `message` says so.
+  `pk.tss.monoexponential()` gains `level = 0.95` (@billdenney).
+
+### Bug fixes
+
+* `pk.tss()` and `pk.tss.monoexponential()` no longer stop with "subscript out
+  of bounds" when the population model with a Tss by treatment has the lowest
+  AIC.  That model is now written `tss ~ treatment - 1`, so the population
+  output gives each treatment its own Tss (@billdenney).
+
+* `pk.tss()` and `pk.tss.monoexponential()` asked only for outputs that need
+  several subjects (`population`, `popind`, or `individual`) when the troughs
+  are from one subject no longer stop with the internal error "Error in
+  selection of return values for pk.tss.monoexponential".  They give `NA`
+  with the status `"insufficient_data"` in the `"estimates"` attribute, after
+  the warning they already gave (@billdenney).
+
+* In `pk.tss()` with `subject.dosing`, a dose recorded more than once for a
+  subject and time selects its trough once; it was fitted once per dose
+  record (@billdenney).
 
 ## New features
 
@@ -527,7 +683,10 @@ the generated intervals:
   include the area after the interval.  New `aucivint.inf.obs` and
   `aucivint.inf.pred` complete the IV interval AUCs (`aucint.inf.obs` and
   `aucint.inf.pred` with C0 back-extrapolated, as `aucivint.last` and
-  `aucivint.all` are).  The new parameters are in the `"uncommon"` tier, so
+  `aucivint.all` are); the segment they replace starts from the concentration
+  that `aucint.inf.*` estimated at the start with the half-life, so over an
+  interval that ends at a sample they equal `aucivint.last`, as do the AUMC
+  forms and what is calculated from them.  The new parameters are in the `"uncommon"` tier, so
   `pknca_interval_table()` offers the ones matching the interval's AUC basis
   when `tier = "all"` or when `include` names them or their concept.  CDISC
   PKPARMCD has no codes for them, so they carry sponsor-defined PPTESTCD codes
@@ -1389,6 +1548,231 @@ the generated intervals:
   `intervals` of the object `set_intervals()` returns now have every parameter
   column, as those of `PKNCAdata()` always did.
 
+* Arguments of the calculation functions that stopped with an R error (such as
+  "argument is of length zero", "missing value where TRUE/FALSE needed", or
+  "invalid 'x' length") now give a classed error that names the argument as
+  the caller gave it (@billdenney).  Only those inputs are refused:  a call
+  that returned a value still returns the same value, and an argument is
+  checked only where the calculation uses it (for example, `lambda.z` and
+  `clast` only for AUCinf).  `pk.nca()` results do not change.  The classes,
+  each with an input that gives it:
+  - `pknca_error_lambdaz_invalid`:  `lambda.z = "0.1"` for
+    `pk.calc.auc(auc.type = "AUCinf")`, `pk.calc.aucint()`, and their AUMC
+    forms, and a `lambda.z`, `lambda.z.time.first`, `lambda.z.time.last`, or
+    `lambda.z.n.points` that is not one number for the sparse AUCinf and
+    AUMCinf (`lambda.z = c(0.1, 0.2)`); the message names which one.
+  - `pknca_error_clast_invalid`:  `clast = character(0)` for AUCinf.
+  - `pknca_error_c0_invalid` and `pknca_error_auxc_invalid`:  `c0 = c(1, 2)`
+    or `auc = "10"` for `pk.calc.auciv()`, and the same for its siblings; the
+    message names `auc` or `aumc`.
+  - `pknca_error_tmax_invalid` and `pknca_error_tlast_invalid`:
+    `tmax = c(1, 2)` for `pk.calc.half.life()`.
+  - `pknca_error_manually_selected_points_invalid`:
+    `manually.selected.points = logical(0)` for `pk.calc.half.life()`.
+  - `pknca_error_duration_dose_invalid`:  `duration.dose = c(1, 2)` for
+    `pk.calc.ceoi()`.
+  - `pknca_error_check_invalid`:  `check = c(TRUE, TRUE)` for `pk.calc.auc()`
+    and its siblings, or `check = logical(0)` for `pk.calc.ceoi()`.
+  - `pknca_error_summary_string_invalid`, `pknca_error_summary_n_invalid`, and
+    `pknca_error_summary_point_invalid`:  `not_calculated = c("a", "b")`,
+    `summarize_n = c(TRUE, FALSE)`, or a summary function
+    (`PKNCA.set.summary(point = )`) that returns more than one value, for
+    `summary()`.
+  - `pknca_error_options_flag_invalid`:  `PKNCA.options(default = NA)`.
+  - `pknca_error_be_scaling_invalid` and `pknca_error_be_column_invalid`:
+    `scaling = NA` for `be_fit_model_single()`, or `subject = c("a", "b")`
+    for `be_dataset()`.  `be_dataset()` of results whose concentration data
+    have no groups now looks for the subject column by name, as for a data
+    frame, and says which names it tried when none is there
+    (`pknca_error_be_subject_column_not_found`).
+  - `pknca_error_units_zero_length`:  a zero-length unit, and
+    `pknca_error_tss_argument_invalid`:  a zero-length `tss.fraction`,
+    `min.points`, or `level` of the time to steady state.
+
+  Calls that stopped and now give a result:  `pk.calc.half.life()` with
+  `tmax = NA` gives `NA` with too few points after Tmax, as `pk.nca()`
+  already did for an interval with no measurement; the sparse AUCinf and
+  AUMCinf with `lambda.z.n.points = NA` give the estimate without its
+  standard error and warn (`pknca_warning_sparse_lambda_z_points`); and
+  `summary()` with `not_calculated = NA` (or another single value of a type
+  other than text) works when the summary counts subjects.
+
+* `aucint.*` and `aumcint.*`, their IV forms (`aucivint.*`, `aumcivint.*`,
+  `aucivpbext.int.*` and its earlier names `aucivpbextint.last` and
+  `aucivpbextint.all`), and everything calculated from them (`cav.int.*`,
+  `cl.int.*`, `kel.int.*`, `mrt.int.*`, `thalf.eff.int.*`, `vss.int.*`,
+  `vz.int.*`, and their `ivint` forms) now use the interval's imputation, as
+  `auclast` and the other AUCs already did (@billdenney).  They are
+  calculated from all of the group's data, so that the concentration at an
+  interval boundary can be estimated from the samples outside it; within the
+  interval, those data are now the imputed ones, and when the imputation sets
+  the concentration at the start of the interval, the samples before the
+  start are not used.  Every imputation method reaches them, including a
+  user-defined `PKNCA_impute_method_*()` function.  With no imputation,
+  nothing changes.  Values change in these cases, and no other parameter
+  changes:
+  - A start imputation (`start_predose`, `start_cmin`, `start_predose_conc0`,
+    or a chain of them) where no sample is at the start of the interval:  the
+    start is the imputed concentration instead of an estimate from the
+    samples around it.  With the predose sample drawn 3 minutes before the
+    dose, `aucint.last` over 0 to 24 hours is 76.54 (it was 76.04, or 76.66
+    without dosing data), equal to `auclast`; at steady state over 24 to 48
+    hours it is 90.93 (it was 90.43).  The default intervals for
+    multiple-dose data, which use `aucint.last` with `start_cmin` or
+    `start_predose`, change in the same way.  `aumcint.*` changes only where
+    the first segment is integrated with the logarithmic method (a falling
+    concentration), because the AUMC weights the start by a time of 0.
+  - `start_conc0` where a nonzero concentration is measured at the start:
+    the start is 0, as for `auclast` (76.04; it was 76.54).  Where a positive
+    sample comes before the start, the imputed 0 is now used:  without dosing
+    data and with 0.3 measured 3 minutes before the dose, `aucint.last` over
+    0 to 24 hours is 76.04 (it was 76.33), equal to `auclast`, and
+    `aucint.inf.obs` equals `aucint.last` when the interval ends at a sample
+    (76.04; it was 76.19 with dosing data).
+  - `end_conc_drop`:  the sample at the end of the interval is dropped, as for
+    `auclast`.  When nothing is measured after the end before the next dose,
+    the interval AUC then ends at the last remaining sample, and
+    `aucint.inf.*` extrapolates from it to the interval end with the
+    half-life:  with doses at 0, 24, and 48 hours, samples at 25, 26, 28, 32,
+    36, and 48 hours, and the 48-hour sample dropped, `aucint.last` over 24 to
+    48 hours is 66.85 (it was 90.43), ending at 36 hours, and
+    `aucint.inf.obs` is 87.73 (it was 90.92).  When samples follow the end
+    with no dose at it, the concentration at the end is estimated from the
+    samples on either side, as for any end without a sample:  for a single
+    dose of `10*(exp(-0.1*t) - exp(-t)) + 0.5` sampled at 0, 1, 2, 4, 8, 12,
+    16, 24, and 30 hours, `aucint.last` over 0 to 12 hours is 64.83 (64.76
+    without imputation), while `auclast` ends at 8 hours (47.93).
+  - A user-defined imputation method:  the interval AUCs use its result, as
+    `auclast` does.
+  - The IV forms over an interval that starts at an IV bolus after an earlier
+    dose.  `aucivint.*` replaces the start of the interval with the
+    back-extrapolated C0, so `aucivint.*`, `aumcivint.*`, and what is
+    calculated from them do not change with a start imputation.
+    `aucivpbext.int.*` is now the percent back-extrapolated relative to the
+    imputed start concentration rather than to a start of 0.  For a bolus
+    profile of `10*exp(-0.15*t)` after each of two doses 24 hours apart,
+    sampled at 0.25, 0.5, 1, 2, 4, 8, 12, and 23.9 hours after each dose (so 6
+    minutes before the second), `aucivpbext.int.last` over 24 to
+    48 hours is 1.876 with `start_predose` and 1.875 with `start_cmin` (it was
+    1.928); with `start_conc0` it is 1.928, as before.  Where the imputed start
+    concentration is above C0 (a profile that rises after the dose), it is `NA`
+    with a `pknca_warning_auciv_pbext_negative` warning.
+
+  The extrapolation reported in `PPANMETH` follows:  it is "none" where the
+  start is now imputed rather than extrapolated, and "AUClast", "AUCall",
+  or "half-life" where the end is now estimated after `end_conc_drop`.
+
+* `pknca_interval_table()` keeps a parameter out of a chain of imputation
+  methods (such as `"start_predose,start_cmin"`) when any method in the
+  chain would make the imputed value its answer; before, a chain kept no
+  parameter out (@billdenney).  A method written with its
+  `PKNCA_impute_method_` prefix is treated as the method without it.  A
+  single method without the prefix is unchanged.  An unknown method, alone
+  or in a chain, is still refused only when `pk.nca()` runs.
+
+* `aucivint.*` and `aumcivint.*` over an interval that starts at the first
+  dose now use a nonzero concentration measured at the dose time as C0, as
+  `aucivlast` does, so they equal `aucint.*` and `aumcint.*` and the percent
+  back-extrapolated (`aucivpbext.int.last`, `aucivpbext.int.all`) is 0
+  (@billdenney).  They back-extrapolated C0 from the concentrations after the
+  dose instead.  The results that change, for a bolus profile of 20, 16, 13, 8,
+  3.5, 1.5, and 0.1 at 0, 1, 2, 4, 8, 12, and 24 hours:
+  * With the measured value above the back-extrapolated C0 (20 against 19.69),
+    `aucivpbext.int.last` stopped `pk.nca()` with "Please report a bug ...
+    `auciv must be >= auc`".  `aucivint.last` is now 90.39018, the same as
+    `aucint.last`, and the percent is 0.  The same holds over an interval that
+    ends at the next dose.
+  * With the measured value below it (19), `aucivint.last` moves from 90.24681
+    to 89.92156 and `aumcivint.last` from 403.24728 to 403.14225, with the
+    `.all` and `.inf` forms, and `aucivpbext.int.last` from 0.36 to 0.
+  * After an earlier dose the measured value is still the trough.  A trough
+    above the back-extrapolated C0 now gives a missing percent
+    back-extrapolated with the reason "The concentration measured at the dose
+    time is above C0" and a `pknca_warning_auciv_pbext_negative` warning, in
+    place of the error.  `pk.calc.auciv_pbext()` treats an `auciv` below `auc`
+    by no more than floating-point noise as 0 percent.
+
+* `aucivint.inf.*` and `aumcivint.inf.*` are excluded with the half-life's
+  reason when the half-life changes the segment they replace (the trough
+  after an earlier dose, estimated with it).  Otherwise they keep the
+  exclusion of the `aucint.inf.*` or `aumcint.inf.*` they start from, which
+  carries the half-life's reason when that used it.  They report the method
+  (`PPANMETH`) of that interval AUC, with the extrapolation "none" where the
+  half-life does not enter their own value (a start that the interval AUC
+  estimated with the half-life is replaced by C0), so the half-life rules of
+  `exclude()` (such as `exclude_nca_span.ratio()`) exclude them only where the
+  half-life enters; with no method reported they were excluded wherever the
+  half-life was.  For this, a function
+  that calculates a parameter can name the arguments that did not enter its
+  result in an `exclude_unused_args` attribute (see
+  `vignette("v80-writing-parameter-functions")`). (@billdenney)
+
+* `pk.calc.tlag()` skips missing concentrations, as `pk.calc.cmax()` and the
+  other simple parameters do, and gains a `check` argument like theirs
+  (reported by @kawasakin, #723; @billdenney, #727).  Two results change:  a
+  missing value before or between the measured ones gave `NA` (for example
+  `pk.calc.tlag(c(NA, 40, 80, 10), c(0, 2, 4, 8))`) and now gives the lag time
+  of the measured values (2); and a missing value with no increase after it,
+  or every value missing, stopped the calculation (in `pk.nca()`, "Please
+  report a bug ... missing value where TRUE/FALSE needed") and now gives `NA`.
+
+* `pk.calc.swing()` gives `NA` for a missing `cmin` or `cmax` instead of
+  stopping with "missing value where TRUE/FALSE needed" (reported by
+  @kawasakin, #723; @billdenney, #727).  In `pk.nca()`, an interval whose
+  concentrations are all missing stopped with "Please report a bug" when
+  `swing` was requested, which stopped the calculation for every subject, and
+  now gives `NA` for that interval.  `pk.calc.swing()` gives one value for
+  each pair of `cmax` and `cmin`; a vector of `cmax` with one `cmin` gives the
+  values it gave before, except that with a `cmin` of zero or below the result
+  is one `Inf` for each `cmax` (before, a single `Inf`).
+
+* A simple parameter that is `NA` because of missing or unusable data now says
+  why in the `exclude` column of `pk.nca()` results, where the column was
+  empty (@billdenney, #727).  No value changes; only the `exclude` text of
+  results that were already `NA`.  The reasons, which the calculation functions
+  return as an `exclude` attribute (see "Breaking changes"):
+  - "All concentrations are missing":  `cmax`, `cmin`, `tmax`, `tmin`, `tlast`,
+    `tfirst`, `clast.obs`, `tlag`.
+  - "No concentration is above zero":  `tmax`, `tlast`, `tfirst`.
+  - "Concentrations never increase":  `tlag`.
+  - "No non-missing concentration at the start of the interval":  `cstart`;
+    "No non-missing concentration at the end of the interval" and "The
+    interval has no finite end":  `ctrough`; "No non-missing concentration at
+    the end of the infusion" and "Dose duration is missing (or there is no
+    dose in the interval)":  `ceoi`.
+  - "AUC is zero or negative":  `cl.*`, `mrt.*` (all forms), and the reference
+    AUC of `f.*`; "AUCinf is zero":  `aucpext.*`; "Cav is zero":  `deg.fluc`;
+    "Ctrough is zero":  `ptr`.
+  - "Dose is missing":  `cl.*`, `f.*`, `totdose`, and the dose-normalized
+    parameters (`*.dn`); "Dose is zero":  `*.dn` when the parameter is also
+    zero (the value stays `NaN`); "Dose is zero or negative":  `f.*`; "No dose
+    in the interval":  `cl.*`, `totdose`, `mrt.iv.*`, and `mrt.ivmd.*`.
+  - "A dose time or duration is missing", or "A dose amount is missing, or the
+    doses sum to zero" (when several doses are weighted):  `mrt.iv.*` and
+    `mrt.ivmd.*`; "The dosing interval (tau) is not known":  `mrt.md.*` and
+    `mrt.ivmd.*`.
+  - "The interval start or end is missing", "The interval has zero duration":
+    `cav.*`.
+
+  Everything calculated from one of these carries its reason, as for any
+  other reason (for example `swing`, `vss.*`, `vz.*`, `kel.*`, `thalf.eff.*`).
+  What changes for code reading the results:  `summary()` gives the same
+  numbers (it ignores an `NA` either way); `as.data.frame(filter_excluded =
+  TRUE)` now leaves out these `NA` rows, as it leaves out any row with a
+  reason; and `exclude()` adds its reason after the one already there.
+
+* The `exclude` text of a result that already had a reason now starts with the
+  root cause and lists each reason once (@billdenney, #727).  For example,
+  the half-life results of an interval with every concentration missing read
+  "All concentrations are missing; Too few points for half-life calculation
+  (min.hl.points=3 with only 0 points)" instead of starting at "Too few
+  points"; `aucabove.trough.all` with no concentration at the end of the
+  interval reads "No non-missing concentration at the end of the interval;
+  Missing concentration to be above"; and a reason that reached a result from
+  two inputs ("X; X") is given once ("X").  Code that matches a reason by its
+  exact text must be updated.  The values, and which results have a reason,
+  are unchanged.
+
 * `mrt.iv.*`, `mrt.ivint.*`, `mrt.ivmd.*`, and everything calculated from them
   (`vss.iv.*`, `vss.ivint.*`, `vss.ivmd.*`, `kel.iv.*`, `thalf.eff.iv.*`) are
   now correct, and one value per interval, when an interval has more than one
@@ -1546,7 +1930,9 @@ the generated intervals:
   interval being calculated.
 
 * `aucint.inf.pred` and `aumcint.inf.pred` no longer fail with `tlast (...) must
-  occur exactly once in time` when the interval ends at infinity.  The
+  occur exactly once in time` when the interval ends at infinity.  (In PKNCA
+  0.12.1, with IV data, the whole interval failed instead, with "Please report
+  a bug ... the condition has length > 1".)  The
   concentration at tlast is calculated twice so that integration up to tlast
   uses `clast.obs` and integration after tlast starts from `clast.pred`.  When
   nothing in the interval follows tlast, extrapolation to infinity is analytic

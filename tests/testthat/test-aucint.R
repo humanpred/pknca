@@ -1370,3 +1370,410 @@ test_that("the AUMC over an interval is weighted from its start when the start a
     as.numeric(pk.calc.aumc(conc = conc[6:11], time = time[6:11] - start)) + tail_aumc
   )
 })
+
+test_that("aucint refuses a lambda.z or clast that it cannot use, naming the argument", {
+  conc <- c(0, 6, 8, 6, 4, 2, 1)
+  time <- c(0, 1, 2, 4, 8, 12, 24)
+  expect_error(
+    pk.calc.aucint.inf.obs(conc = conc, time = time, start = 0, end = 30, clast.obs = 1, lambda.z = numeric(0)),
+    class = "pknca_error_lambdaz_invalid",
+    regexp = "Assertion on 'lambda.z' failed: Must be numeric (or NA).",
+    fixed = TRUE
+  )
+  expect_error(
+    pk.calc.aucint.inf.obs(conc = conc, time = time, start = 0, end = 30, clast.obs = numeric(0), lambda.z = 0.1),
+    class = "pknca_error_clast_invalid",
+    regexp = "Assertion on 'clast.obs' failed: Must be one number (or NA).",
+    fixed = TRUE
+  )
+  expect_error(
+    pk.calc.aucint.inf.pred(conc = conc, time = time, start = 0, end = 30, clast.pred = c(1, 2), lambda.z = 0.1),
+    class = "pknca_error_clast_invalid",
+    regexp = "Assertion on 'clast.pred' failed",
+    fixed = TRUE
+  )
+  # A missing lambda.z is not an error:  within the data the AUC is AUClast
+  expected_last <- as.numeric(pk.calc.aucint.last(conc = conc, time = time, start = 0, end = 24))
+  expect_equal(
+    as.numeric(pk.calc.aucint.inf.obs(conc = conc, time = time, start = 0, end = 24, clast.obs = 1, lambda.z = NA)),
+    expected_last
+  )
+  # What gave a value still gives it:  AUClast does not use lambda.z
+  expect_equal(
+    as.numeric(pk.calc.aucint(conc = conc, time = time, start = 0, end = 24, auc.type = "AUClast", lambda.z = c(0.1, 0.2))),
+    expected_last
+  )
+  expect_equal(
+    as.numeric(pk.calc.aucint(conc = conc, time = time, start = 0, end = 24, auc.type = "AUClast", lambda.z = numeric(0))),
+    expected_last
+  )
+})
+
+# auclast, aumclast, aucint.last, and aumcint.last for one subject's interval,
+# with the imputation `impute` (NA for none)
+aucint_impute_results <- function(d_conc, d_dose, start, end, impute) {
+  d_interval <-
+    data.frame(start = start, end = end, auclast = TRUE, aumclast = TRUE, aucint.last = TRUE, aumcint.last = TRUE)
+  o_conc <- PKNCAconc(d_conc, conc ~ time | id)
+  o_data <-
+    if (is.null(d_dose)) {
+      PKNCAdata(o_conc, intervals = d_interval, impute = impute)
+    } else {
+      PKNCAdata(o_conc, PKNCAdose(d_dose, dose ~ time | id), intervals = d_interval, impute = impute)
+    }
+  res <- as.data.frame(pk.nca(o_data))
+  stats::setNames(res$PPORRES, res$PPTESTCD)[c("auclast", "aumclast", "aucint.last", "aumcint.last")]
+}
+
+test_that("aucint and aumcint use the interval's imputed concentration at its start", {
+  # The trough is drawn 3 minutes before the dose, so nothing is measured at the
+  # start of the interval
+  d_conc <- data.frame(id = 1, time = c(-0.05, 1, 2, 4, 8, 12, 24), conc = c(1, 6, 8, 6, 4, 2.5, 1))
+  d_dose <- data.frame(id = 1, time = 0, dose = 100)
+  # The same profile with the trough at the start
+  d_conc_at_start <- d_conc
+  d_conc_at_start$time[1] <- 0
+  expected_auc <- as.numeric(pk.calc.auc.last(conc = d_conc_at_start$conc, time = d_conc_at_start$time))
+  expected_aumc <- as.numeric(pk.calc.aumc.last(conc = d_conc_at_start$conc, time = d_conc_at_start$time))
+  for (current_impute in c("start_predose", "start_cmin", "start_predose,start_cmin")) {
+    res <- aucint_impute_results(d_conc, d_dose, start = 0, end = 24, impute = current_impute)
+    expect_equal(res[["aucint.last"]], expected_auc, tolerance = 1e-12, info = current_impute)
+    expect_equal(res[["aucint.last"]], res[["auclast"]], tolerance = 1e-12, info = current_impute)
+    expect_equal(res[["aumcint.last"]], expected_aumc, tolerance = 1e-12, info = current_impute)
+    expect_equal(res[["aumcint.last"]], res[["aumclast"]], tolerance = 1e-12, info = current_impute)
+  }
+  # Without a dose table, the start is the imputed one rather than an
+  # interpolation from the sample before it
+  res_no_dose <- aucint_impute_results(d_conc, NULL, start = 0, end = 24, impute = "start_predose")
+  expect_equal(res_no_dose[["aucint.last"]], expected_auc, tolerance = 1e-12)
+
+  # Without imputation, the group's data are used as they are:  the dose-aware
+  # estimate at the start.  auclast and aumclast each warn that the interval
+  # starts before the first measurement.
+  expect_warning(
+    expect_warning(
+      res_none <- aucint_impute_results(d_conc, d_dose, start = 0, end = 24, impute = NA_character_),
+      class = "pknca_warning_auc_before_first"
+    ),
+    class = "pknca_warning_auc_before_first"
+  )
+  expect_equal(
+    res_none[["aucint.last"]],
+    as.numeric(pk.calc.aucint.last(conc = d_conc$conc, time = d_conc$time, start = 0, end = 24, time.dose = 0)),
+    tolerance = 1e-12
+  )
+  expect_true(is.na(res_none[["auclast"]]))
+})
+
+test_that("aucint uses the imputed start at steady state and the data after the interval for its end", {
+  d_conc <-
+    data.frame(
+      id = 1,
+      time = c(0, 1, 2, 4, 8, 12, 23.95, 25, 26, 28, 32, 36, 48),
+      conc = c(0, 6, 8, 6, 4, 2.5, 1, 7, 9, 7, 5, 3, 1.2)
+    )
+  d_dose <- data.frame(id = 1, time = c(0, 24), dose = 100)
+  res <- aucint_impute_results(d_conc, d_dose, start = 24, end = 48, impute = "start_predose,start_cmin")
+  expect_equal(res[["aucint.last"]], res[["auclast"]], tolerance = 1e-12)
+  expect_equal(res[["aumcint.last"]], res[["aumclast"]], tolerance = 1e-12)
+  # The interval ending between samples interpolates its end from the sample
+  # after it, which is outside the imputed interval
+  res_mid <- aucint_impute_results(d_conc, d_dose, start = 24, end = 30, impute = "start_predose")
+  imputed_conc <- c(1, 7, 9, 7, 5)
+  imputed_time <- c(24, 25, 26, 28, 32)
+  expect_equal(
+    res_mid[["aucint.last"]],
+    as.numeric(pk.calc.aucint.last(conc = imputed_conc, time = imputed_time, start = 24, end = 30, time.dose = 24)),
+    tolerance = 1e-12
+  )
+})
+
+test_that("the group's data within the interval are replaced by the imputed data", {
+  # The imputation adds the start, so the samples before it are not used
+  ret <-
+    impute_group_data(
+      group = list(conc = c(5, 1, 6, 8, NA, 3), time = c(-1, -0.05, 1, 2, NA, 30), volume = NULL),
+      imputed = list(conc = c(1, 6, 8), time = c(0, 1, 2), volume = NULL),
+      start = 0, end = 24
+    )
+  expect_equal(ret, list(conc = c(1, 6, 8, 3, NA), time = c(0, 1, 2, 30, NA)))
+  # So does an imputation that changes a measured start
+  ret_changed <-
+    impute_group_data(
+      group = list(conc = c(5, 2, 6, 8), time = c(-1, 0, 1, 2)),
+      imputed = list(conc = c(0, 6, 8), time = c(0, 1, 2)),
+      start = 0, end = 24
+    )
+  expect_equal(ret_changed, list(conc = c(0, 6, 8), time = c(0, 1, 2)))
+  # An imputation that leaves the start as measured, or has none, keeps them
+  ret_same <-
+    impute_group_data(
+      group = list(conc = c(5, 2, 6, 8, 3), time = c(-1, 0, 1, 2, 24)),
+      imputed = list(conc = c(2, 6, 8), time = c(0, 1, 2)),
+      start = 0, end = 24
+    )
+  expect_equal(ret_same, list(conc = c(5, 2, 6, 8), time = c(-1, 0, 1, 2)))
+  ret_none <-
+    impute_group_data(
+      group = list(conc = c(5, 6, 8, 3), time = c(-1, 1, 2, 24)),
+      imputed = list(conc = c(6, 8), time = c(1, 2)),
+      start = 0, end = 24
+    )
+  expect_equal(ret_none, list(conc = c(5, 6, 8), time = c(-1, 1, 2)))
+  # The urine volume and collection duration follow their observation, and an
+  # added observation has the values imputation gave it
+  ret_urine <-
+    impute_group_data(
+      group = list(conc = c(4, 3, 2), time = c(6, 12, 30), volume = c(100, 200, 300), duration.conc = c(6, 6, 18)),
+      imputed = list(conc = c(0, 4, 3), time = c(0, 6, 12), volume = c(0, 100, 200), duration.conc = c(NA, 6, 6)),
+      start = 0, end = 24
+    )
+  expect_equal(
+    ret_urine,
+    list(conc = c(0, 4, 3, 2), time = c(0, 6, 12, 30), volume = c(0, 100, 200, 300), duration.conc = c(NA, 6, 6, 18))
+  )
+})
+
+test_that("impute_group_data() needs one interval with start before end", {
+  group <- list(conc = c(1, 6), time = c(0, 1))
+  for (bounds in list(c(1, 1), c(NA, 24), c(0, NA), c(2, 1))) {
+    expect_error(
+      impute_group_data(group = group, imputed = group, start = bounds[1], end = bounds[2]),
+      class = "pknca_error_internal_impute_group_interval",
+      info = paste(bounds, collapse = " ")
+    )
+  }
+})
+
+# An interval's results by parameter, with every warning muffled.  The
+# intervals compare AUCs on different bases on purpose, so that warning is
+# muffled when the data object is built.
+aucint_impute_params <- function(d_conc, d_dose, intervals, route = "extravascular") {
+  o_conc <- PKNCAconc(d_conc, conc ~ time | id)
+  o_data <-
+    withCallingHandlers(
+      if (is.null(d_dose)) {
+        PKNCAdata(o_conc, intervals = intervals)
+      } else {
+        PKNCAdata(o_conc, PKNCAdose(d_dose, dose ~ time | id, route = route), intervals = intervals)
+      },
+      pknca_warning_interval_inconsistent_parameters = muffle_warning_condition
+    )
+  res <- suppressWarnings(as.data.frame(pk.nca(o_data)))
+  stats::setNames(res$PPORRES, res$PPTESTCD)
+}
+
+test_that("start_conc0 and start_predose_conc0 reach aucint, with or without dosing data", {
+  # A positive sample 3 minutes before the dose
+  d_conc <- data.frame(id = 1, time = c(-0.05, 1, 2, 4, 8, 12, 24), conc = c(0.3, 6, 8, 6, 4, 2.5, 1))
+  d_dose <- data.frame(id = 1, time = 0, dose = 1)
+  for (with_dose in c(FALSE, TRUE)) {
+    for (current_impute in c("start_conc0", "start_predose_conc0")) {
+      intervals <-
+        data.frame(
+          start = 0, end = 24, auclast = TRUE, aucint.last = TRUE, aucint.all = TRUE,
+          aucint.inf.obs = TRUE, impute = current_impute
+        )
+      res <- aucint_impute_params(d_conc, if (with_dose) d_dose, intervals)
+      info <- paste(current_impute, with_dose)
+      expect_equal(res[["aucint.last"]], res[["auclast"]], tolerance = 1e-12, info = info)
+      expect_equal(res[["aucint.all"]], res[["auclast"]], tolerance = 1e-12, info = info)
+      # The interval ends at a sample, so nothing is extrapolated
+      expect_equal(res[["aucint.inf.obs"]], res[["auclast"]], tolerance = 1e-12, info = info)
+    }
+  }
+  # start_conc0 integrates from the imputed 0; start_predose_conc0 from the
+  # predose sample, which is within the window
+  expect_equal(
+    aucint_impute_params(d_conc, NULL, data.frame(start = 0, end = 24, aucint.last = TRUE, impute = "start_conc0"))[["aucint.last"]],
+    as.numeric(pk.calc.auc.last(conc = c(0, d_conc$conc[-1]), time = c(0, d_conc$time[-1]))),
+    tolerance = 1e-12
+  )
+  expect_equal(
+    aucint_impute_params(d_conc, NULL, data.frame(start = 0, end = 24, aucint.last = TRUE, impute = "start_conc0"))[["aucint.last"]],
+    76.04494,
+    tolerance = 1e-6
+  )
+  expect_equal(
+    aucint_impute_params(d_conc, NULL, data.frame(start = 0, end = 24, aucint.last = TRUE, impute = "start_predose_conc0"))[["aucint.last"]],
+    as.numeric(pk.calc.auc.last(conc = d_conc$conc, time = c(0, d_conc$time[-1]))),
+    tolerance = 1e-12
+  )
+})
+
+test_that("end_conc_drop ends the interval AUC at the last remaining sample", {
+  d_conc <-
+    data.frame(
+      id = 1,
+      time = c(0, 1, 2, 4, 8, 12, 23.95, 25, 26, 28, 32, 36, 48),
+      conc = c(0, 6, 8, 6, 4, 2.5, 1, 7, 9, 7, 5, 3, 1.2)
+    )
+  d_dose <- data.frame(id = 1, time = c(0, 24, 48), dose = 100)
+  intervals <- data.frame(start = 24, end = 48, aucint.last = TRUE, aucint.inf.obs = TRUE, half.life = TRUE)
+  res_none <- aucint_impute_params(d_conc, d_dose, intervals)
+  intervals$impute <- "end_conc_drop"
+  res_drop <- aucint_impute_params(d_conc, d_dose, intervals)
+  # Without imputation, the sample at 48 hours ends the interval
+  expect_equal(res_none[["aucint.last"]], 90.42664941, tolerance = 1e-9)
+  expect_equal(res_none[["aucint.inf.obs"]], 90.92444255, tolerance = 1e-9)
+  # With it dropped, aucint.last ends at 36 hours and aucint.inf.obs
+  # extrapolates from there to 48 hours with the half-life
+  expect_equal(res_drop[["aucint.last"]], 66.85334538, tolerance = 1e-9)
+  expect_equal(res_drop[["aucint.inf.obs"]], 87.72892125, tolerance = 1e-9)
+  kept <- d_conc$time < 48
+  expect_equal(
+    res_drop[["aucint.last"]],
+    as.numeric(pk.calc.aucint.last(conc = d_conc$conc[kept], time = d_conc$time[kept], start = 24, end = 48, time.dose = c(0, 24))),
+    tolerance = 1e-12
+  )
+})
+
+test_that("a user-defined imputation method reaches aucint as it reaches auclast", {
+  user_method <- function(conc, time, start, ..., options = list()) {
+    data.frame(conc = conc + 1, time = time)
+  }
+  assign("PKNCA_impute_method_add_one_aucint", user_method, envir = globalenv())
+  withr::defer(rm("PKNCA_impute_method_add_one_aucint", envir = globalenv()))
+  d_conc <- data.frame(id = 1, time = c(0, 1, 2, 4, 8, 12, 24), conc = c(0, 6, 8, 6, 4, 2.5, 1))
+  d_dose <- data.frame(id = 1, time = 0, dose = 1)
+  res <-
+    aucint_impute_params(
+      d_conc, d_dose,
+      data.frame(start = 0, end = 24, auclast = TRUE, aucint.last = TRUE, impute = "add_one_aucint")
+    )
+  expect_equal(res[["aucint.last"]], res[["auclast"]], tolerance = 1e-12)
+  expect_equal(
+    res[["aucint.last"]],
+    as.numeric(pk.calc.auc.last(conc = d_conc$conc + 1, time = d_conc$time)),
+    tolerance = 1e-12
+  )
+})
+
+test_that("aumcint moves with an imputed start only where the first segment is logarithmic", {
+  d_dose <- data.frame(id = 1, time = 0, dose = 1)
+  intervals <-
+    data.frame(start = 0, end = 24, aumclast = TRUE, aumcint.last = TRUE, impute = "start_predose")
+  sample_times <- c(-0.05, 1, 2, 4, 8, 12, 24)
+  after_dose <- c(6, 8, 6, 4, 2.5, 1)
+  # The predose sample is carried to the start; the AUMC is weighted by the
+  # time since the start, which is 0 there
+  aumc_rising <-
+    lapply(c(1, 3), function(predose) {
+      aucint_impute_params(data.frame(id = 1, time = sample_times, conc = c(predose, after_dose)), d_dose, intervals)
+    })
+  aumc_falling <-
+    lapply(c(7, 9), function(predose) {
+      aucint_impute_params(data.frame(id = 1, time = sample_times, conc = c(predose, after_dose)), d_dose, intervals)
+    })
+  for (res in c(aumc_rising, aumc_falling)) {
+    expect_equal(res[["aumcint.last"]], res[["aumclast"]], tolerance = 1e-12)
+  }
+  # Rising to the first sample, the segment is linear and the start does not
+  # change the result
+  expect_equal(aumc_rising[[1]][["aumcint.last"]], aumc_rising[[2]][["aumcint.last"]], tolerance = 1e-12)
+  # Falling to it, the segment is logarithmic and the start does
+  expect_false(isTRUE(all.equal(aumc_falling[[1]][["aumcint.last"]], aumc_falling[[2]][["aumcint.last"]])))
+})
+
+# An interval from 24 to 48 hours requesting `params` with the imputation
+aucint_iv_intervals <- function(impute, params) {
+  ret <- data.frame(start = 24, end = 48, impute = impute)
+  for (p in params) {
+    ret[[p]] <- TRUE
+  }
+  ret
+}
+
+test_that("the IV interval forms under each start imputation after an earlier IV bolus", {
+  # The predose sample is 3 minutes before the second dose, and the
+  # back-extrapolated C0 (1.4039) is below it (1.4117)
+  t <- c(0, 1, 2, 4, 8, 12, 23.95, 25, 26, 28, 32, 36, 47.9, 48)
+  d_conc <- data.frame(id = 1, time = t, conc = 10 * (exp(-0.1 * t) - exp(-t)) + 0.5)
+  d_dose <- data.frame(id = 1, time = c(0, 24), dose = 100)
+  # One AUC basis (AUClast), so the interval does not mix bases
+  iv_params <-
+    c(
+      "aucivint.last", "aumcivint.last", "cl.ivint.last", "kel.ivint.last",
+      "mrt.ivint.last", "vss.ivint.last", "vz.ivint.last", "cav.ivint.last"
+    )
+  inf_pairs <-
+    c(
+      aucivint.inf.obs = "aucivint.last", aucivint.inf.pred = "aucivint.last",
+      cl.ivint.inf.obs = "cl.ivint.last", mrt.ivint.inf.obs = "mrt.ivint.last",
+      vss.ivint.inf.obs = "vss.ivint.last", vz.ivint.inf.obs = "vz.ivint.last",
+      kel.ivint.inf.obs = "kel.ivint.last", cav.ivint.inf.obs = "cav.ivint.last"
+    )
+  requested <- c("auclast", "aucint.last", "aucivpbext.int.last", iv_params, names(inf_pairs))
+  res_none <- aucint_impute_params(d_conc, d_dose, aucint_iv_intervals(NA_character_, requested), route = "intravascular")
+  expect_equal(res_none[["aucivint.last"]], 20.43976, tolerance = 1e-6)
+  for (current_impute in c("start_predose", "start_cmin", "start_predose_conc0", "start_conc0")) {
+    expect_no_error(
+      res <- aucint_impute_params(d_conc, d_dose, aucint_iv_intervals(current_impute, requested), route = "intravascular")
+    )
+    expect_equal(res[["aucint.last"]], res[["auclast"]], tolerance = 1e-12, info = current_impute)
+    # C0 replaces the start, so the IV forms do not depend on its imputation
+    for (p in iv_params) {
+      expect_equal(res[[p]], res_none[[p]], tolerance = 1e-12, info = paste(current_impute, p))
+    }
+    # The interval ends at a sample, so the inf forms equal the last forms
+    for (p in names(inf_pairs)) {
+      expect_equal(res[[p]], res[[inf_pairs[[p]]]], tolerance = 1e-12, info = paste(current_impute, p))
+    }
+  }
+  # The percent back-extrapolated is relative to the imputed start
+  res_cmin <- aucint_impute_params(d_conc, d_dose, aucint_iv_intervals("start_cmin", requested), route = "intravascular")
+  expect_equal(
+    res_cmin[["aucivpbext.int.last"]],
+    100 * (1 - res_cmin[["aucint.last"]] / res_cmin[["aucivint.last"]]),
+    tolerance = 1e-12
+  )
+  expect_equal(res_cmin[["aucivpbext.int.last"]], 2.007688, tolerance = 1e-6)
+  # ... and not calculated where the imputed start is above C0
+  for (current_impute in c("start_predose", "start_predose_conc0")) {
+    o_data <-
+      withCallingHandlers(
+        PKNCAdata(
+          PKNCAconc(d_conc, conc ~ time | id),
+          PKNCAdose(d_dose, dose ~ time | id, route = "intravascular"),
+          intervals = aucint_iv_intervals(current_impute, requested)
+        ),
+        pknca_warning_interval_inconsistent_parameters = muffle_warning_condition
+      )
+    expect_warning(
+      res <-
+        withCallingHandlers(
+          as.data.frame(pk.nca(o_data)),
+          pknca_warning_interval_inconsistent_parameters = muffle_warning_condition
+        ),
+      class = "pknca_warning_auciv_pbext_negative"
+    )
+    expect_true(is.na(res$PPORRES[res$PPTESTCD == "aucivpbext.int.last"]), info = current_impute)
+    expect_equal(
+      res$exclude[res$PPTESTCD == "aucivpbext.int.last"],
+      "The concentration at the dose time (measured or imputed) is above C0",
+      info = current_impute
+    )
+  }
+})
+
+test_that("end_conc_drop with samples after the end estimates the end from them", {
+  # No dose at the end of the interval, and samples after it
+  t <- c(0, 1, 2, 4, 8, 12, 16, 24, 30)
+  d_conc <- data.frame(id = 1, time = t, conc = 10 * (exp(-0.1 * t) - exp(-t)) + 0.5)
+  d_dose <- data.frame(id = 1, time = 0, dose = 1)
+  intervals <- data.frame(start = 0, end = 12, auclast = TRUE, aucint.last = TRUE)
+  res_none <- aucint_impute_params(d_conc, d_dose, intervals)
+  intervals$impute <- "end_conc_drop"
+  res_drop <- aucint_impute_params(d_conc, d_dose, intervals)
+  expect_equal(res_none[["aucint.last"]], 64.75860278, tolerance = 1e-9)
+  expect_equal(res_drop[["aucint.last"]], 64.83397983, tolerance = 1e-9)
+  # auclast ends at the last remaining sample (8 hours)
+  expect_equal(res_drop[["auclast"]], 47.92768249, tolerance = 1e-9)
+  # The end is interpolated between the samples at 8 and 16 hours
+  kept <- t != 12
+  expect_equal(
+    res_drop[["aucint.last"]],
+    as.numeric(pk.calc.aucint.last(conc = d_conc$conc[kept], time = t[kept], start = 0, end = 12, time.dose = 0)),
+    tolerance = 1e-12
+  )
+})

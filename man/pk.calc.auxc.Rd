@@ -30,7 +30,8 @@ pk.calc.auxc(
   check = TRUE,
   fun_linear,
   fun_log,
-  fun_inf
+  fun_inf,
+  .clast_name = "clast"
 )
 
 pk.calc.auc(conc, time, ..., options = list())
@@ -98,6 +99,9 @@ functions)}
 
 \item{fun_inf}{The function to use for extrapolation from the final
 measurement to infinite time (not required for AUC or AUMC functions).}
+
+\item{.clast_name}{The name of \code{clast} in an error message:  the argument
+as the calling function names it (such as \code{clast.obs})}
 
 \item{...}{For functions other than \code{pk.calc.auxc}, these values are passed
 to \code{pk.calc.auxc}}

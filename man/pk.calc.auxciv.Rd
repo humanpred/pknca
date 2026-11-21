@@ -19,7 +19,8 @@ pk.calc.auxciv(
   clast = NA,
   ...,
   options = list(),
-  check = TRUE
+  check = TRUE,
+  auxc_name = "auxc"
 )
 
 pk.calc.auciv(
@@ -93,6 +94,9 @@ to \code{pk.calc.auxc}}
 
 \item{check}{Run \code{\link[=assert_conc_time]{assert_conc_time()}}?}
 
+\item{auxc_name}{The name of \code{auxc} in an error message:  the argument as
+the calling function names it (\code{auc} or \code{aumc})}
+
 \item{auc}{The AUC calculated without C0 back-extrapolation}
 
 \item{auciv}{The AUC calculated using \code{c0}}
@@ -135,6 +139,16 @@ requires a measured concentration at time 0; without one, \code{auc} does not
 describe the observed part of \code{auciv} (it either cannot be calculated or,
 for the \code{aucint} family, already extrapolates back to time 0 with
 \code{conc.origin}), so \code{NA} is returned.
+
+When \code{auciv} is less than \code{auc} by more than \code{sqrt(.Machine$double.eps)}
+times the larger of the two, the concentration at the dose time (measured,
+or imputed for the interval) is above the C0 that \code{auciv} used, and the
+result is \code{NA} with that reason and a \code{pknca_warning_auciv_pbext_negative}
+warning; within the tolerance, the result is 0.  In \code{\link[=pk.nca]{pk.nca()}} only the
+interval forms give this, after an earlier dose, where the value at the
+dose time is the trough and C0 is back-extrapolated.  The other forms use a nonzero measured value at the
+dose time as C0 (the first method of \code{\link[=pk.calc.c0]{pk.calc.c0()}}), so they reach it only
+when called directly with an \code{auciv} from a lower \code{c0}.
 }
 \section{Functions}{
 \itemize{

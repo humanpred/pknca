@@ -16,9 +16,9 @@ test_that("adj.r.squared", {
 test_that("pk.calc.cmax", {
   # Confirm that all NAs give NA as an output
   expect_warning(v1 <- pk.calc.cmax(NA))
-  expect_equal(v1, NA)
+  expect_equal(v1, structure(NA, exclude = "All concentrations are missing"))
   expect_warning(v2 <- pk.calc.cmax(c(NA, NA)))
-  expect_equal(v2, NA)
+  expect_equal(v2, structure(NA, exclude = "All concentrations are missing"))
 
   # Confirm that no NAs give the max value
   expect_equal(pk.calc.cmax(c(1, 2)), 2)
@@ -32,15 +32,15 @@ test_that("pk.calc.cmax", {
 
   # Confirm that no data gives NA with a warning
   expect_warning(v3 <- pk.calc.cmax(numeric()))
-  expect_equal(v3, NA)
+  expect_equal(v3, structure(NA, exclude = "All concentrations are missing"))
 })
 
 test_that("pk.calc.cmin", {
   # Confirm that all NAs give NA as an output
   expect_warning(v1 <- pk.calc.cmin(NA))
-  expect_equal(v1, NA)
+  expect_equal(v1, structure(NA, exclude = "All concentrations are missing"))
   expect_warning(v2 <- pk.calc.cmin(c(NA, NA)))
-  expect_equal(v2, NA)
+  expect_equal(v2, structure(NA, exclude = "All concentrations are missing"))
 
   # Confirm that no NAs give the min value
   expect_equal(pk.calc.cmin(c(1, 2)), 1)
@@ -54,7 +54,7 @@ test_that("pk.calc.cmin", {
 
   # Confirm that no data gives NA with a warning
   expect_warning(v3 <- pk.calc.cmin(numeric()))
-  expect_equal(v3, NA)
+  expect_equal(v3, structure(NA, exclude = "All concentrations are missing"))
 })
 
 test_that("pk.calc.tmax", {
@@ -64,7 +64,7 @@ test_that("pk.calc.tmax", {
     class = "pknca_warning_no_concentration"),
     class = "pknca_warning_no_time"
   )
-  expect_equal(v1, NA)
+  expect_equal(v1, structure(NA, exclude = "All concentrations are missing"))
 
   # Either concentration or time is missing, give an error
   expect_error(
@@ -94,7 +94,7 @@ test_that("pk.calc.tmin", {
     class = "pknca_warning_no_concentration"),
     class = "pknca_warning_no_time"
   )
-  expect_equal(v1, NA)
+  expect_equal(v1, structure(NA, exclude = "All concentrations are missing"))
 
   # Either concentration or time is missing, give an error
   expect_error(
@@ -108,7 +108,7 @@ test_that("pk.calc.tmin", {
 
   # All NA concentrations give NA
   expect_warning(
-    expect_equal(pk.calc.tmin(c(NA, NA), c(0, 1), first.tmin=TRUE), NA),
+    expect_equal(pk.calc.tmin(c(NA, NA), c(0, 1), first.tmin=TRUE), structure(NA, exclude = "All concentrations are missing")),
     class = "pknca_warning_all_concentration_missing"
   )
 
@@ -138,7 +138,7 @@ test_that("pk.calc.tlast", {
   expect_equal(pk.calc.tlast(c(1, 2), c(0, 1)),
                1)
   expect_equal(pk.calc.tlast(c(0, 0), c(0, 1)),
-               NA)
+               structure(NA, exclude = "No concentration is above zero"))
   expect_equal(pk.calc.tlast(c(0, 1), c(0, 1)),
                1)
   expect_equal(pk.calc.tlast(c(1, 0), c(0, 1)),
@@ -188,7 +188,7 @@ test_that("pk.calc.clast.obs", {
     v1 <- pk.calc.clast.obs(c1, t1),
     class = "pknca_warning_all_concentration_missing"
   )
-  expect_equal(v1, NA_real_)
+  expect_equal(v1, structure(NA_real_, exclude = "All concentrations are missing"))
 
   c1 <- rep(0, 4)
   t1 <- c(0, 1, 2, 3)
@@ -260,19 +260,19 @@ test_that("pk.calc.cl", {
 test_that("pk.calc.f", {
   expect_equal(pk.calc.f(1, 1, 1, 2), 2,
                info="Standard bioavailability calculation")
-  expect_equal(pk.calc.f(NA, 1, 1, 1), NA_real_,
+  expect_equal(pk.calc.f(NA, 1, 1, 1), structure(NA_real_, exclude = "Dose is missing"),
                info="NA handling per parameter in bioavailability (1)")
   expect_equal(pk.calc.f(1, NA, 1, 1), NA_real_,
                info="NA handling per parameter in bioavailability (2)")
-  expect_equal(pk.calc.f(1, 1, NA, 1), NA_real_,
+  expect_equal(pk.calc.f(1, 1, NA, 1), structure(NA_real_, exclude = "Dose is missing"),
                info="NA handling per parameter in bioavailability (3)")
   expect_equal(pk.calc.f(1, 1, 1, NA), NA_real_,
                info="NA handling per parameter in bioavailability (4)")
-  expect_equal(pk.calc.f(0, 1, 1, 1), NA_real_,
+  expect_equal(pk.calc.f(0, 1, 1, 1), structure(NA_real_, exclude = "Dose is zero or negative"),
                info="Zero handling per parameter in bioavailability (1)")
-  expect_equal(pk.calc.f(1, 0, 1, 1), NA_real_,
+  expect_equal(pk.calc.f(1, 0, 1, 1), structure(NA_real_, exclude = "AUC is zero or negative"),
                info="Zero handling per parameter in bioavailability (2)")
-  expect_equal(pk.calc.f(1, 1, 0, 1), NA_real_,
+  expect_equal(pk.calc.f(1, 1, 0, 1), structure(NA_real_, exclude = "Dose is zero or negative"),
                info="Zero handling per parameter in bioavailability (3)")
   expect_equal(pk.calc.f(1, 1, 1, 0), 0,
                info="Zero handling per parameter in bioavailability (4)")
@@ -289,7 +289,7 @@ test_that("pk.calc.aucpext", {
     class = "pknca_warning_aucpext_aucinf_le_auclast"),
     class = "pknca_warning_aucpext_aucinf_auclast_positive"
   )
-  expect_equal(v2, NA_real_,
+  expect_equal(v2, structure(NA_real_, exclude = "AUCinf is zero"),
                info="aucinf<=0 gives NA_real_ (not infinity)")
   expect_equal(pk.calc.aucpext(NA, NA),
                NA_real_,
@@ -328,10 +328,10 @@ test_that("pk.calc.mrt.iv", {
                2,
                info="MRT.iv is calculated correctly when duration is 0")
   expect_equal(pk.calc.mrt.iv(auc=1, aumc=2, duration.dose=NA),
-               NA_real_,
+               structure(NA_real_, exclude = "A dose time or duration is missing"),
                info="MRT.iv is calculated correctly when duration is missing")
   expect_equal(pk.calc.mrt.iv(auc=0, aumc=2, duration.dose=NA),
-               NA_real_,
+               structure(NA_real_, exclude = "A dose time or duration is missing; AUC is zero or negative"),
                info="MRT.iv is calculated correctly when auc is zero")
 })
 
@@ -378,24 +378,24 @@ test_that("pk.calc.mrt.iv uses the dose-weighted mean input time for several dos
 test_that("pk.calc.mrt.iv returns NA when the mean input time is unknown for several doses", {
   expect_equal(
     pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(1, NA), dose=c(10, 10), time.dose=c(0, 1)),
-    NA_real_
+    structure(NA_real_, exclude = "A dose time or duration is missing")
   )
   expect_equal(
     pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(1, 2), dose=c(10, NA), time.dose=c(0, 1)),
-    NA_real_
+    structure(NA_real_, exclude = "A dose amount is missing, or the doses sum to zero")
   )
   expect_equal(
     pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(1, 2), dose=c(0, 0), time.dose=c(0, 1)),
-    NA_real_
+    structure(NA_real_, exclude = "A dose amount is missing, or the doses sum to zero")
   )
   expect_equal(
     pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=c(1, 2), dose=c(10, 10), time.dose=c(0, NA)),
-    NA_real_,
+    structure(NA_real_, exclude = "A dose time or duration is missing"),
     info="a missing dose time with several doses gives NA"
   )
   expect_equal(
     pk.calc.mrt.iv(auc=0, aumc=6, duration.dose=c(1, 2), dose=c(10, 10), time.dose=c(0, 1)),
-    NA_real_
+    structure(NA_real_, exclude = "AUC is zero or negative")
   )
   # The weights are not guessed: with one dose missing, the result is NA rather than
   # the equal-weight value
@@ -410,27 +410,27 @@ test_that("pk.calc.mrt.iv returns NA when the mean input time is unknown for sev
     6 - (3 + 2/2)
   )
   # A single dose with a missing time or duration is NA
-  expect_equal(pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=2, dose=10, time.dose=NA_real_), NA_real_)
-  expect_equal(pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=NA_real_, dose=10, time.dose=0), NA_real_)
+  expect_equal(pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=2, dose=10, time.dose=NA_real_), structure(NA_real_, exclude = "A dose time or duration is missing"))
+  expect_equal(pk.calc.mrt.iv(auc=1, aumc=6, duration.dose=NA_real_, dose=10, time.dose=0), structure(NA_real_, exclude = "A dose time or duration is missing"))
 })
 
 test_that("pk.calc.mrt.md.iv returns NA when the mean input time is unknown for several doses", {
   args <- list(auctau=10, aumctau=40, aucinf=12, tau=12)
   expect_equal(
     do.call(pk.calc.mrt.md.iv, c(args, list(duration.dose=c(1, NA), dose=c(10, 10), time.dose=c(0, 1)))),
-    NA_real_
+    structure(NA_real_, exclude = "A dose time or duration is missing")
   )
   expect_equal(
     do.call(pk.calc.mrt.md.iv, c(args, list(duration.dose=c(1, 2), dose=c(10, NA), time.dose=c(0, 1)))),
-    NA_real_
+    structure(NA_real_, exclude = "A dose amount is missing, or the doses sum to zero")
   )
   expect_equal(
     do.call(pk.calc.mrt.md.iv, c(args, list(duration.dose=c(1, 2), dose=c(0, 0), time.dose=c(0, 1)))),
-    NA_real_
+    structure(NA_real_, exclude = "A dose amount is missing, or the doses sum to zero")
   )
   expect_equal(
     do.call(pk.calc.mrt.md.iv, c(args, list(duration.dose=c(1, 2), dose=c(10, 10), time.dose=c(0, NA)))),
-    NA_real_
+    structure(NA_real_, exclude = "A dose time or duration is missing")
   )
   # A single dose row does not use dose
   expect_equal(
@@ -494,7 +494,7 @@ test_that("pk.calc.mrt.iv requires one result and consistent dose inputs (#694)"
 
 test_that("pk.calc.mrt.md", {
   expect_equal(pk.calc.mrt.md(1, 2, 1.5, 24), 2 + 24*0.5)
-  expect_equal(pk.calc.mrt.md(0, 2, 1.5, 24), NA_real_,
+  expect_equal(pk.calc.mrt.md(0, 2, 1.5, 24), structure(NA_real_, exclude = "AUC is zero or negative"),
                info="auctau <= 0 becomes NA (not Inf)")
 })
 
@@ -503,9 +503,9 @@ test_that("pk.calc.mrt.md.iv", {
   expect_equal(pk.calc.mrt.md.iv(1, 2, 1.5, 24, duration.dose=0),
                pk.calc.mrt.md(1, 2, 1.5, 24),
                info="a zero infusion duration is the same as the non-IV form")
-  expect_equal(pk.calc.mrt.md.iv(0, 2, 1.5, 24, duration.dose=4), NA_real_,
+  expect_equal(pk.calc.mrt.md.iv(0, 2, 1.5, 24, duration.dose=4), structure(NA_real_, exclude = "AUC is zero or negative"),
                info="auctau <= 0 becomes NA (not Inf)")
-  expect_equal(pk.calc.mrt.md.iv(1, 2, 1.5, 24, duration.dose=NA), NA_real_,
+  expect_equal(pk.calc.mrt.md.iv(1, 2, 1.5, 24, duration.dose=NA), structure(NA_real_, exclude = "A dose time or duration is missing"),
                info="a missing infusion duration becomes NA")
 })
 
@@ -597,7 +597,7 @@ test_that("pk.calc.vss and its wrappers", {
 test_that("pk.calc.cav", {
   expect_equal(pk.calc.cav(2, 0, 1), 2)
   expect_equal(pk.calc.cav(NA, 0, 1), NA_real_)
-  expect_equal(pk.calc.cav(2, 1, 1), NA_real_,
+  expect_equal(pk.calc.cav(2, 1, 1), structure(NA_real_, exclude = "The interval has zero duration"),
                info="If end == start, return NA_real_")
 })
 
@@ -677,7 +677,7 @@ test_that("pk.calc.ctrough", {
                info="Found and it's the first time")
   expect_equal(pk.calc.ctrough(1:5, 0:4, 1), 2,
                info="Found and it's not the first time")
-  expect_equal(pk.calc.ctrough(1:5, 0:4, 1.5), NA_real_,
+  expect_equal(pk.calc.ctrough(1:5, 0:4, 1.5), structure(NA_real_, exclude = "No non-missing concentration at the end of the interval"),
                info="Not found")
   expect_error(
     pk.calc.ctrough(1:5, c(0, 0:3), 0),
@@ -688,7 +688,7 @@ test_that("pk.calc.ctrough", {
 test_that("pk.calc.ptr", {
   expect_equal(pk.calc.ptr(cmax=2, ctrough=1), 2,
                info="Confirm that the ratio goes the right way")
-  expect_equal(pk.calc.ptr(2, 0), NA_real_,
+  expect_equal(pk.calc.ptr(2, 0), structure(NA_real_, exclude = "Ctrough is zero"),
                info="Division by zero returns NA")
 })
 
@@ -697,26 +697,94 @@ test_that("pk.calc.tlag", {
                info="find the first point")
   expect_equal(pk.calc.tlag(c(0, 0, 0, 0, 1), 0:4), 3,
                info="find the next to last point")
-  expect_equal(pk.calc.tlag(c(0, 0, 0, 0, 0), 0:4), NA_real_,
+  expect_equal(pk.calc.tlag(c(0, 0, 0, 0, 0), 0:4), structure(NA_real_, exclude = "Concentrations never increase"),
                info="No increase gives NA")
-  expect_equal(pk.calc.tlag(5:1, 0:4), NA_real_,
+  expect_equal(pk.calc.tlag(5:1, 0:4), structure(NA_real_, exclude = "Concentrations never increase"),
                info="No increase gives NA")
+})
+
+test_that("pk.calc.tlag skips missing concentrations, as the other simple parameters do", {
+  # At the start:  the first increase among the measured values is 40 to 80
+  expect_equal(pk.calc.tlag(c(NA, 40, 80, 10), c(0, 2, 4, 8)), 2)
+  # At the start with no increase among the measured values
+  expect_equal(pk.calc.tlag(c(NA, 40, 20, 10), c(0, 2, 4, 8)), structure(NA_real_, exclude = "Concentrations never increase"))
+  # In the middle:  10 and 5 are not an increase, 5 to 8 is
+  expect_equal(pk.calc.tlag(c(10, NA, 5, 8), 0:3), 2)
+  # At the end
+  expect_equal(pk.calc.tlag(c(0, 5, 10, NA), 0:3), 0)
+  # Between the last zero and the first increase:  the lag is the time of the
+  # last measured zero
+  expect_equal(pk.calc.tlag(c(0, NA, 5, 8), c(0, 1, 2, 4)), 0)
+  # Everywhere, with a warning from the check, and without it
+  expect_warning(
+    value_all_missing <- pk.calc.tlag(c(NA_real_, NA_real_, NA_real_), 0:2),
+    class = "pknca_warning_all_concentration_missing"
+  )
+  expect_equal(value_all_missing, structure(NA_real_, exclude = "All concentrations are missing"))
+  expect_equal(pk.calc.tlag(c(NA_real_, NA_real_, NA_real_), 0:2, check = FALSE), structure(NA_real_, exclude = "All concentrations are missing"))
+  # check = FALSE skips the assertions, not the missing values
+  expect_equal(pk.calc.tlag(c(10, NA, 5, 8), 0:3, check = FALSE), 2)
+})
+
+# tlag from 0 to 8 of one profile with the conc.na option `conc_na`
+tlag_test_nca <- function(conc, conc_na) {
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(data.frame(id = 1, time = c(0, 2, 4, 8), conc = conc), conc ~ time | id),
+      PKNCAdose(data.frame(id = 1, time = 0, dose = 1), dose ~ time | id),
+      intervals = data.frame(start = 0, end = 8, tlag = TRUE),
+      options = list(conc.na = conc_na)
+    )
+  res <- as.data.frame(suppressWarnings(suppressMessages(pk.nca(o_data))))
+  res$PPORRES[res$PPTESTCD == "tlag"]
+}
+
+test_that("tlag in pk.nca with missing concentrations", {
+  # The missing value is skipped at either conc.na, as for cmax
+  for (conc_na in list("drop", 0)) {
+    expect_equal(tlag_test_nca(c(NA, 40, 80, 10), conc_na), 2, info = as.character(conc_na))
+    # No increase among the measured values:  NA, where the interval stopped
+    # with "Please report a bug"
+    expect_equal(tlag_test_nca(c(NA, 40, 20, 10), conc_na), NA_real_, info = as.character(conc_na))
+  }
+  # Every concentration missing:  NA, where the interval stopped with "Please
+  # report a bug" (the data checks warn that every concentration is missing)
+  expect_warning(
+    value_all_missing <- tlag_test_nca(rep(NA_real_, 4), "drop"),
+    class = "pknca_warning_all_concentration_missing"
+  )
+  expect_equal(value_all_missing, NA_real_)
 })
 
 test_that("pk.calc.deg.fluc", {
   expect_equal(pk.calc.deg.fluc(cmax=100, cmin=10, cav=45), 200,
                info="Degree of fluctuation math works")
-  expect_equal(pk.calc.deg.fluc(cmax=100, cmin=10, cav=0), NA_real_,
+  expect_equal(pk.calc.deg.fluc(cmax=100, cmin=10, cav=0), structure(NA_real_, exclude = "Cav is zero"),
                info="Degree of fluctuation returns NA when cav=0")
 })
 
 test_that("pk.calc.swing", {
+  # A missing cmin or cmax gives NA_real_, not an error, and not the infinity
+  # of a zero cmin
+  expect_identical(pk.calc.swing(10, NA), NA_real_)
+  expect_identical(pk.calc.swing(NA, 2), NA_real_)
+  expect_identical(pk.calc.swing(NA, 0), NA_real_)
+  expect_identical(pk.calc.swing(NA, NA), NA_real_)
+  expect_identical(pk.calc.swing(10, NA_integer_), NA_real_)
   expect_equal(pk.calc.swing(100, 10), 900,
                info="Swing math works")
   expect_equal(pk.calc.swing(100, 0), Inf,
                info="Swing handle Ctrough=0")
   expect_equal(pk.calc.swing(100, -1), Inf,
                info="Swing handle Ctrough<0")
+  expect_identical(pk.calc.swing(0, 0), Inf)
+  # One value for each pair, as the released version gave for a vector of cmax
+  expect_identical(pk.calc.swing(cmax = c(10, 20), cmin = 1), c(900, 1900))
+  expect_identical(pk.calc.swing(cmax = numeric(0), cmin = 1), numeric(0))
+  expect_identical(
+    pk.calc.swing(cmax = c(10, 20, NA, 5, 5, 0), cmin = c(1, 4, 1, NA, 0, 0)),
+    c(900, 400, NA, NA, Inf, Inf)
+  )
 })
 
 test_that("pk.calc.ceoi", {
@@ -724,10 +792,10 @@ test_that("pk.calc.ceoi", {
                1,
                info="Ceoi returns the concentration at the end of the dosing duration")
   expect_equal(pk.calc.ceoi(conc=0:5, time=0:5, duration.dose=1.5),
-               NA_real_,
+               structure(NA_real_, exclude = "No non-missing concentration at the end of the infusion"),
                info="Ceoi returns NA if there is no measurement at the end of the dosing duration")
   expect_equal(pk.calc.ceoi(conc=0:5, time=0:5, duration.dose=NA),
-               NA_real_,
+               structure(NA_real_, exclude = "Dose duration is missing (or there is no dose in the interval)"),
                info="Ceoi returns NA if there is no dosing duration")
 })
 
@@ -793,7 +861,7 @@ test_that("pk.calc.totdose", {
 test_that("pk.calc.cstart", {
   expect_equal(pk.calc.cstart(1:5, 0:4, 0), 1)
   expect_equal(pk.calc.cstart(1:5, 0:4, 1), 2)
-  expect_equal(pk.calc.cstart(1:5, 0:4, 1.5), NA_real_)
+  expect_equal(pk.calc.cstart(1:5, 0:4, 1.5), structure(NA_real_, exclude = "No non-missing concentration at the start of the interval"))
   expect_error(
     pk.calc.cstart(1:5, c(0, 0:3), 0),
     regexp = "Assertion on 'time' failed: Contains duplicated values, position 2."
@@ -816,10 +884,11 @@ test_that("pk.calc.aucabove rejects non-finite conc_above", {
 })
 
 test_that("zero-length input gives NA rather than zero (issue 601)", {
-  expect_equal(pk.calc.cl(dose = numeric(0), auc = 10), NA_real_)
-  expect_equal(pk.calc.cl(dose = NULL, auc = 10), NA_real_)
-  expect_equal(pk.calc.totdose(dose = numeric(0)), NA_real_)
-  expect_equal(pk.calc.totdose(dose = NULL), NA_real_)
+  no_dose <- structure(NA_real_, exclude = "No dose in the interval")
+  expect_equal(pk.calc.cl(dose = numeric(0), auc = 10), no_dose)
+  expect_equal(pk.calc.cl(dose = NULL, auc = 10), no_dose)
+  expect_equal(pk.calc.totdose(dose = numeric(0)), no_dose)
+  expect_equal(pk.calc.totdose(dose = NULL), no_dose)
   # Unchanged for real input, including multiple doses in one interval
   expect_equal(pk.calc.cl(dose = 100, auc = 10), 10)
   expect_equal(pk.calc.cl(dose = c(50, 50), auc = 10), 10)
@@ -863,4 +932,286 @@ test_that("count.conc and count.conc.measured count imputed concentrations by va
   # A fabricated minimum is above the limit of quantification, so it is counted
   # by both even though it was not measured at that time
   expect_equal(counts("start_cmin"), c(conc = 7, measured = 7))
+})
+
+test_that("ceoi refuses a dose duration that is not one number", {
+  expect_error(
+    pk.calc.ceoi(conc = c(0, 5, 3), time = c(0, 1, 2), duration.dose = numeric(0)),
+    class = "pknca_error_duration_dose_invalid"
+  )
+  expect_error(
+    pk.calc.ceoi(conc = c(0, 5, 3), time = c(0, 1, 2), duration.dose = c(1, 2)),
+    class = "pknca_error_duration_dose_invalid"
+  )
+  expect_equal(pk.calc.ceoi(conc = c(0, 5, 3), time = c(0, 1, 2), duration.dose = 1), 5)
+})
+
+test_that("swing in pk.nca() with every concentration missing is NA", {
+  # The data checks warn that every concentration is missing
+  res <-
+    suppressWarnings(
+      as.data.frame(pk.nca(PKNCAdata(
+        PKNCAconc(data.frame(id = 1, time = c(0, 2, 4), conc = NA_real_), conc ~ time | id),
+        PKNCAdose(data.frame(id = 1, time = 0, dose = 1), dose ~ time | id),
+        intervals = data.frame(start = 0, end = 4, swing = TRUE)
+      ))),
+      classes = "pknca_warning_all_concentration_missing"
+    )
+  expect_equal(res$PPORRES[res$PPTESTCD == "swing"], NA_real_)
+})
+
+# The tlag or swing results of pk.nca() for concentration data with the columns
+# id, time, and conc, on one interval from 0 to `end`, in the order of id
+tlag_swing_results <- function(d_conc, parameter, conc.na, end) {
+  d_interval <- data.frame(start = 0, end = end)
+  d_interval[[parameter]] <- TRUE
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time | id),
+      intervals = d_interval,
+      options = list(conc.na = conc.na)
+    )
+  res <-
+    suppressWarnings(
+      as.data.frame(pk.nca(o_data)),
+      classes = "pknca_warning_all_concentration_missing"
+    )
+  res <- res[res$PPTESTCD == parameter, ]
+  res$PPORRES[order(res$id)]
+}
+
+test_that("a profile with missing concentrations does not stop tlag or swing for the other profiles (#723)", {
+  # The profile with missing concentrations gets NA, and the other subject's
+  # result is calculated, at any conc.na.
+
+  # tlag: a falling profile, with one sample missing for the second subject
+  d_falling <-
+    data.frame(
+      id = rep(1:2, each = 5),
+      time = rep(c(0.25, 1, 2, 4, 8), 2),
+      conc = c(10, 8, 6, 4, 2, 10, 8, NA, 4, 2)
+    )
+  expect_identical(tlag_swing_results(d_falling, "tlag", conc.na = "drop", end = Inf), c(NA_real_, NA_real_))
+  expect_identical(tlag_swing_results(d_falling, "tlag", conc.na = 0, end = Inf), c(NA_real_, NA_real_))
+  expect_identical(pk.calc.tlag(conc = c(10, 8, NA, 4, 2), time = c(0.25, 1, 2, 4, 8)), structure(NA_real_, exclude = "Concentrations never increase"))
+
+  # tlag: no measurable concentration and one missing sample for the second
+  # subject
+  d_none_measurable <-
+    data.frame(
+      id = rep(1:2, each = 4),
+      time = rep(c(0, 1, 2, 4), 2),
+      conc = c(0, 5, 3, 1, 0, 0, NA, 0)
+    )
+  expect_identical(tlag_swing_results(d_none_measurable, "tlag", conc.na = "drop", end = Inf), c(0, NA_real_))
+
+  # swing: every sample of the second subject's interval is missing
+  d_all_missing <-
+    data.frame(
+      id = rep(1:2, each = 4),
+      time = rep(c(0, 1, 2, 4), 2),
+      conc = c(1, 5, 3, 1, NA, NA, NA, NA)
+    )
+  expect_identical(tlag_swing_results(d_all_missing, "swing", conc.na = "drop", end = 4), c(400, NA_real_))
+  expect_identical(tlag_swing_results(d_all_missing, "swing", conc.na = 0, end = 4), c(400, NA_real_))
+})
+
+# Results of `parameters` from pk.nca() for one subject, dosed at time 0, over
+# the interval 0 to 24.
+simple_reason_results <- function(conc, parameters, dose = 100, duration = 0,
+                                  route = "extravascular", conc.na = "drop",
+                                  time = c(0, 1, 2, 4, 8, 24)) {
+  d_interval <- data.frame(start = 0, end = 24)
+  for (current_parameter in parameters) {
+    d_interval[[current_parameter]] <- TRUE
+  }
+  # The profiles are degenerate on purpose, so the warnings they give are
+  # expected
+  res <-
+    suppressWarnings(
+      {
+        o_data <-
+          PKNCAdata(
+            PKNCAconc(data.frame(id = 1, time = time, conc = conc), conc ~ time | id),
+            PKNCAdose(
+              data.frame(id = 1, time = 0, dose = dose, duration = duration),
+              dose ~ time | id, route = route, duration = "duration"
+            ),
+            intervals = d_interval,
+            options = list(conc.na = conc.na)
+          )
+        as.data.frame(pk.nca(o_data))
+      },
+      classes = c(
+        "pknca_warning_all_concentration_missing",
+        "pknca_warning_deprecated_parameter",
+        "pknca_warning_interval_inconsistent_parameters",
+        "pknca_warning_auc_before_first",
+        "pknca_warning_tau_undetermined",
+        "pknca_warning_halflife_too_few_points",
+        "pknca_warning_aucpext_aucinf_le_auclast",
+        "pknca_warning_aucpext_aucinf_auclast_positive"
+      )
+    )
+  as.data.frame(res[res$PPTESTCD %in% parameters, c("PPTESTCD", "PPORRES", "exclude")])
+}
+
+test_that("a simple parameter that is NA because of missing or unusable data says why in pk.nca()", {
+  all_missing <-
+    simple_reason_results(
+      conc = rep(NA_real_, 6),
+      parameters = c("cmax", "cmin", "tmax", "tmin", "tlast", "tfirst", "clast.obs", "tlag", "swing", "cmax.dn")
+    )
+  expect_true(all(is.na(all_missing$PPORRES)))
+  expect_equal(unique(all_missing$exclude), "All concentrations are missing")
+
+  all_zero <-
+    simple_reason_results(
+      conc = rep(0, 6),
+      parameters = c("tmax", "tlast", "tfirst", "tlag", "cl.last", "mrt.last", "ptr", "deg.fluc", "aucpext.inf.obs", "mrt.md.inf.obs")
+    )
+  expect_true(all(is.na(all_zero$PPORRES)))
+  expect_equal(
+    all_zero$exclude[match(c("tmax", "tlast", "tfirst", "tlag", "cl.last", "mrt.last", "ptr", "deg.fluc", "aucpext.inf.obs", "mrt.md.inf.obs"), all_zero$PPTESTCD)],
+    c(
+      rep("No concentration is above zero", 3),
+      "Concentrations never increase",
+      "AUC is zero or negative", "AUC is zero or negative",
+      "Ctrough is zero",
+      "Cav is zero",
+      "AUCinf is zero",
+      "The dosing interval (tau) is not known; AUC is zero or negative"
+    )
+  )
+
+  missing_ends <-
+    simple_reason_results(conc = c(NA, 5, 8, 6, 3, NA), parameters = c("cstart", "ctrough", "ptr"))
+  expect_true(all(is.na(missing_ends$PPORRES)))
+  expect_equal(
+    missing_ends$exclude[match(c("cstart", "ctrough", "ptr"), missing_ends$PPTESTCD)],
+    c(
+      "No non-missing concentration at the start of the interval",
+      "No non-missing concentration at the end of the interval",
+      "No non-missing concentration at the end of the interval"
+    )
+  )
+
+  dose_missing <-
+    simple_reason_results(conc = c(0, 5, 8, 6, 3, 1), parameters = c("cl.last", "cmax.dn", "totdose", "vss.last"), dose = NA)
+  expect_true(all(is.na(dose_missing$PPORRES)))
+  expect_equal(unique(dose_missing$exclude), "Dose is missing")
+
+  infusion <-
+    simple_reason_results(
+      conc = c(0, 5, 8, 6, 3, 1), parameters = "ceoi", duration = 1.5, route = "intravascular"
+    )
+  expect_equal(infusion$PPORRES, NA_real_)
+  expect_equal(infusion$exclude, "No non-missing concentration at the end of the infusion")
+})
+
+test_that("every registered parameter gives a reason with each NA in pk.nca()", {
+  all_intervals <- get.interval.cols()
+  parameters <-
+    names(all_intervals)[vapply(all_intervals, function(x) !is.null(x$FUN) && !is.na(x$FUN), logical(1))]
+  # Parameters these fixtures cannot calculate:  they need a urine collection
+  # (volume), a reference interval, or a concentration threshold
+  not_exercised <- c(
+    "ae", "fe", "volpk", "ertlst", "ermax", "ertmax", "erint", "erlst",
+    grep("^clr[.]", parameters, value = TRUE),
+    grep("^(f|ratio)[.]", parameters, value = TRUE),
+    "time.above", "time_above"
+  )
+  expect_true(all(not_exercised %in% parameters))
+  parameters <- setdiff(parameters, not_exercised)
+  # Known to give NA without a reason in these fixtures, from the IV
+  # back-extrapolation functions (and cl.iv.* calculated from them).  When they
+  # gain reasons, this test fails until they are removed from the list.
+  known_without_reason <- c(
+    "aucivinf.obs", "aucivinf.pred", "aumcivinf.obs", "aumcivinf.pred",
+    "cl.iv.inf.obs", "cl.iv.inf.pred", "cl.iv.obs", "cl.iv.pred",
+    "aucivpbext.last", "aucivpbext.all", "aucivpbext.inf.obs", "aucivpbext.inf.pred",
+    "aucivpbext.int.last", "aucivpbext.int.all",
+    "aucivpbextlast", "aucivpbextall", "aucivpbextinf.obs", "aucivpbextinf.pred",
+    "aucivpbextint.last", "aucivpbextint.all"
+  )
+  fixtures <- list(
+    all_missing = list(conc = rep(NA_real_, 6), dose = 100),
+    all_zero = list(conc = rep(0, 6), dose = 100),
+    missing_ends = list(conc = c(NA, 5, 8, 6, 3, NA), dose = 100),
+    one_measured = list(conc = c(0, 0, 5, 0, 0, 0), dose = 100),
+    dose_zero = list(conc = c(0, 5, 8, 6, 3, 1), dose = 0),
+    dose_missing = list(conc = c(0, 5, 8, 6, 3, 1), dose = NA)
+  )
+  found_without_reason <- character(0)
+  for (current_route in c("extravascular", "intravascular")) {
+    for (current_fixture in names(fixtures)) {
+      for (current_conc_na in list("drop", 0)) {
+        current_info <- paste(current_route, current_fixture, current_conc_na)
+        res <-
+          simple_reason_results(
+            conc = fixtures[[current_fixture]]$conc, parameters = parameters,
+            dose = fixtures[[current_fixture]]$dose,
+            duration = if (current_route == "intravascular") 1.5 else 0,
+            route = current_route, conc.na = current_conc_na
+          )
+        # The fixture calculates and has NA results to check
+        expect_gt(nrow(res), 0)
+        expect_true(any(is.na(res$PPORRES)), info = current_info)
+        no_reason <- unique(res$PPTESTCD[is.na(res$PPORRES) & is.na(res$exclude)])
+        expect_equal(setdiff(no_reason, known_without_reason), character(0), info = current_info)
+        found_without_reason <- union(found_without_reason, no_reason)
+      }
+    }
+  }
+  expect_setequal(found_without_reason, known_without_reason)
+})
+
+test_that("a reason is given with a single value only, never beside a valid value", {
+  # One value:  the reason is given
+  # A zero aucinf warns as well
+  aucpext_classes <- c("pknca_warning_aucpext_aucinf_le_auclast", "pknca_warning_aucpext_aucinf_auclast_positive")
+  expect_equal(
+    suppressWarnings(pk.calc.aucpext(1, 0), classes = aucpext_classes),
+    structure(NA_real_, exclude = "AUCinf is zero")
+  )
+  expect_equal(pk.calc.cav(10, 5, 5), structure(NA_real_, exclude = "The interval has zero duration"))
+  expect_equal(pk.calc.dn(1, NA), structure(NA_real_, exclude = "Dose is missing"))
+  # Several values with one NA among them:  no attribute
+  expect_equal(
+    suppressWarnings(pk.calc.aucpext(c(1, 1), c(2, 0)), classes = aucpext_classes),
+    c(50, NA_real_)
+  )
+  expect_equal(pk.calc.cav(10, c(0, 5), 5), c(2, NA_real_))
+  expect_equal(pk.calc.dn(c(1, 2), c(1, NA)), c(1, NA_real_))
+  expect_equal(pk.calc.ptr(c(2, 2), c(1, 0)), c(2, NA_real_))
+  expect_equal(pk.calc.deg.fluc(cmax = c(100, 100), cmin = 10, cav = c(45, 0)), c(200, NA_real_))
+  expect_equal(pk.calc.f(c(1, 0), 1, 1, 1), c(1, NA_real_))
+  expect_equal(pk.calc.totdose(c(1, 2)), 3)
+})
+
+test_that("a dose-normalized zero over a zero dose stays NaN and says why", {
+  expect_equal(pk.calc.dn(0, 0), structure(NaN, exclude = "Dose is zero"))
+  # A nonzero value over a zero dose is infinite, as before, with no reason
+  expect_identical(pk.calc.dn(1, 0), Inf)
+})
+
+test_that("ctrough for an interval with no finite end says so", {
+  expect_equal(pk.calc.ctrough(1:5, 0:4, Inf), structure(NA_real_, exclude = "The interval has no finite end"))
+})
+
+test_that("ceoi names the input it refuses and keeps what gave a value", {
+  expect_error(
+    pk.calc.ceoi(conc = c(0, 5, 3), time = c(0, 1, 2), duration.dose = c(1, 2)),
+    class = "pknca_error_duration_dose_invalid",
+    regexp = "Assertion on 'duration.dose' failed: Must have length 1.",
+    fixed = TRUE
+  )
+  expect_error(
+    pk.calc.ceoi(conc = c(0, 5, 3), time = c(0, 1, 2), duration.dose = 1, check = logical(0)),
+    class = "pknca_error_check_invalid",
+    regexp = "Assertion on 'check' failed: Must be TRUE or FALSE (one value, not NA).",
+    fixed = TRUE
+  )
+  # What gave a value still gives it:  a logical duration is a number
+  expect_equal(pk.calc.ceoi(conc = c(0, 5, 3), time = c(0, 1, 2), duration.dose = TRUE), 5)
 })

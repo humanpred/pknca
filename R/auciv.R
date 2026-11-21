@@ -41,6 +41,9 @@
 #'   by `fun_auxc` when `auc.type` is `"AUCinf"` (`clast.obs` gives AUCinf,obs
 #'   and `clast.pred` gives AUCinf,pred)
 #'
+#' @param auxc_name The name of `auxc` in an error message:  the argument as
+#'   the calling function names it (`auc` or `aumc`)
+#'
 #' @return The AUXC calculated using `c0`
 #'
 #' @family AUC calculations
@@ -48,7 +51,7 @@
 #' @export
 pk.calc.auxciv <- function(conc, time, c0, auxc, fun_auxc_last, fun_auxc,
                            auc.type = NULL, lambda.z = NA, clast = NA,
-                           ..., options = list(), check = TRUE) {
+                           ..., options = list(), check = TRUE, auxc_name = "auxc") {
   if (check) {
     assert_conc_time(conc = conc, time = time)
     data <-
@@ -62,10 +65,19 @@ pk.calc.auxciv <- function(conc, time, c0, auxc, fun_auxc_last, fun_auxc,
   }
   if (nrow(data) == 0) {
     return(structure(NA_real_, exclude = "No data for AUC calculation"))
-  } else if (is.na(c0)) {
+  }
+  # The errors name the argument of the calling function (pk.calc.auciv() or
+  # pk.calc.aumciv()).  Each value is checked where it is used.
+  call <- rlang::caller_env()
+  abort_invalid(
+    length(c0) != 1, "c0", "Must be one number (or NA)",
+    class = "pknca_error_c0_invalid", call = call
+  )
+  if (is.na(c0)) {
     return(structure(NA_real_, exclude = "c0 is not calculated"))
   }
   if (0 %in% data$time) {
+    abort_invalid_auxciv_values(c0 = c0, auxc = auxc, auxc_name = auxc_name, call = call)
     auxc_first <- fun_auxc_last(conc = data$conc[1:2], time = data$time[1:2], ..., check = FALSE)
     auxc_second <- fun_auxc_last(conc = c(c0, data$conc[2]), time = data$time[1:2], ..., check = FALSE)
     auxc + auxc_second - auxc_first
@@ -74,12 +86,14 @@ pk.calc.auxciv <- function(conc, time, c0, auxc, fun_auxc_last, fun_auxc,
   } else if (!is.na(auxc)) {
     # auxc extrapolated back to time 0 with conc.origin (zero); replace that
     # segment with the one starting from c0.
+    abort_invalid_auxciv_values(c0 = c0, auxc = auxc, auxc_name = auxc_name, call = call)
     auxc_first <- fun_auxc_last(conc = c(0, data$conc[1]), time = c(0, data$time[1]), ..., check = FALSE)
     auxc_second <- fun_auxc_last(conc = c(c0, data$conc[1]), time = c(0, data$time[1]), ..., check = FALSE)
     auxc + auxc_second - auxc_first
   } else if (is.null(auc.type)) {
     structure(NA_real_, exclude = "No time 0 in data")
   } else {
+    abort_invalid_auxciv_values(c0 = c0, auxc = NA, auxc_name = auxc_name, call = call)
     auxc_args <-
       list(
         conc = c(c0, data$conc), time = c(0, data$time),
@@ -118,7 +132,8 @@ pk.calc.auciv <- function(conc, time, c0, auc, auc.type = NULL,
     clast = clast,
     ...,
     options = options,
-    check = check
+    check = check,
+    auxc_name = "auc"
   )
 }
 
@@ -136,9 +151,13 @@ pknca_concept(pk.calc.auciv) <- "auc"
 #'   starting from \eqn{C_0}, which is back-extrapolated with the methods of
 #'   [pk.calc.c0()] from the concentrations after the dose that are within the
 #'   interval and before the next dose (with BLQ and missing concentrations
-#'   handled as the AUCint handles them).  A concentration measured at the dose
-#'   time is taken to be measured before the dose, as for
-#'   [interp.extrap.conc.dose()], so it is not used as \eqn{C_0}.
+#'   handled as the AUCint handles them).  After an earlier dose, a
+#'   concentration measured at the dose time is taken to be measured before the
+#'   dose (the trough), as for [interp.extrap.conc.dose()], so it is not used as
+#'   \eqn{C_0}.  At the first dose there is no profile before it, so a nonzero
+#'   concentration measured at the dose time is \eqn{C_0}, as for
+#'   [pk.calc.c0()] and `aucivlast`:  the AUXCint already starts from it and is
+#'   returned unchanged.
 #'
 #'   An interval that starts at an IV infusion has nothing to back-extrapolate,
 #'   so the AUXCint is returned unchanged; an interval that does not start at an
@@ -155,34 +174,81 @@ pknca_concept(pk.calc.auciv) <- "auc"
 #' @param auxc The AUXC over the interval from the AUCint or AUMCint family
 #' @param fun_auxcint_last The AUClast-type AUXCint function
 #'   ([pk.calc.aucint.last()] or [pk.calc.aumcint.last()]) used for the segment
-#'   that is replaced
+#'   that is replaced when `auc.type` is not `"AUCinf"`
+#' @param fun_auxcint The AUXCint function ([pk.calc.aucint()] or
+#'   [pk.calc.aumcint()]) used for the segment that is replaced when `auc.type`
+#'   is `"AUCinf"`, so that the segment starts from the concentration that
+#'   `auxc` estimated at the start of the interval (with `lambda.z`)
+#' @param auc.type,lambda.z,clast The AUC type of `auxc` and, for `"AUCinf"`,
+#'   the half-life inputs it was calculated with
 #' @inheritParams PKNCA.choose.option
+#' @param auxc_name The name of `auxc` in an error message:  the argument as
+#'   the calling function names it (`auc` or `aumc`)
 #' @return The AUXC over the interval with C0 back-extrapolated
 #' @family AUC calculations
 #' @family AUMC calculations
 #' @export
 pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extravascular",
                                duration.dose = 0,
-                               auxc, fun_auxcint_last, options = list()) {
+                               auxc, fun_auxcint_last, options = list(),
+                               auc.type = "AUClast", lambda.z = NA, clast = NA, fun_auxcint = NULL,
+                               auxc_name = "auxc") {
+  # The error names the argument of the calling function (pk.calc.auciv.int()
+  # or pk.calc.aumciv.int())
+  call <- rlang::caller_env()
+  abort_invalid(
+    length(auxc) != 1, auxc_name, "Must be one number (or NA)",
+    class = "pknca_error_auxc_invalid", call = call
+  )
+  if (identical(auc.type, "AUCinf") && is.null(fun_auxcint)) {
+    rlang::abort(
+      "`fun_auxcint` (pk.calc.aucint() or pk.calc.aumcint()) must be given when `auc.type` is \"AUCinf\"",
+      class = "pknca_error_auxciv_int_fun_missing"
+    )
+  }
   if (is.na(auxc)) {
-    return(structure(NA_real_, exclude = "AUCint is not calculated"))
+    return(auxciv_int_result(structure(NA_real_, exclude = "AUCint is not calculated"), auc.type))
   }
   if (length(time.dose) == 0 || all(is.na(time.dose))) {
-    return(structure(NA_real_, exclude = "dose time is missing"))
+    return(auxciv_int_result(structure(NA_real_, exclude = "dose time is missing"), auc.type))
   }
   route <- rep_len(route, length(time.dose))
   duration.dose <- rep_len(duration.dose, length(time.dose))
+  # The AUXCint that `auxc` is:  its method says how the region after Tlast was
+  # handled, which an AUCinf-type form reports as its own
+  method_args <-
+    list(
+      conc = conc, time = time, start = start, end = end, time.dose = time.dose,
+      route = route, duration.dose = duration.dose, auc.type = "AUCinf",
+      lambda.z = lambda.z, clast = clast, options = options
+    )
+  # The same AUXCint without the half-life, to tell whether the half-life
+  # enters the result
+  method_args_without <- method_args
+  method_args_without$lambda.z <- NA_real_
   dose_at_start <- !is.na(time.dose) & time.dose == start & route %in% "intravascular"
   if (any(dose_at_start & is.na(duration.dose))) {
-    return(structure(NA_real_, exclude = "dose duration is missing"))
+    return(auxciv_int_result(structure(NA_real_, exclude = "dose duration is missing"), auc.type))
   }
   if (any(dose_at_start & !(duration.dose %in% 0))) {
     # An infusion starts from the concentration before it, which the AUCint
     # already uses, so there is nothing to back-extrapolate
-    return(auxc)
+    return(
+      auxciv_int_result(
+        auxc, auc.type,
+        halflife_enters =
+          identical(auc.type, "AUCinf") && !function_value_same(fun_auxcint, method_args_without, auxc),
+        fun_auxcint = fun_auxcint, method_args = method_args
+      )
+    )
   }
   if (!any(dose_at_start)) {
-    return(structure(NA_real_, exclude = "The interval does not start at an IV bolus dose"))
+    return(
+      auxciv_int_result(
+        structure(NA_real_, exclude = "The interval does not start at an IV bolus dose"),
+        auc.type
+      )
+    )
   }
   # The concentrations the AUCint integrates:  up to the first dose at or after
   # the end of the interval, cleaned of BLQ and missing values the same way
@@ -193,28 +259,60 @@ pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extra
     clean.conc.blq(
       conc = conc[mask_window], time = time[mask_window], options = options, check = FALSE
     )
+  # The first dose has no profile before it, so a nonzero concentration
+  # measured at its time is the concentration just after the bolus, C0, as for
+  # pk.calc.c0() and aucivlast.  The AUXCint already starts from it, so it is
+  # the AUXCint unchanged.  After an earlier dose, that concentration is the
+  # trough of the profile before the dose.
+  earlier_dose <- any(!is.na(time.dose) & time.dose < start)
+  conc_at_start <- data$conc[data$time == start]
+  if (!earlier_dose && length(conc_at_start) == 1 && !(conc_at_start %in% 0)) {
+    return(
+      auxciv_int_result(
+        auxc, auc.type,
+        halflife_enters =
+          identical(auc.type, "AUCinf") && !function_value_same(fun_auxcint, method_args_without, auxc),
+        fun_auxcint = fun_auxcint, method_args = method_args
+      )
+    )
+  }
   # The profile after the dose at the start of the interval:  within the
   # interval and before the next dose
   next_dose <- min(c(time.dose[!is.na(time.dose) & time.dose > start], Inf))
   data_after <- data[data$time > start & data$time <= min(end, next_dose), , drop = FALSE]
   if (nrow(data_after) == 0) {
-    return(structure(NA_real_, exclude = "No concentration after the IV bolus dose in the interval"))
+    return(
+      auxciv_int_result(
+        structure(NA_real_, exclude = "No concentration after the IV bolus dose in the interval"),
+        auc.type
+      )
+    )
   }
   c0 <- pk.calc.c0(conc = data_after$conc, time = data_after$time, time.dose = start, check = FALSE)
   if (is.na(c0)) {
-    return(structure(NA_real_, exclude = "c0 is not calculated"))
+    return(auxciv_int_result(structure(NA_real_, exclude = "c0 is not calculated"), auc.type))
   }
   # Both segments come from the same AUXCint function, so they use its time
   # scale and integration method.  The trough segment interpolates the same
   # data that `auxc` did, so a warning about that interpolation repeats one
-  # that calculating `auxc` already gave.
+  # that calculating `auxc` already gave.  It is calculated as `auxc` was:  an
+  # AUCinf-type `auxc` may estimate the concentration at the start with the
+  # half-life, and the segment it replaces must start from that concentration.
+  trough_args <-
+    list(
+      conc = conc, time = time, start = start, end = data_after$time[1],
+      time.dose = time.dose, route = route, duration.dose = duration.dose,
+      options = options
+    )
+  if (identical(auc.type, "AUCinf")) {
+    trough_fun <- fun_auxcint
+    trough_args <- c(trough_args, list(auc.type = "AUCinf", lambda.z = lambda.z, clast = clast))
+  } else {
+    trough_fun <- fun_auxcint_last
+  }
   segment_trough <-
     withCallingHandlers(
-      fun_auxcint_last(
-        conc = conc, time = time, start = start, end = data_after$time[1],
-        time.dose = time.dose, route = route, duration.dose = duration.dose,
-        options = options
-      ),
+      do.call(trough_fun, trough_args),
       pknca_warning_interp_extrap_conc_dose = muffle_warning_condition
     )
   segment_c0 <-
@@ -222,7 +320,72 @@ pk.calc.auxciv.int <- function(conc, time, start, end, time.dose, route = "extra
       conc = c(c0, data_after$conc[1]), time = c(start, data_after$time[1]),
       start = start, end = data_after$time[1], options = options
     )
-  auxc - as.numeric(segment_trough) + as.numeric(segment_c0)
+  abort_invalid(
+    (is.character(auxc) || (is.list(auxc) && !is.data.frame(auxc))) && !all(is.na(auxc)), auxc_name, "Must be one number (or NA)",
+    class = "pknca_error_auxc_invalid", call = call
+  )
+  value <- auxc - as.numeric(segment_trough) + as.numeric(segment_c0)
+  halflife_enters <- FALSE
+  if (identical(auc.type, "AUCinf")) {
+    # The half-life enters the result when the result changes without it.  A
+    # start that `auxc` estimated with the half-life is in the replaced segment
+    # as well, so it cancels; the region after Tlast does not.
+    trough_args_without <- trough_args
+    trough_args_without$lambda.z <- NA_real_
+    value_without <-
+      call_without_warnings(fun_auxcint, method_args_without) -
+      call_without_warnings(trough_fun, trough_args_without) +
+      as.numeric(segment_c0)
+    halflife_enters <- !isTRUE(all.equal(value_without, as.numeric(value)))
+  }
+  auxciv_int_result(
+    value, auc.type = auc.type, halflife_enters = halflife_enters,
+    fun_auxcint = fun_auxcint, method_args = method_args
+  )
+}
+
+# The result of pk.calc.auxciv.int(), `value`.  An AUCinf-type form receives
+# lambda.z and clast only to calculate the AUXCint it starts from and the
+# segment of it that is replaced, so whether the half-life enters the result
+# (`halflife_enters`, the result changing without it) decides both its exclusion
+# and its method:  the exclusion reasons of lambda.z and clast apply only when
+# it enters (the half-life that `auxc` used reaches the result through `auxc`
+# too), and a calculated AUCinf-type form reports the method of the AUXCint it
+# starts from (`fun_auxcint` called with `method_args`), with the
+# extrapolation "none" in place of "half-life" when the half-life does not
+# enter.
+auxciv_int_result <- function(value, auc.type, halflife_enters = FALSE,
+                              fun_auxcint = NULL, method_args = NULL) {
+  if (identical(auc.type, "AUCinf") && !halflife_enters) {
+    attr(value, "exclude_unused_args") <- c("lambda.z", "clast")
+  }
+  if (identical(auc.type, "AUCinf") && !is.null(method_args)) {
+    auxc_calculated <-
+      suppressWarnings(suppressMessages(
+        tryCatch(do.call(fun_auxcint, method_args), error = function(e) NULL)
+      ))
+    method <- attr(auxc_calculated, "method")
+    if (!halflife_enters) {
+      method[method %in% paste0(pknca_extrap_method_prefix, pknca_extrap_method_halflife)] <-
+        paste0(pknca_extrap_method_prefix, "none")
+    }
+    attr(value, "method") <- method
+  }
+  value
+}
+
+# `fun` called with `args` as a number, with the warnings and messages it gives
+# muffled (calculating the result gave them already), and NA when it fails
+call_without_warnings <- function(fun, args) {
+  suppressWarnings(suppressMessages(
+    tryCatch(as.numeric(do.call(fun, args)), error = function(e) NA_real_)
+  ))
+}
+
+# Does `fun` called with `args` give `value` (with the warnings it gives
+# muffled, as calculating `value` gave them already)?
+function_value_same <- function(fun, args, value) {
+  isTRUE(all.equal(call_without_warnings(fun, args), as.numeric(value)))
 }
 
 # Muffle a warning condition (as a calling handler)
@@ -236,11 +399,13 @@ muffle_warning_condition <- function(cnd) {
 #' @export
 pk.calc.auciv.int <- function(conc, time, start, end, time.dose, route = "extravascular",
                               duration.dose = 0,
-                              auc, options = list()) {
+                              auc, options = list(), auc.type = "AUClast", lambda.z = NA, clast = NA) {
   pk.calc.auxciv.int(
     conc = conc, time = time, start = start, end = end,
     time.dose = time.dose, route = route, duration.dose = duration.dose,
-    auxc = auc, fun_auxcint_last = pk.calc.aucint.last, options = options
+    auxc = auc, fun_auxcint_last = pk.calc.aucint.last, options = options,
+    auc.type = auc.type, lambda.z = lambda.z, clast = clast, fun_auxcint = pk.calc.aucint,
+    auxc_name = "auc"
   )
 }
 
@@ -252,11 +417,13 @@ pknca_concept(pk.calc.auciv.int) <- "auc"
 #' @export
 pk.calc.aumciv.int <- function(conc, time, start, end, time.dose, route = "extravascular",
                                duration.dose = 0,
-                               aumc, options = list()) {
+                               aumc, options = list(), auc.type = "AUClast", lambda.z = NA, clast = NA) {
   pk.calc.auxciv.int(
     conc = conc, time = time, start = start, end = end,
     time.dose = time.dose, route = route, duration.dose = duration.dose,
-    auxc = aumc, fun_auxcint_last = pk.calc.aumcint.last, options = options
+    auxc = aumc, fun_auxcint_last = pk.calc.aumcint.last, options = options,
+    auc.type = auc.type, lambda.z = lambda.z, clast = clast, fun_auxcint = pk.calc.aumcint,
+    auxc_name = "aumc"
   )
 }
 
@@ -429,7 +596,8 @@ add.interval.col(
   desc = "AUCint,inf,obs, IV back-extrap C0",
   sparse = FALSE,
   formalsmap = list(auc = "aucint.inf.obs", conc = "conc.group", time = "time.group", time.dose = "time.dose.group",
-                    route = "route.group", duration.dose = "duration.dose.group"),
+                    route = "route.group", duration.dose = "duration.dose.group",
+                    auc.type = I("AUCinf"), lambda.z = "lambda.z", clast = "clast.obs"),
   # The bolus at the start of the interval makes this IV bolus only
   selection = list(route = "iv_bolus"),
   pptestcd_cdisc="AUCIVIIO",
@@ -445,7 +613,8 @@ add.interval.col(
   desc = "AUCint,inf,pred, IV back-extrap C0",
   sparse = FALSE,
   formalsmap = list(auc = "aucint.inf.pred", conc = "conc.group", time = "time.group", time.dose = "time.dose.group",
-                    route = "route.group", duration.dose = "duration.dose.group"),
+                    route = "route.group", duration.dose = "duration.dose.group",
+                    auc.type = I("AUCinf"), lambda.z = "lambda.z", clast = "clast.pred"),
   # The bolus at the start of the interval makes this IV bolus only
   selection = list(route = "iv_bolus"),
   pptestcd_cdisc="AUCIVIIP",
@@ -510,6 +679,16 @@ add.interval.col(
 #'   describe the observed part of `auciv` (it either cannot be calculated or,
 #'   for the `aucint` family, already extrapolates back to time 0 with
 #'   `conc.origin`), so `NA` is returned.
+#'
+#'   When `auciv` is less than `auc` by more than `sqrt(.Machine$double.eps)`
+#'   times the larger of the two, the concentration at the dose time (measured,
+#'   or imputed for the interval) is above the C0 that `auciv` used, and the
+#'   result is `NA` with that reason and a `pknca_warning_auciv_pbext_negative`
+#'   warning; within the tolerance, the result is 0.  In [pk.nca()] only the
+#'   interval forms give this, after an earlier dose, where the value at the
+#'   dose time is the trough and C0 is back-extrapolated.  The other forms use a nonzero measured value at the
+#'   dose time as C0 (the first method of [pk.calc.c0()]), so they reach it only
+#'   when called directly with an `auciv` from a lower `c0`.
 #' @param auc The AUC calculated without C0 back-extrapolation 
 #' @param auciv The AUC calculated using `c0`
 #' @returns `pk.calc.auciv_pctbackextrap`: The AUC percent back-extrapolated
@@ -534,7 +713,28 @@ pk.calc.auciv_pbext <- function(conc, time, auc, auciv, ..., options = list(), c
       )
     )
   }
-  if (!is.na(auciv) && !is.na(auc) && auciv < auc){rlang::abort("auciv must be >= auc; back-extrapolation cannot be negative.")}
+  if (!is.na(auciv) && !is.na(auc) && auciv < auc) {
+    if (abs(auc - auciv) <= sqrt(.Machine$double.eps) * max(abs(auc), abs(auciv))) {
+      # Floating-point noise in two equal AUCs:  nothing is back-extrapolated
+      return(0)
+    }
+    # The AUC without C0 starts from the concentration measured at the dose
+    # time, and that concentration is above the C0 that auciv used
+    rlang::warn(
+      paste(
+        "The AUC with C0 is less than the AUC without it:  the concentration",
+        "at the dose time (measured, or imputed for the interval) is above C0,",
+        "so the percent back-extrapolated is not calculated"
+      ),
+      class = "pknca_warning_auciv_pbext_negative"
+    )
+    return(
+      structure(
+        NA_real_,
+        exclude = "The concentration at the dose time (measured or imputed) is above C0"
+      )
+    )
+  }
   100*(1 - auc/auciv)
 }
 
@@ -635,6 +835,7 @@ pk.calc.aumciv <- function(conc, time, c0, aumc, auc.type = NULL,
     clast = clast,
     ...,
     options = options,
+    auxc_name = "aumc",
     check = check
   )
 }
@@ -771,7 +972,8 @@ add.interval.col(
   desc = "AUMCint,inf,pred, IV back-extrap C0",
   sparse = FALSE,
   formalsmap = list(aumc = "aumcint.inf.pred", conc = "conc.group", time = "time.group", time.dose = "time.dose.group",
-                    route = "route.group", duration.dose = "duration.dose.group"),
+                    route = "route.group", duration.dose = "duration.dose.group",
+                    auc.type = I("AUCinf"), lambda.z = "lambda.z", clast = "clast.pred"),
   # The bolus at the start of the interval makes this IV bolus only
   selection = list(route = "iv_bolus"),
   pptestcd_cdisc = "AUMIVIIP",
@@ -787,7 +989,8 @@ add.interval.col(
   desc = "AUMCint,inf,obs, IV back-extrap C0",
   sparse = FALSE,
   formalsmap = list(aumc = "aumcint.inf.obs", conc = "conc.group", time = "time.group", time.dose = "time.dose.group",
-                    route = "route.group", duration.dose = "duration.dose.group"),
+                    route = "route.group", duration.dose = "duration.dose.group",
+                    auc.type = I("AUCinf"), lambda.z = "lambda.z", clast = "clast.obs"),
   # The bolus at the start of the interval makes this IV bolus only
   selection = list(route = "iv_bolus"),
   pptestcd_cdisc = "AUMIVIIO",

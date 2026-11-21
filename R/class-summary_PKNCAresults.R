@@ -111,6 +111,18 @@ summary.PKNCAresults <- function(object, ...,
     not_calculated <- not.calculated.string
   }
   # nocov end
+  abort_invalid(
+    !is.null(not_requested) && length(not_requested) == 0, "not_requested", "Must have length 1, but has length 0",
+    class = "pknca_error_summary_string_invalid"
+  )
+  abort_invalid(
+    length(not_calculated) != 1, "not_calculated", "Must have length 1",
+    class = "pknca_error_summary_string_invalid"
+  )
+  abort_invalid(
+    !is_condition_value(summarize_n, uses = c("if", "and"), na_ok = TRUE), "summarize_n", "Must be TRUE, FALSE, or NA (one value)",
+    class = "pknca_error_summary_n_invalid"
+  )
 
   ## Simple inputs ####
   group_cols <- get_summary_PKNCAresults_drop_group(object = object, drop_group = drop_group)
@@ -480,7 +492,7 @@ summarize_PKNCAresults_group <- function(data, current_group, subject_col, resul
     }
     descriptions[[current_param]] <- attr(current_summary, "description", exact = TRUE)
     # summarize N, if requested and there is a value for calculation
-    if (("N" %in% names(current_group)) && (current_summary != not_calculated)) {
+    if (("N" %in% names(current_group)) && !(current_summary %in% not_calculated)) {
       N_group <- as.integer(current_group$N)
       n_summary <- attr(current_summary, "n", exact = TRUE)
       if (N_group != n_summary) {
@@ -553,6 +565,11 @@ summarize_PKNCAresults_parameter <- function(data, parameter, subject_col, inclu
   }
 
   point <- current_summary_instructions$point(current_data[[number_col]])
+  abort_check(
+    checkmate::check_scalar(point, na.ok = TRUE),
+    sprintf("the point summary of %s", parameter),
+    class = "pknca_error_summary_point_invalid"
+  )
   # We could count only the number of measurements included in the point
   # estimate which may differ when zeros are excluded, but that would likely be
   # less clear.  So, we are counting all points with available measurements.

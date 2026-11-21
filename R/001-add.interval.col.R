@@ -620,8 +620,8 @@ interval_cols_aliases_last <- function(current) {
 #'   }
 #'   \item{For the current group:}
 #'   \describe{
-#'     \item{"conc.group"}{Concentration measurements for the current group.}
-#'     \item{"time.group"}{Times associated with concentration measurements for the current group (on the original time scale of the data, like "start" and "end").}
+#'     \item{"conc.group"}{Concentration measurements for the current group.  With imputation, those within the interval are the imputed ones, and when the imputation sets the concentration at the start of the interval, those before the start are left out.}
+#'     \item{"time.group"}{Times associated with concentration measurements for the current group (on the original time scale of the data, like "start" and "end"), imputed as "conc.group" is.}
 #'     \item{"volume.group"}{Volume associated with concentration measurements for the current interval (typically applies for excretion parameters like urine).}
 #'     \item{"duration.conc.group"}{Durations assocuated with concentration measurements for the current group.}
 #'     \item{"dose.group"}{Dose amounts assocuated with the current group.}

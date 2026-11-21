@@ -983,3 +983,12 @@ test_that("secondary_pair_units() composes each kind of pair", {
     data.frame(PPORRESU = "mg/(mg/kg)", PPTESTCD = "ratio.cmax", PPSTRESU = NA_character_, conversion_factor = NA_real_)
   )
 })
+
+test_that("a zero-length unit is refused, while NA means no unit", {
+  expect_error(pknca_units_table(concu = character(0)), class = "pknca_error_units_zero_length")
+  expect_error(pknca_units_table(timeu = character(0)), class = "pknca_error_units_zero_length")
+  expect_equal(
+    pknca_units_table(concu = NA_character_, timeu = "hr"),
+    pknca_units_table(timeu = "hr")
+  )
+})

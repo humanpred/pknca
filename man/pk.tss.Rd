@@ -4,7 +4,12 @@
 \alias{pk.tss}
 \title{Compute the time to steady-state (tss)}
 \usage{
-pk.tss(..., type = c("monoexponential", "stepwise.linear"), check = TRUE)
+pk.tss(
+  ...,
+  type = c("monoexponential", "stepwise.linear"),
+  check = TRUE,
+  level = 0.95
+)
 }
 \arguments{
 \item{\dots}{Passed to \code{\link[=pk.tss.monoexponential]{pk.tss.monoexponential()}} or
@@ -14,14 +19,80 @@ pk.tss(..., type = c("monoexponential", "stepwise.linear"), check = TRUE)
 \code{monoexponential}}
 
 \item{check}{See \code{\link[=pk.tss.data.prep]{pk.tss.data.prep()}}}
+
+\item{level}{Both the confidence level of the monoexponential intervals and
+the level of the stepwise linear test (see \code{\link[=pk.tss.monoexponential]{pk.tss.monoexponential()}} and
+\code{\link[=pk.tss.stepwise.linear]{pk.tss.stepwise.linear()}})}
 }
 \value{
 A data frame with columns as defined from \code{pk.tss.monoexponential}
-and/or \code{pk.tss.stepwise.linear}.
+and/or \code{pk.tss.stepwise.linear}, with an attribute \code{"estimates"} that
+says how each estimate came about (see below).
 }
 \description{
 Compute the time to steady-state (tss)
 }
+\section{The estimates attribute}{
+
+
+\code{attr(result, "estimates")} is a data frame with one row per estimate:  one
+for each output of the monoexponential method (one row for the population
+Tss, or one per treatment when the selected model has a Tss by treatment;
+one per subject for \code{popind} and \code{individual}; one per treatment for
+\code{single}) and one for the stepwise linear method.  Its columns are:
+
+\describe{
+\item{type}{\code{"monoexponential"} or \code{"stepwise.linear"}}
+\item{output}{The monoexponential output (\code{"population"}, \code{"popind"},
+\code{"individual"}, or \code{"single"}), \code{NA} for stepwise linear}
+\item{treatment, subject}{The treatment and subject of the estimate, or
+\code{NA} when it is for all of them (the stepwise linear estimate is always
+for all treatments)}
+\item{estimate}{The time to steady state, the value in the result's
+column}
+\item{lower, upper}{The confidence interval of the estimate, \code{NA} where
+there is none (see the section "Confidence intervals" of
+\code{\link[=pk.tss.monoexponential]{pk.tss.monoexponential()}}; there is none for stepwise linear)}
+\item{level}{The confidence level:  of the interval, or for stepwise
+linear, of its test}
+\item{status}{Why the estimate is or is not there:
+\describe{
+\item{\code{"estimated"}}{Steady state is estimated within the data.}
+\item{\code{"not_reached"}}{Steady state is not observed in the data.  A
+monoexponential estimate is still given:  it is extrapolated from
+the fitted curve beyond the last trough.  The stepwise linear
+estimate is \code{NA}:  the slope of the troughs is significant from every
+start time.}
+\item{\code{"fit_failed"}}{The model could not be fit (for stepwise linear,
+from at least one start time, so steady state may have been missed);
+the estimate is \code{NA}.}
+\item{\code{"insufficient_data"}}{Fewer dose times than \code{min.points}
+(stepwise linear), troughs from one subject for the \code{population},
+\code{popind}, or \code{individual} output, which need several, or fewer than
+three troughs for an \code{individual} or \code{single} fit (which is then not
+run); the estimate is \code{NA}.  When another output is requested, those
+outputs are left out of the result and are only in this table.}
+\item{\code{"no_random_effect"}}{\code{popind} was requested, but the selected
+population model has no random effect on Tss; the estimate is \code{NA}.}
+}}
+\item{fit_warning}{The warnings from fitting the model that gave the
+estimate (separated by "; "), or \code{NA}.  An estimate with a warning is
+still given; whether to report it is the caller's choice.}
+\item{message}{Why there is no estimate or no interval, or what the
+status means for the estimate, or \code{NA}}
+}
+
+The \code{treatment} and \code{subject} columns of the attribute are character, while
+those of the result are factors:  compare them with \code{as.character()}.
+
+An \code{NA} estimate never means "steady state not reached" by itself:  use
+\code{status}.  Read the attribute from the result of the call:  some later
+operations drop it (\code{merge()}, selecting columns, \code{subset()}, \code{cbind()})
+and others keep it unchanged (selecting rows, \code{rbind()}, and dplyr verbs),
+so after any operation it may be missing or describe rows that are no
+longer there.
+}
+
 \seealso{
 Other Time to steady-state calculations:
 \code{\link[=pk.tss.monoexponential]{pk.tss.monoexponential()}},

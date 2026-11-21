@@ -102,10 +102,22 @@ context_impute <- function(dosing, sample_type, sparse) {
 # This is not every parameter an imputation changes.  Imputation changes the
 # AUC and everything downstream of it, and that is the point of imputing.  What
 # is listed here is the case where the answer is the imputation itself.
+#
+# A chain of methods ("start_predose,start_cmin") excludes what any of its
+# methods excludes.  A method name that is not known excludes nothing here; it
+# is refused where every method is checked (assert_impute_method()).
 impute_exclusions <- function(impute, dosing) {
-  if (is.na(impute)) {
+  methods <- impute_method_split(impute)[[1]]
+  if (all(is.na(methods))) {
     return(character(0))
   }
+  methods <- sub(pattern = "^PKNCA_impute_method_", replacement = "", x = methods)
+  ret <- unique(unlist(lapply(X = methods, FUN = impute_exclusions_method, dosing = dosing)))
+  intersect(ret, names(get.interval.cols()))
+}
+
+# The parameters excluded for one imputation method (see impute_exclusions())
+impute_exclusions_method <- function(impute, dosing) {
   ret <-
     switch(
       impute,
@@ -128,7 +140,7 @@ impute_exclusions <- function(impute, dosing) {
     # previous dose has been given; before the first dose it is contamination
     ret <- c(ret, "c0")
   }
-  intersect(ret, names(get.interval.cols()))
+  ret
 }
 
 # The parameters a context can calculate, before include/exclude

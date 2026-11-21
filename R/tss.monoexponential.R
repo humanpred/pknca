@@ -6,6 +6,21 @@
 #' by treatment (as a factor) and a random steady-state concentration and time
 #' to stead-state by subject (see `random.effects` argument).
 #'
+#' The population model is selected by AIC from several candidates (Ctrough,ss
+#' and Tss for all treatments or by treatment, with random effects on either
+#' or both).  Every warning raised while a candidate's `nlme()` call runs is
+#' kept as a warning of that fit:  those of the selected model are given as one
+#' `pknca_warning_tss_population_fit_warning` that quotes them, and those of
+#' the other candidates are not given because they do not bear on the
+#' estimate (with `verbose = TRUE`, each candidate's warnings are shown as a
+#' `pknca_message_tss_candidate_warnings` message with the candidate's
+#' description).  Because the warnings are caught as they are raised, a
+#' candidate is not stopped by its warnings even with `options(warn = 2)`.
+#' The gnls fits of the `individual` and
+#' `single` outputs give `pknca_warning_tss_individual_fit_failed` when a fit
+#' fails (its estimate is `NA`) and `pknca_warning_tss_individual_fit_warning`
+#' when a fit that gives an estimate warns.
+#'
 #' @param \dots See [pk.tss.data.prep()]
 #' @param tss.fraction The fraction of steady-state required for calling
 #'   steady-state
@@ -13,14 +28,58 @@
 #'   population estimate for time to steady-state (from an nlme model), `popind`
 #'   is the individual estimate (from an nlme model), `individual` fits each
 #'   individual separately with a gnls model (requires more than one individual;
-#'   use `single` for one individual), and `single` fits all the data to a
-#'   single gnls model.
+#'   use `single` for one individual), and `single` fits all the data of each
+#'   treatment (or all the data, without treatment) to one gnls model.
 #' @param check See [pk.tss.data.prep()].
 #' @param verbose Describe models as they are run, show convergence of the model
 #'   (passed to the nlme function), and additional details while running.
+#' @param level The confidence level of the intervals of the estimates (in the
+#'   `"estimates"` attribute).  With [pk.tss()], `level` is also the level of
+#'   the stepwise linear test.
 #'
-#' @returns A scalar float for the first time when steady-state is achieved or
-#'   `NA` if it is not observed.
+#' @section Confidence intervals:
+#'
+#' The `"estimates"` attribute gives a confidence interval (`lower` and
+#' `upper`) where one can be defended:
+#'
+#' \describe{
+#'   \item{population}{The approximate (Wald) interval of `nlme::intervals()`
+#'     for the fixed effect of Tss:  the estimate plus or minus a t quantile
+#'     times the standard error from the linearized covariance of nlme
+#'     (`vcov()` of the fit, without the small-sample factor that `summary()`
+#'     gives the standard errors of a maximum likelihood fit).  nlme gives the
+#'     fixed effects of these models the degrees of freedom of the innermost
+#'     level:  the number of troughs, less the number of subjects, less the
+#'     fixed effects other than the first (51 for 56 troughs from 4 subjects
+#'     with one Ctrough,ss and one Tss; 297 for 310 troughs from 10 subjects
+#'     with both by two treatments).  So the t quantile reflects the number of
+#'     troughs, not the number of subjects that Tss varies between, and with
+#'     few subjects the interval is likely too narrow.  It also assumes that
+#'     the monoexponential model is right, that the random effects and
+#'     residuals are normal and the residuals have constant variance, and that
+#'     the linearization holds near the estimate.  It is symmetric on the Tss
+#'     scale, so with poor data it can include zero or negative values; it is
+#'     reported as computed.}
+#'   \item{individual, and single with one subject}{The approximate (Wald)
+#'     interval of `nlme::intervals()` for the gnls fit:  a t quantile with the
+#'     number of troughs less two degrees of freedom.  It assumes independent,
+#'     normal residuals with constant variance; with few troughs, its coverage
+#'     is approximate.}
+#'   \item{popind}{None:  these are predictions of random effects, for which
+#'     nlme gives no standard errors.}
+#'   \item{single with several subjects}{None:  the troughs of a subject are
+#'     correlated, so an interval that treats them as independent is too
+#'     narrow.  Without `subject`, the number of subjects is not known, so there
+#'     is no interval either.}
+#' }
+#'
+#' @returns A data frame with the requested `tss.monoexponential.*` columns,
+#'   and `subject` and `treatment` columns for the outputs that are by subject
+#'   or by treatment.  The population output has one row per subject (and
+#'   treatment).  A monoexponential Tss is estimated from the fitted curve, so
+#'   it can be later than the last trough; `NA` means that the fit failed.  The
+#'   attribute `"estimates"` says how each estimate came about (see
+#'   [pk.tss()]).
 #' @family Time to steady-state calculations
 #' @references
 #' Maganti, L., Panebianco, D.L. & Maes, A.L. Evaluation of Methods for
@@ -35,9 +94,26 @@ pk.tss.monoexponential <- function(...,
                                      "individual",
                                      "single"),
                                    check=TRUE,
-                                   verbose=FALSE) {
+                                   verbose=FALSE,
+                                   level=0.95) {
   # Check inputs
   modeldata <- pk.tss.data.prep(..., check=check)
+  abort_check(checkmate::check_vector(tss.fraction, min.len = 1), "tss.fraction", class = "pknca_error_tss_argument_invalid")
+  # Without a subject column, the data have one subject only when a subject
+  # was given (pk.tss.data.prep() drops the column for one subject).  The
+  # arguments are matched as pk.tss.data.prep() matches them, so a subject
+  # given by position counts.
+  subject_given <-
+    "subject" %in%
+    names(match.call(pk.tss.data.prep, call=quote(pk.tss.data.prep(...)), envir=environment()))
+  if (length(level) > 1) {
+    rlang::warn("Only first value of level is being used", class = "pknca_warning_tss_level_multiple")
+    level <- level[1]
+  }
+  checkmate::assert_number(level, na.ok = FALSE)
+  if (level <= 0 || level >= 1) {
+    rlang::abort("level must be between 0 and 1, exclusive", class = "pknca_error_tss_level_range")
+  }
   if (length(tss.fraction) > 1) {
     rlang::warn("Only first value of tss.fraction is being used", class = "pknca_warning_tss_fraction_multiple")
     tss.fraction <- tss.fraction[1]
@@ -52,15 +128,25 @@ pk.tss.monoexponential <- function(...,
   # Note that this will by default choose "population" if nothing is
   # requested.
   output <- match.arg(output, several.ok=TRUE)
+  # The outputs that need more than one subject, when the data have one (or
+  # no subject was given)
+  output_no_subjects <- character()
   if (!("subject" %in% names(modeldata))) {
-    if (any(c("population", "popind", "individual") %in% output)) {
-      rlang::warn(
-        "Cannot give 'population', 'popind', or 'individual' output without multiple subjects of data",
-        class = "pknca_warning_tss_output_no_subjects"
-      )
-      output <- setdiff(output, c("population", "popind", "individual"))
+    output_no_subjects <- intersect(c("population", "popind", "individual"), output)
+    if (length(output_no_subjects) > 0) {
+      msg_no_subjects <-
+        "Cannot give 'population', 'popind', or 'individual' output without multiple subjects of data"
+      rlang::warn(msg_no_subjects, class = "pknca_warning_tss_output_no_subjects")
+      output <- setdiff(output, output_no_subjects)
     }
   }
+  estimates_no_subjects <-
+    if (length(output_no_subjects) > 0) {
+      tss_estimates_table(
+        type="monoexponential", output=output_no_subjects, estimate=NA_real_, level=level,
+        status="insufficient_data", message=msg_no_subjects
+      )
+    }
   # Set the tss.constant so that exp(tss.constant) == tss.fraction so
   # that the model below solves for the requested tss.
   modeldata$tss.constant <- log(1-tss.fraction)
@@ -69,7 +155,8 @@ pk.tss.monoexponential <- function(...,
       pk.tss.monoexponential.population(
         modeldata,
         output=intersect(c("population", "popind"), output),
-        verbose=verbose)
+        verbose=verbose,
+        level=level)
     } else {
       NA
     }
@@ -78,7 +165,9 @@ pk.tss.monoexponential <- function(...,
       pk.tss.monoexponential.individual(
         modeldata,
         output=intersect(c("individual", "single"), output),
-        verbose=verbose)
+        verbose=verbose,
+        level=level,
+        subject_given=subject_given)
     } else {
       NA
     }
@@ -89,10 +178,23 @@ pk.tss.monoexponential <- function(...,
       ret_population
     } else if (!identical(NA, ret_individual)) {
       ret_individual
+    } else if (length(output_no_subjects) > 0) {
+      # Every requested output needs more than one subject:  one row of NA
+      stats::setNames(
+        as.data.frame(as.list(rep(NA_real_, length(output_no_subjects)))),
+        paste("tss.monoexponential", output_no_subjects, sep=".")
+      )
     } else {
       rlang::abort("Error in selection of return values for pk.tss.monoexponential. This is likely a bug.", class = "pknca_error_internal_tss_return_selection")  # nocov
     }
-  ret
+  tss_set_estimates(
+    ret,
+    rbind(
+      attr(ret_population, "estimates"),
+      attr(ret_individual, "estimates"),
+      estimates_no_subjects
+    )
+  )
 }
 
 #' A helper function to generate the formula and starting values for the
@@ -129,9 +231,11 @@ tss.monoexponential.generate.formula <- function(data) {
     "Single value for Tss"=list(
       formula=tss~1,
       start=stats::median(unique(data$time))))
+  # Without an intercept, each treatment's Tss is its own coefficient
+  # ("tss.treatmentA", ...), so its estimate and interval are read directly.
   if ("treatment" %in% names(data))
     tss.by[["Tss by treatment"]] <- list(
-      formula=tss~treatment,
+      formula=tss~treatment-1,
       start=rep(stats::median(unique(data$time)),
         length(unique(data$treatment))))
   # Try combinations of random effects with Ctrough.ss and
@@ -163,15 +267,19 @@ tss.monoexponential.generate.formula <- function(data) {
 #'   contain at least columns for `subject`, `time`, `conc`, and `tss.constant`.
 #' @param output a character vector requesting the output types.
 #' @param verbose Show verbose output.
-#' @returns A data frame with either one row (if `population` output is
-#'   provided) or one row per subject (if `popind` is provided).  The columns
-#'   will be named `tss.monoexponential.population` and/or
-#'   `tss.monoexponential.popind`.
+#' @param level The confidence level of the interval of the population Tss
+#' @returns A data frame with one row per subject (and treatment, when the
+#'   data have more than one), with columns `subject`, `treatment` (when the
+#'   data have it), and `tss.monoexponential.population` and/or
+#'   `tss.monoexponential.popind`.  When the selected model has a Tss by
+#'   treatment, `tss.monoexponential.population` is the Tss of the row's
+#'   treatment.
 pk.tss.monoexponential.population <- function(data,
                                               output=c(
                                                 "population",
                                                 "popind"),
-                                              verbose=FALSE) {
+                                              verbose=FALSE,
+                                              level=0.95) {
   output <- match.arg(output, several.ok=TRUE)
   test.formula <- tss.monoexponential.generate.formula(data)
   # Loop over creating all models
@@ -189,25 +297,41 @@ pk.tss.monoexponential.population <- function(data,
         current.model <- NA
         current.aic <- NA
         current.model.summary <- "Did not converge"
+        # The warnings of each candidate are kept with it:  only those of the
+        # selected model bear on the estimate.
+        current.warnings <- pknca_regimen_warning_collector()
         try({
           # Test the current model
           current.model <-
-            nlme::nlme(conc~ctrough.ss*(1-exp(tss.constant*time/tss)),
-                       fixed=list(
-                         test.formula$ctrough.by[[myctrough.ss]]$formula,
-                         test.formula$tss.by[[mytss]]$formula),
-                       random=test.formula$ranef.by[[myranef]]$formula,
-                       start=c(
-                         test.formula$ctrough.by[[myctrough.ss]]$start,
-                         test.formula$tss.by[[mytss]]$start),
-                       data=data,
-                       verbose=verbose)
+            tss_collect_warnings(
+              nlme::nlme(conc~ctrough.ss*(1-exp(tss.constant*time/tss)),
+                         fixed=list(
+                           test.formula$ctrough.by[[myctrough.ss]]$formula,
+                           test.formula$tss.by[[mytss]]$formula),
+                         random=test.formula$ranef.by[[myranef]]$formula,
+                         start=c(
+                           test.formula$ctrough.by[[myctrough.ss]]$start,
+                           test.formula$tss.by[[mytss]]$start),
+                         data=data,
+                         verbose=verbose),
+              current.warnings
+            )
           # If the model converges, get the summary and AIC out.
           if (!is.null(current.model)) {
             current.model.summary <- summary(current.model)
             current.aic <- stats::AIC(current.model)
           }
         }, silent=!verbose)
+        if (verbose && length(current.warnings$conditions) > 0) {
+          rlang::inform(
+            sprintf(
+              "Warnings while fitting %s:\n%s",
+              current.desc,
+              paste(vapply(X=current.warnings$conditions, FUN=conditionMessage, FUN.VALUE=""), collapse="\n")
+            ),
+            class = "pknca_message_tss_candidate_warnings"
+          )
+        }
         # Put the current model (or model attempt) into the list of
         # models.
         models <-
@@ -218,7 +342,12 @@ pk.tss.monoexponential.population <- function(data,
                 desc=current.desc,
                 model=current.model,
                 summary=current.model.summary,
-                AIC=current.aic
+                AIC=current.aic,
+                warnings=
+                  vapply(
+                    X=current.warnings$conditions, FUN=conditionMessage, FUN.VALUE="",
+                    USE.NAMES=FALSE
+                  )
               )
             )
           )
@@ -235,59 +364,174 @@ pk.tss.monoexponential.population <- function(data,
     )
   if (verbose)
     print(all.model.summary)
+  # One row per subject (and treatment, so that a subject's row joins the rows
+  # of its treatment in other outputs)
+  ret <- tss_population_rows(data)
   if (all(is.na(all.model.summary$AIC)) ||
       length(all.model.summary) == 0) {
+    msg_no_convergence <- "No population model for monoexponential Tss converged, no results given"
     rlang::warn(
-      "No population model for monoexponential Tss converged, no results given",
+      msg_no_convergence,
       class = "pknca_warning_tss_population_no_convergence"
     )
-    ret <-
-      data.frame(
-        tss.monoexponential.population=NA,
-        tss.monoexponential.popind=NA,
-        subject=unique(data[["subject"]])
+    ret$tss.monoexponential.population <- NA_real_
+    ret$tss.monoexponential.popind <- NA_real_
+    estimates_population <-
+      tss_estimates_table(
+        type="monoexponential", output="population", estimate=NA_real_, level=level,
+        status="fit_failed", message=msg_no_convergence
+      )
+    estimates_popind <-
+      tss_estimates_table(
+        type="monoexponential", output="popind",
+        treatment=ret$treatment %||% NA, subject=ret$subject, estimate=NA_real_, level=level,
+        status="fit_failed", message=msg_no_convergence
       )
   } else {
-    best.model <-
+    best <-
       models[all.model.summary$AIC %in%
-             min(all.model.summary$AIC, na.rm=TRUE)][[1]]$model
-    ret <-
-      data.frame(
-        tss.monoexponential.population=nlme::fixef(best.model)[["tss"]]
-      )
-    best.ranef <- nlme::ranef(best.model)
-    if ("tss" %in% names(best.ranef)) {
-      ret <-
-        merge(
-          ret,
-          data.frame(
-            tss.monoexponential.popind=(best.ranef$tss +
-                                          ret$tss.monoexponential.population),
-            subject=factor(rownames(best.ranef))
-          ),
-          all=TRUE
-        )
-    } else if ("popind" %in% output) {
+             min(all.model.summary$AIC, na.rm=TRUE)][[1]]
+    best.model <- best$model
+    if (length(best$warnings) > 0) {
       rlang::warn(
-        "tss.monoexponential.popind was requested, but the best model did not include a random effect for tss.  Set to NA.",
-        class = "pknca_warning_tss_popind_no_random_effect"
+        sprintf(
+          "The selected population model for monoexponential Tss (%s) gave warnings while fitting: %s",
+          best$desc, paste(best$warnings, collapse="; ")
+        ),
+        class = "pknca_warning_tss_population_fit_warning"
       )
-      ret <-
-        merge(
-          ret,
-          data.frame(
-            tss.monoexponential.popind=NA,
-            subject=unique(data$subject)
-          ),
-          all=TRUE
+    }
+    ret$tss.monoexponential.population <-
+      tss_population_fixef(best.model, treatment = ret$treatment)
+    best.ranef <- nlme::ranef(best.model)
+    # The random effect is "tss" with one Tss and "tss.(Intercept)" with a Tss
+    # by treatment
+    col_ranef_tss <- grep("^tss", names(best.ranef), value=TRUE)
+    fit_warning <-
+      if (length(best$warnings) > 0) {
+        paste(best$warnings, collapse="; ")
+      } else {
+        NA_character_
+      }
+    estimates_population <-
+      tss_population_estimates(best.model, data=data, fit_warning=fit_warning, level=level)
+    if (length(col_ranef_tss) == 1) {
+      ret$tss.monoexponential.popind <-
+        ret$tss.monoexponential.population +
+        best.ranef[as.character(ret$subject), col_ranef_tss]
+      last_time <- tss_last_time(data, treatment=ret$treatment %||% NA, subject=ret$subject)
+      status_popind <- tss_estimate_status(ret$tss.monoexponential.popind, last_time)
+      estimates_popind <-
+        tss_estimates_table(
+          type="monoexponential", output="popind",
+          treatment=ret$treatment %||% NA, subject=ret$subject,
+          estimate=ret$tss.monoexponential.popind, level=level,
+          status=status_popind, fit_warning=fit_warning,
+          message=
+            tss_join_messages(
+              tss_not_reached_message(status_popind, last_time),
+              "No confidence interval: individual estimates of a mixed-effects model are predictions of random effects, for which nlme gives no standard errors"
+            )
+        )
+    } else {
+      if ("popind" %in% output) {
+        rlang::warn(
+          "tss.monoexponential.popind was requested, but the best model did not include a random effect for tss.  Set to NA.",
+          class = "pknca_warning_tss_popind_no_random_effect"
+        )
+      }
+      ret$tss.monoexponential.popind <- NA_real_
+      estimates_popind <-
+        tss_estimates_table(
+          type="monoexponential", output="popind",
+          treatment=ret$treatment %||% NA, subject=ret$subject, estimate=NA_real_, level=level,
+          status="no_random_effect", fit_warning=fit_warning,
+          message="The selected population model has no random effect on Tss, so there are no individual estimates"
         )
     }
   }
   # Return the requested columns
-  ret[,intersect(c("subject", "treatment",
-                   paste("tss.monoexponential", output, sep=".")),
-                 names(ret)),
-      drop=FALSE]
+  ret <-
+    ret[,intersect(c("subject", "treatment",
+                     paste("tss.monoexponential", output, sep=".")),
+                   names(ret)),
+        drop=FALSE]
+  tss_set_estimates(
+    ret,
+    rbind(
+      if ("population" %in% output) estimates_population,
+      if ("popind" %in% output) estimates_popind
+    )
+  )
+}
+
+#' The population Tss estimates of the selected model, as estimate rows
+#'
+#' @param model The selected `nlme` model
+#' @param data The data of [pk.tss.monoexponential.population()]
+#' @param fit_warning The warnings of the model, or `NA`
+#' @param level The confidence level of the interval
+#' @returns The `tss_estimates_table()` rows of the population output:  one
+#'   with a `NA` treatment when the model has one Tss for all treatments, or
+#'   one per treatment when the model has one by treatment
+#' @keywords Internal
+#' @noRd
+tss_population_estimates <- function(model, data, fit_warning, level) {
+  fixef <- nlme::fixef(model)
+  if ("tss" %in% names(fixef)) {
+    treatment <- NA_character_
+    name <- "tss"
+  } else {
+    treatment <- as.character(sort(unique(data$treatment)))
+    name <- paste0("tss.treatment", treatment)
+  }
+  estimate <- unname(fixef[name])
+  interval <- tss_model_interval(model, name=name, level=level)
+  if (!is.na(interval$error)) {
+    rlang::warn(
+      paste("The confidence interval of the population Tss could not be computed:", interval$error),
+      class="pknca_warning_tss_interval_failed"
+    )
+  }
+  last_time <- tss_last_time(data, treatment=treatment)
+  status <- tss_estimate_status(estimate, last_time)
+  tss_estimates_table(
+    type="monoexponential", output="population", treatment=treatment,
+    estimate=estimate, lower=interval$lower, upper=interval$upper, level=level,
+    status=status, fit_warning=fit_warning,
+    message=tss_join_messages(tss_not_reached_message(status, last_time), interval$message)
+  )
+}
+
+#' The rows of the population output: one per subject and treatment
+#'
+#' @param data The data of [pk.tss.monoexponential.population()]
+#' @returns A data frame with the `subject` (and `treatment`) columns of
+#'   `data`, one row for each combination in the data, ordered by subject
+#' @keywords Internal
+#' @noRd
+tss_population_rows <- function(data) {
+  ret <- unique(data[, intersect(c("subject", "treatment"), names(data)), drop=FALSE])
+  ret <- ret[do.call(order, unname(as.list(ret))), , drop=FALSE]
+  rownames(ret) <- NULL
+  ret
+}
+
+#' The population Tss of each row from the selected model
+#'
+#' @param model The selected `nlme` model
+#' @param treatment The treatment of each row (`NULL` without treatment)
+#' @returns The Tss of each row:  the one Tss when the model has one, or the
+#'   Tss of the row's treatment when the model has one by treatment
+#' @keywords Internal
+#' @noRd
+tss_population_fixef <- function(model, treatment) {
+  fixef <- nlme::fixef(model)
+  if ("tss" %in% names(fixef)) {
+    rep(fixef[["tss"]], max(1, length(treatment)))
+  } else {
+    unname(fixef[paste0("tss.treatment", as.character(treatment))])
+  }
 }
 
 #' A helper function to estimate individual and single outputs for
@@ -303,89 +547,352 @@ pk.tss.monoexponential.population <- function(data,
 #'   contain at least columns for `subject`, `time`, `conc`, and `tss.constant`.
 #' @param output a character vector requesting the output types.
 #' @param verbose Show verbose output.
-#' @returns A data frame with either one row (if `population` output is
-#'   provided) or one row per subject (if `popind` is provided).  The columns
-#'   will be named `tss.monoexponential.population` and/or
-#'   `tss.monoexponential.popind`.
+#' @param level The confidence level of the intervals
+#' @param subject_given Was a subject given?  (Without a `subject` column in
+#'   `data`, this says whether the data have one subject or an unknown number.)
+#' @returns A data frame with one row per treatment (or one row, without
+#'   treatment) for `single`, and one row per subject (and treatment) for
+#'   `individual`, with columns `tss.monoexponential.single` and/or
+#'   `tss.monoexponential.individual`.
 #' @importFrom rlang .data %||%
 pk.tss.monoexponential.individual <- function(data,
                                               output=c(
                                                 "individual",
                                                 "single"),
-                                              verbose=FALSE) {
-  fit_tss <- function(d) {
-    current_model <-
-      try({
-        nlme::gnls(
-          conc~ctrough.ss*(1-exp(tss.constant*time/tss)),
-          params=list(
-            ctrough.ss~1,
-            tss~1),
-          start=c(
-            mean(d$conc),
-            stats::median(unique(d$time))),
-          data=d,
-          verbose=verbose
-        )
-      }, silent=!verbose)
-    tss <-
-      if (inherits(current_model, "try-error")) {
-        NA_real_
-      } else if (is.null(current_model)) {
-        NA_real_
-      } else {
-        stats::coef(current_model)[["tss"]]
-      }
-    tss
-  }
+                                              verbose=FALSE,
+                                              level=0.95,
+                                              subject_given=TRUE) {
   output <- match.arg(output, several.ok=TRUE)
-  # Run by treatment or a single value for the full data frame
-  data_maybe_grouped <-
-    if ("treatment" %in% names(data)) {
-      dplyr::grouped_df(data, vars = "treatment")
-    } else {
-      data
-    }
-  ret <-
-    data_maybe_grouped %>%
-    dplyr::summarize(
-      tss.monoexponential.single=
-        fit_tss(
-          data.frame(
-            time=.$time,
-            tss.constant=.$tss.constant,
-            conc=.$conc
-          )
-        )
-    )
-  if ("subject" %in% names(data) &&
-      "individual" %in% output) {
-    data_grouped <-
-      if (all(c("treatment", "subject") %in% names(data))) {
-        dplyr::grouped_df(data, vars = c("treatment", "subject"))
-      } else if ("subject" %in% names(data)) {
-        dplyr::grouped_df(data, vars="subject")
-      } else {
-        rlang::abort("Please report a bug. Subject must be specified to have subject-level fitting", class = "pknca_error_internal_tss_no_subject_for_individual")  # nocov
-      }
-    ret_sub <-
-      dplyr::summarize(
-        data_grouped,
-        tss.monoexponential.individual=
-          fit_tss(
-            data.frame(
-              time=.data$time,
-              tss.constant=.data$tss.constant,
-              conc=.data$conc
-            )
-          )
+  if (!("subject" %in% names(data))) {
+    output <- setdiff(output, "individual")
+  }
+  if (length(output) == 0) {
+    rlang::abort("Please report a bug. Subject must be specified to have subject-level fitting", class = "pknca_error_internal_tss_no_subject_for_individual")  # nocov
+  }
+  ret <- NULL
+  failures <- character()
+  fit_warnings <- character()
+  insufficient <- character()
+  estimates <- NULL
+  if ("single" %in% output) {
+    # Fit each treatment (or all the data, without treatment)
+    fits <-
+      tss_fit_gnls_groups(
+        data, cols=intersect("treatment", names(data)), verbose=verbose
       )
-    ret <- merge(ret, ret_sub, all=TRUE)
+    ret <- fits$groups
+    ret$tss.monoexponential.single <- fits$estimate
+    failures <- tss_gnls_failures(fits, output="single")
+    fit_warnings <- tss_gnls_warnings(fits, output="single")
+    insufficient <- tss_gnls_insufficient(fits, output="single")
+    estimates <-
+      tss_gnls_estimates(fits, data=data, output="single", level=level, subject_given=subject_given)
+  }
+  if ("individual" %in% output) {
+    fits_sub <-
+      tss_fit_gnls_groups(
+        data, cols=intersect(c("treatment", "subject"), names(data)), verbose=verbose
+      )
+    ret_sub <- fits_sub$groups
+    ret_sub$tss.monoexponential.individual <- fits_sub$estimate
+    ret <- if (is.null(ret)) ret_sub else merge(ret, ret_sub, all=TRUE)
+    failures <- c(failures, tss_gnls_failures(fits_sub, output="individual"))
+    fit_warnings <- c(fit_warnings, tss_gnls_warnings(fits_sub, output="individual"))
+    insufficient <- c(insufficient, tss_gnls_insufficient(fits_sub, output="individual"))
+    estimates <-
+      rbind(
+        estimates,
+        tss_gnls_estimates(fits_sub, data=data, output="individual", level=level, subject_given=subject_given)
+      )
+  }
+  if (length(insufficient) > 0) {
+    rlang::warn(
+      paste0(
+        "Too few troughs for a monoexponential gnls fit for Tss, so its estimate is NA:\n",
+        paste(insufficient, collapse="\n")
+      ),
+      class="pknca_warning_tss_insufficient_data"
+    )
+  }
+  if (length(failures) > 0) {
+    rlang::warn(
+      paste0(
+        "A monoexponential gnls fit for Tss failed, so its estimate is NA:\n",
+        paste(failures, collapse="\n")
+      ),
+      class="pknca_warning_tss_individual_fit_failed"
+    )
+  }
+  if (length(fit_warnings) > 0) {
+    rlang::warn(
+      paste0(
+        "A monoexponential gnls fit for Tss gave warnings while fitting:\n",
+        paste(fit_warnings, collapse="\n")
+      ),
+      class="pknca_warning_tss_individual_fit_warning"
+    )
   }
   # Return the requested columns
-  as.data.frame(
-    ret[,c(intersect(names(ret), c("subject", "treatment")),
-           paste("tss.monoexponential", output, sep=".")),
-        drop=FALSE]
+  ret <-
+    as.data.frame(
+      ret[,c(intersect(names(ret), c("subject", "treatment")),
+             paste("tss.monoexponential", output, sep=".")),
+          drop=FALSE]
+    )
+  tss_set_estimates(ret, estimates)
+}
+
+#' The estimates of gnls fits, as estimate rows
+#'
+#' The interval of a gnls fit is given only for the troughs of one subject:  a
+#' subject's troughs are correlated, so an interval that treats the troughs of
+#' several subjects as independent is too narrow.
+#'
+#' @inheritParams tss_gnls_group_text
+#' @inheritParams pk.tss.monoexponential.individual
+#' @param data The data that was fit
+#' @returns The `tss_estimates_table()` rows of the fits, one per group
+#' @keywords Internal
+#' @noRd
+tss_gnls_estimates <- function(fits, data, output, level, subject_given) {
+  groups <- fits$groups
+  treatment <- if ("treatment" %in% names(groups)) groups$treatment else NA
+  subject <- if ("subject" %in% names(groups)) groups$subject else NA
+  last_time <- tss_last_time(data, treatment=treatment, subject=subject)
+  status <- tss_estimate_status(fits$estimate, last_time)
+  fit_warning <- vapply(X=fits$warnings, FUN=paste, FUN.VALUE="", collapse="; ")
+  fit_warning[!nzchar(fit_warning)] <- NA_character_
+  # Without a subject column, there is one subject when one was given and an
+  # unknown number otherwise
+  n_subject <- fits$n_subject
+  n_subject[is.na(n_subject) & subject_given] <- 1L
+  lower <- upper <- rep(NA_real_, nrow(groups))
+  message_interval <- rep(NA_character_, nrow(groups))
+  error_interval <- rep(NA_character_, nrow(groups))
+  for (idx in seq_len(nrow(groups))) {
+    if (is.null(fits$model[[idx]])) {
+      # The failure is the message
+    } else if (is.na(n_subject[idx])) {
+      message_interval[idx] <-
+        "No confidence interval: without subject, the troughs may come from several subjects, and the troughs of a subject are correlated"
+    } else if (n_subject[idx] > 1) {
+      message_interval[idx] <-
+        "No confidence interval: the troughs of several subjects are pooled, and the troughs of a subject are correlated"
+    } else {
+      interval <- tss_model_interval(fits$model[[idx]], name="tss", level=level)
+      lower[idx] <- interval$lower
+      upper[idx] <- interval$upper
+      message_interval[idx] <- interval$message
+      error_interval[idx] <- interval$error
+    }
+  }
+  mask_error <- !is.na(error_interval)
+  if (any(mask_error)) {
+    rlang::warn(
+      paste0(
+        "The confidence interval of a monoexponential gnls fit for Tss could not be computed:\n",
+        paste(
+          sprintf("%s: %s", tss_gnls_group_text(fits, output)[mask_error], error_interval[mask_error]),
+          collapse="\n"
+        )
+      ),
+      class="pknca_warning_tss_interval_failed"
+    )
+  }
+  mask_insufficient <- !is.na(fits$insufficient)
+  status[mask_insufficient] <- "insufficient_data"
+  message <-
+    ifelse(
+      is.na(fits$failure),
+      tss_join_messages(tss_not_reached_message(status, last_time), message_interval),
+      fits$failure
+    )
+  message[mask_insufficient] <- fits$insufficient[mask_insufficient]
+  tss_estimates_table(
+    type="monoexponential", output=output, treatment=treatment, subject=subject,
+    estimate=fits$estimate, lower=lower, upper=upper, level=level,
+    status=status, fit_warning=fit_warning,
+    message=message
   )
+}
+
+#' The gnls groups with too few troughs, described for a warning
+#'
+#' @inheritParams tss_gnls_group_text
+#' @returns A character vector with one line per group that was not fit
+#' @keywords Internal
+#' @noRd
+tss_gnls_insufficient <- function(fits, output) {
+  mask <- !is.na(fits$insufficient)
+  sprintf("%s: %s", tss_gnls_group_text(fits, output)[mask], fits$insufficient[mask])
+}
+
+# The fewest troughs that a monoexponential gnls fit needs:  one more than its
+# two parameters, for the residual error
+tss_gnls_min_troughs <- 3L
+
+#' Fit the monoexponential gnls model to each group of the data
+#'
+#' @param data The data of [pk.tss.monoexponential.individual()]
+#' @param cols The columns that define a group (none for all the data)
+#' @param verbose Passed to [nlme::gnls()], and show the errors of failed fits
+#' @returns A list with `groups` (a data frame of the `cols` with one row per
+#'   group, ordered by them; one row and no columns without `cols`) and, with
+#'   one element per group, `model` (the fit, or `NULL` when it failed),
+#'   `estimate` (the Tss, `NA` when the fit failed), `failure` (the error of a
+#'   failed fit, or `NA`), `warnings` (the warnings of the fit), `insufficient`
+#'   (why a group with too few troughs was not fit, or `NA`), and `n_subject`
+#'   (the number of subjects in the group, `NA` without a `subject` column)
+#' @keywords Internal
+#' @noRd
+tss_fit_gnls_groups <- function(data, cols, verbose) {
+  if (length(cols) == 0) {
+    groups <- data.frame(row.names=1L)
+  } else {
+    groups <- unique(data[, cols, drop=FALSE])
+    groups <- groups[do.call(order, unname(as.list(groups))), , drop=FALSE]
+    rownames(groups) <- NULL
+  }
+  ret <-
+    list(
+      groups=groups, model=list(), estimate=numeric(), failure=character(), warnings=list(),
+      insufficient=character(), n_subject=integer()
+    )
+  for (idx in seq_len(nrow(groups))) {
+    mask <- rep(TRUE, nrow(data))
+    for (col in cols) {
+      mask <- mask & data[[col]] %in% groups[[col]][idx]
+    }
+    if (sum(mask) < tss_gnls_min_troughs) {
+      # Too few troughs for the two parameters of the curve and its residual
+      # error, so the group is not fit
+      fit <- list(model=NULL, estimate=NA_real_, failure=NA_character_, warnings=character())
+      ret$insufficient[idx] <-
+        sprintf(
+          "%d trough(s), fewer than the %d needed for the two parameters of the monoexponential curve and its residual error",
+          sum(mask), tss_gnls_min_troughs
+        )
+    } else {
+      fit <- tss_fit_gnls(data[mask, , drop=FALSE], verbose=verbose)
+      ret$insufficient[idx] <- NA_character_
+    }
+    ret$model[idx] <- list(fit$model)
+    ret$estimate[idx] <- fit$estimate
+    ret$failure[idx] <- fit$failure
+    ret$warnings[[idx]] <- fit$warnings
+    ret$n_subject[idx] <-
+      if ("subject" %in% names(data)) {
+        length(unique(data$subject[mask]))
+      } else {
+        NA_integer_
+      }
+  }
+  ret
+}
+
+#' Fit the monoexponential gnls model to one set of troughs
+#'
+#' @inheritParams tss_fit_gnls_groups
+#' @returns A list with `model`, `estimate`, `failure`, and `warnings` as
+#'   described in `tss_fit_gnls_groups()`
+#' @keywords Internal
+#' @noRd
+tss_fit_gnls <- function(data, verbose) {
+  collector <- pknca_regimen_warning_collector()
+  if (verbose) {
+    model <- tss_try_gnls(data, verbose=verbose, collector=collector)
+  } else {
+    # gnls() prints why it returns NULL; the reason is in `failure` instead
+    utils::capture.output(model <- tss_try_gnls(data, verbose=verbose, collector=collector))
+  }
+  warnings <- vapply(X=collector$conditions, FUN=conditionMessage, FUN.VALUE="", USE.NAMES=FALSE)
+  if (inherits(model, "try-error")) {
+    list(
+      model=NULL, estimate=NA_real_,
+      failure=conditionMessage(attr(model, "condition")), warnings=warnings
+    )
+  } else if (is.null(model)) {
+    # The only reason that nlme::gnls() returns NULL
+    list(
+      model=NULL, estimate=NA_real_,
+      failure="approximate covariance matrix for parameter estimates not of full rank",
+      warnings=warnings
+    )
+  } else {
+    list(
+      model=model, estimate=stats::coef(model)[["tss"]],
+      failure=NA_character_, warnings=warnings
+    )
+  }
+}
+
+#' Try the monoexponential gnls fit, keeping its warnings
+#'
+#' @inheritParams tss_fit_gnls
+#' @param collector Where to keep the warnings (`pknca_regimen_warning_collector()`)
+#' @returns The `gnls` fit, `NULL` (when gnls() gives none), or a `try-error`
+#' @keywords Internal
+#' @noRd
+tss_try_gnls <- function(data, verbose, collector) {
+  try(
+    tss_collect_warnings(
+      nlme::gnls(
+        conc~ctrough.ss*(1-exp(tss.constant*time/tss)),
+        params=list(
+          ctrough.ss~1,
+          tss~1),
+        start=c(
+          mean(data$conc),
+          stats::median(unique(data$time))),
+        data=data,
+        verbose=verbose
+      ),
+      collector
+    ),
+    silent=!verbose
+  )
+}
+
+#' Describe the group of each gnls fit
+#'
+#' @param fits The result of `tss_fit_gnls_groups()`
+#' @param output The output that the fits are for ("single" or "individual")
+#' @returns A character vector with one description per group, such as
+#'   "single (treatment A)" or "individual (subject 3)"
+#' @keywords Internal
+#' @noRd
+tss_gnls_group_text <- function(fits, output) {
+  groups <- fits$groups
+  if (ncol(groups) == 0) {
+    rep(output, nrow(groups))
+  } else {
+    labels <- rep("", nrow(groups))
+    for (col in names(groups)) {
+      labels <- paste0(labels, ifelse(nzchar(labels), ", ", ""), col, " ", as.character(groups[[col]]))
+    }
+    sprintf("%s (%s)", output, labels)
+  }
+}
+
+#' The failed gnls fits, described for a warning
+#'
+#' @inheritParams tss_gnls_group_text
+#' @returns A character vector with one line per failed fit
+#' @keywords Internal
+#' @noRd
+tss_gnls_failures <- function(fits, output) {
+  mask <- !is.na(fits$failure)
+  sprintf("%s: %s", tss_gnls_group_text(fits, output)[mask], fits$failure[mask])
+}
+
+#' The warnings of the gnls fits that gave an estimate, described for a warning
+#'
+#' @inheritParams tss_gnls_group_text
+#' @returns A character vector with one line per fit with warnings
+#' @keywords Internal
+#' @noRd
+tss_gnls_warnings <- function(fits, output) {
+  text <- vapply(X=fits$warnings, FUN=paste, FUN.VALUE="", collapse="; ")
+  mask <- is.na(fits$failure) & nzchar(text)
+  sprintf("%s: %s", tss_gnls_group_text(fits, output)[mask], text[mask])
 }

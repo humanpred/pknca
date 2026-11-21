@@ -353,7 +353,8 @@ test_that("Calculations when no dose info is given", {
         "AUC: lin up/log down",
         rep("", 2)
       ),
-      exclude=NA_character_
+      # cl.last cannot be calculated without a dose, and says so
+      exclude=rep(c(NA_character_, NA_character_, "Dose is missing"), 2)
     )
   )
 })

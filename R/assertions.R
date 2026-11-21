@@ -198,6 +198,20 @@ assert_lambdaz <- function(lambda.z, any.missing = TRUE, .var.name = checkmate::
   assert_numeric_between(x = lambda.z, lower = 0, any.missing = any.missing, .var.name = .var.name, finite = TRUE)
 }
 
+# Stop with the classed error `class` when `check_result`, the result of a
+# checkmate check_*() function, is not TRUE.  The message is checkmate's, so the
+# error reads as checkmate's assert_*() would, and a test can match the class.
+abort_check <- function(check_result, .var.name, class, call = rlang::caller_env()) {
+  if (!isTRUE(check_result)) {
+    rlang::abort(
+      message = sprintf("Assertion on '%s' failed: %s.", .var.name, check_result),
+      class = class,
+      call = call
+    )
+  }
+  invisible(TRUE)
+}
+
 #' Assert that a value is a valid AUC method
 #'
 #' @param method The method for integration (one of 'lin up/log down',
@@ -345,4 +359,53 @@ assert_unit <- function(unit, data) {
     # stricter.
     rlang::abort(unit_col, class = "pknca_error_invalid_unit")
   }
+}
+
+# Stop with the classed error `class` when `invalid` is TRUE, saying what
+# `arg` (the argument as the user gave it) must be.  The checks of the simple
+# calculation functions refuse only the inputs that already failed before the
+# checks were added, so a call that returned a value keeps returning it.
+abort_invalid <- function(invalid, arg, requirement, class, call = rlang::caller_env()) {
+  abort_check(if (isTRUE(invalid)) requirement else TRUE, arg, class = class, call = call)
+}
+
+# Can `x` be used as the condition the code using it evaluates:  `if (x)`,
+# `if (!x)`, or `x && y` (`uses`)?  The answer is what R itself does with `x`,
+# so exactly the values that stopped with an R error are refused.  One NA of
+# any type is accepted with `na_ok`.
+is_condition_value <- function(x, uses = "if", na_ok = FALSE) {
+  if (na_ok && length(x) == 1 && !is.list(x) && isTRUE(is.na(x))) {
+    return(TRUE)
+  }
+  all(vapply(X = uses, FUN = condition_use_works, FUN.VALUE = TRUE, x = x))
+}
+
+# Does `x` work in one use of a condition (see is_condition_value())?
+condition_use_works <- function(use, x) {
+  tryCatch(
+    {
+      switch(
+        use,
+        "if" = if (x) TRUE else TRUE,
+        not = if (!x) TRUE else TRUE,
+        and = x && TRUE
+      )
+      TRUE
+    },
+    error = function(e) FALSE
+  )
+}
+
+# The c0 and AUXC of an IV correction, checked where they are used:  a value
+# that is text or a list cannot be added to an AUC
+abort_invalid_auxciv_values <- function(c0, auxc, auxc_name, call) {
+  abort_invalid(
+    is.character(c0) && !is.na(c0), "c0", "Must be one number (or NA)",
+    class = "pknca_error_c0_invalid", call = call
+  )
+  abort_invalid(
+    (is.character(auxc) && !(length(auxc) == 1 && is.na(auxc))) || (is.list(auxc) && !is.data.frame(auxc)), auxc_name,
+    "Must be a number (or NA)",
+    class = "pknca_error_auxc_invalid", call = call
+  )
 }

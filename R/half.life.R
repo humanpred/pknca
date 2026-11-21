@@ -154,6 +154,11 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
                               first.tmax=NULL,
                               allow.tmax.in.half.life=NULL,
                               check=TRUE) {
+  abort_invalid(
+    !is_condition_value(manually.selected.points), "manually.selected.points",
+    "Must be TRUE or FALSE (one value, not NA)",
+    class = "pknca_error_manually_selected_points_invalid"
+  )
   # Resolve hl_method: explicit argument takes match.arg; missing uses PKNCA.options
   if (missing(hl_method)) {
     hl_method <- PKNCA.choose.option(name = "hl_method", value = NULL, options = options)
@@ -315,11 +320,19 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
   if (missing(tmax)) {
     ret$tmax <- pk.calc.tmax(data$conc, data$time, first.tmax=first.tmax, check=FALSE)
   } else {
+    abort_invalid(
+      !is.null(tmax) && length(tmax) != 1, "tmax", "Must have length 1",
+      class = "pknca_error_tmax_invalid"
+    )
     ret$tmax <- tmax
   }
   if (missing(tlast)) {
     ret$tlast <- pk.calc.tlast(data$conc, data$time, check=FALSE)
   } else {
+    abort_invalid(
+      !is.null(tlast) && length(tlast) != 1, "tlast", "Must have length 1",
+      class = "pknca_error_tlast_invalid"
+    )
     ret$tlast <- tlast
   }
 
@@ -336,9 +349,10 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
   if (!is_tobit) {
     # Data frame to use for computation of half-life
     if (allow.tmax.in.half.life) {
-      dfK <- data[as.numeric(data$time) >= as.numeric(ret$tmax), ]
+      # A missing Tmax leaves no point after it (`%in% TRUE`), so too few points
+      dfK <- data[(as.numeric(data$time) >= as.numeric(ret$tmax)) %in% TRUE, ]
     } else {
-      dfK <- data[as.numeric(data$time) > as.numeric(ret$tmax), ]
+      dfK <- data[(as.numeric(data$time) > as.numeric(ret$tmax)) %in% TRUE, ]
     }
     # Every candidate span ends at the last point, so a span that may not start
     # before min.hl.start.time cannot include any point before it (0 does not
@@ -434,9 +448,9 @@ pk.calc.half.life <- function(conc, time, tmax, tlast,
     # Data frame for Tobit: all non-NA points after tmax (including BLQ),
     # sorted ascending by time
     if (allow.tmax.in.half.life) {
-      dfK_all <- data_tobit[data_tobit$time >= ret$tmax, ]
+      dfK_all <- data_tobit[(data_tobit$time >= ret$tmax) %in% TRUE, ]
     } else {
-      dfK_all <- data_tobit[data_tobit$time > ret$tmax, ]
+      dfK_all <- data_tobit[(data_tobit$time > ret$tmax) %in% TRUE, ]
     }
     if (min.hl.start.time > 0) {
       dfK_all <- dfK_all[dfK_all$time >= min.hl.start.time, ]

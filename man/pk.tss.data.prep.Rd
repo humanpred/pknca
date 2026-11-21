@@ -53,3 +53,32 @@ and \code{treatment}.
 Clean up the time to steady-state parameters and return a data frame for use
 by the tss calculators.
 }
+\details{
+The BLQ rules (\code{conc.blq}, see \code{\link[=clean.conc.blq]{clean.conc.blq()}}) are applied to
+each concentration-time profile on its own, sorted by time:  each subject
+in each treatment (with \code{subject} and \code{treatment}), each subject (with
+\code{subject}), each treatment (with \code{treatment}), or all the concentrations
+(with neither).  So whether a BLQ concentration is first, middle, or last
+(or before or after Tmax) depends only on its own profile, not on other
+subjects or on the order of the rows.  The rows are returned in the order
+given.
+
+When \code{check} is \code{TRUE}, \code{subject} and \code{treatment} may not have
+missing values (\code{pknca_error_tss_subject_na} and
+\code{pknca_error_tss_treatment_na}).  When \code{check} is \code{FALSE}, they are not
+checked, and a missing subject or treatment (\code{NA} or \code{NaN} alike) is a
+value of its own for the BLQ rules:  the rows without a subject in a
+treatment are one profile, apart from those in another treatment.
+
+When \code{subject} is given and \code{check} is \code{TRUE}, two records for the same
+subject, treatment (if given), and time are an error
+(\code{pknca_error_tss_duplicate_rows}, also of class
+\code{pknca_error_duplicate_rows}): they are usually records that another
+group column separates (such as plasma and blood), and fitting them
+together gives a wrong estimate.  Every record given is checked, before
+missing and BLQ concentrations are handled and before the troughs are
+selected, so a repeated record is an error even at a time that is not a
+dose time or with a missing concentration.  Without \code{subject}, repeated
+times are pooled troughs and are allowed (with \code{treatment}).  A dose
+recorded more than once for a subject and time selects its trough once.
+}

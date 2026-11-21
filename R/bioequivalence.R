@@ -1293,6 +1293,16 @@ print.be_within_var <- function(x, ...) {
 # Find a column name: use `given` if supplied, otherwise the first of
 # `candidates` present in the data.
 .be_find_col <- function(given, data, candidates, what, required = TRUE) {
+  # The subject column of a PKNCAresults object without groups is
+  # character(0):  no column is given, so the candidates are searched
+  if (length(given) == 0) {
+    given <- NULL
+  }
+  abort_check(
+    checkmate::check_string(given, na.ok = TRUE, null.ok = TRUE),
+    what,
+    class = "pknca_error_be_column_invalid"
+  )
   if (!is.null(given) && !is.na(given)) {
     checkmate::assert_choice(given, choices = names(data))
     return(given)
@@ -1820,6 +1830,10 @@ print.be_dataset <- function(x, ...) {
 #' @export
 be_fit_model_single <- function(ds_ep, model_type = c("lmer", "nlme", "anova", "isc", "gls"), scaling = TRUE) {
   model_type <- match.arg(model_type)
+  abort_invalid(
+    !is_condition_value(scaling, uses = "not"), "scaling", "Must be TRUE or FALSE (one logical value or number, not NA)",
+    class = "pknca_error_be_scaling_invalid"
+  )
   fit <-
     switch(
       model_type,

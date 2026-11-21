@@ -384,14 +384,7 @@ pknca_function_arguments <- function(fun) {
 #' @family Imputation
 #' @export
 PKNCA_impute_fun_list <- function(x) {
-  if (all(is.na(x))) {
-    x <- rep(NA_character_, length(x))
-  }
-  ret <- strsplit(x = x, split = "[, ]+", perl = TRUE)
-  # A separator at the start splits off an empty name before the first method
-  ret <- lapply(X = ret, FUN = function(v) v[nzchar(v)])
-  mask_none <- vapply(X = ret, FUN = length, FUN.VALUE = 1L) == 0
-  ret[mask_none] <- NA_character_
+  ret <- impute_method_split(x)
   ret <- lapply(X = ret, FUN = PKNCA_impute_fun_list_paste)
   # Confirm that the functions exist and are functions
   # Sort will ensure that the results are not NA
@@ -438,6 +431,21 @@ assert_impute_method <- function(impute, intervals = data.frame()) {
   ret <- get_impute_method(intervals = intervals, impute = impute)
   PKNCA_impute_fun_list(ret)
   invisible(ret)
+}
+
+# Split each imputation specification in `x` into its method names, as written
+# (with or without the "PKNCA_impute_method_" prefix), separated by commas or
+# spaces.  A specification with no names in it (NA or "") is NA_character_.
+impute_method_split <- function(x) {
+  if (all(is.na(x))) {
+    x <- rep(NA_character_, length(x))
+  }
+  ret <- strsplit(x = x, split = "[, ]+", perl = TRUE)
+  # A separator at the start splits off an empty name before the first method
+  ret <- lapply(X = ret, FUN = function(v) v[nzchar(v)])
+  mask_none <- vapply(X = ret, FUN = length, FUN.VALUE = 1L) == 0
+  ret[mask_none] <- NA_character_
+  ret
 }
 
 # A helper for PKNCA_impute_fun_list that reports whether an imputation method

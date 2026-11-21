@@ -1674,3 +1674,52 @@ test_that("the Tobit half-life works for sparse data with the LLOQ of the mean p
     regexp = "lloq must be provided"
   )
 })
+
+test_that("half-life refuses a tmax or tlast that is not one number, and a missing tmax leaves no points", {
+  conc <- c(0, 6, 8, 6, 4, 2, 1)
+  time <- c(0, 1, 2, 4, 8, 12, 24)
+  expect_error(pk.calc.half.life(conc, time, tmax = numeric(0)), class = "pknca_error_tmax_invalid")
+  expect_error(pk.calc.half.life(conc, time, tmax = c(1, 2)), class = "pknca_error_tmax_invalid")
+  expect_error(pk.calc.half.life(conc, time, tlast = numeric(0)), class = "pknca_error_tlast_invalid")
+  # The terminal phase is after Tmax, so a missing Tmax leaves no point for it,
+  # as when pk.nca() gives the Tmax of an interval with no measurement
+  expect_warning(
+    ret <- pk.calc.half.life(conc, time, tmax = NA),
+    class = "pknca_warning_halflife_too_few_points"
+  )
+  expect_equal(attr(ret, "exclude"), "Too few points for half-life calculation (min.hl.points=3 with only 0 points)")
+  expect_true(is.na(ret$lambda.z))
+  expect_true(is.na(ret$half.life))
+  expect_null(ret$tmax)
+  # A missing tlast does not stop the fit; clast.pred is missing
+  ret_tlast <- pk.calc.half.life(conc, time, tlast = NA)
+  expect_equal(ret_tlast$lambda.z, pk.calc.half.life(conc, time)$lambda.z)
+  expect_true(is.na(ret_tlast$clast.pred))
+})
+
+test_that("pk.calc.half.life() names the input it refuses and keeps what gave a value", {
+  conc <- c(0, 6, 8, 6, 4, 2, 1)
+  time <- c(0, 1, 2, 4, 8, 12, 24)
+  expect_error(
+    pk.calc.half.life(conc, time, tmax = c(1, 2)),
+    class = "pknca_error_tmax_invalid",
+    regexp = "Assertion on 'tmax' failed: Must have length 1.",
+    fixed = TRUE
+  )
+  expect_error(
+    pk.calc.half.life(conc, time, tlast = numeric(0)),
+    class = "pknca_error_tlast_invalid",
+    regexp = "Assertion on 'tlast' failed: Must have length 1.",
+    fixed = TRUE
+  )
+  expect_error(
+    pk.calc.half.life(conc, time, manually.selected.points = logical(0)),
+    class = "pknca_error_manually_selected_points_invalid",
+    regexp = "Assertion on 'manually.selected.points' failed: Must be TRUE or FALSE (one value, not NA).",
+    fixed = TRUE
+  )
+  # What gave a value still gives it:  a logical or factor Tmax
+  expected <- pk.calc.half.life(conc, time, tmax = 1, tlast = 24)
+  expect_equal(pk.calc.half.life(conc, time, tmax = TRUE, tlast = 24)$lambda.z, expected$lambda.z)
+  expect_no_error(pk.calc.half.life(conc, time, tmax = factor("2"), tlast = 24))
+})

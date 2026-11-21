@@ -26,6 +26,8 @@
 #'   quantification; this is used for AUCinf calculations.  If provided as
 #'   clast.obs (observed clast value, default), AUCinf is AUCinf,obs. If
 #'   provided as clast.pred, AUCinf is AUCinf,pred.
+#' @param .clast_name The name of `clast` in an error message:  the argument
+#'   as the calling function names it (such as `clast.obs`)
 #' @param fun_linear The function to use for integration of the linear part of
 #'   the curve (not required for AUC or AUMC functions)
 #' @param fun_log The function to use for integration of the logarithmic part of
@@ -65,9 +67,15 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
                          conc.blq=NULL,
                          conc.na=NULL,
                          check=TRUE,
-                         fun_linear, fun_log, fun_inf) {
+                         fun_linear, fun_log, fun_inf, .clast_name = "clast") {
   # Check the inputs
   method <- PKNCA.choose.option(name="auc.method", value=method, options=options)
+  # The errors name the argument of the calling function (pk.calc.auc() and
+  # the others), which has the same name
+  abort_invalid(
+    !is_condition_value(check), "check", "Must be TRUE or FALSE (one value, not NA)",
+    class = "pknca_error_check_invalid", call = rlang::caller_env()
+  )
   if (check) {
     assert_conc_time(conc = conc, time = time)
     data <-
@@ -101,6 +109,23 @@ pk.calc.auxc <- function(conc, time, interval=c(0, Inf),
 
   auc.type <- match.arg(auc.type)
   interval <- assert_intervaltime_single(interval = interval)
+  if (auc.type %in% "AUCinf") {
+    # Only AUCinf uses lambda.z and clast; clast is checked after the
+    # concentration and time checks, which its default relies on
+    abort_invalid(
+      !(is.numeric(lambda.z) || all(is.na(lambda.z))), "lambda.z", "Must be numeric (or NA)",
+      class = "pknca_error_lambdaz_invalid", call = rlang::caller_env()
+    )
+    abort_invalid(
+      length(lambda.z) == 0, "lambda.z", "Must have length 1, but has length 0",
+      class = "pknca_error_lambdaz_invalid", call = rlang::caller_env()
+    )
+    abort_invalid(
+      length(clast) == 0 || ((is.character(clast) || is.list(clast)) && !all(is.na(clast))),
+      .clast_name, "Must be a number (or NA)",
+      class = "pknca_error_clast_invalid", call = rlang::caller_env()
+    )
+  }
 
   if (auc.type %in% "AUCinf" && is.finite(interval[2])) {
     rlang::warn(
@@ -244,7 +269,7 @@ pk.calc.auc.inf <- function(conc, time, ..., options=list(), lambda.z) {
 #' @export
 pk.calc.auc.inf.obs <- function(conc, time, clast.obs, ..., options=list(),
                                 lambda.z) {
-  pk.calc.auc.inf(conc=conc, time=time, clast=clast.obs, ...,
+  pk.calc.auc.inf(conc=conc, time=time, clast=clast.obs, .clast_name = "clast.obs", ...,
                   options=options,
                   lambda.z=lambda.z)
 }
@@ -255,7 +280,7 @@ pknca_concept(pk.calc.auc.inf.obs) <- "auc"
 #' @export
 pk.calc.auc.inf.pred <- function(conc, time, clast.pred, ..., options=list(),
                                  lambda.z) {
-  pk.calc.auc.inf(conc=conc, time=time, clast=clast.pred, ...,
+  pk.calc.auc.inf(conc=conc, time=time, clast=clast.pred, .clast_name = "clast.pred", ...,
                   options=options,
                   lambda.z=lambda.z)
 }
@@ -322,7 +347,7 @@ pk.calc.aumc.inf <- function(conc, time, ..., options=list(),
 #' @export
 pk.calc.aumc.inf.obs <- function(conc, time, clast.obs, ..., options=list(),
                                  lambda.z) {
-  pk.calc.aumc.inf(conc=conc, time=time, clast=clast.obs, ..., options=options,
+  pk.calc.aumc.inf(conc=conc, time=time, clast=clast.obs, .clast_name = "clast.obs", ..., options=options,
                    lambda.z=lambda.z)
 }
 
@@ -332,7 +357,7 @@ pknca_concept(pk.calc.aumc.inf.obs) <- "aumc"
 #' @export
 pk.calc.aumc.inf.pred <- function(conc, time, clast.pred, ..., options=list(),
                              lambda.z) {
-  pk.calc.aumc.inf(conc=conc, time=time, clast=clast.pred, ..., options=options,
+  pk.calc.aumc.inf(conc=conc, time=time, clast=clast.pred, .clast_name = "clast.pred", ..., options=options,
                    lambda.z=lambda.z)
 }
 
@@ -490,6 +515,28 @@ sparse_auxc_result <- function(conc, time, subject, lambda.z = NA,
                                lambda.z.time.first = NA, lambda.z.time.last = NA,
                                lambda.z.n.points = NA, moment, extrapolate,
                                auc.type = "AUClast", iv_bolus = FALSE, name, options) {
+  # The errors name the argument of the exported estimator that called this
+  call <- rlang::caller_env()
+  abort_invalid(
+    length(lambda.z) != 1 || !(is.numeric(lambda.z) || is.logical(lambda.z) || is.na(lambda.z)),
+    "lambda.z", "Must be one number (or NA)",
+    class = "pknca_error_lambdaz_invalid", call = call
+  )
+  for (current_name in c("lambda.z.time.first", "lambda.z.time.last")) {
+    current <- get(current_name)
+    abort_invalid(
+      (is.character(current) && !(length(current) == 1 && is.na(current))) || is.list(current),
+      current_name, "Must be a number (or NA)",
+      class = "pknca_error_lambdaz_invalid", call = call
+    )
+  }
+  abort_invalid(
+    length(lambda.z.n.points) != 1 || is.character(lambda.z.n.points) || is.list(lambda.z.n.points) ||
+      (is.numeric(lambda.z.n.points) && !is.na(lambda.z.n.points) &&
+         (!is.finite(lambda.z.n.points) || lambda.z.n.points != round(lambda.z.n.points))),
+    "lambda.z.n.points", "Must be one whole number (or NA)",
+    class = "pknca_error_lambdaz_invalid", call = call
+  )
   lambda_z_se <- PKNCA.choose.option(name="sparse_lambda_z_se", options=options)
   result <-
     sparse_auxc_obs(

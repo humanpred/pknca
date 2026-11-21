@@ -606,3 +606,24 @@ test_that("PKNCA_options_defaults reads defaults without changing the current op
   expect_error(PKNCA_options_defaults(NA_character_), regexp = "missing")
   expect_error(PKNCA_options_defaults(character()), regexp = "length >= 1")
 })
+
+test_that("PKNCA.options() refuses default and check that are not one TRUE or FALSE", {
+  expect_error(PKNCA.options(default = c(TRUE, FALSE)), class = "pknca_error_options_flag_invalid")
+  expect_error(PKNCA.options(default = NA), class = "pknca_error_options_flag_invalid")
+  expect_error(PKNCA.options(check = logical(0)), class = "pknca_error_options_flag_invalid")
+  expect_error(PKNCA.options(check = "yes"), class = "pknca_error_options_flag_invalid")
+})
+
+test_that("PKNCA.options() names the flag it refuses and keeps a number as before", {
+  expect_error(
+    PKNCA.options(default = NA),
+    class = "pknca_error_options_flag_invalid",
+    regexp = "Assertion on 'default' failed: Must be TRUE or FALSE (one logical value or number, not NA).",
+    fixed = TRUE
+  )
+  # A number is a flag, as before
+  expect_equal(PKNCA.options(default = 1), PKNCA.options(default = TRUE))
+  expect_equal(PKNCA.options(check = 0), PKNCA.options())
+  # Anything that works as a condition, as before
+  expect_equal(PKNCA.options(default = as.Date("2020-01-01")), PKNCA.options(default = TRUE))
+})

@@ -773,6 +773,12 @@ useless <- function(x) {
       ),
       class = "pknca_error_units_multiple_provided"
     )
+  } else if (length(x) == 0 && !is.null(x)) {
+    # NULL and NA say that there is no unit; an empty vector says nothing
+    rlang::abort(
+      sprintf("A unit must be one value, NA, or NULL, not a zero-length %s", class(x)[1]),
+      class = "pknca_error_units_zero_length"
+    )
   }
   is.null(x) || is.na(x)
 }
