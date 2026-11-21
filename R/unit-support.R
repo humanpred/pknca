@@ -594,10 +594,11 @@ pknca_units_table_secondary <- function(units, unit_tables, group_values, pairs 
 # sides are in the same units, and the quotient of the two units otherwise.
 #
 # When the two sides are in the same units, or in a units table given to
-# PKNCAdata() (`own_conversions`), a conversion on the parameter's own row ("fraction" to "%", or a clearance to "L/hr") is then
-# applied to the composed standardized units when they convert to it:  with the
-# row's own factor when they are the units it converts from, and otherwise as a
-# unit conversion.  The table PKNCAdata() builds converts each side to the
+# PKNCAdata() (`own_conversions`), a conversion on the parameter's own row
+# ("fraction" to "%", or a clearance to "L/hr") is then applied to the
+# composed standardized units when they convert to it:  with the row's own
+# factor when they are the units it converts from, and otherwise as a unit
+# conversion.  The table PKNCAdata() builds converts each side to the
 # preferred units, so its composed units are already the ones to report.
 secondary_pair_units <- function(param, base, u, s, side_factor, is_mr, has_std, factor_cache,
                                  own_conversions = FALSE) {
@@ -1149,6 +1150,9 @@ pknca_unit_conversion <- function(result, units, allow_partial_missing_units = F
 # PKNCAdata object is not changed.
 pknca_units_table_join_pairs <- function(units, result) {
   group_cols <- setdiff(names(units), c("PPTESTCD", "PPORRESU", "PPSTRESU", "conversion_factor"))
+  if (length(group_cols) == 0) {
+    return(pknca_units_table_compose_single(units, result))
+  }
   needs_pairs <-
     length(group_cols) > 0 &&
     !any(endsWith(group_cols, "_ref")) &&
@@ -1184,6 +1188,44 @@ pknca_units_table_join_pairs <- function(units, result) {
     units, unit_tables, group_values,
     pairs = pairs, requested = unique(result$PPTESTCD[with_ref]), own_conversions = TRUE
   )
+}
+
+# A units table without group columns is one unit set:  the secondary
+# parameters of the results that name a reference group are composed from
+# their two sides in it, as in a table per group, so that a conversion of one
+# side (the amount excreted in ug) reaches them and the two layouts give the
+# same units.  The composed rows are keyed on the results' `_ref` columns; a
+# result naming no reference (a renal clearance within one interval) keeps the
+# row the table gives it.
+pknca_units_table_compose_single <- function(units, result) {
+  ref_cols <- grep("_ref$", names(result), value = TRUE)
+  with_ref <- rowSums(!is.na(result[, ref_cols, drop = FALSE])) > 0
+  if (length(ref_cols) == 0 || !any(with_ref)) {
+    return(units)
+  }
+  units_set <- units
+  units_set$pknca_unit_set <- 1L
+  composed <-
+    pknca_units_table_secondary(
+      units_set, unit_tables = list(units), group_values = data.frame(pknca_unit_set = 1L),
+      pairs = data.frame(own = 1L, ref = 1L),
+      requested = unique(result$PPTESTCD[with_ref]), own_conversions = TRUE
+    )
+  mask_pair <- !is.na(composed$pknca_unit_set_ref)
+  if (!any(mask_pair)) {
+    return(units)
+  }
+  composed$pknca_unit_set <- NULL
+  composed$pknca_unit_set_ref <- NULL
+  refs <- unique(result[with_ref, ref_cols, drop = FALSE])
+  pair_rows <- merge(composed[mask_pair, , drop = FALSE], refs, by = NULL)
+  single_rows <- composed[!mask_pair, , drop = FALSE]
+  for (col in ref_cols) {
+    single_rows[[col]] <- rep(refs[[col]][NA_integer_], nrow(single_rows))
+  }
+  ret <- as.data.frame(dplyr::bind_rows(single_rows, pair_rows))
+  row.names(ret) <- NULL
+  ret
 }
 
 # One text key per row of `data`, from its values in `cols`
@@ -1240,7 +1282,6 @@ abort_mr_units_unmatched <- function(result, units, allow_partial_missing_units 
   }
   invisible(NULL)
 }
-
 
 # The original and standardized units of `param` for the group `group` in a
 # units table of rows that name no reference group:  a character vector named

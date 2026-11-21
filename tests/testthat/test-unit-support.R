@@ -721,8 +721,8 @@ test_that("pknca_units_amount_basis() reads the kind of amount from the unit's n
       data.frame(unit = "mg/kg", basis = "g"),
       data.frame(unit = "mg", basis = "g"),
       data.frame(unit = "mcg/mL", basis = "g"),
-      data.frame(unit = "µg/mL", basis = "g"),
-      data.frame(unit = "μmol/L", basis = "mol"),
+      data.frame(unit = "\u00b5g/mL", basis = "g"),
+      data.frame(unit = "\u03bcmol/L", basis = "mol"),
       data.frame(unit = "nmol/L", basis = "mol"),
       data.frame(unit = "hr*mmol/L", basis = "mol"),
       data.frame(unit = "mmol/g", basis = "mol"),
@@ -1173,4 +1173,115 @@ test_that("a given table per group composes the units of a secondary parameter f
   d_cmax <- d_mr[d_mr$PPTESTCD == "ratio.cmax", ]
   expect_equal(d_cmax$PPORRESU, "fraction")
   expect_equal(d_cmax$PPSTRES, 40 / 100)
+})
+
+# The units table `units`, given once per value of the group column `col`
+units_per_group <- function(units, col, values) {
+  do.call(rbind, lapply(X = values, FUN = function(value) cbind(stats::setNames(data.frame(value), col), units)))
+}
+
+# The PPTESTCD, PPSTRES, and PPSTRESU of the results `param` of `o_data`
+secondary_std_results <- function(o_data, param) {
+  d_res <- as.data.frame(suppressMessages(pk.nca(o_data)))
+  d_res <- d_res[d_res$PPTESTCD %in% param, ]
+  data.frame(PPTESTCD = d_res$PPTESTCD, PPSTRES = d_res$PPSTRES, PPSTRESU = d_res$PPSTRESU)
+}
+
+# Renal clearance of one subject (see clr_units_profile()) with the units table
+# `units`
+clr_layout_results <- function(units) {
+  d_clr <- rbind(clr_units_profile(1, "plasma"), clr_units_profile(1, "urine"))
+  secondary_std_results(
+    PKNCAdata(
+      PKNCAconc(d_clr, conc ~ time | PCSPEC + subject, volume = "vol"),
+      intervals = data.frame(PCSPEC = "urine", start = 0, end = 24, ae = TRUE, clr.last = TRUE),
+      units = units, options = list(auc.method = "linear")
+    ),
+    "clr.last"
+  )
+}
+
+# Bioavailability of an oral dose of 20 against an IV dose of 10, with the
+# units table `units`
+f_layout_results <- function(units) {
+  d_f <-
+    rbind(
+      data.frame(subject = 1, treatment = "iv", time = c(0, 1, 2, 4, 8), conc = c(32, 16, 8, 2, 0.125)),
+      data.frame(subject = 1, treatment = "oral", time = c(0, 1, 2, 4, 8), conc = c(0, 8, 4, 1, 0.0625))
+    )
+  d_f_dose <- data.frame(subject = 1, treatment = c("iv", "oral"), time = 0, dose = c(10, 20), route = c("intravascular", "extravascular"))
+  secondary_std_results(
+    PKNCAdata(
+      PKNCAconc(d_f, conc ~ time | treatment + subject),
+      PKNCAdose(d_f_dose, dose ~ time | treatment + subject, route = "route"),
+      intervals = data.frame(treatment = c("iv", "oral"), start = 0, end = 8, auclast = TRUE, f.last = c(FALSE, TRUE)),
+      group_ref = data.frame(treatment = "iv"), units = units, options = list(auc.method = "linear")
+    ),
+    "f.last"
+  )
+}
+
+# ratio.cmax and mr.auclast of the metabolite fixture with the units table
+# `units`
+ratio_layout_results <- function(units) {
+  secondary_std_results(
+    PKNCAdata(
+      PKNCAconc(d_conc_mr_units, conc ~ time | subject / analyte),
+      intervals = intervals_mr_units, group_ref = data.frame(analyte = "parent"), units = units
+    ),
+    c("ratio.cmax", "mr.auclast")
+  )
+}
+
+test_that("the same conversions give the same units in one table and in a table per group", {
+  # Renal clearance with the amount excreted converted from mg to ug
+  units_clr <-
+    pknca_units_table(
+      concu = "ng/mL", amountu = "mg", timeu = "hr",
+      conversions = data.frame(PPORRESU = "mg", PPSTRESU = "ug")
+    )
+  clr_single <- clr_layout_results(units_clr)
+  expect_equal(clr_single$PPSTRES, 350/144 * 1000)
+  expect_equal(clr_single$PPSTRESU, "ug/(hr*ng/mL)")
+  expect_equal(clr_layout_results(units_per_group(units_clr, "PCSPEC", c("plasma", "urine"))), clr_single)
+  # Bioavailability with the doses converted from mg to ug
+  units_f <-
+    pknca_units_table(
+      concu = "ng/mL", doseu = "mg", amountu = "mg", timeu = "hr",
+      conversions = data.frame(PPORRESU = "mg", PPSTRESU = "ug")
+    )
+  f_single <- f_layout_results(units_f)
+  expect_equal(f_layout_results(units_per_group(units_f, "treatment", c("iv", "oral"))), f_single)
+  # Ratios and metabolite ratios with the concentration converted to ug/mL and
+  # the ratios to percent
+  units_ratio <-
+    pknca_units_table(
+      concu = "ng/mL", timeu = "hr",
+      conversions = data.frame(PPORRESU = c("ng/mL", "fraction"), PPSTRESU = c("ug/mL", "%"))
+    )
+  ratio_single <- ratio_layout_results(units_ratio)
+  expect_equal(ratio_single$PPSTRESU, c("%", "%"))
+  expect_equal(ratio_layout_results(units_per_group(units_ratio, "analyte", c("parent", "M1"))), ratio_single)
+})
+
+test_that("a table without group columns composes only the results that name a reference", {
+  units_clr <-
+    pknca_units_table(
+      concu = "ng/mL", amountu = "mg", timeu = "hr",
+      conversions = data.frame(PPORRESU = "mg", PPSTRESU = "ug")
+    )
+  # A renal clearance within one interval names no reference:  the table is
+  # used as it is
+  result_own <- data.frame(PPTESTCD = "clr.last", PPORRES = 1, PCSPEC_ref = NA_character_)
+  expect_identical(pknca_units_table_compose_single(units_clr, result_own), units_clr)
+  expect_identical(pknca_units_table_compose_single(units_clr, result_own[, 1:2]), units_clr)
+  # One that names its reference gets the composed row, keyed on it
+  result_ref <- data.frame(PPTESTCD = "clr.last", PPORRES = 1, PCSPEC_ref = "plasma")
+  composed <- pknca_units_table_compose_single(units_clr, result_ref)
+  expect_equal(nrow(composed), nrow(units_clr) + 1)
+  row_ref <- composed[composed$PPTESTCD == "clr.last" & composed$PCSPEC_ref %in% "plasma", ]
+  expect_equal(row_ref$PPSTRESU, "ug/(hr*ng/mL)")
+  expect_equal(row_ref$conversion_factor, 1000)
+  row_own <- composed[composed$PPTESTCD == "clr.last" & is.na(composed$PCSPEC_ref), ]
+  expect_equal(row_own$PPSTRESU, "mg/(hr*ng/mL)")
 })
