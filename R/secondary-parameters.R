@@ -999,6 +999,7 @@ expand_secondary_groups <- function(intervals, row, param, info, found, conc) {
     entry <-
       list(
         param = param, row = row, group = found$groups[k, , drop = FALSE],
+        key = secondary_group_key(found$groups[k, , drop = FALSE], names(found$groups)),
         ref_id = NULL, override = list(), reason = found$reasons[k],
         is_reference = found$is_reference[k]
       )
@@ -1042,23 +1043,25 @@ expand_secondary_groups <- function(intervals, row, param, info, found, conc) {
   list(intervals = intervals, links = links, entries = entries)
 }
 
-# The entry of `entries` (from expand_secondary_groups()) for the group
-# `own_group`
+# The text identifying a group by its values in the columns `cols`
+secondary_group_key <- function(group, cols) {
+  paste(
+    vapply(X = cols, FUN = function(col) as.character(group[[col]]), FUN.VALUE = ""),
+    collapse = "\r"
+  )
+}
+
+# The entry of `entries` (from expand_secondary_groups(), each with the `key` of
+# its group) for the group `own_group`
 secondary_group_entry <- function(entries, own_group) {
-  for (entry in entries) {
-    matches <-
-      vapply(
-        X = names(entry$group),
-        FUN = function(col) own_group[[col]] %in% entry$group[[col]],
-        FUN.VALUE = TRUE
-      )
-    if (all(matches)) {
-      return(entry)
-    }
+  keys <- vapply(X = entries, FUN = function(entry) entry$key, FUN.VALUE = "")
+  idx <- match(secondary_group_key(own_group, names(entries[[1]]$group)), keys)
+  if (is.na(idx)) {
+    # Every group with results is a group of the concentration data, which the
+    # finder judged
+    rlang::abort("Please report a bug:  no reference was judged for a group", class = "pknca_error_internal_secondary_group")  # nocov
   }
-  # Every group with results is a group of the concentration data, which the
-  # finder judged
-  rlang::abort("Please report a bug:  no reference was judged for a group", class = "pknca_error_internal_secondary_group")  # nocov
+  entries[[idx]]
 }
 
 # Reuse or create the reference interval the finder derived, give it an
@@ -1522,7 +1525,13 @@ pk_nca_secondary <- function(results, data_calc) {
         } else {
           lapply(
             X = seq_len(nrow(by_group$groups)),
-            FUN = function(j) list(group = by_group$groups[j, , drop = FALSE], reason = by_group$reasons[j])
+            FUN = function(j) {
+              list(
+                group = by_group$groups[j, , drop = FALSE],
+                key = secondary_group_key(by_group$groups[j, , drop = FALSE], names(by_group$groups)),
+                reason = by_group$reasons[j]
+              )
+            }
           )
         }
       for (k in seq_len(nrow(instances))) {
