@@ -1030,8 +1030,10 @@ test_that("pk.calc.ratio() divides the test value by the reference value", {
   expect_equal(pk.calc.ratio(10, 20), 0.5)
   expect_equal(pk.calc.ratio(3, 1.5), 2)
   # A ratio to a reference that is not above zero is not interpretable
-  expect_equal(pk.calc.ratio(10, 0), NA_real_)
-  expect_equal(pk.calc.ratio(10, -5), NA_real_)
+  expect_equal(pk.calc.ratio(10, 0), structure(NA_real_, exclude = "The reference is zero or negative"))
+  expect_equal(pk.calc.ratio(10, -5), structure(NA_real_, exclude = "The reference is zero or negative"))
+  # A longer result has no reason, which would also describe its values
+  expect_equal(pk.calc.ratio(c(10, 10), c(0, 5)), c(NA, 2))
   expect_equal(pk.calc.ratio(10, NA_real_), NA_real_)
   expect_equal(pk.calc.ratio(NA_real_, 20), NA_real_)
 })
@@ -1968,6 +1970,9 @@ test_that("combine_exclude_reasons() combines and clears exclusion reasons", {
   expect_equal(combine_exclude_reasons(c("a", NA, "b"), NULL), "a; b")
   expect_equal(combine_exclude_reasons(c("a", "b"), "DO NOT EXCLUDE"), NA_character_)
   expect_equal(combine_exclude_reasons(NULL, "DO NOT EXCLUDE"), NA_character_)
+  # A reason is listed once, also when it is one of several already joined
+  expect_equal(combine_exclude_reasons(c("a", "a"), "a"), "a")
+  expect_equal(combine_exclude_reasons(c("a; b", "b; c"), "a"), "a; b; c")
 })
 
 # The automatic reference finder, group_ref, and ephemeral references ---------

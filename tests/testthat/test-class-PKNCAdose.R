@@ -584,3 +584,128 @@ test_that("PKNCAdose does not error for excluded, invalid times (#310)", {
   tmp.dose <- data.frame(time = c(1, 2), dose = c(1, 2))
   expect_no_error(PKNCAdose(tmp.dose, formula = dose~time, exclude = NULL))
 })
+
+test_that("a negative dose amount is an error naming the rows", {
+  d_dose <- data.frame(id = 1:8, time = 0, dose = c(1, -1, 2, -2, -3, -4, -5, -6))
+  expect_error(
+    PKNCAdose(d_dose, dose ~ time | id),
+    regexp = "Dose amounts (column 'dose') must not be negative; 6 row(s) of the dose data are: 2, 4, 5, 6, 7, ...",
+    fixed = TRUE,
+    class = "pknca_error_dose_negative"
+  )
+  # Exactly five rows are all named, with no "..."
+  cnd <-
+    expect_error(
+      PKNCAdose(data.frame(id = 1:6, time = 0, dose = c(1, -1, -2, -3, -4, -5)), dose ~ time | id),
+      class = "pknca_error_dose_negative"
+    )
+  expect_equal(
+    conditionMessage(cnd),
+    "Dose amounts (column 'dose') must not be negative; 5 row(s) of the dose data are: 2, 3, 4, 5, 6"
+  )
+  # One dose per group for every interval (`dose ~ .`)
+  expect_error(
+    PKNCAdose(data.frame(id = 1:2, dose = c(5, -5)), dose ~ . | id),
+    regexp = "Dose amounts (column 'dose') must not be negative; 1 row(s) of the dose data are: 2",
+    fixed = TRUE,
+    class = "pknca_error_dose_negative"
+  )
+  # A units column
+  expect_error(
+    PKNCAdose(data.frame(id = 1, time = 0, dose = units::set_units(-5, "mg")), dose ~ time | id),
+    class = "pknca_error_dose_negative"
+  )
+  # Through PKNCAdata() with a data.frame and formula.dose
+  expect_error(
+    PKNCAdata(
+      data.frame(id = 1, time = 0:2, conc = c(0, 2, 1)), data.frame(id = 1, time = 0, dose = -1),
+      formula.conc = conc ~ time | id, formula.dose = dose ~ time | id
+    ),
+    class = "pknca_error_dose_negative"
+  )
+})
+
+test_that("an excluded negative dose, a zero dose, and a missing dose are allowed", {
+  d_dose <- data.frame(id = 1:2, time = 0, dose = c(1, -1), excl = c(NA, "bad dose"))
+  expect_no_error(PKNCAdose(d_dose, dose ~ time | id, exclude = "excl"))
+  # No dose amount at all
+  expect_no_error(PKNCAdose(data.frame(id = 1, time = 0), ~ time | id))
+  # A dose column that is not numeric is not checked here
+  expect_no_error(PKNCAdose(data.frame(id = 1:2, time = 0, dose = c("1", "-2")), dose ~ time | id))
+  # Zero and missing amounts give what they gave before negative amounts were
+  # refused:  a zero dose divides to Inf, and a missing one gives NA
+  d_conc <- data.frame(id = 1, time = c(0, 1, 2, 4, 8), conc = c(0, 10, 8, 4, 2))
+  intervals <- data.frame(start = 0, end = Inf, cl.last = TRUE, auclast.dn = TRUE, cmax.dn = TRUE, totdose = TRUE)
+  for (current in list(list(dose = 0, expected = c(cl.last = 0, auclast.dn = Inf, cmax.dn = Inf, totdose = 0)),
+                       list(dose = NA_real_, expected = c(cl.last = NA_real_, auclast.dn = NA_real_, cmax.dn = NA_real_, totdose = NA_real_)))) {
+    o_data <-
+      PKNCAdata(
+        PKNCAconc(d_conc, conc ~ time | id),
+        PKNCAdose(data.frame(id = 1, time = 0, dose = current$dose), dose ~ time | id),
+        intervals = intervals
+      )
+    res <- as.data.frame(suppressMessages(pk.nca(o_data)))
+    value <- stats::setNames(res$PPORRES, res$PPTESTCD)
+    expect_equal(value[names(current$expected)], current$expected, info = as.character(current$dose))
+  }
+})
+
+test_that("pk.nca refuses a dose made negative after PKNCAdose", {
+  o_dose <- PKNCAdose(data.frame(id = 1, time = 0, dose = 1), dose ~ time | id)
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(data.frame(id = 1, time = 0:2, conc = c(0, 2, 1)), conc ~ time | id),
+      dplyr::mutate(o_dose, dose = -dose),
+      intervals = data.frame(start = 0, end = Inf, cmax.dn = TRUE)
+    )
+  expect_error(
+    pk.nca(o_data),
+    regexp = "Dose amounts (column 'dose') must not be negative; 1 row(s) of the dose data are: 1",
+    fixed = TRUE,
+    class = "pknca_error_dose_negative"
+  )
+})
+
+# The durations of the doses, from PKNCAdose(rate = ) on `d_dose`
+rate_durations <- function(d_dose, formula = dose ~ time | id, rate = "rate") {
+  o_dose <- PKNCAdose(d_dose, formula, route = "intravascular", rate = rate)
+  as.data.frame(o_dose)[[o_dose$columns$duration]]
+}
+
+test_that("a rate column gives each dose its own duration, with any number of rows", {
+  expect_equal(rate_durations(data.frame(id = 1, time = 0, dose = 10, rate = 5)), 2)
+  expect_equal(rate_durations(data.frame(id = 1:2, time = 0, dose = c(10, 20), rate = c(5, 4))), c(2, 5))
+  expect_equal(rate_durations(data.frame(id = 1:3, time = 0, dose = c(10, 20, 30), rate = c(5, 4, 3))), c(2, 5, 10))
+  # One rate for every dose
+  expect_equal(rate_durations(data.frame(id = 1:2, time = 0, dose = c(10, 20)), rate = 2), c(5, 10))
+  # A missing rate, a rate of zero, or a missing dose amount gives no valid
+  # duration
+  for (d_dose in list(
+    data.frame(id = 1:2, time = 0, dose = c(10, 20), rate = c(5, NA)),
+    data.frame(id = 1:2, time = 0, dose = c(10, 20), rate = c(5, 0)),
+    data.frame(id = 1:2, time = 0, dose = c(10, NA), rate = c(5, 4))
+  )) {
+    expect_error(rate_durations(d_dose), class = "pknca_error_dose_invalid_duration")
+  }
+  # Without a dose amount, a rate cannot give a duration
+  for (n in 1:2) {
+    expect_error(
+      rate_durations(data.frame(id = seq_len(n), time = 0, rate = 5), formula = ~ time | id),
+      regexp = "`rate` needs the dose amount",
+      class = "pknca_error_rate_without_dose"
+    )
+  }
+})
+
+# The durations of the doses of a PKNCAdose object
+dose_test_duration <- function(object) {
+  as.data.frame(object)[[object$columns$duration]]
+}
+
+test_that("setDuration() with a rate takes the dose column by default, or the dose amounts", {
+  o_dose <- PKNCAdose(data.frame(id = 1:2, time = 0, dose = c(10, 20)), dose ~ time | id, route = "intravascular")
+  expect_equal(dose_test_duration(setDuration(o_dose, rate = 5)), c(2, 4))
+  expect_equal(dose_test_duration(setDuration(o_dose, rate = 5, dose = c(20, 40))), c(4, 8))
+  # A missing dose amount gives no duration
+  expect_error(setDuration(o_dose, rate = 5, dose = NA), class = "pknca_error_rate_without_dose")
+})

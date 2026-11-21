@@ -22,16 +22,29 @@ test_that("pknca_rd_exclude_rule writes the registered descriptions as roxygen2 
 })
 
 test_that("pknca_rd_impute_method writes the registered description and details", {
+  # A method without details has only its description
+  expect_equal(
+    pknca_rd_impute_method("PKNCA_impute_method_end_conc_drop"),
+    paste(
+      "@describeIn PKNCA_impute_method",
+      "Drop a concentration measured exactly at the end of the interval, if one is present (usually used with multiple-dose data when a point at the interval boundary belongs to the next dose, e.g. an imputed C0)"
+    )
+  )
   expect_equal(
     pknca_rd_impute_method("PKNCA_impute_method_start_cmin"),
-    "@describeIn PKNCA_impute_method Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data)"
+    paste(
+      "@describeIn PKNCA_impute_method",
+      "Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data).",
+      "In `pk.nca()` with the `conc.na` option `\"drop\"` (the default), a row at the start time with a missing concentration is not a measurement:  it is dropped, with its other per-observation values, before this method runs, so the result is the one for the data without that row.  In a profile of urine or feces collections (one with any volume that is not missing; one row is enough), the row stays:  the amount in that collection is unknown, not absent.  This is decided for each profile, so a profile whose volumes are all missing follows the first rule.  With a numeric `conc.na`, that number is the missing concentration and the row stays.  A direct call of this method sees the row as it is given."
+    )
   )
   expect_equal(
     pknca_rd_impute_method("PKNCA_impute_method_start_predose"),
     paste(
       "@describeIn PKNCA_impute_method",
       "Shift a predose concentration to become the time zero concentration (only if a time zero concentration does not exist).",
-      "The most recent predose sample with a measured concentration is shifted; samples with a missing concentration are skipped."
+      "The most recent predose sample with a measured concentration is shifted; samples with a missing concentration are skipped.",
+      "In `pk.nca()` with the `conc.na` option `\"drop\"` (the default), a row at the start time with a missing concentration is not a measurement:  it is dropped, with its other per-observation values, before this method runs, so the result is the one for the data without that row.  In a profile of urine or feces collections (one with any volume that is not missing; one row is enough), the row stays:  the amount in that collection is unknown, not absent.  This is decided for each profile, so a profile whose volumes are all missing follows the first rule.  With a numeric `conc.na`, that number is the missing concentration and the row stays.  A direct call of this method sees the row as it is given."
     )
   )
   expect_error(
@@ -62,7 +75,7 @@ test_that("the registry tables are markdown tables with one row per entry", {
   expect_true(
     paste(
       '| `"start_cmin"` |',
-      "Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data) |"
+      "Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data). |"
     ) %in% methods_table
   )
 })
@@ -185,18 +198,18 @@ test_that("the installed help has the registered descriptions as they are writte
     expect_true(grepl(pattern = current_description, x = rules_section, fixed = TRUE), info = current_description)
   }
 
-  # Imputation methods:  the description and details, and the table.  The
-  # details' only markup is code, which the installed Rd keeps without the
+  # Imputation methods:  the text the registration generates (description,
+  # details, and any sentence from the registration's flags), and the table.
+  # The details' only markup is code, which the installed Rd keeps without the
   # spaces around it, so these are compared without markup or white space.
   methods <- pknca_impute_methods()
-  registry <- get("impute_methods", envir = .PKNCAEnv)
   expected_methods <-
-    vapply(
-      X = methods$fun,
-      FUN = function(fun) {
-        gsub(pattern = "[`[:space:]]", replacement = "", x = paste(registry[[fun]]$description, registry[[fun]]$details))
-      },
-      FUN.VALUE = ""
+    gsub(
+      pattern = "[`[:space:]]", replacement = "",
+      x = sub(
+        pattern = "^@describeIn PKNCA_impute_method ", replacement = "",
+        x = vapply(X = methods$fun, FUN = pknca_rd_impute_method, FUN.VALUE = "")
+      )
     )
   documented_methods <- rd_function_descriptions(rd[["PKNCA_impute_method.Rd"]])
   expect_equal(
