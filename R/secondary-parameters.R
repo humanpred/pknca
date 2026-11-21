@@ -737,6 +737,14 @@ interval_override_values <- function(groups, j, cols) {
 # * `same_row`:  the reference differs only in group columns that the intervals
 #   do not have, so the requesting row covers the reference itself.
 #
+# A reference is always the subject's own profile (decision 10), so the
+# profiles of other subjects are not candidates, unless `group_ref` names the
+# subject column itself.  A reference within the requesting row may differ only
+# in the columns that `group_ref` names (any column for the sample-type rule,
+# which names none):  the row covers every value of the columns the intervals
+# do not have, so a difference in another of them would take a profile that the
+# row's own group does not have from an unrelated group.
+#
 # The rule is mechanical, never a list of parameter names:  the finder applies
 # where the parameter measures an interval collection while everything it
 # references is a spot sample (renal clearance) and the concentration data
@@ -806,6 +814,11 @@ find_secondary_reference_groups <- function(intervals, row, param, info, conc, g
     return("The interval matches no group in the concentration data")
   }
   compare_cols <- setdiff(group_cols, setdiff(ref_vary, names(intervals)))
+  subject_col <- conc$columns$subject
+  own_subject_only <-
+    length(subject_col) == 1 && subject_col %in% group_cols &&
+    !(subject_col %in% names(group_ref))
+  steered_cols <- if (is.null(group_ref)) group_cols else names(group_ref)
   # The requesting row can be its own groups' reference only when it calculates
   # what the reference supplies, so that nothing the row did not request is
   # added to its results
@@ -825,6 +838,11 @@ find_secondary_reference_groups <- function(intervals, row, param, info, conc, g
       next
     }
     candidates <- setdiff(which(pool), i)
+    other_subject <- FALSE
+    if (own_subject_only) {
+      other_subject <- !(groups[[subject_col]][candidates] %in% groups[[subject_col]][i])
+      candidates <- candidates[!other_subject]
+    }
     candidates <-
       candidates[
         vapply(
@@ -841,8 +859,9 @@ find_secondary_reference_groups <- function(intervals, row, param, info, conc, g
     } else if (length(candidates) == 0) {
       reasons[k] <-
         sprintf(
-          "No reference profile is available for %s",
-          name_value_text(groups[i, , drop = FALSE])
+          "No reference profile is available for %s%s",
+          name_value_text(groups[i, , drop = FALSE]),
+          if (any(other_subject)) " (a reference is the subject's own profile)" else ""
         )
       next
     }
@@ -882,11 +901,12 @@ find_secondary_reference_groups <- function(intervals, row, param, info, conc, g
     differing <- group_differing_cols(groups, compare_cols, i, nearest[1])
     inexpressible <- setdiff(differing, names(intervals))
     if (length(inexpressible) > 0 &&
-        (length(inexpressible) < length(differing) || !row_has_sources)) {
+        (length(inexpressible) < length(differing) || !row_has_sources ||
+           !all(inexpressible %in% steered_cols))) {
       # The reference differs in a column the intervals pin as well, so it is
       # not within the requesting row, or the row does not calculate what the
-      # reference supplies; and a reference interval cannot name the columns
-      # the intervals do not have
+      # reference supplies, or it differs in a column that is not steered; and
+      # a reference interval cannot name the columns the intervals do not have
       reasons[k] <- secondary_inexpressible_text(inexpressible, param)
       next
     }
@@ -972,6 +992,9 @@ expand_secondary_groups <- function(intervals, row, param, info, found, conc) {
   links <- data.frame(param = character(0), ref_id = character(0))
   entries <- list()
   signatures <- secondary_override_signatures(found$overrides)
+  # The requesting row as a reference, once it is linked:  groups whose
+  # references within the row differ in their overrides share its identifier
+  same_row_id <- NULL
   for (k in seq_len(nrow(found$groups))) {
     entry <-
       list(
@@ -981,7 +1004,9 @@ expand_secondary_groups <- function(intervals, row, param, info, found, conc) {
       )
     if (is.na(entry$reason)) {
       override <- found$overrides[[k]]
-      if (is.null(ids[[signatures[k]]])) {
+      if (is.null(ids[[signatures[k]]]) && found$same_row[k] && !is.null(same_row_id)) {
+        ids[[signatures[k]]] <- same_row_id
+      } else if (is.null(ids[[signatures[k]]])) {
         if (found$same_row[k]) {
           assigned <- interval_assign_ref_ids(intervals, list(row), ref_id = NULL, prefix = "autoref")
           intervals <- interval_sync_ref_cols(assigned$intervals, param)
@@ -991,6 +1016,7 @@ expand_secondary_groups <- function(intervals, row, param, info, found, conc) {
               id = assigned$ids[[1]], created = FALSE, override = override,
               start = intervals$start[row], end = intervals$end[row]
             )
+          same_row_id <- linked$id
         } else {
           linked <-
             interval_link_found_reference(

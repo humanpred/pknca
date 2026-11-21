@@ -2778,10 +2778,68 @@ period_values <- function(d_res, param) {
   d_param$PPORRES[order(d_param$subject)]
 }
 
+test_that("references within one row that differ in their columns share one announced interval", {
+  # The reference is the parent in plasma:  the metabolite in plasma differs
+  # from it in the analyte, the metabolite in serum in the analyte and the
+  # matrix, and the parent in serum in the matrix.  The intervals have neither
+  # column, so every reference is within the row.
+  d_conc <-
+    data.frame(
+      subject = 1,
+      analyte = rep(c("parent", "M1", "parent", "M1"), each = 3),
+      matrix = rep(c("plasma", "plasma", "serum", "serum"), each = 3),
+      time = rep(c(0, 1, 2), 4),
+      conc = c(0, 10, 5, 0, 2, 1, 0, 8, 4, 0, 4, 3)
+    )
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time | analyte + matrix + subject),
+      intervals = data.frame(start = 0, end = 24, cmax = TRUE, ratio.cmax = TRUE),
+      group_ref = data.frame(analyte = "parent", matrix = "plasma")
+    )
+  messages <- capture_messages(d_res <- as.data.frame(pk.nca(o_data)))
+  expect_equal(
+    messages,
+    "Secondary parameter 'ratio.cmax': using (analyte=parent, 0-24) as the reference interval 'autoref1'."
+  )
+  d_ratio <- d_res[d_res$PPTESTCD == "ratio.cmax", ]
+  d_ratio <- d_ratio[order(d_ratio$matrix, d_ratio$analyte), ]
+  expect_equal(d_ratio$PPORRES, c(2/10, NA, 4/10, 8/10))
+  expect_equal(d_ratio$analyte_ref, c("parent", NA, "parent", "parent"))
+  expect_equal(d_ratio$matrix_ref, c("plasma", NA, "plasma", "plasma"))
+})
+
+test_that("a spot-sample profile is the reference itself when only other subjects' profiles remain", {
+  # Three subjects with plasma, one with urine:  each plasma profile is a spot
+  # sample whose only other candidates belong to other subjects
+  d_conc <-
+    rbind(
+      data.frame(
+        subject = rep(1:3, each = 4), PCSPEC = "plasma",
+        time = rep(c(0, 1, 2, 4), 3), conc = rep(c(0, 10, 8, 4), 3), vol = NA_real_
+      ),
+      data.frame(subject = 1, PCSPEC = "urine", time = c(0, 4), conc = c(0, 50), vol = c(NA, 0.1))
+    )
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time | PCSPEC + subject, volume = "vol"),
+      intervals = data.frame(start = 0, end = 4, clr.last = TRUE)
+    )
+  expect_warning(
+    d_res <- as.data.frame(muffle_interval_warnings(pk.nca(o_data))),
+    class = "pknca_warning_secondary_auto_reference"
+  )
+  d_clr <- d_res[d_res$PPTESTCD == "clr.last" & d_res$PCSPEC == "plasma", ]
+  expect_equal(d_clr$PPORRES, rep(NA_real_, 3))
+  expect_equal(d_clr$exclude, rep("The profile is the reference itself (it has no collection volume)", 3))
+})
+
 # A request alone on its row that no group can have a reference for:  the row
-# gives NA rows for the request, each group with its own reason, on the base
-# that the request depends on
-test_that("a ratio requested alone with tied references gives NA rows and its base", {
+# gives NA rows for the request, with the reason, on the base that the request
+# depends on.  Each subject's IV profile is in the other period, which the
+# intervals do not have, and another subject's IV profile in the same period is
+# not a candidate.
+test_that("a ratio requested alone with no expressible reference gives NA rows and its base", {
   o_data <-
     PKNCAdata(
       o_conc_period,
@@ -2790,19 +2848,15 @@ test_that("a ratio requested alone with tied references gives NA rows and its ba
     )
   expect_warning(
     d_res <- as.data.frame(muffle_interval_warnings(pk.nca(o_data))),
-    regexp = "More than one reference profile is equally close",
+    regexp = "Add 'period' to the intervals",
     class = "pknca_warning_secondary_auto_reference"
   )
   expect_equal(sort(unique(d_res$PPTESTCD)), c("cmax", "ratio.cmax"))
   d_ratio <- d_res[d_res$PPTESTCD %in% "ratio.cmax", ]
-  d_ratio <- d_ratio[order(d_ratio$subject), ]
   expect_equal(d_ratio$PPORRES, c(NA_real_, NA_real_))
   expect_equal(
     d_ratio$exclude,
-    c(
-      "More than one reference profile is equally close ((treatment=iv, period=1, subject=1), (treatment=iv, period=2, subject=2))",
-      "More than one reference profile is equally close ((treatment=iv, subject=1, period=1), (treatment=iv, subject=2, period=2))"
-    )
+    rep("Add 'period' to the intervals so the reference can be expressed, or set 'ratio.cmax_ref'", 2)
   )
 })
 
@@ -2951,8 +3005,9 @@ test_that("an automatic link takes the reference from another period", {
     class = "pknca_message_secondary_ref_created"
   )
   expect_equal(period_values(as.data.frame(res), "f.inf.obs"), f_obs_period)
-  # Without ref_vary the two IV profiles are equally close to each oral one
-  # (one differs in the period, the other in the subject), so nothing is linked
+  # Without ref_vary the subject's IV profile differs in the period as well as
+  # the treatment, and another subject's IV profile is not a candidate, so
+  # nothing is linked
   o_data_tie <-
     PKNCAdata(
       o_conc_period, o_dose_period, intervals = intervals_auto,

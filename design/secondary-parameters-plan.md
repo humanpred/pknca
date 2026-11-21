@@ -43,7 +43,7 @@ these):
 | 9 | Sparse data (`is_sparse_pk(data)` is `TRUE`) with any secondary parameter requested aborts with `pknca_error_secondary_sparse_unsupported`.  Lifting this is a to-do (§8). |
 | 10 | Aggregated (across-subject) references are **not** planned: parallel-design comparisons of that kind are bioavailability-style analyses already served by the existing bioavailability/`be_assess()` calculation methods. |
 | 11 | A link may declare group columns in which its reference differs from the requesting group (`ref_vary`, section 6.5), per link in a `<param>_ref_vary` intervals column with a `PKNCAdata(ref_vary=)` default.  Nothing varies by default, and the subject column never varies (decision 10). |
-| 12 | The automatic finder judges an intervals row group by group (section 6.6; maintainer ruling).  A metabolite in a row covering every analyte gets its ratio; the parent's own result is `NA` with the reason that it is the reference itself; results that are `NA` become numbers and no result that has a value changes.  It applies to every secondary parameter.  Supersedes the single-pointer collapse of �5.3 steps 5 and 7. |
+| 12 | The automatic finder judges an intervals row group by group (section 6.6; maintainer ruling).  A metabolite in a row covering every analyte gets its ratio; the parent's own result is `NA` with the reason that it is the reference itself; results that are `NA` become numbers and no result that has a value changes.  It applies to every secondary parameter.  Supersedes the single-pointer collapse of §5.3 steps 5 and 7. |
 
 **Work is split into four PRs, in order.**  Each PR ends with the "Definition
 of done" in §7.  Do not start a PR before the previous one is merged or at
@@ -1952,9 +1952,11 @@ profile only in them is the same profile at another time, not a reference.
 Nearest candidates that differ from each other only in them give one override,
 so they no longer tie; `pk_nca_secondary()` then picks the profile per instance
 or reports the ambiguity.  Without the declaration, a crossover with
-`group_ref = data.frame(treatment = "iv")` ties for every oral profile (the IV
-profile in the other period and the other subject's IV profile in the same
-period each differ in the treatment and one more column).
+`group_ref = data.frame(treatment = "iv")` finds, for every oral profile, the
+subject's IV profile in the other period, which differs in the period as well
+as the treatment; intervals without the period column cannot express it, so the
+result is `NA` with "Add 'period' to the intervals".  (Another subject's IV
+profile is not a candidate; section 6.6.)
 
 ### 6.6 An intervals row judged group by group (decision 12)
 
@@ -1964,17 +1966,29 @@ covers, and returns, per group:  the overrides of its reference, or the reason
 it has none; whether it is a reference itself; and whether the reference is
 within the requesting row.
 
+* **The subject's own profile.**  A reference is always the subject's own
+  profile (decisions 10 and 11), so the profiles of other subjects are not
+  candidates, unless `group_ref` names the subject column itself.  A subject
+  without the reference profile gets "No reference profile is available for
+  <group> (a reference is the subject's own profile)".  A row covering every
+  subject covers the other subjects' profiles too, so without this rule a
+  metabolite of a subject with no parent took another subject's parent as its
+  reference within the row.
 * **A reference itself.**  A group matching `group_ref`, or, for the
-  sample-type rule, a spot-sample profile with no other candidate, has no
-  result:  `NA` with "The profile is the reference itself (it matches
-  `group_ref`)" or "(it has no collection volume)".
+  sample-type rule, a spot-sample profile with no other candidate of its own
+  subject, has no result:  `NA` with "The profile is the reference itself (it
+  matches `group_ref`)" or "(it has no collection volume)".
 * **Within the row.**  A reference differing only in group columns that the
   intervals do not have is covered by the requesting row, which covers every
-  value of those columns.  The row is its own reference when it calculates
-  what the reference supplies (requested or as a dependency, such as a
-  metabolite ratio's base); otherwise the group keeps the "Add '<col>' to the
-  intervals" reason, so that nothing the row did not request is added to its
-  results.  A same-interval renal clearance (the legacy path, �5.1) never
+  value of those columns.  The row is its own reference when those columns are
+  all named in `group_ref` (any column for the sample-type rule, which names
+  none) and it calculates what the reference supplies (requested or as a
+  dependency, such as a metabolite ratio's base); otherwise the group keeps the
+  "Add '<col>' to the intervals" reason, so that nothing the row did not
+  request is added to its results and no column the user did not steer
+  chooses the reference.  References within the row that differ in their
+  overrides (the parent in plasma for the metabolite in serum and for the
+  parent in serum) share the row's one `interval_id` and one announcement.  A same-interval renal clearance (the legacy path, §5.1) never
   reaches the finder, so this case is the metabolite ratio's and the ratio's.
 * **Different references.**  Each distinct reference is reused or created and
   announced, as for a whole row.
@@ -2010,8 +2024,13 @@ Verified against the base branch over 176 scenarios (metabolite and parent
 ratios steered by `group_ref` on rows per analyte, for the metabolites only,
 for the parent only, for every analyte, and by subject; renal clearance by the
 sample type with plasma, or plasma and serum by subject; bioavailability and
-ratios in a crossover with and without `ref_vary`):  no result that had a value
-changes, and none becomes `NA`.
+ratios in a crossover with and without `ref_vary`):  no value changes, 95
+results that were `NA` have a value, and one value becomes `NA`:  the renal
+clearance of a subject with serum but no plasma, steered to plasma with
+intervals per subject, which used another subject's plasma.  Further cases
+pinned by tests:  a subject with no parent in a row covering every subject
+and analyte (and with three group levels), a plasma-only subject among
+several, and references within one row that differ in their overrides.
 
 ---
 

@@ -113,7 +113,9 @@ has no pointer and could not otherwise be calculated, \code{\link[=pk.nca]{pk.nc
 reference profile from the data:  a parameter measured on an interval
 collection whose inputs are spot samples (renal clearance) takes the nearest
 profile with no collection volume, and \code{group_ref} restricts -- or, for
-anything else, supplies -- the profiles that may be used.  The derived
+anything else, supplies -- the profiles that may be used.  A reference is
+always the subject's own profile:  another subject's profile is not used
+unless \code{group_ref} names the subject column.  The derived
 reference interval is created for the calculation only and is not added to
 the intervals in the result.  When more than one profile is equally close,
 the affected results are \code{NA} with the reason in the \code{exclude} column and a
@@ -134,8 +136,9 @@ group:  in a row that covers every analyte, each metabolite gets its ratio
 to the parent, and the parent's own result is \code{NA} with the reason "The
 profile is the reference itself (it matches \code{group_ref})".  When the
 reference differs only in group columns the intervals do not have, the
-row is its own reference, as long as it calculates the values the
-reference supplies; otherwise a reference interval is created for it.  The
+row is its own reference if \code{group_ref} names those columns and the row
+calculates the values the reference supplies; if not, the result is \code{NA}
+with a reason naming the columns to add to the intervals.  The
 groups of one row may have different references.  The same data.frame with
 a \code{parameter} column
 applies each row only to the secondary parameter it names, and the columns

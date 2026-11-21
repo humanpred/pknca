@@ -65,7 +65,9 @@
 #'   reference profile from the data:  a parameter measured on an interval
 #'   collection whose inputs are spot samples (renal clearance) takes the nearest
 #'   profile with no collection volume, and `group_ref` restricts -- or, for
-#'   anything else, supplies -- the profiles that may be used.  The derived
+#'   anything else, supplies -- the profiles that may be used.  A reference is
+#'   always the subject's own profile:  another subject's profile is not used
+#'   unless `group_ref` names the subject column.  The derived
 #'   reference interval is created for the calculation only and is not added to
 #'   the intervals in the result.  When more than one profile is equally close,
 #'   the affected results are `NA` with the reason in the `exclude` column and a
@@ -86,8 +88,9 @@
 #'   to the parent, and the parent's own result is `NA` with the reason "The
 #'   profile is the reference itself (it matches `group_ref`)".  When the
 #'   reference differs only in group columns the intervals do not have, the
-#'   row is its own reference, as long as it calculates the values the
-#'   reference supplies; otherwise a reference interval is created for it.  The
+#'   row is its own reference if `group_ref` names those columns and the row
+#'   calculates the values the reference supplies; if not, the result is `NA`
+#'   with a reason naming the columns to add to the intervals.  The
 #'   groups of one row may have different references.  The same data.frame with
 #'   a `parameter` column
 #'   applies each row only to the secondary parameter it names, and the columns

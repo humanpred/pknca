@@ -547,6 +547,90 @@ test_that("a metabolite ratio requested alone on a row with no reference gives N
   expect_equal(d_res$PPORRES[d_res$PPTESTCD == "cmax"], c(10, 12))
 })
 
+test_that("a subject with no parent profile has no ratio, in one row or in a row per analyte", {
+  # Subject 2 has only the metabolite.  Its reference is not the parent of
+  # subject 1, which the row covering every subject also covers:  a reference
+  # is always the subject's own profile.
+  d_conc <-
+    rbind(
+      data.frame(subject = 1, analyte = "parent", time = c(0, 1, 2, 4), conc = c(0, 10, 8, 4)),
+      data.frame(subject = 1, analyte = "M1", time = c(0, 1, 2, 4), conc = c(0, 3, 2, 1)),
+      data.frame(subject = 2, analyte = "M1", time = c(0, 1, 2, 4), conc = c(0, 30, 20, 10))
+    )
+  for (param in c("mr.cmax", "ratio.cmax")) {
+    intervals_one <- data.frame(start = 0, end = 24, cmax = TRUE)
+    intervals_one[[param]] <- TRUE
+    intervals_split <- rbind(cbind(analyte = "parent", intervals_one), cbind(analyte = "M1", intervals_one))
+    for (layout in c("one row", "row per analyte")) {
+      o_data <-
+        PKNCAdata(
+          PKNCAconc(d_conc, conc ~ time | analyte + subject),
+          intervals = if (layout == "one row") intervals_one else intervals_split,
+          group_ref = data.frame(analyte = "parent")
+        )
+      expect_warning(
+        expect_message(
+          d_res <- as.data.frame(pk.nca(o_data)),
+          class = "pknca_message_secondary_ref_created"
+        ),
+        class = "pknca_warning_secondary_auto_reference"
+      )
+      d_ratio <- d_res[d_res$PPTESTCD == param, ]
+      d_ratio <- d_ratio[order(d_ratio$subject, d_ratio$analyte), ]
+      info <- paste(param, layout)
+      expect_equal(d_ratio$analyte, c("M1", "parent", "M1"), info = info)
+      expect_equal(d_ratio$PPORRES, c(0.3, NA, NA), info = info)
+      expect_equal(
+        d_ratio$exclude,
+        c(
+          NA,
+          "The profile is the reference itself (it matches `group_ref`)",
+          "No reference profile is available for analyte=M1, subject=2 (a reference is the subject's own profile)"
+        ),
+        info = info
+      )
+      expect_equal(d_ratio$subject_ref, c(1, NA, NA), info = info)
+    }
+  }
+})
+
+test_that("with three group levels, each subject's ratio is to its own parent", {
+  # Study A:  subject 1 has the parent and the metabolite, subject 2 only the
+  # metabolite; study B:  subject 3 has both.  One row covers everything.
+  d_conc <-
+    rbind(
+      data.frame(study = "A", subject = 1, analyte = "parent", time = c(0, 1, 2), conc = c(0, 10, 5)),
+      data.frame(study = "A", subject = 1, analyte = "M1", time = c(0, 1, 2), conc = c(0, 3, 2)),
+      data.frame(study = "A", subject = 2, analyte = "M1", time = c(0, 1, 2), conc = c(0, 30, 20)),
+      data.frame(study = "B", subject = 3, analyte = "parent", time = c(0, 1, 2), conc = c(0, 20, 10)),
+      data.frame(study = "B", subject = 3, analyte = "M1", time = c(0, 1, 2), conc = c(0, 5, 4))
+    )
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time | study + analyte + subject),
+      intervals = data.frame(start = 0, end = 24, cmax = TRUE, mr.cmax = TRUE),
+      group_ref = data.frame(analyte = "parent")
+    )
+  expect_warning(
+    expect_message(
+      d_res <- as.data.frame(pk.nca(o_data)),
+      regexp = "Secondary parameter 'mr.cmax': using (analyte=parent, 0-24) as the reference interval 'autoref1'.",
+      fixed = TRUE,
+      class = "pknca_message_secondary_ref_created"
+    ),
+    regexp = "No reference profile is available for study=A, analyte=M1, subject=2 (a reference is the subject's own profile)",
+    fixed = TRUE,
+    class = "pknca_warning_secondary_auto_reference"
+  )
+  d_mr <- d_res[d_res$PPTESTCD == "mr.cmax" & d_res$analyte == "M1", ]
+  d_mr <- d_mr[order(d_mr$subject), ]
+  expect_equal(d_mr$PPORRES, c(3/10, NA, 5/20))
+  expect_equal(
+    d_mr$exclude,
+    c(NA, "No reference profile is available for study=A, analyte=M1, subject=2 (a reference is the subject's own profile)", NA)
+  )
+})
+
 test_that("param_pattern selects what it selected before the new ratios were registered", {
   all_params <- setdiff(names(get.interval.cols()), c("start", "end"))
   new_members <- names(PKNCA:::parameter_rule_members_new())

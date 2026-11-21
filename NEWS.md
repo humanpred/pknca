@@ -412,24 +412,38 @@ the generated intervals:
   tables) is not yet available.
 
 * A secondary parameter whose reference is found automatically is judged group
-  by group within an intervals row (@billdenney; PR number to add).  A row
-  covering every analyte gives each metabolite its `mr.<base>` (or
-  `ratio.<base>`) to the parent, and the parent's own result is `NA` with the
-  reason "The profile is the reference itself (it matches `group_ref`)"; before,
-  every result of such a row, the metabolites' included, was `NA`.  The row is
-  its own reference when the reference differs only in group columns the
-  intervals do not have and the row calculates what the reference supplies (as
-  a metabolite ratio's base is), so the intervals no longer need the analyte
-  column.  The groups of one row may have different references (for example, a
-  plasma reference for one subject and a serum reference for another), each
-  created and announced as before, where before the row's results were `NA`
-  with "The interval's groups need different reference profiles".  A spot
-  sample with no other spot sample to compare against is the reference itself
-  for renal clearance ("it has no collection volume").  Results that had a
-  value keep it; only results that were `NA` gain one, and a result that stays
-  `NA` may give a different reason.  A group that is the reference itself
-  raises no `pknca_warning_secondary_auto_reference` when other groups of its
-  row have their results.  When no group of a row has a reference, each group
+  by group within an intervals row (@billdenney; PR number to add).  `group_ref`
+  and the automatic finder are new in this version, so no released result
+  changes.  A row covering every analyte gives each metabolite its
+  `mr.<base>` (or `ratio.<base>`) to the parent, and the parent's own result is
+  `NA` with the reason "The profile is the reference itself (it matches
+  `group_ref`)"; before, every result of such a row, the metabolites'
+  included, was `NA`.  The row is its own reference when the reference differs
+  only in group columns the intervals do not have, `group_ref` names those
+  columns, and the row calculates what the reference supplies (as a metabolite
+  ratio's base is), so the intervals no longer need the analyte column.  The
+  groups of one row may have different references (for example, a plasma
+  reference for one subject and a serum reference for another), each created
+  and announced as before, where before the row's results were `NA` with "The
+  interval's groups need different reference profiles".  A reference interval
+  that is created calculates what the reference supplies, so a row may now
+  give results it did not request (such as `auclast` for the plasma reference
+  of a renal clearance), as created references already did.  A reference is
+  always the subject's own profile:  another subject's profile is not a
+  candidate (unless `group_ref` names the subject column), so a subject
+  without the reference profile gets `NA` with "No reference profile is
+  available for ... (a reference is the subject's own profile)", and a spot
+  sample with no other profile of its own subject is the reference itself for
+  renal clearance ("it has no collection volume"), where another subject's
+  profile could make the reference ambiguous ("More than one reference profile
+  is equally close").  One value moves for this:  with `group_ref =
+  data.frame(PCSPEC = "plasma")`, intervals per subject, and a subject with
+  serum but no plasma, that subject's renal clearance used another subject's
+  plasma and is now `NA`.  Results that had a value keep it, except that one;
+  only results that were `NA` gain one, and a result that stays `NA` may give
+  a different reason.  A group that is the reference itself raises no
+  `pknca_warning_secondary_auto_reference` when other groups of its row have
+  their results.  When no group of a row has a reference, each group
   gives its own reason, and the parameter's base is still calculated, as for
   a linked request:  a request alone on its row (such as `ratio.cmax` with
   nothing else requested) now returns `NA` rows for the parameter and rows for
