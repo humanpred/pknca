@@ -555,6 +555,41 @@ impute_conc_time <- function(impute_funs, conc, time, start, end,
   impute_data
 }
 
+# The group's data with the part within the interval (from `start` to `end`,
+# inclusive) replaced by the interval's imputed data, in time order.  `group`
+# and `imputed` are lists of the per-observation vectors named `conc`, `time`,
+# `volume`, and `duration.conc`; one that is NULL in either is NULL in the
+# result.  A group observation with a missing time is kept, as it is not within
+# the interval.
+#
+# When the imputation sets the concentration at `start` (adding it or changing
+# a measured one), the group's observations before `start` are dropped:  they
+# only estimate the concentration at `start`, which is now given, and a
+# concentration of 0 imputed after a positive one would otherwise be cleaned
+# away as a BLQ value in the middle of the profile.
+impute_group_data <- function(group, imputed, start, end) {
+  if (!(length(start) == 1 && length(end) == 1 && !is.na(start) && !is.na(end) && start < end)) {
+    rlang::abort(
+      "Please report a bug.  impute_group_data() needs one interval with start < end",
+      class = "pknca_error_internal_impute_group_interval"
+    )
+  }
+  mask_outside <- !((group$time >= start & group$time <= end) %in% TRUE)
+  imputed_start <- imputed$conc[imputed$time %in% start]
+  group_start <- group$conc[group$time %in% start]
+  if (length(imputed_start) > 0 && !identical(imputed_start, group_start)) {
+    mask_outside <- mask_outside & !((group$time < start) %in% TRUE)
+  }
+  ret <- list()
+  for (current_name in names(group)) {
+    if (!is.null(group[[current_name]]) && !is.null(imputed[[current_name]])) {
+      ret[[current_name]] <- c(group[[current_name]][mask_outside], imputed[[current_name]])
+    }
+  }
+  time_order <- order(ret$time)
+  lapply(ret, `[`, time_order)
+}
+
 # The values given to pk.nca.interval() one per observation, as a data.frame
 # whose rows imputation adds and drops with their observation (see
 # impute_align_obs()), and the value each column takes for an observation that
@@ -1106,6 +1141,19 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
     if ("lloq" %in% names(impute_data)) lloq <- impute_data$lloq
     conc <- impute_data$conc
     time <- impute_data$time
+    # The interval AUCs read the group's data, which reaches past the interval
+    # for the interpolation at its ends; within the interval they read the
+    # imputed data, as every other parameter does.
+    group_imputed <-
+      impute_group_data(
+        group = list(conc = conc.group, time = time.group, volume = volume.group, duration.conc = duration.conc.group),
+        imputed = list(conc = conc, time = time, volume = volume, duration.conc = duration.conc),
+        start = interval$start[1], end = interval$end[1]
+      )
+    conc.group <- group_imputed$conc
+    time.group <- group_imputed$time
+    volume.group <- group_imputed$volume
+    duration.conc.group <- group_imputed$duration.conc
     if (has_sparse_conc) {
       impute_sparse <-
         impute_conc_time(
@@ -1247,7 +1295,8 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
     from_sparse <- dispatch[[n]]$sparse
     if (dispatch[[n]]$calculable) {
       call_args <- list()
-      exclude_from_argument <- character(0)
+      # The exclusion reasons of the inputs, by the argument they are given to
+      exclude_from_argument <- list()
       # Prepare to call the function by setting up its arguments.
       arg_spec <- parameter_arg_spec(n, sparse = dispatch[[n]]$sparse)
       arglist <- arg_spec$arglist
@@ -1273,7 +1322,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
             # argument, because test and reference would then be the same value
             # and the result degenerate (f would always be 1).
             call_args[[arg_formal]] <- computed_value[[target]]
-            exclude_from_argument <- c(exclude_from_argument, computed_exclude[[target]])
+            exclude_from_argument[[arg_formal]] <- computed_exclude[[target]]
           } else {
             rlang::abort(
               sprintf(
@@ -1304,8 +1353,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
           # A parameter calculated earlier in this interval carries its
           # exclusion into anything calculated from it
           call_args[[arg_formal]] <- computed_value[[arg_mapped]]
-          exclude_from_argument <-
-            c(exclude_from_argument, computed_exclude[[arg_mapped]])
+          exclude_from_argument[[arg_formal]] <- computed_exclude[[arg_mapped]]
         } else if (!is.null(interval[[arg_mapped]])) {
           call_args[[arg_formal]] <- interval[[arg_mapped]]
         } else {
@@ -1358,8 +1406,15 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
       # The handling of the exclude column is documented in the
       # "vignettes/v80-writing-parameter-functions.Rmd" vignette.  Document any
       # changes to this section of code there.
+      # A calculation may name arguments that did not enter its result
+      # ("exclude_unused_args"), and their exclusion reasons do not apply to it
+      args_used <- setdiff(names(exclude_from_argument), attr(tmp_result, "exclude_unused_args"))
+      attr(tmp_result, "exclude_unused_args") <- NULL
       exclude_reason <-
-        combine_exclude_reasons(exclude_from_argument, attr(tmp_result, "exclude"))
+        combine_exclude_reasons(
+          unlist(exclude_from_argument[args_used], use.names = FALSE),
+          attr(tmp_result, "exclude")
+        )
       # The handling of the method column (PPANMETH).  Not every calculation
       # function sets a "method" attribute at run time; when one does not, but
       # the parameter's own registration documents a `formula_note` (e.g.

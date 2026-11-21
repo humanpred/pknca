@@ -1969,6 +1969,10 @@ test_that("combine_exclude_reasons() combines and clears exclusion reasons", {
   # A reason is listed once, also when it is one of several already joined
   expect_equal(combine_exclude_reasons(c("a", "a"), "a"), "a")
   expect_equal(combine_exclude_reasons(c("a; b", "b; c"), "a"), "a; b; c")
+  # Each reason once, in the order it first appears, including within an
+  # input's reasons that were already combined
+  expect_equal(combine_exclude_reasons(c("a; b", "b", "c; a"), "b"), "a; b; c")
+  expect_equal(combine_exclude_reasons(c(NA, NA), NULL), NA_character_)
 })
 
 # The automatic reference finder, group_ref, and ephemeral references ---------

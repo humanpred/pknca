@@ -18,6 +18,10 @@ pk.calc.auxciv.int(
   auxc,
   fun_auxcint_last,
   options = list(),
+  auc.type = "AUClast",
+  lambda.z = NA,
+  clast = NA,
+  fun_auxcint = NULL,
   auxc_name = "auxc"
 )
 
@@ -30,7 +34,10 @@ pk.calc.auciv.int(
   route = "extravascular",
   duration.dose = 0,
   auc,
-  options = list()
+  options = list(),
+  auc.type = "AUClast",
+  lambda.z = NA,
+  clast = NA
 )
 
 pk.calc.aumciv.int(
@@ -42,7 +49,10 @@ pk.calc.aumciv.int(
   route = "extravascular",
   duration.dose = 0,
   aumc,
-  options = list()
+  options = list(),
+  auc.type = "AUClast",
+  lambda.z = NA,
+  clast = NA
 )
 }
 \arguments{
@@ -59,10 +69,18 @@ dose, as for \code{\link[=pk.calc.aucint]{pk.calc.aucint()}}, so a bolus must be
 
 \item{fun_auxcint_last}{The AUClast-type AUXCint function
 (\code{\link[=pk.calc.aucint.last]{pk.calc.aucint.last()}} or \code{\link[=pk.calc.aumcint.last]{pk.calc.aumcint.last()}}) used for the segment
-that is replaced}
+that is replaced when \code{auc.type} is not \code{"AUCinf"}}
 
 \item{options}{List of changes to the default PKNCA options (see
 \code{PKNCA.options()})}
+
+\item{auc.type, lambda.z, clast}{The AUC type of \code{auxc} and, for \code{"AUCinf"},
+the half-life inputs it was calculated with}
+
+\item{fun_auxcint}{The AUXCint function (\code{\link[=pk.calc.aucint]{pk.calc.aucint()}} or
+\code{\link[=pk.calc.aumcint]{pk.calc.aumcint()}}) used for the segment that is replaced when \code{auc.type}
+is \code{"AUCinf"}, so that the segment starts from the concentration that
+\code{auxc} estimated at the start of the interval (with \code{lambda.z})}
 
 \item{auxc_name}{The name of \code{auxc} in an error message:  the argument as
 the calling function names it (\code{auc} or \code{aumc})}
@@ -88,9 +106,13 @@ interval to the first concentration after the dose is replaced by the one
 starting from \eqn{C_0}, which is back-extrapolated with the methods of
 \code{\link[=pk.calc.c0]{pk.calc.c0()}} from the concentrations after the dose that are within the
 interval and before the next dose (with BLQ and missing concentrations
-handled as the AUCint handles them).  A concentration measured at the dose
-time is taken to be measured before the dose, as for
-\code{\link[=interp.extrap.conc.dose]{interp.extrap.conc.dose()}}, so it is not used as \eqn{C_0}.
+handled as the AUCint handles them).  After an earlier dose, a
+concentration measured at the dose time is taken to be measured before the
+dose (the trough), as for \code{\link[=interp.extrap.conc.dose]{interp.extrap.conc.dose()}}, so it is not used as
+\eqn{C_0}.  At the first dose there is no profile before it, so a nonzero
+concentration measured at the dose time is \eqn{C_0}, as for
+\code{\link[=pk.calc.c0]{pk.calc.c0()}} and \code{aucivlast}:  the AUXCint already starts from it and is
+returned unchanged.
 
 An interval that starts at an IV infusion has nothing to back-extrapolate,
 so the AUXCint is returned unchanged; an interval that does not start at an
