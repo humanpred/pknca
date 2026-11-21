@@ -759,6 +759,14 @@ results are reported.  A metabolite ratio of a mass to an amount of substance is
 an error (`pknca_error_mr_units_mixed`), as is one between analytes the table
 does not both describe (`pknca_error_units_secondary_missing`).
 
+The table converts each parameter it names, so the AUC needs its own
+conversion, as above:  a table that converts only the concentration gives a
+molar `mr.cmax` and a mass `mr.auclast`.  The kind of amount is read from what
+the unit measures (its numerator):  a mass such as `ng/mL`, or an amount of
+substance such as `nmol/L` or `nM`.  A metabolite ratio of anything else, such
+as an activity (`IU/mL`) or a count per gram of tissue (`cpm/g`), stays a
+`fraction`.
+
 ## A quotient that is not a fraction
 
 Calling every ratio a fraction hides a real mistake.  A bioavailability between

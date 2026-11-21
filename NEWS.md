@@ -623,17 +623,26 @@ the generated intervals:
   conversion, so a units table per analyte that converts each analyte to moles
   with its molecular weight gives the molar metabolite ratio (@billdenney; PR
   number to add).  Metabolite ratios and secondary parameters linked to a
-  reference interval are new in this version, so no released result changes.
+  reference interval are new in this version, so nothing changes against
+  PKNCA 0.12.1; the values that move against the development version are
+  named below.
   For a parent of 325.8 `g/mol` and a metabolite of 341.8 `g/mol` in ng/mL,
   converted to `nmol/L`, `mr.auclast` is the ratio of the masses in `PPORRES`
   (`"g/g"`) and that ratio times 325.8/341.8 in `PPSTRES` (`"mol/mol"`); see
   `vignette("v09-secondary-parameters")`.
   - A metabolite ratio (`mr.*`) is in `"g/g"` between two masses and `"mol/mol"`
-    between two amounts of substance, where it was "fraction".  Between
+    between two amounts of substance, where it was "fraction".  The kind of
+    amount is read from what the unit measures, its numerator:  a mass
+    (`"ng/mL"`, `"hr*ng/mL"`, `"ug/g"`, `"mg"`) or an amount of substance
+    (`"nmol/L"`, `"nM"`, `"mmol/g"`).  Anything else, such as an activity or a
+    count (`"IU/mL"`, `"cpm/g"`), an equivalent (`"ng eq/mL"`), or a unit
+    PKNCA does not recognize (`"NG/ML"`), keeps "fraction" and is never an
+    error.  Between
     analytes in different units its `PPORRESU` stays the quotient of the two
     (such as `"(ug/mL)/(ng/mL)"`), and its `PPSTRESU` is `"g/g"` or `"mol/mol"`
     where it was "fraction".  A conversion of "fraction" given to
-    `pknca_units_table()` (to "%", for example) still applies to it.  In the
+    `pknca_units_table()` (to "%", for example) still applies to it, in a
+    single table and in a table per analyte.  In the
     tables `PKNCAdata()` builds, these are the only units that change, no
     conversion factor changes, and the rows of a metabolite ratio between an
     analyte in mass units and one in molar units are left out (see below).
@@ -644,13 +653,35 @@ the generated intervals:
     (`f.*`), or renal clearance (`clr.*`) linked between groups whose
     conversions differ is standardized with each side's conversion:  in the
     example above, `ratio.cmax` is the ratio of the molar concentrations, still
-    in "fraction".  Before, such a result took the units row of its own group
-    alone.
+    in "fraction".  A conversion on the parameter's own row of such a table
+    (a renal clearance to "L/hr") is applied to the composed units.  Group
+    columns of any type (integer, double, factor, or character) are matched.
+    Before, such a result took the units row of its own group alone, so two
+    groups in different units gave a value in the wrong units.  Against the
+    development version:
+    - `clr.last` with a table per sample type and the urine's time in minutes
+      (urine 350 mg over 0 to 24 hours, plasma AUC 144 hr*ng/mL, conversion
+      to "L/hr"):  `PPORRESU` "mg/(min*ng/mL)" becomes "mg/(hr*ng/mL)" and
+      `PPSTRES` 145833.3 becomes 2430.556 L/hr.  With hours on both rows it
+      stays 2430.556 L/hr.
+    - `f.last` with a table per period, hours in the IV period and minutes in
+      the oral one:  `PPORRESU` "fraction" becomes
+      "((min*ng/mL)/mg)/((hr*ng/mL)/mg)", and `PPSTRES` is 0.00624 where it
+      was not given (`PPORRES` is 0.3744 in both).
+    - `ratio.auclast` and `mr.auclast` between two analytes with time in hours
+      and minutes:  `PPORRESU` "fraction" becomes "(min*ng/mL)/(h*ng/mL)" and
+      `PPSTRES` 0.4 becomes 0.00667.
+  - A units table per analyte that converts only the concentration (not the
+    AUC) gives a molar `mr.cmax` and a mass `mr.auclast`:  each metabolite
+    ratio is in the units the table gives its parameter.
   - A metabolite ratio between a mass and an amount of substance stops with
     `pknca_error_mr_units_mixed`, naming both analytes and their units, and one
     whose two analytes a given table does not both describe stops with
-    `pknca_error_units_secondary_missing`.  Before, both gave a value in the
-    units of the row of the requesting analyte.
+    `pknca_error_units_secondary_missing`, which is also a
+    `pknca_error_units_partial_missing`, the error any other result without
+    units gives; with `PKNCA.options(allow_partial_missing_units = TRUE)` its
+    units are `NA` with a warning, as for any other result.  Before, both gave
+    a value in the units of the row of the requesting analyte.
 
 * `set_intervals()` adds rows to the units table that `PKNCAdata()` built for a
   requested parameter that has none, such as one registered with
