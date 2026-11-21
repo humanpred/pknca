@@ -594,6 +594,51 @@ test_that("a subject with no parent profile has no ratio, in one row or in a row
   }
 })
 
+test_that("a metabolite whose nearest parent differs in a column group_ref does not name has no ratio", {
+  d_conc <-
+    rbind(
+      data.frame(subject = 1, analyte = "parent", time = c(0, 1, 2, 4), conc = c(0, 10, 8, 4)),
+      data.frame(subject = 1, analyte = "M1", time = c(0, 1, 2, 4), conc = c(0, 3, 2, 1)),
+      data.frame(subject = 2, analyte = "M1", time = c(0, 1, 2, 4), conc = c(0, 30, 20, 10))
+    )
+  intervals_one <- data.frame(start = 0, end = 24, cmax = TRUE, mr.cmax = TRUE)
+  # Grouped by subject then analyte, the subject column is the analyte, which
+  # group_ref names; subject 2's nearest parent is subject 1's
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time | subject + analyte),
+      intervals = intervals_one, group_ref = data.frame(analyte = "parent")
+    )
+  d_res <- as.data.frame(suppressWarnings(suppressMessages(pk.nca(o_data))))
+  d_mr <- d_res[d_res$PPTESTCD == "mr.cmax" & d_res$analyte == "M1", ]
+  d_mr <- d_mr[order(d_mr$subject), ]
+  expect_equal(d_mr$PPORRES, c(0.3, NA))
+  expect_equal(
+    d_mr$exclude[2],
+    "No reference profile is available for subject=2, analyte=M1:  the nearest (subject=1, analyte=parent) also differs in 'subject', which `group_ref` does not name (give it in `ref_vary` if the reference may differ in it)"
+  )
+  # Study B's subject 2 has no parent, and study A's subject 2 does
+  d_studies <-
+    rbind(
+      cbind(study = "A", d_conc[d_conc$subject == 1, ]),
+      cbind(study = "B", d_conc[d_conc$subject == 2, ])
+    )
+  d_studies$subject <- 2
+  o_data_studies <-
+    PKNCAdata(
+      PKNCAconc(d_studies, conc ~ time | study + analyte + subject),
+      intervals = intervals_one, group_ref = data.frame(analyte = "parent")
+    )
+  d_res <- as.data.frame(suppressWarnings(suppressMessages(pk.nca(o_data_studies))))
+  d_mr <- d_res[d_res$PPTESTCD == "mr.cmax" & d_res$analyte == "M1", ]
+  d_mr <- d_mr[order(d_mr$study), ]
+  expect_equal(d_mr$PPORRES, c(0.3, NA))
+  expect_equal(
+    d_mr$exclude[2],
+    "No reference profile is available for study=B, analyte=M1, subject=2:  the nearest (study=A, analyte=parent) also differs in 'study', which `group_ref` does not name (give it in `ref_vary` if the reference may differ in it)"
+  )
+})
+
 test_that("with three group levels, each subject's ratio is to its own parent", {
   # Study A:  subject 1 has the parent and the metabolite, subject 2 only the
   # metabolite; study B:  subject 3 has both.  One row covers everything.

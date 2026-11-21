@@ -2809,6 +2809,145 @@ test_that("references within one row that differ in their columns share one anno
   expect_equal(d_ratio$matrix_ref, c("plasma", NA, "plasma", "plasma"))
 })
 
+# Renal clearance of a urine collection of 350 over 0 to 24 hours against a
+# plasma profile of 10, 6, and 2 at 0, 12, and 24 hours (linear AUC 144):
+# 350/144
+clr_profile <- function(subject, sample_type) {
+  if (sample_type == "urine") {
+    data.frame(subject = subject, PCSPEC = "urine", time = c(0, 24), conc = c(0, 350), vol = 1)
+  } else {
+    data.frame(subject = subject, PCSPEC = sample_type, time = c(0, 12, 24), conc = c(10, 6, 2), vol = NA_real_)
+  }
+}
+
+# clr.last of the urine rows of the data `d_conc` grouped by `formula`, in
+# subject order (when there is a subject column)
+clr_urine_results <- function(d_conc, formula, intervals, group_ref = NULL, ...) {
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, formula, volume = "vol", ...),
+      intervals = intervals, group_ref = group_ref,
+      options = list(auc.method = "linear")
+    )
+  d_res <- as.data.frame(suppressWarnings(suppressMessages(pk.nca(o_data))))
+  d_clr <- d_res[d_res$PPTESTCD == "clr.last" & d_res$PCSPEC == "urine", ]
+  if ("subject" %in% names(d_clr)) {
+    d_clr <- d_clr[order(d_clr$subject), ]
+  }
+  d_clr
+}
+
+test_that("a profile differing in the subject column alone is the subject's own, when that column is the sample type", {
+  intervals_urine <- data.frame(PCSPEC = "urine", start = 0, end = 24, ae = TRUE, clr.last = TRUE)
+  # The only group column is the sample type, so it is the subject column
+  d_one <- rbind(clr_profile(1, "plasma"), clr_profile(1, "urine"))
+  d_one$subject <- NULL
+  d_clr <- clr_urine_results(d_one, conc ~ time | PCSPEC, intervals_urine)
+  expect_equal(d_clr$PPORRES, 350/144)
+  expect_equal(d_clr$PPANMETH, "Reference interval: PCSPEC=plasma, 0-24")
+  # Grouped by subject then sample type, the subject column is the sample type
+  d_two <- rbind(clr_profile(1, "plasma"), clr_profile(1, "urine"), clr_profile(2, "plasma"), clr_profile(2, "urine"))
+  for (subject_arg in list(NULL, "subject")) {
+    d_clr <-
+      if (is.null(subject_arg)) {
+        clr_urine_results(d_two, conc ~ time | subject + PCSPEC, intervals_urine)
+      } else {
+        clr_urine_results(d_two, conc ~ time | subject + PCSPEC, intervals_urine, subject = subject_arg)
+      }
+    expect_equal(d_clr$PPORRES, rep(350/144, 2), info = paste(subject_arg))
+    expect_equal(d_clr$PPANMETH, rep("Reference interval: PCSPEC=plasma, 0-24", 2), info = paste(subject_arg))
+  }
+  # A profile differing in the subject column and in another is another
+  # subject's:  subject 2 has no plasma, and subject 1's is not used
+  d_no_plasma <- rbind(clr_profile(1, "plasma"), clr_profile(1, "urine"), clr_profile(2, "urine"))
+  d_clr <- clr_urine_results(d_no_plasma, conc ~ time | subject + PCSPEC, intervals_urine)
+  expect_equal(d_clr$PPORRES, c(350/144, NA))
+  expect_equal(
+    d_clr$exclude,
+    c(NA, "No reference profile is available for subject=2, PCSPEC=urine (a reference is the subject's own profile)")
+  )
+  # The same with the subject column last and plasma named by group_ref
+  d_serum <- rbind(clr_profile(1, "plasma"), clr_profile(1, "urine"), clr_profile(2, "serum"), clr_profile(2, "urine"))
+  d_clr <-
+    clr_urine_results(
+      d_serum, conc ~ time | PCSPEC + subject, cbind(subject = c(1, 2), intervals_urine),
+      group_ref = data.frame(PCSPEC = "plasma")
+    )
+  expect_equal(d_clr$PPORRES, c(350/144, NA))
+  expect_equal(
+    d_clr$exclude,
+    c(NA, "No reference profile is available for PCSPEC=urine, subject=2 (a reference is the subject's own profile)")
+  )
+})
+
+test_that("with the subject as the only group column, another subject's plasma is not within the row", {
+  # Nothing tells a subject from a sample type here:  the urine subject's
+  # reference would be the other subject's plasma, which the row does not
+  # calculate, so the reason asks for the column that would name it
+  d_conc <- rbind(clr_profile(1, "plasma"), clr_profile(2, "urine"))
+  d_conc$PCSPEC <- NULL
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time | subject, volume = "vol"),
+      intervals = data.frame(start = 0, end = 24, ae = TRUE, clr.last = TRUE),
+      options = list(auc.method = "linear")
+    )
+  d_res <- as.data.frame(suppressWarnings(suppressMessages(pk.nca(o_data))))
+  d_clr <- d_res[d_res$PPTESTCD == "clr.last", ]
+  d_clr <- d_clr[order(d_clr$subject), ]
+  expect_equal(d_clr$PPORRES, c(NA_real_, NA_real_))
+  expect_equal(
+    d_clr$exclude,
+    c(
+      "The profile is the reference itself (it has no collection volume)",
+      "Add 'subject' to the intervals so the reference can be expressed, or set 'clr.last_ref'"
+    )
+  )
+})
+
+test_that("two spot samples of one subject tie as the reference of its urine, and are references themselves", {
+  d_conc <- rbind(clr_profile(1, "plasma"), clr_profile(1, "serum"), clr_profile(1, "urine"))
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time | PCSPEC + subject, volume = "vol"),
+      intervals = data.frame(start = 0, end = 24, ae = TRUE, clr.last = TRUE),
+      options = list(auc.method = "linear")
+    )
+  expect_warning(
+    d_res <- as.data.frame(suppressMessages(pk.nca(o_data))),
+    regexp = "give `group_ref` to PKNCAdata()",
+    fixed = TRUE,
+    class = "pknca_warning_secondary_auto_reference"
+  )
+  d_clr <- d_res[d_res$PPTESTCD == "clr.last", ]
+  d_clr <- d_clr[order(d_clr$PCSPEC), ]
+  expect_equal(
+    d_clr$exclude,
+    c(
+      "The profile is the reference itself (it has no collection volume)",
+      "The profile is the reference itself (it has no collection volume)",
+      "More than one reference profile is equally close ((PCSPEC=plasma), (PCSPEC=serum))"
+    )
+  )
+  # group_ref resolves the tie.  The row covering every sample type does not
+  # calculate the plasma AUC, so it asks for the column that names the plasma
+  # interval; a row for the urine has its reference created
+  d_clr_ref <-
+    clr_urine_results(
+      d_conc, conc ~ time | PCSPEC + subject, data.frame(start = 0, end = 24, ae = TRUE, clr.last = TRUE),
+      group_ref = data.frame(PCSPEC = "plasma")
+    )
+  expect_equal(d_clr_ref$PPORRES, NA_real_)
+  expect_equal(d_clr_ref$exclude, "Add 'PCSPEC' to the intervals so the reference can be expressed, or set 'clr.last_ref'")
+  d_clr_urine <-
+    clr_urine_results(
+      d_conc, conc ~ time | PCSPEC + subject,
+      data.frame(PCSPEC = "urine", start = 0, end = 24, ae = TRUE, clr.last = TRUE),
+      group_ref = data.frame(PCSPEC = "plasma")
+    )
+  expect_equal(d_clr_urine$PPORRES, 350/144)
+})
+
 test_that("a spot-sample profile is the reference itself when only other subjects' profiles remain", {
   # Three subjects with plasma, one with urine:  each plasma profile is a spot
   # sample whose only other candidates belong to other subjects
@@ -2858,6 +2997,51 @@ test_that("a ratio requested alone with no expressible reference gives NA rows a
     d_ratio$exclude,
     rep("Add 'period' to the intervals so the reference can be expressed, or set 'ratio.cmax_ref'", 2)
   )
+})
+
+test_that("adding the period to the intervals gives the crossover ratio its reference", {
+  # Each subject took the IV reference in the other period than the oral test
+  d_conc <-
+    rbind(
+      data.frame(subject = 1, treatment = "oral", period = 1, time = c(0, 1, 2, 4, 8), conc = c(0, 5, 4, 2, 1)),
+      data.frame(subject = 1, treatment = "iv", period = 2, time = c(0, 1, 2, 4, 8), conc = c(10, 8, 6, 3, 1)),
+      data.frame(subject = 2, treatment = "iv", period = 1, time = c(0, 1, 2, 4, 8), conc = c(12, 9, 6, 3, 1)),
+      data.frame(subject = 2, treatment = "oral", period = 2, time = c(0, 1, 2, 4, 8), conc = c(0, 6, 4, 2, 1))
+    )
+  o_conc <- PKNCAconc(d_conc, conc ~ time | treatment + period + subject)
+  intervals_oral <- data.frame(treatment = "oral", start = 0, end = 8, cmax = TRUE, ratio.cmax = TRUE)
+  d_res <-
+    suppressMessages(as.data.frame(pk.nca(PKNCAdata(
+      o_conc, intervals = cbind(intervals_oral, period = c(1, 2)), group_ref = data.frame(treatment = "iv")
+    ))))
+  d_ratio <- d_res[d_res$PPTESTCD == "ratio.cmax", ]
+  d_ratio <- d_ratio[order(d_ratio$subject), ]
+  expect_equal(d_ratio$PPORRES, c(5/10, 6/12))
+  expect_equal(
+    d_ratio$PPANMETH,
+    c("Reference interval: treatment=iv, period=2, 0-8", "Reference interval: treatment=iv, period=1, 0-8")
+  )
+  # One row for both treatments and periods says the period differs, and
+  # declaring it in ref_vary gives the same ratios
+  intervals_all <- data.frame(start = 0, end = 8, cmax = TRUE, ratio.cmax = TRUE)
+  d_res_all <-
+    suppressWarnings(suppressMessages(as.data.frame(pk.nca(PKNCAdata(
+      o_conc, intervals = intervals_all, group_ref = data.frame(treatment = "iv")
+    )))))
+  d_all <- d_res_all[d_res_all$PPTESTCD == "ratio.cmax" & d_res_all$treatment == "oral", ]
+  d_all <- d_all[order(d_all$subject), ]
+  expect_equal(d_all$PPORRES, c(NA_real_, NA_real_))
+  expect_equal(
+    d_all$exclude[1],
+    "No reference profile is available for treatment=oral, period=1, subject=1:  the nearest (treatment=iv, period=2) also differs in 'period', which `group_ref` does not name (give it in `ref_vary` if the reference may differ in it)"
+  )
+  d_res_vary <-
+    suppressMessages(as.data.frame(pk.nca(PKNCAdata(
+      o_conc, intervals = intervals_all, group_ref = data.frame(treatment = "iv"), ref_vary = "period"
+    ))))
+  d_vary <- d_res_vary[d_res_vary$PPTESTCD == "ratio.cmax" & d_res_vary$treatment == "oral", ]
+  d_vary <- d_vary[order(d_vary$subject), ]
+  expect_equal(d_vary$PPORRES, c(5/10, 6/12))
 })
 
 test_that("a crossover reference in another period is not found without ref_vary", {
@@ -3349,24 +3533,15 @@ find_two_periods <- function(intervals, ref_vary) {
   )
 }
 
-test_that("the finder does not take the interval's own profile in another period as a reference", {
-  # With the period varying, the plasma profile of the other period differs
-  # from the requesting one in nothing else:  it is the same profile at another
-  # time, not a reference.
-  expect_equal(
-    find_two_periods(intervals_two_periods, "period"),
-    "The profile is the reference itself (it has no collection volume)"
-  )
-  # Without the period varying, the other period's plasma profile is the nearest
-  # candidate, one column away
-  expect_equal(
-    find_two_periods(intervals_two_periods, character(0)),
-    "Add 'period' to the intervals so the reference can be expressed, or set 'clr.last_ref'"
-  )
-  # A varying column the intervals carry is pinned, so it is a difference again
+test_that("a spot-sample profile requesting renal clearance is the reference itself in any period", {
+  # The plasma profile is what an interval collection references, whether or
+  # not the period varies and whether or not the intervals pin it
+  itself <- "The profile is the reference itself (it has no collection volume)"
+  expect_equal(find_two_periods(intervals_two_periods, "period"), itself)
+  expect_equal(find_two_periods(intervals_two_periods, character(0)), itself)
   intervals_pinned <- intervals_two_periods
   intervals_pinned$period <- 2
-  expect_equal(find_two_periods(intervals_pinned, "period"), list(period = 1L))
+  expect_equal(find_two_periods(intervals_pinned, "period"), itself)
 })
 
 test_that("a varying column the intervals carry is pinned by the reference interval", {
