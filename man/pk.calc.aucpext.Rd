@@ -13,9 +13,10 @@ above the limit of quantification}
 \item{aucinf}{the area under the curve from time 0 to infinity}
 }
 \value{
-The numeric value of the AUC percent extrapolated or \code{NA_real_} if
-any of the following are true \code{is.na(aucinf)}, \code{is.na(auclast)},
-\code{aucinf <= 0}, or \code{auclast <= 0}.
+The numeric value of the AUC percent extrapolated, or \code{NA_real_}
+if \code{aucinf} or \code{auclast} is \code{NA} or \code{aucinf} is zero (a negative value is
+calculated, with a warning).  A result of length one that is \code{NA} because of missing or unusable data
+has the reason in its "exclude" attribute, which \code{\link[=pk.nca]{pk.nca()}} reports.
 }
 \description{
 Calculate the AUC percent extrapolated
