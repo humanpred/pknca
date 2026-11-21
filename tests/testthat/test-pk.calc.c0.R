@@ -97,12 +97,12 @@ test_that("pk.calc.c0.method.cmin", {
 test_that("pk.calc.c0 with no measured concentration is NA in the default order", {
   # Every method but set0 needs a measurement, and set0 would make up a C0 of 0
   expect_warning(
-    expect_equal(pk.calc.c0(conc = c(NA, NA, NA), time = 0:2), NA_real_),
+    expect_equal(pk.calc.c0(conc = c(NA, NA, NA), time = 0:2), structure(NA_real_, exclude = "All concentrations are missing")),
     class = "pknca_warning_all_concentration_missing"
   )
   # A lone missing concentration at the dose time
   expect_warning(
-    expect_equal(pk.calc.c0(conc = NA_real_, time = 0), NA_real_),
+    expect_equal(pk.calc.c0(conc = NA_real_, time = 0), structure(NA_real_, exclude = "All concentrations are missing")),
     class = "pknca_warning_all_concentration_missing"
   )
   # With set0 listed explicitly, it is used
@@ -142,12 +142,13 @@ test_that("c0 through pk.nca with no measured concentration is NA", {
   )
   expect_equal(res$PPTESTCD, "c0")
   expect_equal(res$PPORRES, NA_real_)
+  expect_equal(res$exclude, "All concentrations are missing")
 })
 
 test_that("pk.calc.c0 with no measured concentration and check = FALSE is NA without a warning", {
   # The all-missing warning comes from the checks of the inputs
   expect_no_warning(
-    expect_equal(pk.calc.c0(conc = c(NA, NA), time = c(13, 16), time.dose = 12, check = FALSE), NA_real_)
+    expect_equal(pk.calc.c0(conc = c(NA, NA), time = c(13, 16), time.dose = 12, check = FALSE), structure(NA_real_, exclude = "All concentrations are missing"))
   )
   expect_equal(pk.calc.c0(conc = c(NA, NA), time = c(13, 16), time.dose = 12, method = "set0", check = FALSE), 0)
 })

@@ -42,7 +42,7 @@ pk.calc.c0 <- function(conc, time, time.dose=0,
     # With no measured concentration, every method of the default order gives
     # NA until set0, which would report a C0 of 0 that nothing measured.  A
     # caller who lists set0 gets it.
-    return(NA_real_)
+    return(structure(NA_real_, exclude = "All concentrations are missing"))
   }
   method <- match.arg(method, several.ok=TRUE)
   # Find the value
