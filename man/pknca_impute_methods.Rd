@@ -15,6 +15,9 @@ columns:
 \item{fun}{The function name (for example,
 \code{"PKNCA_impute_method_start_conc0"})}
 \item{description}{The one-line description}
+\item{drop_missing_start}{\code{TRUE} when the method treats a row at the
+start of the interval with a missing concentration as absent:  the row is
+dropped, with its other per-observation values, before the method runs}
 \item{arguments}{A list column of data.frames with one row per argument
 and the columns \code{argument} and \code{default} (the deparsed default, or \code{NA}
 when there is none)}
@@ -37,7 +40,7 @@ here.
 \tabular{ll}{
    Method \tab Description \cr
    \code{"end_conc_drop"} \tab Drop a concentration measured exactly at the end of the interval, if one is present (usually used with multiple-dose data when a point at the interval boundary belongs to the next dose, e.g. an imputed C0) \cr
-   \code{"start_cmin"} \tab Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data) \cr
+   \code{"start_cmin"} \tab Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data). \cr
    \code{"start_conc0"} \tab Set the concentration at the start time to 0, even if a nonzero concentration exists at that time (usually used with single-dose data). \cr
    \code{"start_predose"} \tab Shift a predose concentration to become the time zero concentration (only if a time zero concentration does not exist). \cr
    \code{"start_predose_conc0"} \tab Use a predose concentration as the start concentration when one is available and 0 when it is not. \cr

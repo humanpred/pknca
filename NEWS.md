@@ -8,6 +8,24 @@ the dosing including dose amount and route.
 
 ## Breaking changes
 
+* A negative numeric dose amount is an error (`pknca_error_dose_negative`,
+  naming the first rows and their count), in `PKNCAdose()` and again in
+  `pk.nca()` for a dose made negative later, for example by `mutate()`
+  (@billdenney).  Code that passed a negative dose before now stops.  A zero
+  or missing dose amount is allowed as before, a dose row excluded with
+  `exclude` is not checked, and a dose column that is not numeric is not
+  checked here.
+
+* The excretion rates `ertlst`, `ermax`, `ertmax`, and `erlst` are now `NA`
+  when a collection with a volume has no concentration, as `ae`, `fe`, and
+  `erint` already were (@billdenney, #729).  They were calculated
+  from the other collections, with the reason "1 of 4 concentrations are
+  missing"; the amount in that collection is unknown, so the rate of the
+  interval is too.  The reason is unchanged, with "At least one concentration
+  associated with a collection volume was missing" beside it.  A collection
+  missing both its concentration and its volume, or a known concentration
+  with a missing volume, leaves the rates as they were.
+
 * A calculation function that returns `NA` because of missing or unusable data
   now returns it with an `exclude` attribute that gives the reason, as the AUC
   functions already did, so that `pk.nca()` reports why (@billdenney, #727).
@@ -547,6 +565,12 @@ the generated intervals:
     of its own, not a concentration, AUC, or amount, or registered after
     PKNCA was loaded.  The message of those errors, which lists the names that
     are not allowed, now ends with that reason for each such name.
+
+* A ratio (`ratio.*`, and the metabolite ratios `mr.*` below) whose reference
+  is zero or negative is `NA` with the reason "The reference is zero or
+  negative" in the `exclude` column, where it was `NA` with none
+  (@billdenney; PR number to add).  `pk.calc.ratio()` gives that reason for a
+  single value.  A missing reference carries its own reason, as before.
 
 * A metabolite to parent ratio is available as `mr.<base>` for the same 38
   bases as `ratio.<base>` (@billdenney; PR number to add).  Its reference is the
@@ -1738,6 +1762,16 @@ the generated intervals:
   result in an `exclude_unused_args` attribute (see
   `vignette("v80-writing-parameter-functions")`). (@billdenney)
 
+* `PKNCAdose()` with a `rate` column now works with more than one dose row
+  (@billdenney, #728).  It stopped with "'length = 2' in coercion
+  to 'logical(1)'", because the dose amounts were passed where the name of the
+  dose column was expected; one row worked by accident.  Each dose's duration
+  is its amount divided by its rate.  A `rate` with no dose amount (a formula
+  without a left side) is now the error `pknca_error_rate_without_dose`; it
+  was `pknca_error_dose_invalid_duration` with one row and an error without a
+  class with more.  A direct `setDuration(object, rate = 5, dose = NA)`
+  returned a duration of 0 and is now that error too.
+
 * `pk.calc.tlag()` skips missing concentrations, as `pk.calc.cmax()` and the
   other simple parameters do, and gains a `check` argument like theirs
   (reported by @kawasakin, #723; @billdenney, #727).  Two results change:  a
@@ -2078,6 +2112,91 @@ the generated intervals:
   had been no measurement at all.  The most recent predose sample with a
   measured concentration is shifted instead, as long as it is within
   `max_shift` (#361).
+
+* With the `conc.na` option `"drop"` (the default), the `start_predose_conc0`,
+  `start_predose`, `start_cmin`, and `start_conc0` imputation methods treat a
+  row at the start time with a missing concentration as no measurement, as they
+  treat no row (@billdenney, #730).  They tested only whether a row
+  existed at the start time, so a missing concentration there stopped the
+  imputation and was then dropped.  Each result is now the one for the data
+  without that row.  With a numeric `conc.na`, that number is the missing
+  concentration, the row stays, and every result is as before.  A profile with
+  any volume that is not missing is a set of urine or feces collections, so one
+  row with a volume is enough:  such a profile keeps a missing start row, and
+  the amount excreted stays missing.  This is decided for each profile, so the
+  plasma groups of data that also holds urine are treated as they are alone.
+  The row is dropped right before the first of these methods in an imputation
+  chain:  a user's own method or `end_conc_drop` before it receives the row
+  unchanged, and one after it receives the data without it, on the dense and the
+  sparse paths.  The methods called directly see the row as it is given.  The
+  results that change, at `conc.na = "drop"`:
+  * Every result that depends on the start concentration, or on an AUC that
+    starts there, can change with `start_predose_conc0`, `start_cmin`,
+    `"start_predose,start_cmin"`, and `start_predose` (when it has a predose
+    sample to shift).  Most were `NA` ("Requesting an AUC range starting (0)
+    before the first measurement (0.25) is not allowed") and are now
+    calculated.  For a profile sampled from 0.25 h with a missing
+    concentration at 0, AUClast is 1836.34 with `start_predose_conc0`, 1841.34
+    with `start_cmin` and `"start_predose,start_cmin"` (the start is Cmin,
+    40), and 1836.96 with `start_predose` shifting a predose concentration of
+    5.  A comparison of every parameter on single-dose (0 to 24 and 0 to
+    infinity) and multiple-dose profiles found these to change, and no others:
+    * AUCs and AUMCs:  `auclast`, `aucall`, `aucinf.obs`, `aucinf.pred`,
+      `aumclast`, `aumcall`, `aumcinf.obs`, `aumcinf.pred`, and their `.dn`
+      forms; `aucpext.obs`, `aucpext.pred`, `aucpext.inf.obs`,
+      `aucpext.inf.pred`; `aucabove.predose.all` and `aucabove.trough.all`.
+    * IV AUCs:  `aucivlast`, `aucivall`, `aucivinf.obs`, `aucivinf.pred`,
+      `aumcivlast`, `aumcivall`, `aumcivinf.obs`, `aumcivinf.pred`,
+      `aucivpbext.last`, `aucivpbext.all`, `aucivpbext.inf.obs`,
+      `aucivpbext.inf.pred`, `aucivpbext.int.last`, and `aucivpbext.int.all`
+      (and the historical names `aucivpbextlast`, `aucivpbextall`,
+      `aucivpbextinf.obs`, `aucivpbextinf.pred`, `aucivpbextint.last`, and
+      `aucivpbextint.all`).
+    * Average concentrations:  `cav`, `cav.last`, `cav.all`, `cav.iv.last`,
+      `cav.iv.all`, `cav.dn`, and `cav.last.dn`; and `deg.fluc`.
+    * Clearance, elimination rate, mean residence time, effective half-life,
+      and volumes:  every `.last`, `.all`, `.obs`, `.pred`, `.inf.obs`, and
+      `.inf.pred` form, with and without `.iv`, of `cl`, `kel`, `mrt`,
+      `thalf.eff`, `vss`, and `vz`, and the multiple-dose `mrt.md.*`,
+      `mrt.ivmd.*`, `vss.md.*`, and `vss.ivmd.*`.
+    * Concentrations and times at the start:  `cstart` and `ceoi` (the
+      imputed start concentration); `c0` (a shifted predose concentration in
+      place of a back-extrapolated one); `cmin`, `cmin.dn`, and `swing` (an
+      imputed 0 or a shifted predose concentration below the others);
+      `tfirst` and `tmin` (the start time); and `tlag`.
+    * Counts:  `count.conc` and `count.conc.measured` (and the historical
+      names `count_conc` and `count_conc_measured`) include the imputed start
+      observation (`count.conc.measured` only when it is not 0).
+  * The row's other values (duration, half-life inclusion and exclusion, and
+    `lloq`) go with it, so the imputed start concentration has the values of
+    an added observation.
+  * With sparse data, missing samples at the start time are no samples, with
+    any imputation.  When every sample there is missing,
+    `start_predose_conc0` and `start_conc0` add a known zero and give the
+    sparse AUCs, and `start_cmin` is refused (`pknca_error_sparse_impute`),
+    each as without those rows (`start_predose_conc0` and `start_cmin` gave
+    missing AUCs, and `start_conc0` was refused).  `start_conc0` with a
+    missing sample beside measured ones at the start was refused and now
+    gives the result without the missing sample.  The sparse estimators skip
+    missing samples whatever `conc.na` is, as before.
+  * `start_conc0` already set a missing start concentration to 0.  It now
+    follows the same rule:  the row is dropped and the 0 is added with the
+    values of an added observation, so a half-life flag on the missing row no
+    longer reaches it.  A measured start concentration, and a missing one in a
+    profile of collections, are still replaced with 0 in place, so a collection
+    with a known volume counts as an amount of zero.
+  * `pknca_impute_methods()` gains a `drop_missing_start` column saying which
+    methods treat a missing start concentration as absent.
+
+* The amount excreted (`ae`), the excretion rates (`ertlst`, `ermax`,
+  `ertmax`, `erlst`), and the parameters calculated from them (`fe`, `erint`,
+  `clr.*`) add "At least one concentration associated with a collection volume
+  was missing" to their exclusion when a collection has a volume and no
+  concentration, beside the existing "1 of 4 concentrations are missing"
+  (@billdenney, #730).  Direct calls of `pk.calc.ae()`,
+  `pk.calc.ertlst()`, `pk.calc.ermax()`, `pk.calc.ertmax()`, and
+  `pk.calc.erlst()` return the longer exclusion text as well.  No value
+  changes.
 
 * Business functions (used for calculations of means, etc.) now return NA_real_
   for empty inputs rather than giving an error (#559).

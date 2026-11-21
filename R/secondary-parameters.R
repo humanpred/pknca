@@ -382,17 +382,20 @@ assert_ref_vary_arg <- function(ref_vary) {
 #' @param reference The parameter value in the reference interval
 #' @returns `test/reference`, or `NA` where the reference is missing or is not
 #'   above zero (a ratio to a zero or negative reference is not interpretable).
+#'   A single `NA` for a reference that is not above zero has the reason "The
+#'   reference is zero or negative" in its "exclude" attribute; a missing
+#'   reference carries its own reason from its calculation.
 #' @seealso [interval_add_secondary()]
 #' @examples
 #' pk.calc.ratio(test = 10, reference = 20)
 #' @export
 pk.calc.ratio <- function(test, reference) {
   ret <- test/reference
-  mask_invalid <- is.na(reference) | (reference <= 0)
-  if (any(mask_invalid)) {
-    ret[mask_invalid] <- NA_real_
-  }
-  ret
+  ret[is.na(reference)] <- NA_real_
+  na_with_reason(
+    ret, mask = !is.na(reference) & reference <= 0,
+    reason = "The reference is zero or negative"
+  )
 }
 
 # Ratios are made by rule (see R/parameter-rules.R):  `ratio.<base>` for every

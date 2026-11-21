@@ -36,9 +36,7 @@ add.interval.col("volpk",
 #' @export
 pk.calc.ae <- function(conc, volume, check=TRUE) {
   # Generate combined missing-data messages for conc/volume using helper
-  message_all <- generate_missing_messages(conc, volume,
-                                           name_a = "concentrations",
-                                           name_b = "volumes")
+  message_all <- urine_missing_messages(conc = conc, volume = volume)
 
   ret <-
     if (length(conc) == 0 || length(volume) == 0) {
@@ -236,9 +234,7 @@ add.interval.col("fe",
 pk.calc.ertlst <- function(conc, volume, time, duration.conc, check = TRUE) {
 
   # Generate messages about missing concentrations/volumes
-  message_all <- generate_missing_messages(conc, volume,
-                                           name_a = "concentrations",
-                                           name_b = "volumes")
+  message_all <- urine_missing_messages(conc = conc, volume = volume)
 
   er <- conc * volume / duration.conc
 
@@ -251,11 +247,7 @@ pk.calc.ertlst <- function(conc, volume, time, duration.conc, check = TRUE) {
     ret <- max(midtime[!is.na(er) & er != 0])
   }
 
-  if (length(message_all) != 0) {
-    message <- paste(message_all, collapse = "; ")
-    ret <- structure(ret, exclude = message)
-  }
-  ret
+  urine_rate_result(ret, conc = conc, volume = volume, message_all = message_all)
 }
 
 pknca_concept(pk.calc.ertlst) <- "excretion_rate"
@@ -284,9 +276,7 @@ add.interval.col("ertlst",
 pk.calc.ermax <- function(conc, volume, time, duration.conc, check = TRUE) {
 
   # Generate messages about missing concentrations/volumes
-  message_all <- generate_missing_messages(conc, volume,
-                                           name_a = "concentrations",
-                                           name_b = "volumes")
+  message_all <- urine_missing_messages(conc = conc, volume = volume)
 
   if (length(conc) == 0 || all(is.na(conc))) {
     ret <- NA_real_
@@ -299,11 +289,7 @@ pk.calc.ermax <- function(conc, volume, time, duration.conc, check = TRUE) {
     }
   }
 
-  if (length(message_all) != 0) {
-    message <- paste(message_all, collapse = "; ")
-    ret <- structure(ret, exclude = message)
-  }
-  ret
+  urine_rate_result(ret, conc = conc, volume = volume, message_all = message_all)
 }
 
 pknca_concept(pk.calc.ermax) <- "excretion_rate"
@@ -334,9 +320,7 @@ pk.calc.ertmax <- function(conc, volume, time, duration.conc, options = list(), 
   first.tmax <- PKNCA.choose.option(name="first.tmax", value=first.tmax, options=options)
 
   # Generate messages about missing concentrations/volumes
-  message_all <- generate_missing_messages(conc, volume,
-                                           name_a = "concentrations",
-                                           name_b = "volumes")
+  message_all <- urine_missing_messages(conc = conc, volume = volume)
 
   if (length(conc) == 0 || all(conc %in% c(NA, 0))) {
     ret <- NA_real_
@@ -353,11 +337,7 @@ pk.calc.ertmax <- function(conc, volume, time, duration.conc, options = list(), 
     }
   }
 
-  if (length(message_all) != 0) {
-    message <- paste(message_all, collapse = "; ")
-    ret <- structure(ret, exclude = message)
-  }
-  ret
+  urine_rate_result(ret, conc = conc, volume = volume, message_all = message_all)
 }
 
 pknca_concept(pk.calc.ertmax) <- "excretion_rate"
@@ -429,9 +409,7 @@ add.interval.col("erint",
 pk.calc.erlst <- function(conc, volume, time, duration.conc, check = TRUE) {
 
   # Generate messages about missing concentrations/volumes
-  message_all <- generate_missing_messages(conc, volume,
-                                           name_a = "concentrations",
-                                           name_b = "volumes")
+  message_all <- urine_missing_messages(conc = conc, volume = volume)
 
   er <- conc * volume / duration.conc
 
@@ -447,11 +425,7 @@ pk.calc.erlst <- function(conc, volume, time, duration.conc, check = TRUE) {
     }
   }
 
-  if (length(message_all) != 0) {
-    message <- paste(message_all, collapse = "; ")
-    ret <- structure(ret, exclude = message)
-  }
-  ret
+  urine_rate_result(ret, conc = conc, volume = volume, message_all = message_all)
 }
 
 pknca_concept(pk.calc.erlst) <- "excretion_rate"
@@ -521,4 +495,36 @@ generate_missing_messages <- function(a, b,
 
   # Return non-NA messages
   stats::na.omit(c(msg_both, msg_a, msg_b))
+}
+
+# Whether a collection has a volume but no concentration, so that its amount
+# is unknown
+urine_collection_amount_missing <- function(conc, volume) {
+  any(is.na(conc) & !is.na(volume))
+}
+
+# The missing-data messages of a collection's concentrations and volumes (see
+# generate_missing_messages()), with one more when a collection has a volume
+# but its concentration is missing:  the amount in that collection is
+# unknown, and this reason says so
+urine_missing_messages <- function(conc, volume) {
+  ret <- generate_missing_messages(conc, volume, name_a = "concentrations", name_b = "volumes")
+  if (urine_collection_amount_missing(conc = conc, volume = volume)) {
+    ret <- c(ret, "At least one concentration associated with a collection volume was missing")
+  }
+  ret
+}
+
+# The result of an excretion rate (ertlst, ermax, ertmax, erlst) with the
+# reasons from urine_missing_messages():  a collection with a volume and no
+# concentration has an unknown amount, so the rate of the interval is unknown
+# too, as the amount excreted is
+urine_rate_result <- function(ret, conc, volume, message_all) {
+  if (urine_collection_amount_missing(conc = conc, volume = volume)) {
+    ret <- NA_real_
+  }
+  if (length(message_all) != 0) {
+    ret <- structure(ret, exclude = paste(message_all, collapse = "; "))
+  }
+  ret
 }
