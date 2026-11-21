@@ -3033,7 +3033,7 @@ test_that("adding the period to the intervals gives the crossover ratio its refe
   expect_equal(d_all$PPORRES, c(NA_real_, NA_real_))
   expect_equal(
     d_all$exclude[1],
-    "No reference profile is available for treatment=oral, period=1, subject=1:  the nearest (treatment=iv, period=2) also differs in 'period', which `group_ref` does not name (give it in `ref_vary` if the reference may differ in it)"
+    "No reference profile is available for treatment=oral, period=1, subject=1:  the nearest (treatment=iv, period=2) also differs in 'period', which `group_ref` does not name (a column belongs in `ref_vary` only when the same subject's profile at another value of it is a valid reference, as another period of a crossover is)"
   )
   d_res_vary <-
     suppressMessages(as.data.frame(pk.nca(PKNCAdata(
