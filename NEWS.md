@@ -1340,8 +1340,8 @@ the generated intervals:
   reason when the half-life changes the segment they replace (the trough
   after an earlier dose, estimated with it).  Otherwise they keep the
   exclusion of the `aucint.inf.*` or `aumcint.inf.*` they start from, which
-  carries the half-life's reason when that used it.  They report that
-  interval AUC's method (`PPANMETH`), so the half-life rules of `exclude()`
+  carries the half-life's reason when that used it.  They report the method
+  (`PPANMETH`) of that interval AUC, so the half-life rules of `exclude()`
   (such as `exclude_nca_span.ratio()`) exclude them only where the half-life
   extrapolated, as for `aucint.inf.*`; with no method reported they were
   excluded wherever the half-life was.  For this, a function
