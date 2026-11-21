@@ -615,7 +615,7 @@ test_that("a metabolite whose nearest parent differs in a column group_ref does 
   expect_equal(d_mr$PPORRES, c(0.3, NA))
   expect_equal(
     d_mr$exclude[2],
-    "No reference profile is available for subject=2, analyte=M1:  the nearest (subject=1, analyte=parent) also differs in 'subject', which `group_ref` does not name (give it in `ref_vary` if the reference may differ in it)"
+    "No reference profile is available for subject=2, analyte=M1:  the nearest (subject=1, analyte=parent) also differs in 'subject', which `group_ref` does not name (a column belongs in `ref_vary` only when the same subject's profile at another value of it is a valid reference, as another period of a crossover is)"
   )
   # Study B's subject 2 has no parent, and study A's subject 2 does
   d_studies <-
@@ -635,7 +635,7 @@ test_that("a metabolite whose nearest parent differs in a column group_ref does 
   expect_equal(d_mr$PPORRES, c(0.3, NA))
   expect_equal(
     d_mr$exclude[2],
-    "No reference profile is available for study=B, analyte=M1, subject=2:  the nearest (study=A, analyte=parent) also differs in 'study', which `group_ref` does not name (give it in `ref_vary` if the reference may differ in it)"
+    "No reference profile is available for study=B, analyte=M1, subject=2:  the nearest (study=A, analyte=parent) also differs in 'study', which `group_ref` does not name (a column belongs in `ref_vary` only when the same subject's profile at another value of it is a valid reference, as another period of a crossover is)"
   )
 })
 

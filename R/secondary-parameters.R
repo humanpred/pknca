@@ -922,7 +922,7 @@ find_secondary_reference_groups <- function(intervals, row, param, info, conc, g
       # reference
       reasons[k] <-
         sprintf(
-          "No reference profile is available for %s:  the nearest (%s) also differs in %s, which `group_ref` does not name (give it in `ref_vary` if the reference may differ in it)",
+          "No reference profile is available for %s:  the nearest (%s) also differs in %s, which `group_ref` does not name (a column belongs in `ref_vary` only when the same subject's profile at another value of it is a valid reference, as another period of a crossover is)",
           name_value_text(groups[i, , drop = FALSE]),
           name_value_text(groups[nearest[1], differing, drop = FALSE]),
           paste(sprintf("'%s'", unsteered), collapse = ", ")

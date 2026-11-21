@@ -1984,7 +1984,12 @@ within the requesting row.
   tell another subject from another sample type:  one subject plasma-only and
   another urine-only give the urine subject "Add 'subject' to the intervals"
   (the row does not calculate the plasma AUC), as before; with the subject in
-  the intervals, the other subject's plasma would be used, as on main.
+  the intervals, the other subject's plasma would be used, as on main.  PKNCA
+  knows the subject only by the subject column, so with a formula whose last
+  group is not the subject (`conc~time|PCSPEC+subject+period`, whose subject
+  column is the period) and no `subject` argument, a subject named in the
+  intervals can still get another subject's plasma, as on main (named in
+  `PPANMETH`); `PKNCAconc(subject = "subject")` makes it `NA`.
 * **A reference itself.**  A group matching `group_ref`, or, for the
   sample-type rule, a spot-sample profile (no collection volume), has no
   result:  `NA` with "The profile is the reference itself (it matches
@@ -1999,8 +2004,9 @@ within the requesting row.
   request is added to its results.  A nearest profile within the row that
   differs in a column `group_ref` does not name is not the group's reference:
   "No reference profile is available for <group>:  the nearest (<profile>)
-  also differs in '<col>', which `group_ref` does not name (give it in
-  `ref_vary` if the reference may differ in it)" (a metabolite of
+  also differs in '<col>', which `group_ref` does not name (a column
+  belongs in `ref_vary` only when the same subject's profile at another value
+  of it is a valid reference, as another period of a crossover is)" (a metabolite of
   another study's subject, or of another subject when the subject column is
   the analyte; a crossover's oral profile in a row covering both periods,
   which `ref_vary = "period"` resolves).  References within the row that differ in their
