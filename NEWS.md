@@ -633,10 +633,11 @@ the generated intervals:
   is a crossover's test profile in a row covering both periods, whose
   reference is in the other period; `ref_vary = "period"` gives it its ratio.
   Results that had a value keep it, except that one; only results that were
-  `NA` gain one, and a result that stays `NA` may give a different reason.  A group that is the reference itself raises no
+  `NA` gain one, and a result that stays `NA` may give a different reason.  A
+  group that is the reference itself raises no
   `pknca_warning_secondary_auto_reference` when other groups of its row have
-  their results.  When no group of a row has a reference, each group
-  gives its own reason, and the parameter's base is still calculated, as for
+  their results.  When no group of a row has a reference, each group gives
+  its own reason, and the parameter's base is still calculated, as for
   a linked request:  a request alone on its row (such as `ratio.cmax` with
   nothing else requested) now returns `NA` rows for the parameter and rows for
   its base, where it returned no rows at all and no
@@ -693,8 +694,25 @@ the generated intervals:
       "((min*ng/mL)/mg)/((hr*ng/mL)/mg)", and `PPSTRES` is 0.00624 where it
       was not given (`PPORRES` is 0.3744 in both).
     - `ratio.auclast` and `mr.auclast` between two analytes with time in hours
-      and minutes:  `PPORRESU` "fraction" becomes "(min*ng/mL)/(h*ng/mL)" and
+      and minutes:  `PPORRESU` "fraction" becomes "(min*ng/mL)/(hr*ng/mL)" and
       `PPSTRES` 0.4 becomes 0.00667.
+    - `clr.last` with the amount excreted converted from `mg` to `ug` in both
+      rows of a table per sample type, or in one table without group columns:
+      `PPSTRES` 2.430556 "mg/(hr*ng/mL)" becomes 2430.556 `"ug/(hr*ng/mL)"`.
+      The two layouts give the same units:  in one table, a result linked to
+      a reference interval is composed from its two sides as in a table per
+      group, while a renal clearance within one interval keeps the row the
+      table gives it, as before.
+    - `clr.last` with the urine in `ug/L` and the plasma in `ng/mL`:  `PPORRESU`
+      `"mg/(hr*ug/L)"` becomes `"mg/(hr*ng/mL)"`, since the AUC is the plasma's.
+    - `ratio.cmax` with the metabolite in `ug/mL`, the parent in `ng/mL`, and
+      "fraction" converted to "%":  `PPSTRES` 40 becomes 40000 (and
+      `ratio.auclast` 46.37931 becomes 46379.31).
+    - `f.last` with the oral dose in `ug` and the IV dose in `mg`:  `PPSTRES` is
+      170.398 where it was not given (`PPORRES` 0.1704).
+    - In these cases `f.*` and `ratio.*` now have `PPSTRES` and `PPSTRESU`,
+      and their `PPORRESU` is the quotient of the two groups' units, where
+      the development version gave "fraction" alone.
   - A units table per analyte that converts only the concentration (not the
     AUC) gives a molar `mr.cmax` and a mass `mr.auclast`:  each metabolite
     ratio is in the units the table gives its parameter.
