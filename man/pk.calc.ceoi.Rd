@@ -18,7 +18,8 @@ from IV infusion)}
 }
 \value{
 The concentration at the end of the infusion, \code{NA} if
-\code{duration.dose} is \code{NA}, or \code{NA} if all \code{time != duration.dose}
+\code{duration.dose} is \code{NA}, or \code{NA} if all \code{time != duration.dose} or that
+concentration is missing; an \code{NA} has the reason in its "exclude" attribute
 }
 \description{
 Determine the concentration at the end of infusion
