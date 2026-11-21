@@ -406,10 +406,10 @@ the generated intervals:
   38 more parameters; none is requested by default.  As for the ratios, a
   metabolite ratio has its base's route, dosing, and sample type, and
   `param_pattern` selects it only when the pattern does not also select its
-  base.  A metabolite ratio
-  of two analytes in the same mass units is the ratio of the masses, and its
-  units are "fraction"; the molar form (`"mol/mol"`, through per-analyte units
-  tables) is not yet available.
+  base.  A metabolite ratio of two masses is in `"g/g"` and of two amounts of
+  substance in `"mol/mol"`; a units table per analyte that converts each to
+  moles gives the molar ratio (see the bullet on standardized secondary values
+  below).
 
 * A secondary parameter whose reference is found automatically is judged group
   by group within an intervals row (@billdenney; PR number to add).  `group_ref`
@@ -449,6 +449,40 @@ the generated intervals:
   nothing else requested) now returns `NA` rows for the parameter and rows for
   its base, where it returned no rows at all and no
   `pknca_warning_secondary_auto_reference`.
+
+* The standardized value of a secondary parameter (`PPSTRES`) is the quotient
+  of its two sides' standardized values, each converted with its own group's
+  conversion, so a units table per analyte that converts each analyte to moles
+  with its molecular weight gives the molar metabolite ratio (@billdenney; PR
+  number to add).  Metabolite ratios and secondary parameters linked to a
+  reference interval are new in this version, so no released result changes.
+  For a parent of 325.8 `g/mol` and a metabolite of 341.8 `g/mol` in ng/mL,
+  converted to `nmol/L`, `mr.auclast` is the ratio of the masses in `PPORRES`
+  (`"g/g"`) and that ratio times 325.8/341.8 in `PPSTRES` (`"mol/mol"`); see
+  `vignette("v09-secondary-parameters")`.
+  - A metabolite ratio (`mr.*`) is in `"g/g"` between two masses and `"mol/mol"`
+    between two amounts of substance, where it was "fraction".  Between
+    analytes in different units its `PPORRESU` stays the quotient of the two
+    (such as `"(ug/mL)/(ng/mL)"`), and its `PPSTRESU` is `"g/g"` or `"mol/mol"`
+    where it was "fraction".  A conversion of "fraction" given to
+    `pknca_units_table()` (to "%", for example) still applies to it.  In the
+    tables `PKNCAdata()` builds, these are the only units that change, no
+    conversion factor changes, and the rows of a metabolite ratio between an
+    analyte in mass units and one in molar units are left out (see below).
+  - A units table given to `PKNCAdata()` that has group columns (one table per
+    analyte, bound together) is stored as it was given, and the rows for each
+    pair of groups are built from it when `pk.nca()` reports the results, as
+    for a table `PKNCAdata()` builds.  A ratio (`ratio.*`), bioavailability
+    (`f.*`), or renal clearance (`clr.*`) linked between groups whose
+    conversions differ is standardized with each side's conversion:  in the
+    example above, `ratio.cmax` is the ratio of the molar concentrations, still
+    in "fraction".  Before, such a result took the units row of its own group
+    alone.
+  - A metabolite ratio between a mass and an amount of substance stops with
+    `pknca_error_mr_units_mixed`, naming both analytes and their units, and one
+    whose two analytes a given table does not both describe stops with
+    `pknca_error_units_secondary_missing`.  Before, both gave a value in the
+    units of the row of the requesting analyte.
 
 * `set_intervals()` adds rows to the units table that `PKNCAdata()` built for a
   requested parameter that has none, such as one registered with

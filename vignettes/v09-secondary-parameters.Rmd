@@ -706,6 +706,59 @@ kable(
 so the ratio those measurements stand for is $20000/10 \times 0.001 = 2$, which
 is `PPSTRES`.
 
+## A molar metabolite ratio
+
+A metabolite ratio of two masses is in `g/g`.  The ratio of the amounts of
+substance needs the molecular weight of each analyte, which a units table per
+analyte supplies:  one `pknca_units_table()` for each analyte, converting its
+ng/mL to `nmol/L` with its own factor (1 ng/mL is 1000/MW `nmol/L`), with the
+analyte column added and the tables bound together.  Here the parent is 325.8
+`g/mol` and the metabolite 341.8 `g/mol`:
+
+```{r units-molar}
+units_analyte <- function(analyte, mw) {
+  cbind(
+    analyte = analyte,
+    pknca_units_table(
+      concu = "ng/mL", timeu = "hr",
+      conversions = data.frame(
+        PPORRESU = c("ng/mL", "hr*ng/mL"),
+        PPSTRESU = c("nmol/L", "hr*nmol/L"),
+        conversion_factor = 1000/mw
+      )
+    )
+  )
+}
+d_conc_molar <-
+  data.frame(
+    subject = 1,
+    analyte = rep(c("parent", "M1"), each = 5),
+    time = rep(c(0, 1, 2, 4, 8), times = 2),
+    conc = c(0, 100, 80, 40, 10, 0, 30, 40, 20, 5)
+  )
+o_data_molar <-
+  PKNCAdata(
+    PKNCAconc(d_conc_molar, conc~time|subject/analyte),
+    intervals =
+      data.frame(
+        analyte = c("parent", "M1"), start = 0, end = 8,
+        auclast = TRUE, mr.auclast = c(FALSE, TRUE)
+      ),
+    group_ref = data.frame(analyte = "parent"),
+    units = rbind(units_analyte("parent", 325.8), units_analyte("M1", 341.8))
+  )
+d_molar <- as.data.frame(pk.nca(o_data_molar))
+kable(d_molar[, c("analyte", "PPTESTCD", "PPORRES", "PPORRESU", "PPSTRES", "PPSTRESU")])
+```
+
+`PPORRES` of `mr.auclast` is the ratio of the two AUCs in ng/mL, in `g/g`;
+`PPSTRES` is the ratio of the two AUCs in `nmol/L`, which is the ratio of the
+masses times 325.8/341.8, in `mol/mol`.  The units table given to `PKNCAdata()`
+is stored as it was given;  the rows for the pair of analytes are built when the
+results are reported.  A metabolite ratio of a mass to an amount of substance is
+an error (`pknca_error_mr_units_mixed`), as is one between analytes the table
+does not both describe (`pknca_error_units_secondary_missing`).
+
 ## A quotient that is not a fraction
 
 Calling every ratio a fraction hides a real mistake.  A bioavailability between
@@ -771,11 +824,6 @@ support a link.
   `PKNCAresults` and cannot reach across groups, so an exclusion applied after
   the calculation does not propagate along a link the way one set during the
   calculation does.
-* Molecular-weight adjustment of a metabolite ratio (a molar conversion,
-  reported as `"mol/mol"`) is a units-layer feature that is not yet available.  A
-  metabolite ratio of two analytes in the same mass units is the ratio of the
-  masses, in the units "fraction"; with different units, its units are the
-  quotient of the two analytes' units.
 
 # See also
 

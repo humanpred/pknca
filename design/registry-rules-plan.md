@@ -116,28 +116,45 @@ Today:
 - Its reference-keyed rows (`<group>_ref` columns) are built only for the
   table that `PKNCAdata()` builds itself, not for a hand-built one.
 
-To build:
+As built (Bill, 2026-11-21:  "g/g" for every mass `mr.*`; pair rows derived
+at calculation time; typed errors):
 
 1. **Each side's conversion.**  For the pair (own group, reference group),
-   factor = cf_own / cf_ref x reconcile(PPSTRESU_own -> PPSTRESU_ref), and
-   PPSTRESU is the quotient of the sides' PPSTRESU.  The ratio's standardized
-   value is then the ratio of the converted values.  With no conversions,
-   cf = 1 and PPSTRESU = PPORRESU, so every result today is unchanged, which a
-   test on the secondary fixtures pins.
+   factor = cf_own / cf_ref x reconcile(PPSTRESU_own -> PPSTRESU_ref) when the
+   sides' standardized units are convertible (PPSTRESU "fraction", or the
+   `mr.*` label), and cf_own / cf_ref with PPSTRESU the quotient of the sides'
+   PPSTRESU otherwise (`secondary_pair_units()`).  The standardized value is
+   then the quotient of the converted values.  Where every conversion is a
+   unit conversion, this equals the earlier reconcile of the original units,
+   so no conversion factor of a table `PKNCAdata()` builds changes (compared
+   table by table, with and without preferred units).
 2. **Reference-keyed rows for a hand-built table.**
-   - When the `units` given to `PKNCAdata()` has group columns, each distinct
-     combination of their values is a unit set.
-   - `pknca_units_table_secondary()` builds the reference-keyed rows from those
-     sets, as it does for the table `PKNCAdata()` builds.
+   - When the `units` given to `PKNCAdata()` has group columns and no `_ref`
+     columns, each distinct combination of their values is a unit set.
+   - The table is stored as given; `pknca_unit_conversion()` builds the
+     reference-keyed rows from those sets with
+     `pknca_units_table_secondary()` when it joins units to the results
+     (`pknca_units_table_join_pairs()`), as `PKNCAdata()` does for the table
+     it builds.
    - An `mr.*` result that finds no reference-keyed row for its pair is
      `pknca_error_units_secondary_missing`, naming the two groups.  It is not
-     a silent mass ratio.
+     a silent mass ratio.  `ratio.*`, `f.*`, and `clr.*` keep the base row of
+     their own group for a pair whose sides the table does not describe, as
+     before.
 3. **Labels and mixed pairs.**
-   - `mr.*` has PPSTRESU "mol/mol" when both sides' standardized amount units
-     are molar, and "g/g" when both are mass.  PPORRESU is composed the same
-     way from the original units.
+   - The kind of amount is read from the unit's symbols, a mass or an amount
+     of substance with an SI prefix (`pknca_units_amount_basis()`), so it does
+     not need the units package.
+   - `mr.*` has PPORRESU "g/g" when both sides are masses and "mol/mol" when
+     both are amounts of substance, if the two sides are in the same units;
+     otherwise PPORRESU is the quotient of the two units, which is what the
+     raw value is in.  PPSTRESU is labelled the same way from the standardized
+     units.  Within one unit set (`pknca_units_table()` itself) the label
+     follows the base parameter's units, and a conversion of "fraction" that
+     the user gave is kept.
    - One side molar and the other mass is `pknca_error_mr_units_mixed`,
-     naming both analytes and their units.
+     naming both analytes and their units; the pair has no row in the table,
+     and the error is raised only when a result needs it.
 4. **Documentation**, with one worked example.  Parent MW 325.8 g/mol,
    metabolite MW 341.8 g/mol, concentrations in ng/mL, time in h.
    - 1 ng/mL = 1000/MW nmol/L, so the factors are 3.0694 (parent) and
