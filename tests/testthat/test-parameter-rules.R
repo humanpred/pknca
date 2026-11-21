@@ -394,8 +394,8 @@ test_that("a metabolite ratio uses the parent named by group_ref", {
   expect_equal(d_mr$PPORRES[d_mr$PPTESTCD == "mr.cmax"], c(3 / 10, 4 / 12))
   expect_equal(unique(d_mr$analyte), "metab")
   expect_equal(unique(d_mr$analyte_ref), "parent")
-  # Both analytes are in ng/mL, so the ratio is a fraction
-  expect_equal(unique(d_mr$PPORRESU), "fraction")
+  # Both analytes are in ng/mL, so the ratio is one of masses
+  expect_equal(unique(d_mr$PPORRESU), "g/g")
 })
 
 test_that("a metabolite ratio with no parent named is pknca_error_mr_needs_parent", {

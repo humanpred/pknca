@@ -706,3 +706,278 @@ test_that("Preferred units with unit columns convert the groups that need it and
   df_nca_dose <- as.data.frame(pk.nca(o_data_dose))
   expect_equal(df_nca_dose$PPSTRES[df_nca_dose$PPTESTCD == "cmax.dn"], c(10, 10))
 })
+
+# Metabolite ratios:  masses, amounts of substance, and each side's conversion
+
+test_that("pknca_units_amount_basis() reads the kind of amount from the unit's symbols", {
+  known <-
+    rbind(
+      data.frame(unit = "ng/mL", basis = "g"),
+      data.frame(unit = "hr*ng/mL", basis = "g"),
+      data.frame(unit = "(hr^2)*ug/L", basis = "g"),
+      data.frame(unit = "mg", basis = "g"),
+      data.frame(unit = "mcg/mL", basis = "g"),
+      data.frame(unit = "nmol/L", basis = "mol"),
+      data.frame(unit = "hr*mmol/L", basis = "mol"),
+      data.frame(unit = "nM", basis = "mol"),
+      data.frame(unit = "IU/mL", basis = NA_character_),
+      data.frame(unit = "fraction", basis = NA_character_),
+      data.frame(unit = "ng/nmol", basis = NA_character_),
+      data.frame(unit = NA_character_, basis = NA_character_)
+    )
+  for (i in seq_len(nrow(known))) {
+    expect_equal(pknca_units_amount_basis(known$unit[i]), known$basis[i], info = known$unit[i])
+  }
+  expect_equal(pknca_units_amount_ratio("ng/mL", "ug/L"), "g/g")
+  expect_equal(pknca_units_amount_ratio("nmol/L", "nM"), "mol/mol")
+  expect_equal(pknca_units_amount_ratio("ng/mL", "nmol/L"), NA_character_)
+  expect_equal(pknca_units_amount_ratio("IU/mL", "IU/mL"), NA_character_)
+  expect_true(pknca_units_amount_mixed("ng/mL", "nmol/L"))
+  expect_false(pknca_units_amount_mixed("IU/mL", "nmol/L"))
+})
+
+test_that("every metabolite ratio is a ratio of masses or of amounts of substance", {
+  mr_params <- grep("^mr[.]", names(get.interval.cols()), value = TRUE)
+  mr_params <- mr_params[is_metabolite_ratio(mr_params)]
+  expect_equal(length(mr_params), 38)
+  mass <- pknca_units_table(concu = "ng/mL", doseu = "mg", amountu = "mg", timeu = "hr")
+  molar <- pknca_units_table(concu = "nmol/L", doseu = "mg", amountu = "mmol", timeu = "hr")
+  for (param in mr_params) {
+    expect_equal(mass$PPORRESU[mass$PPTESTCD == param], "g/g", info = param)
+    expect_equal(molar$PPORRESU[molar$PPTESTCD == param], "mol/mol", info = param)
+  }
+  # Every other parameter keeps its units
+  other <- !(mass$PPTESTCD %in% mr_params)
+  before <- pknca_units_table(concu = "ng/mL", doseu = "mg", amountu = "mg", timeu = "hr")
+  expect_equal(mass$PPORRESU[other], before$PPORRESU[other])
+  expect_equal(mass$PPORRESU[mass$PPTESTCD == "ratio.cmax"], "fraction")
+  # Units that are neither keep the ratio a fraction
+  activity <- pknca_units_table(concu = "IU/mL", timeu = "hr")
+  expect_equal(activity$PPORRESU[activity$PPTESTCD == "mr.cmax"], "fraction")
+})
+
+test_that("a metabolite ratio's standardized units follow its base's", {
+  pref <- pknca_units_table(concu = "nmol/L", timeu = "hr", concu_pref = "umol/L")
+  mask <- pref$PPTESTCD == "mr.cmax"
+  expect_equal(pref$PPORRESU[mask], "mol/mol")
+  expect_equal(pref$PPSTRESU[mask], "mol/mol")
+  expect_equal(pref$conversion_factor[mask], 1)
+  # A conversion of "fraction" itself is kept
+  percent <-
+    pknca_units_table(
+      concu = "ng/mL", timeu = "hr",
+      conversions = data.frame(PPORRESU = "fraction", PPSTRESU = "%")
+    )
+  mask <- percent$PPTESTCD == "mr.cmax"
+  expect_equal(percent$PPORRESU[mask], "g/g")
+  expect_equal(percent$PPSTRESU[mask], "%")
+  expect_equal(percent$conversion_factor[mask], 100)
+})
+
+# Parent MW 325.8 g/mol and metabolite MW 341.8 g/mol, in ng/mL:  1 ng/mL is
+# 1000/MW nmol/L
+units_mr_molar <- function(analyte, mw) {
+  cbind(
+    analyte = analyte,
+    pknca_units_table(
+      concu = "ng/mL", timeu = "hr",
+      conversions =
+        data.frame(
+          PPORRESU = c("ng/mL", "hr*ng/mL"),
+          PPSTRESU = c("nmol/L", "hr*nmol/L"),
+          conversion_factor = 1000 / mw
+        )
+    )
+  )
+}
+
+d_conc_mr_units <-
+  rbind(
+    data.frame(subject = 1, analyte = "parent", time = c(0, 1, 2, 4, 8), conc = c(0, 100, 80, 40, 10)),
+    data.frame(subject = 1, analyte = "M1", time = c(0, 1, 2, 4, 8), conc = c(0, 30, 40, 20, 5))
+  )
+# The secondary parameters are requested for the metabolite only
+intervals_mr_units <-
+  rbind(
+    data.frame(analyte = "parent", start = 0, end = 8, cmax = TRUE, auclast = TRUE, mr.auclast = FALSE, ratio.cmax = FALSE),
+    data.frame(analyte = "M1", start = 0, end = 8, cmax = TRUE, auclast = TRUE, mr.auclast = TRUE, ratio.cmax = TRUE)
+  )
+
+# The result of `param` for `analyte`
+mr_units_row <- function(d_res, analyte, param) {
+  d_res[d_res$analyte == analyte & d_res$PPTESTCD == param, ]
+}
+
+test_that("a molar metabolite ratio comes from a units table per analyte (MW 325.8 and 341.8)", {
+  units_molar <- rbind(units_mr_molar("parent", 325.8), units_mr_molar("M1", 341.8))
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc_mr_units, conc ~ time | subject / analyte),
+      intervals = intervals_mr_units,
+      group_ref = data.frame(analyte = "parent"),
+      units = units_molar
+    )
+  # The table given is stored as it was given
+  expect_identical(o_data$units, units_molar)
+  d_res <- as.data.frame(suppressMessages(pk.nca(o_data)))
+  mass_ratio <- mr_units_row(d_res, "M1", "auclast")$PPORRES / mr_units_row(d_res, "parent", "auclast")$PPORRES
+  d_mr <- mr_units_row(d_res, "M1", "mr.auclast")
+  expect_equal(d_mr$PPORRES, mass_ratio)
+  expect_equal(d_mr$PPORRESU, "g/g")
+  expect_equal(d_mr$PPSTRES, mass_ratio * 325.8 / 341.8, tolerance = 1e-12)
+  expect_equal(d_mr$PPSTRESU, "mol/mol")
+  # The molar ratio is the ratio of the two molar AUCs
+  expect_equal(
+    d_mr$PPSTRES,
+    mr_units_row(d_res, "M1", "auclast")$PPSTRES / mr_units_row(d_res, "parent", "auclast")$PPSTRES,
+    tolerance = 1e-12
+  )
+  # A ratio is standardized from each side's conversion as well, and stays a
+  # fraction
+  d_ratio <- mr_units_row(d_res, "M1", "ratio.cmax")
+  expect_equal(d_ratio$PPORRES, 40 / 100)
+  expect_equal(d_ratio$PPSTRES, 40 / 100 * 325.8 / 341.8, tolerance = 1e-12)
+  expect_equal(d_ratio$PPSTRESU, "fraction")
+})
+
+test_that("a metabolite ratio of a mass and an amount of substance is an error", {
+  units_m1 <- cbind(analyte = "M1", pknca_units_table(concu = "ng/mL", timeu = "hr"))
+  units_m1$PPSTRESU <- units_m1$PPORRESU
+  units_m1$conversion_factor <- 1
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc_mr_units, conc ~ time | subject / analyte),
+      intervals = intervals_mr_units,
+      group_ref = data.frame(analyte = "parent"),
+      units = rbind(units_mr_molar("parent", 325.8), units_m1)
+    )
+  expect_error(
+    suppressMessages(pk.nca(o_data)),
+    regexp = "Metabolite ratio 'mr.auclast' would divide a mass by an amount of substance:  'auclast' of analyte=M1 is in 'hr*ng/mL' and of analyte=parent in 'hr*ng/mL' (standardized 'hr*nmol/L')",
+    fixed = TRUE,
+    class = "pknca_error_mr_units_mixed"
+  )
+  # The same in the table PKNCAdata() builds from unit columns
+  d_conc <- d_conc_mr_units
+  d_conc$concu <- ifelse(d_conc$analyte == "parent", "ng/mL", "nmol/L")
+  o_data_built <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time | subject / analyte, concu = "concu", timeu = "hr"),
+      intervals = intervals_mr_units,
+      group_ref = data.frame(analyte = "parent")
+    )
+  expect_error(
+    suppressMessages(pk.nca(o_data_built)),
+    regexp = "'auclast' of analyte=M1 is in 'hr*nmol/L' and of analyte=parent in 'hr*ng/mL'",
+    fixed = TRUE,
+    class = "pknca_error_mr_units_mixed"
+  )
+})
+
+test_that("a units table per analyte without one of the pair is an error for a metabolite ratio", {
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc_mr_units, conc ~ time | subject / analyte),
+      intervals = intervals_mr_units,
+      group_ref = data.frame(analyte = "parent"),
+      units = units_mr_molar("parent", 325.8)
+    )
+  expect_error(
+    suppressMessages(pk.nca(o_data)),
+    regexp = "The units table has no units for metabolite ratio 'mr.auclast' of analyte=M1 to analyte=parent:  it needs the units of 'auclast' for both.",
+    fixed = TRUE,
+    class = "pknca_error_units_secondary_missing"
+  )
+})
+
+test_that("a metabolite ratio between analytes in different mass units standardizes to g/g", {
+  d_conc <- d_conc_mr_units
+  d_conc$concu <- ifelse(d_conc$analyte == "parent", "ng/mL", "ug/mL")
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time | subject / analyte, concu = "concu", timeu = "hr"),
+      intervals = intervals_mr_units,
+      group_ref = data.frame(analyte = "parent")
+    )
+  d_res <- as.data.frame(suppressMessages(pk.nca(o_data)))
+  d_mr <- d_res[d_res$analyte == "M1" & d_res$PPTESTCD == "mr.auclast", ]
+  # The raw quotient is in the quotient of the two units
+  expect_equal(d_mr$PPORRESU, "(hr*ug/mL)/(hr*ng/mL)")
+  expect_equal(d_mr$PPSTRESU, "g/g")
+  expect_equal(d_mr$PPSTRES, d_mr$PPORRES * 1000)
+  d_ratio <- d_res[d_res$analyte == "M1" & d_res$PPTESTCD == "ratio.cmax", ]
+  expect_equal(d_ratio$PPORRESU, "(ug/mL)/(ng/mL)")
+  expect_equal(d_ratio$PPSTRESU, "fraction")
+  expect_equal(d_ratio$PPSTRES, 400)
+})
+
+test_that("a given units table gains rows only for the pairs of groups the results name", {
+  units_given <- rbind(units_mr_molar("parent", 325.8), units_mr_molar("M1", 341.8), units_mr_molar("M2", 300))
+  result <-
+    data.frame(
+      analyte = c("M1", "parent", "M1"), analyte_ref = c("parent", NA, NA),
+      PPTESTCD = c("mr.auclast", "auclast", "auclast"), PPORRES = 1
+    )
+  joined <- pknca_units_table_join_pairs(units_given, result)
+  pair_rows <- joined[!is.na(joined$analyte_ref), ]
+  expect_equal(unique(pair_rows$analyte), "M1")
+  expect_equal(unique(pair_rows$analyte_ref), "parent")
+  expect_equal(nrow(joined) - nrow(units_given), nrow(pair_rows))
+  # The rows of the given table are kept, with no reference group
+  expect_equal(joined[is.na(joined$analyte_ref), names(units_given)], units_given, ignore_attr = TRUE)
+  # Results with no reference columns leave the table as given
+  expect_identical(pknca_units_table_join_pairs(units_given, result[, c("analyte", "PPTESTCD", "PPORRES")]), units_given)
+})
+
+# secondary_pair_units() with a fresh cache of conversion factors
+pair_units_fresh <- function(...) {
+  secondary_pair_units(factor_cache = new.env(parent = emptyenv()), ...)
+}
+
+test_that("secondary_pair_units() composes each kind of pair", {
+  base <- data.frame(PPORRESU = "fraction", PPTESTCD = "ratio.cmax", PPSTRESU = "%", conversion_factor = 100)
+  base_mr <- data.frame(PPORRESU = "g/g", PPTESTCD = "mr.cmax", PPSTRESU = "g/g", conversion_factor = 1)
+  # Units a side does not know keep the base row
+  expect_equal(
+    pair_units_fresh(param = "ratio.cmax", base = base, u = c("ng/mL", NA), s = c("ng/mL", NA), side_factor = 1, is_mr = FALSE, has_std = TRUE),
+    base
+  )
+  # The same units on both sides, with no standardized units
+  expect_equal(
+    pair_units_fresh(param = "ratio.cmax", base = base, u = c("ng/mL", "ng/mL"), s = c("ng/mL", "ng/mL"), side_factor = 1, is_mr = FALSE, has_std = FALSE),
+    data.frame(PPORRESU = "fraction", PPTESTCD = "ratio.cmax", PPSTRESU = NA_character_, conversion_factor = NA_real_)
+  )
+  # ... standardized into units that are not convertible:  their quotient
+  expect_equal(
+    pair_units_fresh(param = "ratio.cmax", base = base, u = c("ng/mL", "ng/mL"), s = c("IU/mL", "ng/mL"), side_factor = 2, is_mr = FALSE, has_std = TRUE),
+    data.frame(PPORRESU = "fraction", PPTESTCD = "ratio.cmax", PPSTRESU = "(IU/mL)/(ng/mL)", conversion_factor = 2)
+  )
+  # ... a ratio keeps its base's standardized units, with each side's conversion
+  expect_equal(
+    pair_units_fresh(param = "ratio.cmax", base = base, u = c("ng/mL", "ng/mL"), s = c("nmol/L", "nmol/L"), side_factor = 0.5, is_mr = FALSE, has_std = TRUE),
+    data.frame(PPORRESU = "fraction", PPTESTCD = "ratio.cmax", PPSTRESU = "%", conversion_factor = 50)
+  )
+  # ... a metabolite ratio is labelled from the sides
+  expect_equal(
+    pair_units_fresh(param = "mr.cmax", base = base_mr, u = c("ng/mL", "ng/mL"), s = c("nmol/L", "nmol/L"), side_factor = 0.5, is_mr = TRUE, has_std = TRUE),
+    data.frame(PPORRESU = "g/g", PPTESTCD = "mr.cmax", PPSTRESU = "mol/mol", conversion_factor = 0.5)
+  )
+  # Different, convertible units
+  expect_equal(
+    pair_units_fresh(param = "ratio.cmax", base = base, u = c("ug/mL", "ng/mL"), s = c("ug/mL", "ng/mL"), side_factor = 1, is_mr = FALSE, has_std = FALSE),
+    data.frame(PPORRESU = "(ug/mL)/(ng/mL)", PPTESTCD = "ratio.cmax", PPSTRESU = "fraction", conversion_factor = 1000)
+  )
+  expect_equal(
+    pair_units_fresh(param = "mr.cmax", base = base_mr, u = c("ug/mL", "ng/mL"), s = c("ug/mL", "ng/mL"), side_factor = 1, is_mr = TRUE, has_std = FALSE),
+    data.frame(PPORRESU = "(ug/mL)/(ng/mL)", PPTESTCD = "mr.cmax", PPSTRESU = "g/g", conversion_factor = 1000)
+  )
+  # Different units that are not convertible
+  expect_equal(
+    pair_units_fresh(param = "ratio.cmax", base = base, u = c("mg", "mg/kg"), s = c("g", "mg/kg"), side_factor = 0.001, is_mr = FALSE, has_std = TRUE),
+    data.frame(PPORRESU = "mg/(mg/kg)", PPTESTCD = "ratio.cmax", PPSTRESU = "g/(mg/kg)", conversion_factor = 0.001)
+  )
+  expect_equal(
+    pair_units_fresh(param = "ratio.cmax", base = base, u = c("mg", "mg/kg"), s = c("mg", "mg/kg"), side_factor = 1, is_mr = FALSE, has_std = FALSE),
+    data.frame(PPORRESU = "mg/(mg/kg)", PPTESTCD = "ratio.cmax", PPSTRESU = NA_character_, conversion_factor = NA_real_)
+  )
+})

@@ -69,6 +69,23 @@ turns the raw quotient into that number.
 
 With one set of units for every group there is no reference side to name
 and no \verb{_ref} column is added.
+
+The standardized value of a secondary result is the quotient of its two
+sides' standardized values, each converted with its own group's
+"conversion_factor".  A table given to \code{\link[=PKNCAdata]{PKNCAdata()}} with group columns
+(a table per analyte, each from \code{pknca_units_table()} with the analyte
+column added, bound together) is treated in the same way:  it is stored as
+given, and the rows for each pair of its groups are built when \code{\link[=pk.nca]{pk.nca()}}
+reports the results.
+
+A metabolite ratio (\verb{mr.<parameter>}) is a ratio of masses, \code{"g/g"}, or of
+amounts of substance, \code{"mol/mol"}, as its parameter's units say.  When the units
+of one analyte are a mass and of the other an amount of substance, the
+ratio is an error (\code{pknca_error_mr_units_mixed}), and so is one whose two
+analytes a given table does not both describe
+(\code{pknca_error_units_secondary_missing}).  With each analyte converted to
+moles with its own molecular weight, the standardized metabolite ratio is
+the molar ratio; see \code{vignette("v09-secondary-parameters")}.
 }
 
 \examples{
