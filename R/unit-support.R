@@ -664,8 +664,8 @@ pknca_units_amount_basis <- function(unit) {
   if (length(unit) != 1 || is.na(unit)) {
     return(NA_character_)
   }
-  symbols <- strsplit(as.character(unit), split = "[^A-Za-zµμ]+")[[1]]
-  prefix <- "(Y|Z|E|P|T|G|M|k|h|da|d|c|m|u|µ|μ|n|p|f|a|z|y)?"
+  symbols <- strsplit(as.character(unit), split = "[^A-Za-z\u00b5\u03bc]+")[[1]]
+  prefix <- "(Y|Z|E|P|T|G|M|k|h|da|d|c|m|u|\u00b5|\u03bc|n|p|f|a|z|y)?"
   is_mass <- any(grepl(paste0("^", prefix, "g$"), symbols) | symbols %in% "mcg")
   is_molar <- any(grepl(paste0("^", prefix, "(mol|M)$"), symbols))
   if (is_mass && !is_molar) {

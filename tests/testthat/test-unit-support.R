@@ -717,6 +717,8 @@ test_that("pknca_units_amount_basis() reads the kind of amount from the unit's s
       data.frame(unit = "(hr^2)*ug/L", basis = "g"),
       data.frame(unit = "mg", basis = "g"),
       data.frame(unit = "mcg/mL", basis = "g"),
+      data.frame(unit = "\u00b5g/mL", basis = "g"),
+      data.frame(unit = "\u03bcmol/L", basis = "mol"),
       data.frame(unit = "nmol/L", basis = "mol"),
       data.frame(unit = "hr*mmol/L", basis = "mol"),
       data.frame(unit = "nM", basis = "mol"),
