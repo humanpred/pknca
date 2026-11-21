@@ -125,12 +125,10 @@ test_that("AUCint gives the same value when no interpolation/extrapolation is re
 # ============================================================================
 # Warning and NA Handling Tests
 # ============================================================================
-test_that("AUCint to infinity is NA past Tlast when the half-life is not estimable", {
+test_that("AUCint falls back to AUCall over a dose when the half-life is not estimable (#508)", {
   concdata <- data.frame(conc = c(8, 4, 2, 1), time = 0:3)
 
-  # The interval reaches past tlast (3), and the region after it can only be
-  # extrapolated with the half-life
-  expect_equal(
+  over_dose <-
     pk.calc.aucint(
       conc = concdata$conc,
       time = concdata$time,
@@ -138,29 +136,30 @@ test_that("AUCint to infinity is NA past Tlast when the half-life is not estimab
       time.dose = 1.5,
       lambda.z = NA,
       auc.type = "AUCinf"
-    ),
-    structure(NA_real_, exclude = "the half-life is NA")
-  )
+    )
+  # The dose at 1.5 is within the interval, so nothing is estimated there and
+  # the measured concentrations on either side of it are integrated.  With no
+  # half-life to extrapolate with, the region after tlast is AUCall, which is
+  # AUClast because nothing was measured after tlast.
   expect_equal(
-    pk.calc.aumcint(
-      conc = concdata$conc,
-      time = concdata$time,
-      interval = c(0, 4),
-      lambda.z = NA,
-      auc.type = "AUCinf"
-    ),
-    structure(NA_real_, exclude = "the half-life is NA")
-  )
-  # AUCall over the same interval needs no half-life
-  expect_equal(
+    as.numeric(over_dose),
     as.numeric(
-      pk.calc.aucint(
-        conc = concdata$conc, time = concdata$time, interval = c(0, 4),
-        time.dose = 1.5, lambda.z = NA, auc.type = "AUCall"
+      pk.calc.auc(
+        conc = concdata$conc, time = concdata$time,
+        interval = c(0, 3), auc.type = "AUCall"
       )
-    ),
-    as.numeric(pk.calc.auc(conc = concdata$conc, time = concdata$time, interval = c(0, 3)))
+    )
   )
+  expect_equal(
+    attr(over_dose, "method"),
+    c(
+      "AUC: lin up/log down",
+      "Interpolation: dose-aware",
+      "Extrapolation: AUCall (half-life not estimable)"
+    )
+  )
+  # The half-life was not used, so an exclusion of it does not reach the result
+  expect_equal(attr(over_dose, "exclude"), "DO NOT EXCLUDE")
 })
 
 test_that("AUCint gives a warning and NA when it cannot interpolate or extrapolate a value", {
@@ -654,10 +653,10 @@ test_that("aucint.inf.pred is calculated without a half-life when it only interp
   expect_equal(row$exclude, NA_character_)
 })
 
-test_that("aucint.inf.* is NA past Tlast when the half-life is not estimable", {
+test_that("aucint.inf.* falls back to AUCall when the half-life is not estimable (#508)", {
   # Concentrations rise to the end of the profile, so there is no terminal phase
-  # to fit, and the interval reaches past tlast, where only the half-life could
-  # extrapolate
+  # to fit, and the interval reaches past tlast so the tail has to be
+  # extrapolated somehow
   d_conc <- data.frame(time = 0:4, conc = c(0.4, 0.8, 1.6, 1.9, 0))
   intervals <-
     data.frame(
@@ -671,68 +670,17 @@ test_that("aucint.inf.* is NA past Tlast when the half-life is not estimable", {
     regexp = "Too few points for half-life calculation"
   )
   res <- as.data.frame(o_nca)
-  reason_halflife <- res$exclude[res$PPTESTCD %in% "half.life"]
-  expect_match(reason_halflife, "^Too few points for half-life calculation")
-  # The .pred form receives the half-life's reason through both lambda.z and
-  # clast.pred, and gives it once
+  auc_all <- as.numeric(res$PPORRES[res$PPTESTCD %in% "aucint.all"])
   for (param in c("aucint.inf.obs", "aucint.inf.pred")) {
     row <- res[res$PPTESTCD %in% param, ]
-    expect_equal(row$PPORRES, NA_real_, info = param)
-    expect_equal(row$exclude, paste(reason_halflife, "the half-life is NA", sep = "; "), info = param)
-  }
-  # AUCall needs no half-life
-  expect_equal(
-    res$PPORRES[res$PPTESTCD %in% "aucint.all"],
-    as.numeric(pk.calc.auc.all(conc = d_conc$conc, time = d_conc$time))
-  )
-})
-
-test_that("an interval to infinity needs the half-life only when it ends after Tlast", {
-  # Every point is excluded from the half-life, so there is none; the last
-  # measurable sample is at 24
-  d_conc <- data.frame(time = c(0, 0.5, 1, 2, 4, 8, 12, 24))
-  d_conc$conc <- 10 * (exp(-0.15 * d_conc$time) - exp(-2 * d_conc$time))
-  d_conc$excl <- TRUE
-  d_dose <- data.frame(time = 0, dose = 10)
-  params_inf <- c("aucint.inf.obs", "aucint.inf.pred", "aumcint.inf.obs", "aumcint.inf.pred")
-  intervals <- data.frame(start = 0, end = c(12, 24, 48))
-  for (param in c(params_inf, "aucint.last", "aumcint.last")) {
-    intervals[[param]] <- TRUE
-  }
-  o_data <-
-    PKNCAdata(
-      PKNCAconc(d_conc, conc ~ time, exclude_half.life = "excl"),
-      PKNCAdose(d_dose, dose ~ time),
-      intervals = intervals
+    expect_equal(as.numeric(row$PPORRES), auc_all, info = param)
+    expect_true(
+      grepl("Extrapolation: AUCall (half-life not estimable)", row$PPANMETH, fixed = TRUE),
+      info = param
     )
-  res <- as.data.frame(suppressWarnings(pk.nca(o_data)))
-  reason_halflife <- "Too few points for half-life calculation (min.hl.points=3 with only 0 points)"
-  expect_equal(unique(res$exclude[res$PPTESTCD %in% "half.life"]), reason_halflife)
-  for (param in params_inf) {
-    last_param <- if (startsWith(param, "aumc")) "aumcint.last" else "aucint.last"
-    for (end in c(12, 24)) {
-      # Before or at the last sample, the interval is interpolated throughout
-      row <- res[res$PPTESTCD %in% param & res$end %in% end, ]
-      expect_equal(
-        row$PPORRES,
-        res$PPORRES[res$PPTESTCD %in% last_param & res$end %in% end],
-        info = paste(param, end)
-      )
-      expect_equal(row$exclude, NA_character_, info = paste(param, end))
-    }
-    # After the last sample, the half-life is needed.  The .pred forms receive
-    # its reason through both lambda.z and clast.pred, and give it once.
-    row <- res[res$PPTESTCD %in% param & res$end %in% 48, ]
-    expect_equal(row$PPORRES, NA_real_, info = param)
-    expect_equal(row$exclude, paste(reason_halflife, "the half-life is NA", sep = "; "), info = param)
+    # Nothing that was excluded went into the result (#270)
+    expect_equal(row$exclude, NA_character_, info = param)
   }
-  expect_equal(
-    res$PPORRES[res$PPTESTCD %in% "aucint.last" & res$end %in% c(12, 24)],
-    c(
-      pk.calc.auc.last(conc = d_conc$conc[d_conc$time <= 12], time = d_conc$time[d_conc$time <= 12]),
-      pk.calc.auc.last(conc = d_conc$conc, time = d_conc$time)
-    )
-  )
 })
 
 test_that("pk.calc.aucint and wrappers: method attribute is set and propagated", {
