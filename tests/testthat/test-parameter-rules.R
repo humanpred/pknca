@@ -526,6 +526,27 @@ test_that("an intervals row covering only the parent gives NA metabolite ratios 
   expect_equal(d_mr$exclude, rep("The profile is the reference itself (it matches `group_ref`)", 2))
 })
 
+test_that("a metabolite ratio requested alone on a row with no reference gives NA rows and its base", {
+  # Nothing else is requested on the row, so the failure is reported on the
+  # base, which is calculated as it is for a linked request
+  intervals_alone <- data.frame(analyte = "parent", start = 0, end = 8, mr.cmax = TRUE)
+  o_data <-
+    PKNCAdata(
+      PKNCAconc(d_conc_mr[d_conc_mr$analyte == "parent", ], conc ~ time | subject / analyte),
+      intervals = intervals_alone,
+      group_ref = data.frame(analyte = "parent")
+    )
+  expect_warning(
+    d_res <- as.data.frame(pk.nca(o_data)),
+    class = "pknca_warning_secondary_auto_reference"
+  )
+  expect_equal(sort(unique(d_res$PPTESTCD)), c("cmax", "mr.cmax"))
+  d_mr <- d_res[d_res$PPTESTCD == "mr.cmax", ]
+  expect_equal(d_mr$PPORRES, c(NA_real_, NA_real_))
+  expect_equal(d_mr$exclude, rep("The profile is the reference itself (it matches `group_ref`)", 2))
+  expect_equal(d_res$PPORRES[d_res$PPTESTCD == "cmax"], c(10, 12))
+})
+
 test_that("param_pattern selects what it selected before the new ratios were registered", {
   all_params <- setdiff(names(get.interval.cols()), c("start", "end"))
   new_members <- names(PKNCA:::parameter_rule_members_new())

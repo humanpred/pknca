@@ -429,7 +429,12 @@ the generated intervals:
   value keep it; only results that were `NA` gain one, and a result that stays
   `NA` may give a different reason.  A group that is the reference itself
   raises no `pknca_warning_secondary_auto_reference` when other groups of its
-  row have their results.
+  row have their results.  When no group of a row has a reference, each group
+  gives its own reason, and the parameter's base is still calculated, as for
+  a linked request:  a request alone on its row (such as `ratio.cmax` with
+  nothing else requested) now returns `NA` rows for the parameter and rows for
+  its base, where it returned no rows at all and no
+  `pknca_warning_secondary_auto_reference`.
 
 * `set_intervals()` adds rows to the units table that `PKNCAdata()` built for a
   requested parameter that has none, such as one registered with

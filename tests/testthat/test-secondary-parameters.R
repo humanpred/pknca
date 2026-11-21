@@ -2242,16 +2242,14 @@ test_that("a reference needing a column the intervals lack says to add it", {
   expect_equal(nrow(d_clr), 2L)
   expect_true(all(is.na(d_clr$PPORRES)))
   # The row does not calculate the plasma AUC, so the reference cannot be
-  # within it; the plasma profile is a reference itself
+  # within it; the plasma profile is a reference itself.  Each group gives its
+  # own reason.
+  d_clr <- d_clr[order(d_clr$PCSPEC), ]
   expect_equal(
     d_clr$exclude,
-    rep(
-      paste(
-        "The profile is the reference itself (it has no collection volume)",
-        "Add 'PCSPEC' to the intervals so the reference can be expressed, or set 'clr.last_ref'",
-        sep = "; "
-      ),
-      2
+    c(
+      "The profile is the reference itself (it has no collection volume)",
+      "Add 'PCSPEC' to the intervals so the reference can be expressed, or set 'clr.last_ref'"
     )
   )
   # Nothing is calculated that the row did not request
@@ -2779,6 +2777,34 @@ period_values <- function(d_res, param) {
   d_param <- d_res[d_res$PPTESTCD %in% param, ]
   d_param$PPORRES[order(d_param$subject)]
 }
+
+# A request alone on its row that no group can have a reference for:  the row
+# gives NA rows for the request, each group with its own reason, on the base
+# that the request depends on
+test_that("a ratio requested alone with tied references gives NA rows and its base", {
+  o_data <-
+    PKNCAdata(
+      o_conc_period,
+      intervals = data.frame(treatment = "oral", start = 0, end = 8, ratio.cmax = TRUE),
+      group_ref = data.frame(treatment = "iv")
+    )
+  expect_warning(
+    d_res <- as.data.frame(muffle_interval_warnings(pk.nca(o_data))),
+    regexp = "More than one reference profile is equally close",
+    class = "pknca_warning_secondary_auto_reference"
+  )
+  expect_equal(sort(unique(d_res$PPTESTCD)), c("cmax", "ratio.cmax"))
+  d_ratio <- d_res[d_res$PPTESTCD %in% "ratio.cmax", ]
+  d_ratio <- d_ratio[order(d_ratio$subject), ]
+  expect_equal(d_ratio$PPORRES, c(NA_real_, NA_real_))
+  expect_equal(
+    d_ratio$exclude,
+    c(
+      "More than one reference profile is equally close ((treatment=iv, period=1, subject=1), (treatment=iv, period=2, subject=2))",
+      "More than one reference profile is equally close ((treatment=iv, subject=1, period=1), (treatment=iv, subject=2, period=2))"
+    )
+  )
+})
 
 test_that("a crossover reference in another period is not found without ref_vary", {
   intervals_f <-

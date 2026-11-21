@@ -1981,8 +1981,13 @@ within the requesting row.
 
 `expand_secondary_auto()` then takes one of three paths for the row:
 
-1. No group has a reference:  the row fails as a whole, as before, with each
-   distinct reason once.
+1. No group has a reference:  the request is taken off the row, with its
+   `depends` kept requested so that the row has results to report the failure
+   on (a request alone on its row otherwise gave no result at all), and the
+   failure is recorded with each group's reason (`secondary_auto$failure_groups`,
+   aligned with `secondary_auto$failures`).  `pk_nca_secondary()` gives each
+   instance its own group's reason, and the warning names the reasons together,
+   as before.
 2. Every group has the same reference and it is not the row itself:  one
    pointer, as before.
 3. Otherwise:  `expand_secondary_groups()` links each distinct reference (the

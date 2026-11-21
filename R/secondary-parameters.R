@@ -527,6 +527,9 @@ expand_secondary_auto <- function(intervals, requested_secondary, conc, group_re
                                   ref_vary = NULL) {
   links <- data.frame(param = character(0), ref_id = character(0))
   failures <- list()
+  # Each failure's reasons by group, when the finder judged the row's groups
+  # (NULL for a failure of the row as a whole), in the order of `failures`
+  failure_groups <- list()
   group_entries <- list()
   original_rows <- seq_len(nrow(intervals))
   for (p in requested_secondary) {
@@ -539,6 +542,7 @@ expand_secondary_auto <- function(intervals, requested_secondary, conc, group_re
       if (!unlinked || secondary_legacy_resolvable(intervals[r, , drop = FALSE], info)) {
         next
       }
+      by_group <- NULL
       found <-
         find_secondary_reference_groups(
           intervals, r, p, info, conc,
@@ -552,15 +556,16 @@ expand_secondary_auto <- function(intervals, requested_secondary, conc, group_re
         # as a whole.
         signatures <- secondary_override_signatures(found$overrides)
         if (!any(is.na(found$reasons))) {
+          by_group <- found
           found <- paste(unique(found$reasons), collapse = "; ")
         } else if (all(is.na(found$reasons)) && length(unique(signatures)) == 1 &&
                    !any(found$same_row)) {
           found <- found$overrides[[1]]
         } else {
-          by_group <- expand_secondary_groups(intervals, r, p, info, found, conc)
-          intervals <- by_group$intervals
-          links <- rbind(links, by_group$links)
-          group_entries <- c(group_entries, by_group$entries)
+          linked_groups <- expand_secondary_groups(intervals, r, p, info, found, conc)
+          intervals <- linked_groups$intervals
+          links <- rbind(links, linked_groups$links)
+          group_entries <- c(group_entries, linked_groups$entries)
           next
         }
       }
@@ -578,7 +583,16 @@ expand_secondary_auto <- function(intervals, requested_secondary, conc, group_re
             intervals[r, interval_describe_cols(intervals), drop = FALSE],
             data.frame(param = p, reason = found)
           )
+        failure_groups <- c(failure_groups, list(by_group))
         intervals[[p]][r] <- FALSE
+        # The parameter's dependencies stay requested, as they are for a linked
+        # request, so that the row has results to report the failure on:  a
+        # request alone on its row would otherwise give no result at all
+        deps <- get.interval.cols()[[p]]$depends
+        intervals <- interval_ensure_param_cols(intervals, deps)
+        for (dep in deps) {
+          intervals[[dep]][r] <- TRUE
+        }
       } else {
         linked <-
           interval_link_found_reference(
@@ -611,7 +625,8 @@ expand_secondary_auto <- function(intervals, requested_secondary, conc, group_re
   rownames(failures) <- NULL
   list(
     intervals = intervals,
-    secondary_auto = list(links = links, failures = failures, groups = group_entries)
+    secondary_auto =
+      list(links = links, failures = failures, failure_groups = failure_groups, groups = group_entries)
   )
 }
 
@@ -1473,6 +1488,17 @@ pk_nca_secondary <- function(results, data_calc) {
         own_rows <- own_rows & (results[[col]] %in% failure[[col]])
       }
       instances <- secondary_instances(results, own_rows, result_group_cols)
+      # Each group gives its own reason when the finder judged the row's groups
+      by_group <- if (i <= length(auto$failure_groups)) auto$failure_groups[[i]] else NULL
+      group_reasons <-
+        if (is.null(by_group)) {
+          list()
+        } else {
+          lapply(
+            X = seq_len(nrow(by_group$groups)),
+            FUN = function(j) list(group = by_group$groups[j, , drop = FALSE], reason = by_group$reasons[j])
+          )
+        }
       for (k in seq_len(nrow(instances))) {
         template <-
           secondary_template(
@@ -1482,7 +1508,12 @@ pk_nca_secondary <- function(results, data_calc) {
         template$PPTESTCD <- p
         template$PPORRES <- NA_real_
         template$PPANMETH <- NA_character_
-        template$exclude <- failure$reason
+        template$exclude <-
+          if (length(group_reasons) == 0) {
+            failure$reason
+          } else {
+            secondary_group_entry(group_reasons, instances[k, , drop = FALSE])$reason
+          }
         new_rows[[length(new_rows) + 1L]] <- template
       }
     }
