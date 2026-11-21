@@ -48,9 +48,12 @@ duration of dosing.  If given as a character string, it is the name of a
 column from the \code{data}, and if given as a number, it is the value for all
 doses.  Only one may be given, and if neither is given, then the dose is
 assumed to be a bolus (\code{duration=0}).  If \code{rate} is given, then the dose
-amount must be given (the left hand side of the \code{formula}).  A numeric
-duration is in the time unit of the analysis; a difftime duration is
-converted to that unit in \code{\link[=PKNCAdata]{PKNCAdata()}}.}
+amount must be given (the left hand side of the \code{formula};
+\code{pknca_error_rate_without_dose} otherwise), and the duration of each dose
+is its amount divided by its rate.  A missing dose amount or rate, or a
+rate of zero, gives no valid duration (\code{pknca_error_dose_invalid_duration}).
+A numeric duration is in the time unit of the analysis; a difftime
+duration is converted to that unit in \code{\link[=PKNCAdata]{PKNCAdata()}}.}
 
 \item{time.nominal}{(optional) The name of the nominal time column (if the
 main time variable is actual time.  The \code{time.nominal} is not used during
@@ -88,6 +91,12 @@ per group.  When the right side is missing, PKNCA assumes that the
 same dose is given in every interval.  When given as a two-sided
 formula, both the dose amount and time are used directly from the
 data.
+
+A negative numeric dose amount is an error (\code{pknca_error_dose_negative},
+naming the rows), here and again in \code{\link[=pk.nca]{pk.nca()}} for a dose made negative
+later (for example by \code{mutate()}).  A zero or missing amount is allowed,
+and a row excluded with \code{exclude} is not checked.  A dose column that is
+not numeric is not checked here.
 }
 \seealso{
 Other PKNCA objects:

@@ -20,11 +20,11 @@ test_that("pk.calc.ae", {
   )
   expect_equal(
     pk.calc.ae(conc = c(NA, NA), volume = c(1, 1)),
-    structure(NA_real_, exclude = "All concentrations are missing")
+    structure(NA_real_, exclude = "All concentrations are missing; At least one concentration associated with a collection volume was missing")
   )
   expect_equal(
     pk.calc.ae(conc = c(1, NA), volume = c(1, 1)),
-    structure(NA_real_, exclude = "1 of 2 concentrations are missing")
+    structure(NA_real_, exclude = "1 of 2 concentrations are missing; At least one concentration associated with a collection volume was missing")
   )
   expect_equal(
     pk.calc.ae(conc = c(1, 1), volume = c(NA, NA)),
@@ -36,7 +36,7 @@ test_that("pk.calc.ae", {
   )
   expect_equal(
     pk.calc.ae(conc = c(NA, NA, 1, 1), volume = c(NA, 1, NA, 1)),
-    structure(NA_real_, exclude = "1 of 4 concentrations and volumes are missing; 1 of 4 concentrations are missing; 1 of 4 volumes are missing")
+    structure(NA_real_, exclude = "1 of 4 concentrations and volumes are missing; 1 of 4 concentrations are missing; 1 of 4 volumes are missing; At least one concentration associated with a collection volume was missing")
   )
 })
 
@@ -65,16 +65,22 @@ test_that("pk.calc.ertlst", {
   # All NA
   expect_equal(
     pk.calc.ertlst(conc = c(NA, NA), volume = c(1, 1), time = c(0, 1), duration.conc = c(1, 1)),
-    structure(NA_real_, exclude = "All concentrations are missing")
+    structure(NA_real_, exclude = "All concentrations are missing; At least one concentration associated with a collection volume was missing")
   )
   expect_equal(
     pk.calc.ertlst(conc = c(NA, NA), volume = c(NA, NA), time = c(0, 1), duration.conc = c(1, 1)),
     structure(NA_real_, exclude = "All concentrations and volumes are missing")
   )
-  # All 0 or NA
+  # A collection with a volume and no concentration has an unknown amount, so
+  # the rate is unknown
   expect_equal(
     pk.calc.ertlst(conc = c(0, NA), volume = c(1, 1), time = c(0, 1), duration.conc = c(1, 1)),
-    structure(0, exclude = "1 of 2 concentrations are missing")
+    structure(NA_real_, exclude = "1 of 2 concentrations are missing; At least one concentration associated with a collection volume was missing")
+  )
+  # All 0 with a missing volume:  the concentration is known, so the rate is
+  expect_equal(
+    pk.calc.ertlst(conc = c(0, 0), volume = c(1, NA), time = c(0, 1), duration.conc = c(1, 1)),
+    structure(0, exclude = "1 of 2 volumes are missing")
   )
   # Normal case
   expect_equal(
@@ -87,7 +93,7 @@ test_that("pk.calc.ermax", {
   # All NA
   expect_equal(
     pk.calc.ermax(conc = c(NA, NA), volume = c(1, 1), time = c(0, 1), duration.conc = c(1, 1)),
-    structure(NA_real_, exclude = "All concentrations are missing")
+    structure(NA_real_, exclude = "All concentrations are missing; At least one concentration associated with a collection volume was missing")
   )
   # Concentrations present but all volumes NA → all er values are NA
   expect_equal(
@@ -105,7 +111,7 @@ test_that("pk.calc.ertmax", {
   # All NA or 0
   expect_equal(
     pk.calc.ertmax(conc = c(NA, 0), volume = c(1, 1), time = c(0, 1), duration.conc = c(1, 1)),
-    structure(NA_real_, exclude = "1 of 2 concentrations are missing")
+    structure(NA_real_, exclude = "1 of 2 concentrations are missing; At least one concentration associated with a collection volume was missing")
   )
   # Normal case, last tmax
   expect_equal(
@@ -219,7 +225,7 @@ test_that("pk.calc.erlst is 0 when no collection has a positive rate", {
 test_that("pk.calc.erlst gives NA when everything is missing", {
   expect_equal(
     pk.calc.erlst(c(NA, NA), c(1, 1), c(0, 4), c(4, 4)),
-    structure(NA_real_, exclude = "All concentrations are missing")
+    structure(NA_real_, exclude = "All concentrations are missing; At least one concentration associated with a collection volume was missing")
   )
   # Zero-length input is reported the same way as by the sibling parameters
   expect_equal(
@@ -268,4 +274,22 @@ test_that("erint and erlst are calculated by pk.nca()", {
   ae <- result$PPORRES[result$PPTESTCD == "ae"]
   expect_equal(result$PPORRES[result$PPTESTCD == "erint"], ae / 24)
   expect_equal(result$PPORRES[result$PPTESTCD == "erlst"], 100 / 4)
+})
+
+test_that("every excretion rate is NA when a collection with a volume has no concentration", {
+  reason <- "1 of 3 concentrations are missing; At least one concentration associated with a collection volume was missing"
+  args <- list(conc = c(40, NA, 10), volume = c(1, 2, 3), time = c(0, 2, 4), duration.conc = c(2, 2, 2))
+  for (fun in c("pk.calc.ertlst", "pk.calc.ermax", "pk.calc.ertmax", "pk.calc.erlst")) {
+    expect_equal(do.call(fun, args), structure(NA_real_, exclude = reason), info = fun)
+  }
+  # A missing volume with a known concentration leaves the rates calculated
+  # from the other collections, with the reason, as before
+  args_volume <- list(conc = c(40, 5, 10), volume = c(1, NA, 3), time = c(0, 2, 4), duration.conc = c(2, 2, 2))
+  expect_equal(pk.calc.ermax(conc = args_volume$conc, volume = args_volume$volume, time = args_volume$time, duration.conc = args_volume$duration.conc), structure(20, exclude = "1 of 3 volumes are missing"))
+  # A collection missing both its concentration and its volume is not one with
+  # a volume:  the rates are calculated from the others, as before
+  expect_equal(
+    pk.calc.ermax(conc = c(40, NA, 10), volume = c(1, NA, 3), time = c(0, 2, 4), duration.conc = c(2, 2, 2)),
+    structure(20, exclude = "1 of 3 concentrations and volumes are missing")
+  )
 })

@@ -14,7 +14,8 @@ pk.calc.cav(auc, start, end)
 \item{end}{The end time of the interval}
 }
 \value{
-The Cav (average concentration during the interval)
+The Cav (average concentration during the interval).  A result of length one that is \code{NA} because of missing or unusable data
+has the reason in its "exclude" attribute, which \code{\link[=pk.nca]{pk.nca()}} reports.
 }
 \description{
 Calculate the average concentration during an interval.

@@ -18,9 +18,12 @@ pk.calc.swing(cmax, cmin)
 }
 \value{
 The degree of fluctuation around the average concentration.
+A result of length one that is \code{NA} because of missing or unusable data
+has the reason in its "exclude" attribute, which \code{\link[=pk.nca]{pk.nca()}} reports.
 
-The swing above the minimum concentration.  If \code{cmin} is zero, then
-the result is infinity.
+The swing above the minimum concentration, one value for each pair
+of \code{cmax} and \code{cmin}.  If \code{cmin} is zero, then the result is infinity; if
+\code{cmin} or \code{cmax} is missing, it is \code{NA}.
 }
 \description{
 Determine the degree of fluctuation

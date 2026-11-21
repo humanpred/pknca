@@ -134,15 +134,25 @@ NULL
 #' @param fun The name of the exported method function
 #' @param description The one-line description
 #' @param details Further documentation, following the description
+#' @param drop_missing_start Does the method treat a row at the start of the
+#'   interval with a missing concentration as absent?  When `TRUE`, such rows
+#'   are dropped, with their per-observation values (volume, duration,
+#'   half-life inclusion and exclusion, and lloq), before the method runs in an
+#'   imputation chain of [pk.nca()] with the `conc.na` option `"drop"`, so an
+#'   observation it adds at the start takes the values of an added
+#'   observation, as when the row is not given.  With a numeric `conc.na` the
+#'   row stays, and the method itself never drops it.  The method's
+#'   documentation says so (see [pknca_rd_impute_method()]).
 #' @returns `NULL`, invisibly
 #' @keywords Internal
 #' @noRd
-pknca_register_impute_method <- function(fun, description, details = NULL) {
+pknca_register_impute_method <- function(fun, description, details = NULL, drop_missing_start = FALSE) {
   checkmate::assert_string(fun, pattern = "^PKNCA_impute_method_")
   checkmate::assert_string(description, min.chars = 1)
   checkmate::assert_string(details, min.chars = 1, null.ok = TRUE)
+  checkmate::assert_flag(drop_missing_start)
   current <- get("impute_methods", envir = .PKNCAEnv)
-  current[[fun]] <- list(description = description, details = details)
+  current[[fun]] <- list(description = description, details = details, drop_missing_start = drop_missing_start)
   assign("impute_methods", current, envir = .PKNCAEnv)
   invisible(NULL)
 }
@@ -154,7 +164,7 @@ pknca_register_impute_method <- function(fun, description, details = NULL) {
 #' @export
 PKNCA_impute_method_start_conc0 <- function(conc, time, start=0, ..., options = list()) {
   ret <- data.frame(conc = conc, time = time)
-  mask_start <- time %in% start
+  mask_start <- ret$time %in% start
   if (any(mask_start)) {
     ret$conc[mask_start] <- 0
   } else {
@@ -174,15 +184,72 @@ pknca_register_impute_method(
       'imputation chain `"start_predose,start_conc0"` gives the same result as',
       '`"start_conc0"` alone.  To carry a predose measurement to the start time,',
       "use `start_predose` without `start_conc0`.  When no observation exists at",
-      "the start time, a new row with a concentration of 0 is added."
-    )
+      "the start time, a new row with a concentration of 0 is added.  A missing",
+      "concentration at the start time is set to 0 as well, so a urine or feces",
+      "collection at the start whose concentration is missing and whose volume",
+      "is known counts as an amount of zero, where the other start methods",
+      "leave the amount excreted missing."
+    ),
+  drop_missing_start = TRUE
 )
+
+#' Drop the rows at the start time that have a missing concentration
+#'
+#' A missing concentration is not a measurement, so an imputation that adds a
+#' start concentration when there is none treats such a row as absent.  (For a
+#' profile of collections, impute_conc_time() does not call this:  see
+#' `impute_profile_is_collections()`.)
+#'
+#' @param ret A data frame with columns `conc` and `time` (any other columns
+#'   are kept with their rows)
+#' @param start The start time of the interval
+#' @returns `ret` without its rows at `start` with a missing `conc`; `ret`
+#'   unchanged when `start` is missing, which is invalid and identifies no rows
+#' @keywords Internal
+#' @noRd
+impute_drop_missing_start <- function(ret, start) {
+  if (anyNA(start)) {
+    return(ret)
+  }
+  ret[!(ret$time %in% start & is.na(ret$conc)), , drop = FALSE]
+}
+
+#' Is a profile a set of urine or feces collections?
+#'
+#' A profile (one group in one interval) is a set of collections when any of
+#' its rows has a volume that is not missing.  A missing start concentration
+#' in a collection is an amount that is unknown, not absent, so the start
+#' methods never drop that row, whatever its own volume.  A profile with no
+#' volume, or with every volume missing, is not:  the plasma groups of an
+#' object that also holds urine groups give what they give alone.
+#'
+#' @param data The profile, a data frame with `conc`, `time`, and optionally
+#'   `volume`
+#' @returns `TRUE` or `FALSE`
+#' @keywords Internal
+#' @noRd
+impute_profile_is_collections <- function(data) {
+  "volume" %in% names(data) && any(!is.na(data$volume))
+}
+
+#' Does an imputation method treat a missing start concentration as absent?
+#'
+#' @param fun The function name of the method
+#' @returns The `drop_missing_start` of its registration (see
+#'   `pknca_register_impute_method()`), or `FALSE` for a method that is not
+#'   registered
+#' @keywords Internal
+#' @noRd
+impute_method_drops_missing_start <- function(fun) {
+  registered <- get("impute_methods", envir = .PKNCAEnv)[[fun]]
+  isTRUE(registered$drop_missing_start)
+}
 
 #' @eval pknca_rd_impute_method("PKNCA_impute_method_start_cmin")
 #' @export
 PKNCA_impute_method_start_cmin <- function(conc, time, start, end, ..., options = list()) {
   ret <- data.frame(conc = conc, time = time)
-  mask_start <- time %in% start
+  mask_start <- ret$time %in% start
   if (!any(mask_start)) {
     all_concs <- conc[start <= time & time <= end]
     if (!all(is.na(all_concs))) {
@@ -195,7 +262,8 @@ PKNCA_impute_method_start_cmin <- function(conc, time, start, end, ..., options 
 }
 pknca_register_impute_method(
   fun = "PKNCA_impute_method_start_cmin",
-  description = "Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data)"
+  description = "Add a new concentration of the minimum during the interval at the start time (usually used with multiple-dose data).",
+  drop_missing_start = TRUE
 )
 
 #' @eval pknca_rd_impute_method("PKNCA_impute_method_start_predose")
@@ -219,7 +287,7 @@ PKNCA_impute_method_start_predose <- function(conc, time, start, end, conc.group
     max_shift <- 0.05 * (shift_end - start)
   }
   # determine if the start time is already in the
-  mask_start <- time %in% start
+  mask_start <- ret$time %in% start
   if (!any(mask_start)) {
     # A measurement at an unknown time cannot be known to be predose, and a
     # missing concentration carries nothing to shift, so the predose sample is
@@ -243,7 +311,8 @@ pknca_register_impute_method(
     paste(
       "The most recent predose sample with a measured concentration is shifted;",
       "samples with a missing concentration are skipped."
-    )
+    ),
+  drop_missing_start = TRUE
 )
 
 #' @eval pknca_rd_impute_method("PKNCA_impute_method_start_predose_conc0")
@@ -278,7 +347,8 @@ pknca_register_impute_method(
       '`start_conc0` would replace it with 0.  The chain',
       '`"start_predose,start_conc0"` cannot express this, because `start_conc0`',
       "overwrites whatever `start_predose` shifted."
-    )
+    ),
+  drop_missing_start = TRUE
 )
 
 #' @eval pknca_rd_impute_method("PKNCA_impute_method_end_conc_drop")
@@ -317,6 +387,9 @@ pknca_register_impute_method(
 #'   \item{fun}{The function name (for example,
 #'   `"PKNCA_impute_method_start_conc0"`)}
 #'   \item{description}{The one-line description}
+#'   \item{drop_missing_start}{`TRUE` when the method treats a row at the
+#'   start of the interval with a missing concentration as absent:  the row is
+#'   dropped, with its other per-observation values, before the method runs}
 #'   \item{arguments}{A list column of data.frames with one row per argument
 #'   and the columns `argument` and `default` (the deparsed default, or `NA`
 #'   when there is none)}
@@ -336,6 +409,7 @@ pknca_impute_methods <- function() {
     method = methods[ord],
     fun = funs,
     description = vapply(X = registry[funs], FUN = "[[", "description", FUN.VALUE = "", USE.NAMES = FALSE),
+    drop_missing_start = vapply(X = funs, FUN = impute_method_drops_missing_start, FUN.VALUE = TRUE, USE.NAMES = FALSE),
     arguments = lapply(X = funs, FUN = pknca_function_arguments)
   )
 }

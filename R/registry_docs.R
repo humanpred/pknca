@@ -43,7 +43,26 @@ pknca_rd_impute_method <- function(fun) {
   if (is.null(registered)) {
     rlang::abort(paste("The imputation method is not registered:", fun), class = "pknca_error_impute_method_not_registered")
   }
-  paste(c("@describeIn PKNCA_impute_method", registered$description, registered$details), collapse = " ")
+  drop_missing_start_text <-
+    if (isTRUE(registered$drop_missing_start)) {
+      paste(
+        'In `pk.nca()` with the `conc.na` option `"drop"` (the default), a row',
+        "at the start time with a missing concentration is not a measurement:",
+        " it is dropped, with its other per-observation values, before this",
+        "method runs, so the result is the one for the data without that row.",
+        " In a profile of urine or feces collections (one with any volume that",
+        "is not missing; one row is enough), the row stays:  the amount in that",
+        "collection is",
+        "unknown, not absent.  This is decided for each profile, so a profile",
+        "whose volumes are all missing follows the first rule.  With a numeric",
+        "`conc.na`, that number is the missing concentration and the row stays.",
+        " A direct call of this method sees the row as it is given."
+      )
+    }
+  paste(
+    c("@describeIn PKNCA_impute_method", registered$description, registered$details, drop_missing_start_text),
+    collapse = " "
+  )
 }
 
 #' A documentation section with a markdown table
