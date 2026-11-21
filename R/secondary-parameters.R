@@ -739,11 +739,17 @@ interval_override_values <- function(groups, j, cols) {
 #
 # A reference is always the subject's own profile (decision 10), so the
 # profiles of other subjects are not candidates, unless `group_ref` names the
-# subject column itself.  A reference within the requesting row may differ only
-# in the columns that `group_ref` names (any column for the sample-type rule,
-# which names none):  the row covers every value of the columns the intervals
-# do not have, so a difference in another of them would take a profile that the
-# row's own group does not have from an unrelated group.
+# subject column itself.  Another subject's profile is one that differs in the
+# subject column and in another group column:  the subject column is the last
+# group column unless PKNCAconc() is told otherwise, so it can be what tells
+# the profiles of one subject apart (the sample type or the analyte), and a
+# profile differing in it alone is then the same subject's.  Under the
+# sample-type rule a spot-sample profile is the reference itself.  A reference
+# within the requesting row may differ only in the columns that `group_ref`
+# names (any column for the sample-type rule, which names none):  the row
+# covers every value of the columns the intervals do not have, so a difference
+# in another of them would take a profile that the row's own group does not
+# have from an unrelated group.
 #
 # The rule is mechanical, never a list of parameter names:  the finder applies
 # where the parameter measures an interval collection while everything it
@@ -837,10 +843,24 @@ find_secondary_reference_groups <- function(intervals, row, param, info, conc, g
       is_reference[k] <- TRUE
       next
     }
+    if (st_applicable && pool[i]) {
+      # A spot-sample profile is what an interval collection references
+      reasons[k] <- secondary_reference_itself_text("it has no collection volume")
+      is_reference[k] <- TRUE
+      next
+    }
     candidates <- setdiff(which(pool), i)
     other_subject <- FALSE
     if (own_subject_only) {
-      other_subject <- !(groups[[subject_col]][candidates] %in% groups[[subject_col]][i])
+      other_subject <-
+        vapply(
+          X = candidates,
+          FUN = function(j) {
+            differing <- group_differing_cols(groups, compare_cols, i, j)
+            subject_col %in% differing && length(differing) > 1
+          },
+          FUN.VALUE = TRUE
+        )
       candidates <- candidates[!other_subject]
     }
     candidates <-
@@ -851,12 +871,7 @@ find_secondary_reference_groups <- function(intervals, row, param, info, conc, g
           FUN.VALUE = TRUE
         )
       ]
-    if (length(candidates) == 0 && pool[i]) {
-      # A spot-sample profile is what an interval collection references
-      reasons[k] <- secondary_reference_itself_text("it has no collection volume")
-      is_reference[k] <- TRUE
-      next
-    } else if (length(candidates) == 0) {
+    if (length(candidates) == 0) {
       reasons[k] <-
         sprintf(
           "No reference profile is available for %s%s",
@@ -900,9 +915,22 @@ find_secondary_reference_groups <- function(intervals, row, param, info, conc, g
     }
     differing <- group_differing_cols(groups, compare_cols, i, nearest[1])
     inexpressible <- setdiff(differing, names(intervals))
+    unsteered <- setdiff(inexpressible, steered_cols)
+    if (length(unsteered) > 0 && length(inexpressible) == length(differing)) {
+      # The nearest profile would be within the requesting row, but it differs
+      # in a column that `group_ref` does not steer, so it is not this group's
+      # reference
+      reasons[k] <-
+        sprintf(
+          "No reference profile is available for %s:  the nearest (%s) also differs in %s, which `group_ref` does not name (give it in `ref_vary` if the reference may differ in it)",
+          name_value_text(groups[i, , drop = FALSE]),
+          name_value_text(groups[nearest[1], differing, drop = FALSE]),
+          paste(sprintf("'%s'", unsteered), collapse = ", ")
+        )
+      next
+    }
     if (length(inexpressible) > 0 &&
-        (length(inexpressible) < length(differing) || !row_has_sources ||
-           !all(inexpressible %in% steered_cols))) {
+        (length(inexpressible) < length(differing) || !row_has_sources)) {
       # The reference differs in a column the intervals pin as well, so it is
       # not within the requesting row, or the row does not calculate what the
       # reference supplies, or it differs in a column that is not steered; and

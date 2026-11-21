@@ -413,8 +413,10 @@ the generated intervals:
 
 * A secondary parameter whose reference is found automatically is judged group
   by group within an intervals row (@billdenney; PR number to add).  `group_ref`
-  and the automatic finder are new in this version, so no released result
-  changes.  A row covering every analyte gives each metabolite its
+  and the automatic finder are new in this version, so nothing changes against
+  PKNCA 0.12.1; against the development version, one value becomes `NA` (the
+  cross-subject renal clearance below), and the others described here were
+  `NA` or absent.  A row covering every analyte gives each metabolite its
   `mr.<base>` (or `ratio.<base>`) to the parent, and the parent's own result is
   `NA` with the reason "The profile is the reference itself (it matches
   `group_ref`)"; before, every result of such a row, the metabolites'
@@ -429,19 +431,29 @@ the generated intervals:
   that is created calculates what the reference supplies, so a row may now
   give results it did not request (such as `auclast` for the plasma reference
   of a renal clearance), as created references already did.  A reference is
-  always the subject's own profile:  another subject's profile is not a
-  candidate (unless `group_ref` names the subject column), so a subject
-  without the reference profile gets `NA` with "No reference profile is
-  available for ... (a reference is the subject's own profile)", and a spot
-  sample with no other profile of its own subject is the reference itself for
-  renal clearance ("it has no collection volume"), where another subject's
-  profile could make the reference ambiguous ("More than one reference profile
-  is equally close").  One value moves for this:  with `group_ref =
+  always the subject's own profile:  a profile that differs in the subject
+  column and in another group column is another subject's, and is not a
+  candidate (unless `group_ref` names the subject column).  A profile that
+  differs in the subject column alone is the subject's own:  the subject column
+  is the last group column unless `PKNCAconc(subject = )` says otherwise, so in
+  `conc~time|subject+PCSPEC` it is the sample type.  A subject without the
+  reference profile gets `NA` with "No reference profile is available for ...
+  (a reference is the subject's own profile)".  For renal clearance without
+  `group_ref`, a spot-sample profile is the reference itself ("it has no
+  collection volume").  The value that becomes `NA`:  with `group_ref =
   data.frame(PCSPEC = "plasma")`, intervals per subject, and a subject with
   serum but no plasma, that subject's renal clearance used another subject's
-  plasma and is now `NA`.  Results that had a value keep it, except that one;
-  only results that were `NA` gain one, and a result that stays `NA` may give
-  a different reason.  A group that is the reference itself raises no
+  plasma (`"Reference interval: PCSPEC=plasma, subject=1"`) and is now `NA`.  With
+  the subject as the only group column, nothing tells another subject from
+  another sample type:  a urine-only subject's reference would be a
+  plasma-only subject's profile, and it is `NA` with "Add 'subject' to the
+  intervals", as before.  A metabolite whose nearest parent within the row
+  differs in a column that `group_ref` does not name (another subject when the
+  subject column is the analyte, or another study) is `NA` with that reason, as
+  is a crossover's test profile in a row covering both periods, whose
+  reference is in the other period; `ref_vary = "period"` gives it its ratio.
+  Results that had a value keep it, except that one; only results that were
+  `NA` gain one, and a result that stays `NA` may give a different reason.  A group that is the reference itself raises no
   `pknca_warning_secondary_auto_reference` when other groups of its row have
   their results.  When no group of a row has a reference, each group
   gives its own reason, and the parameter's base is still calculated, as for

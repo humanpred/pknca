@@ -114,9 +114,13 @@ reference profile from the data:  a parameter measured on an interval
 collection whose inputs are spot samples (renal clearance) takes the nearest
 profile with no collection volume, and \code{group_ref} restricts -- or, for
 anything else, supplies -- the profiles that may be used.  A reference is
-always the subject's own profile:  another subject's profile is not used
-unless \code{group_ref} names the subject column.  The derived
-reference interval is created for the calculation only and is not added to
+always the subject's own profile:  a profile that differs in the subject
+column and in another group column is another subject's and is not used,
+unless \code{group_ref} names the subject column.  (The subject column is the
+last group column unless \code{\link[=PKNCAconc]{PKNCAconc()}} is told otherwise, so a profile
+differing in it alone is the subject's own.)  A profile with no collection
+volume is not given a renal clearance:  it is the reference itself.  The
+derived reference interval is created for the calculation only and is not added to
 the intervals in the result.  When more than one profile is equally close,
 the affected results are \code{NA} with the reason in the \code{exclude} column and a
 \code{pknca_warning_secondary_auto_reference} warning.

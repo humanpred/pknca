@@ -1967,17 +1967,28 @@ it has none; whether it is a reference itself; and whether the reference is
 within the requesting row.
 
 * **The subject's own profile.**  A reference is always the subject's own
-  profile (decisions 10 and 11), so the profiles of other subjects are not
-  candidates, unless `group_ref` names the subject column itself.  A subject
-  without the reference profile gets "No reference profile is available for
-  <group> (a reference is the subject's own profile)".  A row covering every
-  subject covers the other subjects' profiles too, so without this rule a
-  metabolite of a subject with no parent took another subject's parent as its
-  reference within the row.
+  profile (decisions 10 and 11).  A candidate that differs from the requesting
+  profile in the subject column and in another group column is another
+  subject's, and is not a candidate, unless `group_ref` names the subject
+  column itself.  A candidate that differs in the subject column alone is the
+  subject's own:  `PKNCAconc()` takes the last group column as the subject
+  column unless told otherwise, so in `conc~time|subject+PCSPEC` the subject
+  column is the sample type, and the plasma profile differs from the urine of
+  the same subject in it alone (main gives that renal clearance; keying the
+  rule on the subject column alone made it `NA`).  A subject without the
+  reference profile gets "No reference profile is available for <group> (a
+  reference is the subject's own profile)".  A row covering every subject
+  covers the other subjects' profiles too, so without this rule a metabolite
+  of a subject with no parent took another subject's parent as its reference
+  within the row.  With the subject as the only group column the data cannot
+  tell another subject from another sample type:  one subject plasma-only and
+  another urine-only give the urine subject "Add 'subject' to the intervals"
+  (the row does not calculate the plasma AUC), as before; with the subject in
+  the intervals, the other subject's plasma would be used, as on main.
 * **A reference itself.**  A group matching `group_ref`, or, for the
-  sample-type rule, a spot-sample profile with no other candidate of its own
-  subject, has no result:  `NA` with "The profile is the reference itself (it
-  matches `group_ref`)" or "(it has no collection volume)".
+  sample-type rule, a spot-sample profile (no collection volume), has no
+  result:  `NA` with "The profile is the reference itself (it matches
+  `group_ref`)" or "(it has no collection volume)".
 * **Within the row.**  A reference differing only in group columns that the
   intervals do not have is covered by the requesting row, which covers every
   value of those columns.  The row is its own reference when those columns are
@@ -1985,8 +1996,14 @@ within the requesting row.
   none) and it calculates what the reference supplies (requested or as a
   dependency, such as a metabolite ratio's base); otherwise the group keeps the
   "Add '<col>' to the intervals" reason, so that nothing the row did not
-  request is added to its results and no column the user did not steer
-  chooses the reference.  References within the row that differ in their
+  request is added to its results.  A nearest profile within the row that
+  differs in a column `group_ref` does not name is not the group's reference:
+  "No reference profile is available for <group>:  the nearest (<profile>)
+  also differs in '<col>', which `group_ref` does not name (give it in
+  `ref_vary` if the reference may differ in it)" (a metabolite of
+  another study's subject, or of another subject when the subject column is
+  the analyte; a crossover's oral profile in a row covering both periods,
+  which `ref_vary = "period"` resolves).  References within the row that differ in their
   overrides (the parent in plasma for the metabolite in serum and for the
   parent in serum) share the row's one `interval_id` and one announcement.  A same-interval renal clearance (the legacy path, §5.1) never
   reaches the finder, so this case is the metabolite ratio's and the ratio's.
@@ -2027,10 +2044,15 @@ sample type with plasma, or plasma and serum by subject; bioavailability and
 ratios in a crossover with and without `ref_vary`):  no value changes, 95
 results that were `NA` have a value, and one value becomes `NA`:  the renal
 clearance of a subject with serum but no plasma, steered to plasma with
-intervals per subject, which used another subject's plasma.  Further cases
-pinned by tests:  a subject with no parent in a row covering every subject
-and analyte (and with three group levels), a plasma-only subject among
-several, and references within one row that differ in their overrides.
+intervals per subject, which used another subject's plasma (main gives that
+number too).  Further cases pinned by tests:  a subject with no parent in a
+row covering every subject and analyte (and with three group levels, and with
+the analyte as the subject column), a plasma-only subject among several,
+references within one row that differ in their overrides, renal clearance
+grouped by the sample type alone or by `subject+PCSPEC` (main's numbers),
+the same with one subject's plasma removed (`NA`), two spot samples of one
+subject tying, and the crossover reason "Add 'period'", which adding the
+period resolves.
 
 ---
 
