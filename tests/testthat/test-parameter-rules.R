@@ -538,3 +538,61 @@ test_that("a ratio has its base's route, sample type, dosing, and sparse classif
   expect_equal(tbl["ratio.ceoi", "route"], "iv_infusion")
   expect_equal(tbl["mr.ceoi", "route"], "iv_infusion")
 })
+
+# Every result of the rule-built ratios (ratio.* and mr.*) of the metabolite
+# to the parent, with the parent's concentrations `conc_parent` and the
+# metabolite's `conc_metab`
+rule_ratio_results <- function(conc_parent, conc_metab) {
+  members <- grep("^(ratio|mr)[.]", names(get.interval.cols()), value = TRUE)
+  members <- members[vapply(members, function(x) identical(get.interval.cols()[[x]]$FUN, "pk.calc.ratio"), TRUE)]
+  # The ratios of the amount excreted need a urine collection
+  members <- setdiff(members, c("ratio.ae", "mr.ae"))
+  time <- c(0, 1, 2, 4, 8, 12, 24)
+  d_conc <-
+    rbind(
+      data.frame(analyte = "parent", time = time, conc = conc_parent),
+      data.frame(analyte = "M1", time = time, conc = conc_metab)
+    )
+  intervals <- data.frame(analyte = c("parent", "M1"), start = 0, end = 24)
+  for (member in members) {
+    intervals[[member]] <- c(FALSE, TRUE)
+  }
+  # Every member on one row mixes AUC bases, and the parent's row requests
+  # nothing of its own, which are warned about and expected here
+  d_res <-
+    suppressWarnings(suppressMessages({
+      o_data <-
+        PKNCAdata(
+          PKNCAconc(d_conc, conc ~ time | analyte),
+          PKNCAdose(data.frame(time = 0, dose = 100), dose ~ time),
+          intervals = intervals, group_ref = data.frame(analyte = "parent")
+        )
+      as.data.frame(pk.nca(o_data))
+    }))
+  d_res[d_res$PPTESTCD %in% members, ]
+}
+
+test_that("every rule-built ratio that is NA with a reference present says why", {
+  profile <- c(0, 6, 8, 6, 4, 2.5, 1)
+  cases <-
+    list(
+      zero_reference = list(parent = rep(0, 7), metab = profile),
+      missing_reference = list(parent = rep(NA_real_, 7), metab = profile),
+      missing_own = list(parent = profile, metab = rep(NA_real_, 7))
+    )
+  for (current in names(cases)) {
+    d_ratio <- rule_ratio_results(cases[[current]]$parent, cases[[current]]$metab)
+    # Every member is reported:  38 bases, each with a ratio and a metabolite
+    # ratio, less those of the amount excreted
+    expect_equal(length(unique(d_ratio$PPTESTCD)), 74, info = current)
+    expect_true(any(is.na(d_ratio$PPORRES)), info = current)
+    without_reason <- d_ratio$PPTESTCD[is.na(d_ratio$PPORRES) & is.na(d_ratio$exclude)]
+    expect_equal(without_reason, character(0), info = current)
+  }
+  # The zero reference gives its own reason
+  d_zero <- rule_ratio_results(rep(0, 7), profile)
+  expect_equal(
+    d_zero$exclude[d_zero$PPTESTCD %in% c("ratio.cmax", "mr.cmax", "mr.auclast")],
+    rep("The reference is zero or negative", 3)
+  )
+})

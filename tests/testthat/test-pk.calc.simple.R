@@ -1106,7 +1106,7 @@ test_that("every registered parameter gives a reason with each NA in pk.nca()", 
   not_exercised <- c(
     "ae", "fe", "volpk", "ertlst", "ermax", "ertmax", "erint", "erlst",
     grep("^clr[.]", parameters, value = TRUE),
-    grep("^(f|ratio)[.]", parameters, value = TRUE),
+    grep("^(f|ratio|mr)[.]", parameters, value = TRUE),
     "time.above", "time_above"
   )
   expect_true(all(not_exercised %in% parameters))

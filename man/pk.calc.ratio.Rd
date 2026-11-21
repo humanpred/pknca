@@ -14,6 +14,9 @@ pk.calc.ratio(test, reference)
 \value{
 \code{test/reference}, or \code{NA} where the reference is missing or is not
 above zero (a ratio to a zero or negative reference is not interpretable).
+A single \code{NA} for a reference that is not above zero has the reason "The
+reference is zero or negative" in its "exclude" attribute; a missing
+reference carries its own reason from its calculation.
 }
 \description{
 Calculate the ratio of a parameter between two intervals

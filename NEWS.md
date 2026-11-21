@@ -431,6 +431,12 @@ the generated intervals:
     PKNCA was loaded.  The message of those errors, which lists the names that
     are not allowed, now ends with that reason for each such name.
 
+* A ratio (`ratio.*`, and the metabolite ratios `mr.*` below) whose reference
+  is zero or negative is `NA` with the reason "The reference is zero or
+  negative" in the `exclude` column, where it was `NA` with none
+  (@billdenney; PR number to add).  `pk.calc.ratio()` gives that reason for a
+  single value.  A missing reference carries its own reason, as before.
+
 * A metabolite to parent ratio is available as `mr.<base>` for the same 38
   bases as `ratio.<base>` (@billdenney; PR number to add).  Its reference is the
   same interval of the parent analyte, named with `group_ref` in `PKNCAdata()`
