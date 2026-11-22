@@ -52,6 +52,67 @@ test_that("pk.calc.clr", {
                info="CLr is calculated correctly with both vectors (but that is not the likely calculation method)")
 })
 
+test_that("pk.calc.clr() with a zero or negative AUC is NA with the reason", {
+  expect_equal(pk.calc.clr(ae = 10, auc = 0), structure(NA_real_, exclude = "AUC is zero or negative"))
+  expect_equal(pk.calc.clr(ae = 10, auc = -1), structure(NA_real_, exclude = "AUC is zero or negative"))
+  expect_equal(pk.calc.clr(ae = c(4, 6), auc = 0), structure(NA_real_, exclude = "AUC is zero or negative"))
+  # Missing inputs are NA without this reason
+  expect_equal(pk.calc.clr(ae = 10, auc = NA_real_), NA_real_)
+  expect_equal(pk.calc.clr(ae = NA_real_, auc = 5), NA_real_)
+  # A longer result has no reason, which would also describe its other values
+  expect_equal(pk.calc.clr(ae = c(1, 2), auc = c(0, 10)), c(NA, 0.3))
+  expect_equal(pk.calc.clr(ae = c(1, 2), auc = c(-1, 10)), c(NA, 0.3))
+})
+
+# Every registered renal clearance (those calculated by pk.calc.clr()) of a
+# urine collection of 350 over 0 to 24 hours, with the plasma concentrations
+# `conc_plasma`
+clr_registry_results <- function(conc_plasma) {
+  members <- names(get.interval.cols())
+  members <- members[vapply(members, function(x) identical(get.interval.cols()[[x]]$FUN, "pk.calc.clr"), TRUE)]
+  d_conc <-
+    rbind(
+      data.frame(PCSPEC = "plasma", time = c(0, 1, 2, 4, 8, 12, 24), conc = conc_plasma, vol = NA_real_),
+      data.frame(PCSPEC = "urine", time = c(0, 24), conc = c(0, 350), vol = 1)
+    )
+  intervals <- data.frame(PCSPEC = c("plasma", "urine"), start = 0, end = 24, ae = c(FALSE, TRUE))
+  for (member in members) {
+    intervals[[member]] <- c(FALSE, TRUE)
+  }
+  # Every member in one interval mixes AUC bases and includes the deprecated
+  # names, which PKNCAdata() warns about
+  o_data <-
+    suppressWarnings(PKNCAdata(
+      PKNCAconc(d_conc, conc ~ time | PCSPEC, volume = "vol"),
+      PKNCAdose(data.frame(time = 0, dose = 100), dose ~ time),
+      intervals = intervals
+    ))
+  d_res <- as.data.frame(suppressWarnings(suppressMessages(pk.nca(o_data))))
+  d_res <- d_res[d_res$PPTESTCD %in% members, ]
+  list(members = members, results = d_res)
+}
+
+test_that("every registered renal clearance with a zero AUC is NA with the reason", {
+  zero <- clr_registry_results(rep(0, 7))
+  expect_setequal(
+    zero$members,
+    c(
+      "clr.last", "clr.all", "clr.inf.obs", "clr.inf.pred", "clr.obs", "clr.pred",
+      "clr.int.last", "clr.int.all", "clr.int.inf.obs", "clr.int.inf.pred"
+    )
+  )
+  expect_setequal(zero$results$PPTESTCD, zero$members)
+  expect_equal(zero$results$PPORRES, rep(NA_real_, length(zero$members)))
+  expect_equal(zero$results$exclude, rep("AUC is zero or negative", length(zero$members)))
+  # A positive AUC is unchanged:  350 over the plasma AUC
+  conc_positive <- c(0, 6, 8, 6, 4, 2.5, 1)
+  positive <- clr_registry_results(conc_positive)
+  expect_equal(nrow(positive$results), length(positive$members))
+  expect_true(all(is.na(positive$results$exclude)))
+  clr_last <- positive$results$PPORRES[positive$results$PPTESTCD == "clr.last"]
+  expect_equal(clr_last, 350/as.numeric(pk.calc.auc.last(conc = conc_positive, time = c(0, 1, 2, 4, 8, 12, 24))))
+})
+
 test_that("pk.calc.fe", {
   expect_equal(pk.calc.fe(1, 10),
                0.1,

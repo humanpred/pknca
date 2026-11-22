@@ -26,6 +26,15 @@ the dosing including dose amount and route.
   missing both its concentration and its volume, or a known concentration
   with a missing volume, leaves the rates as they were.
 
+* Renal clearance with a zero or negative AUC is `NA` with the reason "AUC is
+  zero or negative", as total clearance (`cl.*`) is (@billdenney).  It was
+  `Inf` for a zero AUC and a negative clearance for a negative AUC, with no
+  reason.  This moves `pk.calc.clr()` and every renal clearance parameter:
+  `clr.last`, `clr.all`, `clr.inf.obs`, `clr.inf.pred`, `clr.obs`, `clr.pred`,
+  `clr.int.last`, `clr.int.all`, `clr.int.inf.obs`, and `clr.int.inf.pred`.
+  A missing amount excreted or AUC gives `NA` as before, and a result longer
+  than one has no reason attribute, as for the other vectorised functions.
+
 * A calculation function that returns `NA` because of missing or unusable data
   now returns it with an `exclude` attribute that gives the reason, as the AUC
   functions already did, so that `pk.nca()` reports why (@billdenney, #727).

@@ -69,7 +69,10 @@ add.interval.col("ae",
 #'
 #' @param ae The amount excreted in urine (as a numeric scalar or vector)
 #' @param auc The area under the curve (as a numeric scalar or vector)
-#' @returns The renal clearance as a number
+#' @returns The renal clearance as a number.  A zero or negative `auc` gives
+#'   `NA`, as for [pk.calc.cl()]; a result of length one has the reason, "AUC
+#'   is zero or negative", in its "exclude" attribute, which [pk.nca()]
+#'   reports.
 #' @details The units for the `ae` and `auc` should match such that `ae/auc` has
 #'   units of volume/time.
 #' @seealso [pk.calc.ae()], [pk.calc.fe()]
@@ -79,7 +82,8 @@ pk.calc.clr <- function(ae, auc) {
   if (length(ae) == 0) {
     return(NA_real_)
   }
-  sum(ae)/auc
+  ret <- sum(ae)/auc
+  na_with_reason(ret, mask = !is.na(auc) & auc <= 0, reason = "AUC is zero or negative")
 }
 
 pknca_concept(pk.calc.clr) <- "renal_clearance"

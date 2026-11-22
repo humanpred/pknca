@@ -12,7 +12,10 @@ pk.calc.clr(ae, auc)
 \item{auc}{The area under the curve (as a numeric scalar or vector)}
 }
 \value{
-The renal clearance as a number
+The renal clearance as a number.  A zero or negative \code{auc} gives
+\code{NA}, as for \code{\link[=pk.calc.cl]{pk.calc.cl()}}; a result of length one has the reason, "AUC
+is zero or negative", in its "exclude" attribute, which \code{\link[=pk.nca]{pk.nca()}}
+reports.
 }
 \description{
 Calculate renal clearance
