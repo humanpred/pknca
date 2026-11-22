@@ -56,8 +56,9 @@
 #'   calculated within one interval names no reference and keeps the row the
 #'   table gives it, as in PKNCA 0.12.1.  The two can therefore show different
 #'   units when only one side is converted:  with the AUC alone converted from
-#'   "hr*ng/mL" to "hr*ug/mL", a linked `clr.last` is standardized to
-#'   "mg/(hr*ug/mL)", while one within one interval stays in "mg/(hr*ng/mL)".
+#'   `"hr*ng/mL"` to `"hr*ug/mL"`, a linked `clr.last` is standardized to
+#'   `"mg/(hr*ug/mL)"`, while one within one interval stays in
+#'   `"mg/(hr*ng/mL)"`.
 #'
 #'   A metabolite ratio (`mr.<parameter>`) is a ratio of masses, `"g/g"`, or of
 #'   amounts of substance, `"mol/mol"`, as its parameter's units say.  The kind

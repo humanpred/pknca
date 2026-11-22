@@ -688,29 +688,30 @@ the generated intervals:
     cases below are instances of that rule:
     - `clr.last` with a table per sample type and the urine's time in minutes
       (urine 350 mg over 0 to 24 hours, plasma AUC 144 hr*ng/mL, conversion
-      to "L/hr"):  `PPORRESU` "mg/(min*ng/mL)" becomes "mg/(hr*ng/mL)" and
+      to "L/hr"):  `PPORRESU` `"mg/(min*ng/mL)"` becomes `"mg/(hr*ng/mL)"` and
       `PPSTRES` 145833.3 becomes 2430.556 L/hr.  With hours on both rows it
       stays 2430.556 L/hr.
     - `f.last` with a table per period, hours in the IV period and minutes in
       the oral one:  `PPORRESU` "fraction" becomes
-      "((min*ng/mL)/mg)/((hr*ng/mL)/mg)", and `PPSTRES` is 0.00624 where it
+      `"((min*ng/mL)/mg)/((hr*ng/mL)/mg)"`, and `PPSTRES` is 0.00624 where it
       was not given (`PPORRES` is 0.3744 in both).
     - `ratio.auclast` and `mr.auclast` between two analytes with time in hours
-      and minutes:  `PPORRESU` "fraction" becomes "(min*ng/mL)/(hr*ng/mL)" and
+      and minutes:  `PPORRESU` "fraction" becomes `"(min*ng/mL)/(hr*ng/mL)"` and
       `PPSTRES` 0.4 becomes 0.00667.
     - `clr.last` with the amount excreted converted from `mg` to `ug` in both
       rows of a table per sample type, or in one table without group columns:
-      `PPSTRES` 2.430556 "mg/(hr*ng/mL)" becomes 2430.556 `"ug/(hr*ng/mL)"`.
+      `PPSTRES` 2.430556 `"mg/(hr*ng/mL)"` becomes 2430.556 `"ug/(hr*ng/mL)"`.
       The two layouts give the same units:  in one table, a result linked to
       a reference interval is composed from its two sides as in a table per
       group, while a renal clearance within one interval keeps the row the
       table gives it, as in 0.12.1.
-    - `clr.last` with the AUC alone converted from "hr*ng/mL" to "hr*ug/mL"
-      (the amount excreted not converted), in a table per sample type or in
-      one table without group columns:  `PPSTRES` 2.430556 "mg/(hr*ng/mL)"
-      becomes 2430.556 "mg/(hr*ug/mL)".  A renal clearance within one interval
-      keeps the table's row and stays 2.430556 "mg/(hr*ng/mL)", so with only
-      one side converted the two show different units.
+    - `clr.last` with the AUC alone converted from `"hr*ng/mL"` to
+      `"hr*ug/mL"` (the amount excreted not converted), in a table per sample
+      type or in one table without group columns:  `PPSTRES` 2.430556
+      `"mg/(hr*ng/mL)"` becomes 2430.556 `"mg/(hr*ug/mL)"`.  A renal clearance
+      within one interval keeps the table's row and stays 2.430556
+      `"mg/(hr*ng/mL)"`, so with only one side converted the two show
+      different units.
     - `clr.last` with the urine in `ug/L` and the plasma in `ng/mL`:  `PPORRESU`
       `"mg/(hr*ug/L)"` becomes `"mg/(hr*ng/mL)"`, since the AUC is the plasma's.
     - `ratio.cmax` with the metabolite in `ug/mL`, the parent in `ng/mL`, and
