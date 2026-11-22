@@ -82,6 +82,15 @@ A conversion on a secondary parameter's own row of a given table (a renal
 clearance to "L/hr", or "fraction" to "\%") is applied to the composed
 units.
 
+In a table without group columns, a secondary result linked to a
+reference interval is composed from its two sides in the same way, so one
+table and a table per group give the same units.  A renal clearance
+calculated within one interval names no reference and keeps the row the
+table gives it, as in PKNCA 0.12.1.  The two can therefore show different
+units when only one side is converted:  with the AUC alone converted from
+"hr\emph{ng/mL" to "hr}ug/mL", a linked \code{clr.last} is standardized to
+"mg/(hr\emph{ug/mL)", while one within one interval stays in "mg/(hr}ng/mL)".
+
 A metabolite ratio (\verb{mr.<parameter>}) is a ratio of masses, \code{"g/g"}, or of
 amounts of substance, \code{"mol/mol"}, as its parameter's units say.  The kind
 of amount is read from the numerator of the unit (what it measures):  a

@@ -1244,6 +1244,16 @@ test_that("the same conversions give the same units in one table and in a table 
   expect_equal(clr_single$PPSTRES, 350/144 * 1000)
   expect_equal(clr_single$PPSTRESU, "ug/(hr*ng/mL)")
   expect_equal(clr_layout_results(units_per_group(units_clr, "PCSPEC", c("plasma", "urine"))), clr_single)
+  # Renal clearance with the AUC alone converted, to hr*ug/mL
+  units_clr_auc <-
+    pknca_units_table(
+      concu = "ng/mL", amountu = "mg", timeu = "hr",
+      conversions = data.frame(PPORRESU = "hr*ng/mL", PPSTRESU = "hr*ug/mL")
+    )
+  clr_auc_single <- clr_layout_results(units_clr_auc)
+  expect_equal(clr_auc_single$PPSTRES, 350/0.144)
+  expect_equal(clr_auc_single$PPSTRESU, "mg/(hr*ug/mL)")
+  expect_equal(clr_layout_results(units_per_group(units_clr_auc, "PCSPEC", c("plasma", "urine"))), clr_auc_single)
   # Bioavailability with the doses converted from mg to ug
   units_f <-
     pknca_units_table(
@@ -1284,4 +1294,19 @@ test_that("a table without group columns composes only the results that name a r
   expect_equal(row_ref$conversion_factor, 1000)
   row_own <- composed[composed$PPTESTCD == "clr.last" & is.na(composed$PCSPEC_ref), ]
   expect_equal(row_own$PPSTRESU, "mg/(hr*ng/mL)")
+  # With the AUC alone converted, a clearance within one interval keeps the
+  # table's unconverted row while a linked one is composed from its two sides,
+  # so the two show different units
+  units_clr_auc <-
+    pknca_units_table(
+      concu = "ng/mL", amountu = "mg", timeu = "hr",
+      conversions = data.frame(PPORRESU = "hr*ng/mL", PPSTRESU = "hr*ug/mL")
+    )
+  composed_auc <- pknca_units_table_compose_single(units_clr_auc, result_ref)
+  row_auc_own <- composed_auc[composed_auc$PPTESTCD == "clr.last" & is.na(composed_auc$PCSPEC_ref), ]
+  expect_equal(row_auc_own$PPSTRESU, "mg/(hr*ng/mL)")
+  expect_equal(row_auc_own$conversion_factor, 1)
+  row_auc_ref <- composed_auc[composed_auc$PPTESTCD == "clr.last" & composed_auc$PCSPEC_ref %in% "plasma", ]
+  expect_equal(row_auc_ref$PPSTRESU, "mg/(hr*ug/mL)")
+  expect_equal(row_auc_ref$conversion_factor, 1000)
 })

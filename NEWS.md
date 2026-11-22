@@ -683,7 +683,9 @@ the generated intervals:
     columns of any type (integer, double, factor, or character) are matched.
     Before, such a result took the units row of its own group alone, so two
     groups in different units gave a value in the wrong units.  Against the
-    development version:
+    development version, the standardized value of a linked result moves
+    whenever one side of its quotient is converted and the other is not; the
+    cases below are instances of that rule:
     - `clr.last` with a table per sample type and the urine's time in minutes
       (urine 350 mg over 0 to 24 hours, plasma AUC 144 hr*ng/mL, conversion
       to "L/hr"):  `PPORRESU` "mg/(min*ng/mL)" becomes "mg/(hr*ng/mL)" and
@@ -702,7 +704,13 @@ the generated intervals:
       The two layouts give the same units:  in one table, a result linked to
       a reference interval is composed from its two sides as in a table per
       group, while a renal clearance within one interval keeps the row the
-      table gives it, as before.
+      table gives it, as in 0.12.1.
+    - `clr.last` with the AUC alone converted from "hr*ng/mL" to "hr*ug/mL"
+      (the amount excreted not converted), in a table per sample type or in
+      one table without group columns:  `PPSTRES` 2.430556 "mg/(hr*ng/mL)"
+      becomes 2430.556 "mg/(hr*ug/mL)".  A renal clearance within one interval
+      keeps the table's row and stays 2.430556 "mg/(hr*ng/mL)", so with only
+      one side converted the two show different units.
     - `clr.last` with the urine in `ug/L` and the plasma in `ng/mL`:  `PPORRESU`
       `"mg/(hr*ug/L)"` becomes `"mg/(hr*ng/mL)"`, since the AUC is the plasma's.
     - `ratio.cmax` with the metabolite in `ug/mL`, the parent in `ng/mL`, and
