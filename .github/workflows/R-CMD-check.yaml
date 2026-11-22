@@ -28,12 +28,14 @@ jobs:
           # dependencies are installed with the suggested packages that the
           # tests use.  The current Matrix and MASS need R 4.4, and pak installs
           # only the newest release of a dependency, so their last releases
-          # that support R 4.1 are pinned for lme4 and lmerTest.  ggtibble
+          # that support R 4.1 are pinned for lme4 and lmerTest.  For the same
+          # reason S7 is pinned to 0.2.2: lmerTest imports ggplot2, which
+          # imports S7, and S7 from 1.0.0 needs R 4.2.  ggtibble
           # (R >= 4.3) is used only by a vignette, so R CMD check runs with
           # _R_CHECK_FORCE_SUGGESTS_ off and without the vignettes.
           - {os: ubuntu-latest,   r: '4.1',
              deps: '"hard"',
-             extra: 'any::rcmdcheck, any::testthat, any::units, any::emmeans, any::lme4, any::lmerTest, cran::Matrix@1.6-5, cran::MASS@7.3-60.0.1, humanpred/cdiscdata',
+             extra: 'any::rcmdcheck, any::testthat, any::units, any::emmeans, any::lme4, any::lmerTest, cran::Matrix@1.6-5, cran::MASS@7.3-60.0.1, cran::S7@0.2.2, humanpred/cdiscdata',
              force-suggests: 'false',
              check-args: 'c("--no-manual", "--as-cran", "--ignore-vignettes")',
              build-args: 'c("--no-manual", "--no-build-vignettes")'}
