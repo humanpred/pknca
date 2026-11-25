@@ -531,15 +531,37 @@ remap_sparse_sources <- function(arglist) {
 # per-observation values (one row per element of `conc`; see
 # impute_obs_values()), which follow their observation through each step and
 # are returned as columns after `conc` and `time`; `obs_fill` gives the value
-# of each column for an observation that imputation adds.
+# of each column for an observation that imputation adds.  With
+# `drop_missing_start` TRUE (the `conc.na` option is "drop"), the rows at the
+# start time with a missing concentration are dropped, with their values,
+# right before the first PKNCA start method that registers
+# `drop_missing_start` (see pknca_register_impute_method()):  the methods
+# before it in the chain (a user's method, end_conc_drop) receive them, and
+# those after it do not.  A profile of urine or feces collections keeps them;
+# one row with a volume makes a profile one of collections
+# (impute_profile_is_collections()).
 impute_conc_time <- function(impute_funs, conc, time, start, end,
                              conc.group, time.group, options,
+                             drop_missing_start,
                              obs_values = NULL, obs_fill = list()) {
   impute_data <- data.frame(conc=conc, time=time)
   if (!is.null(obs_values)) {
     impute_data <- cbind(impute_data, obs_values)
   }
+  # Decided once, on the profile as given:  a row that a method adds has the
+  # fill volume, which would make any profile look like one of collections
+  drop_missing_start <- drop_missing_start && !impute_profile_is_collections(impute_data)
   for (current_fun_nm in impute_funs) {
+    if (drop_missing_start && impute_method_drops_missing_start(current_fun_nm)) {
+      # The method treats a missing start concentration as no row, so the
+      # row's per-observation values leave with it, and the lloq of an added
+      # observation is the one of the rows left, as when it is not given
+      kept <- impute_drop_missing_start(impute_data, start = start)
+      if (nrow(kept) < nrow(impute_data) && "lloq" %in% names(obs_fill)) {
+        obs_fill$lloq <- impute_fill_lloq(kept$lloq)
+      }
+      impute_data <- kept
+    }
     impute_args <- list(conc = impute_data$conc, time = impute_data$time)
     impute_args$start <- start
     impute_args$end <- end
@@ -576,7 +598,7 @@ impute_obs_values <- function(time, volume, duration.conc, include_half.life,
     list(
       volume = 0, duration.conc = NA_real_,
       include_half.life = NA, exclude_half.life = NA,
-      lloq = if (length(unique(lloq)) == 1) lloq[1] else NA_real_
+      lloq = impute_fill_lloq(lloq)
     )
   per_obs <- vapply(X = values, FUN = length, FUN.VALUE = 1L) == length(time)
   if (!any(per_obs)) {
@@ -586,6 +608,12 @@ impute_obs_values <- function(time, volume, duration.conc, include_half.life,
     values = as.data.frame(values[per_obs], optional = TRUE),
     fill = fill[per_obs]
   )
+}
+
+# The lloq of an observation that imputation adds:  the profile's lloq when it
+# is constant, otherwise missing
+impute_fill_lloq <- function(lloq) {
+  if (length(unique(lloq)) == 1) lloq[1] else NA_real_
 }
 
 # Align the per-observation columns of `before` (a data.frame with `conc`,
@@ -1081,6 +1109,10 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
   impute_funs <- PKNCA_impute_fun_list(impute_method)
   stopifnot(length(impute_funs) == 1)
   if (!all(is.na(impute_funs[[1]]))) {
+    # PKNCA's start methods treat a missing start concentration as no row only
+    # when missing concentrations are dropped.  A numeric conc.na is the value
+    # of a missing concentration, so the row stays and the methods see it.
+    drop_missing_start <- PKNCA.choose.option(name = "conc.na", options = options) %in% "drop"
     # Imputation may add or drop observations (at the start or end of the
     # interval), and every per-observation value follows its observation
     obs <-
@@ -1094,6 +1126,7 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
         impute_funs=impute_funs[[1]], conc=conc, time=time,
         start=interval$start[1], end=interval$end[1],
         conc.group=conc.group, time.group=time.group, options=options,
+        drop_missing_start = drop_missing_start,
         obs_values = obs$values, obs_fill = obs$fill
       )
     if ("volume" %in% names(impute_data)) volume <- impute_data$volume
@@ -1108,8 +1141,24 @@ pk.nca.interval <- function(conc, time, volume, duration.conc,
         impute_conc_time(
           impute_funs=impute_funs[[1]], conc=conc.sparse, time=time.sparse,
           start=interval$start[1], end=interval$end[1],
-          conc.group=conc.sparse.group, time.group=time.sparse.group, options=options
+          conc.group=conc.sparse.group, time.group=time.sparse.group, options=options,
+          drop_missing_start = drop_missing_start
         )
+      if (drop_missing_start && any(vapply(X = impute_funs[[1]], FUN = impute_method_drops_missing_start, FUN.VALUE = TRUE))) {
+        # A start method in the chain dropped the missing samples at the start
+        # time (impute_conc_time()), so the imputed samples are compared
+        # (sparse_impute_zeros()) with the samples without them.  The sparse
+        # estimators skip missing samples (as_sparse_pk(), whatever conc.na
+        # is), so this changes no result that does not impute at the start.
+        sparse_data <-
+          impute_drop_missing_start(
+            data.frame(conc = conc.sparse, time = time.sparse, subject = subject),
+            start = interval$start[1]
+          )
+        conc.sparse <- sparse_data$conc
+        time.sparse <- sparse_data$time
+        subject <- sparse_data$subject
+      }
       # An imputed zero at a time without samples is known and enters the
       # sparse estimators with a missing subject.  Any other imputed value has
       # no subject to attribute it to and its own uncertainty, so the

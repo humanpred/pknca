@@ -1485,6 +1485,91 @@ the generated intervals:
   measured concentration is shifted instead, as long as it is within
   `max_shift` (#361).
 
+* With the `conc.na` option `"drop"` (the default), the `start_predose_conc0`,
+  `start_predose`, `start_cmin`, and `start_conc0` imputation methods treat a
+  row at the start time with a missing concentration as no measurement, as they
+  treat no row (@billdenney, #730).  They tested only whether a row
+  existed at the start time, so a missing concentration there stopped the
+  imputation and was then dropped.  Each result is now the one for the data
+  without that row.  With a numeric `conc.na`, that number is the missing
+  concentration, the row stays, and every result is as before.  A profile with
+  any volume that is not missing is a set of urine or feces collections, so one
+  row with a volume is enough:  such a profile keeps a missing start row, and
+  the amount excreted stays missing.  This is decided for each profile, so the
+  plasma groups of data that also holds urine are treated as they are alone.
+  The row is dropped right before the first of these methods in an imputation
+  chain:  a user's own method or `end_conc_drop` before it receives the row
+  unchanged, and one after it receives the data without it, on the dense and the
+  sparse paths.  The methods called directly see the row as it is given.  The
+  results that change, at `conc.na = "drop"`:
+  * Every result that depends on the start concentration, or on an AUC that
+    starts there, can change with `start_predose_conc0`, `start_cmin`,
+    `"start_predose,start_cmin"`, and `start_predose` (when it has a predose
+    sample to shift).  Most were `NA` ("Requesting an AUC range starting (0)
+    before the first measurement (0.25) is not allowed") and are now
+    calculated.  For a profile sampled from 0.25 h with a missing
+    concentration at 0, AUClast is 1836.34 with `start_predose_conc0`, 1841.34
+    with `start_cmin` and `"start_predose,start_cmin"` (the start is Cmin,
+    40), and 1836.96 with `start_predose` shifting a predose concentration of
+    5.  A comparison of every parameter on single-dose (0 to 24 and 0 to
+    infinity) and multiple-dose profiles found these to change, and no others:
+    * AUCs and AUMCs:  `auclast`, `aucall`, `aucinf.obs`, `aucinf.pred`,
+      `aumclast`, `aumcall`, `aumcinf.obs`, `aumcinf.pred`, and their `.dn`
+      forms; `aucpext.obs`, `aucpext.pred`, `aucpext.inf.obs`,
+      `aucpext.inf.pred`; `aucabove.predose.all` and `aucabove.trough.all`.
+    * IV AUCs:  `aucivlast`, `aucivall`, `aucivinf.obs`, `aucivinf.pred`,
+      `aumcivlast`, `aumcivall`, `aumcivinf.obs`, `aumcivinf.pred`,
+      `aucivpbext.last`, `aucivpbext.all`, `aucivpbext.inf.obs`,
+      `aucivpbext.inf.pred`, `aucivpbext.int.last`, and `aucivpbext.int.all`
+      (and the historical names `aucivpbextlast`, `aucivpbextall`,
+      `aucivpbextinf.obs`, `aucivpbextinf.pred`, `aucivpbextint.last`, and
+      `aucivpbextint.all`).
+    * Average concentrations:  `cav`, `cav.last`, `cav.all`, `cav.iv.last`,
+      `cav.iv.all`, `cav.dn`, and `cav.last.dn`; and `deg.fluc`.
+    * Clearance, elimination rate, mean residence time, effective half-life,
+      and volumes:  every `.last`, `.all`, `.obs`, `.pred`, `.inf.obs`, and
+      `.inf.pred` form, with and without `.iv`, of `cl`, `kel`, `mrt`,
+      `thalf.eff`, `vss`, and `vz`, and the multiple-dose `mrt.md.*`,
+      `mrt.ivmd.*`, `vss.md.*`, and `vss.ivmd.*`.
+    * Concentrations and times at the start:  `cstart` and `ceoi` (the
+      imputed start concentration); `c0` (a shifted predose concentration in
+      place of a back-extrapolated one); `cmin`, `cmin.dn`, and `swing` (an
+      imputed 0 or a shifted predose concentration below the others);
+      `tfirst` and `tmin` (the start time); and `tlag`.
+    * Counts:  `count.conc` and `count.conc.measured` (and the historical
+      names `count_conc` and `count_conc_measured`) include the imputed start
+      observation (`count.conc.measured` only when it is not 0).
+  * The row's other values (duration, half-life inclusion and exclusion, and
+    `lloq`) go with it, so the imputed start concentration has the values of
+    an added observation.
+  * With sparse data, missing samples at the start time are no samples, with
+    any imputation.  When every sample there is missing,
+    `start_predose_conc0` and `start_conc0` add a known zero and give the
+    sparse AUCs, and `start_cmin` is refused (`pknca_error_sparse_impute`),
+    each as without those rows (`start_predose_conc0` and `start_cmin` gave
+    missing AUCs, and `start_conc0` was refused).  `start_conc0` with a
+    missing sample beside measured ones at the start was refused and now
+    gives the result without the missing sample.  The sparse estimators skip
+    missing samples whatever `conc.na` is, as before.
+  * `start_conc0` already set a missing start concentration to 0.  It now
+    follows the same rule:  the row is dropped and the 0 is added with the
+    values of an added observation, so a half-life flag on the missing row no
+    longer reaches it.  A measured start concentration, and a missing one in a
+    profile of collections, are still replaced with 0 in place, so a collection
+    with a known volume counts as an amount of zero.
+  * `pknca_impute_methods()` gains a `drop_missing_start` column saying which
+    methods treat a missing start concentration as absent.
+
+* The amount excreted (`ae`), the excretion rates (`ertlst`, `ermax`,
+  `ertmax`, `erlst`), and the parameters calculated from them (`fe`, `erint`,
+  `clr.*`) add "At least one concentration associated with a collection volume
+  was missing" to their exclusion when a collection has a volume and no
+  concentration, beside the existing "1 of 4 concentrations are missing"
+  (@billdenney, #730).  Direct calls of `pk.calc.ae()`,
+  `pk.calc.ertlst()`, `pk.calc.ermax()`, `pk.calc.ertmax()`, and
+  `pk.calc.erlst()` return the longer exclusion text as well.  No value
+  changes.
+
 * Business functions (used for calculations of means, etc.) now return NA_real_
   for empty inputs rather than giving an error (#559).
 
