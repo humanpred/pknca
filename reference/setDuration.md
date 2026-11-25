@@ -35,7 +35,9 @@ setDuration(object, duration, rate, dose, ...)
 
 - dose:
 
-  (for PKNCAdose objects only) The dose amount
+  (for PKNCAdose objects only) The name of the dose column (the default,
+  from the formula), or the dose amounts (a value, or one per row); used
+  with `rate`
 
 ## Value
 

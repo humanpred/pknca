@@ -28,7 +28,8 @@ pk.calc.clast.obs(conc, time, check = TRUE)
 
 ## Value
 
-The last observed concentration above the LOQ
+The last observed concentration above the LOQ, or `NA` with the reason
+in its "exclude" attribute when all concentrations are missing
 
 ## See also
 

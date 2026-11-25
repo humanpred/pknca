@@ -75,7 +75,7 @@ as.data.frame(excluded_result)
 #>  3       1     0   Inf tmax                  0     Imputation: start_pr… NA     
 #>  4       1     0   Inf tlast                 4     Imputation: start_pr… NA     
 #>  5       1     0   Inf clast.obs             1     Imputation: start_pr… NA     
-#>  6       1     0   Inf tlag                 NA     Imputation: start_pr… NA     
+#>  6       1     0   Inf tlag                 NA     Imputation: start_pr… Concen…
 #>  7       1     0   Inf count.conc            5     Imputation: start_pr… NA     
 #>  8       1     0   Inf lambda.z              0.549 Imputation: start_pr… NA     
 #>  9       1     0   Inf r.squared             0.978 Imputation: start_pr… NA     

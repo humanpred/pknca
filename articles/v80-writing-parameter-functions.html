@@ -165,8 +165,12 @@ by <code>attr(return_value, "exclude") &lt;- "reason"</code>). If the
 <code>exclude</code> attribute is set to a character string, then that
 string will be included in the <code>exclude</code> column for results.
 If any of the input parameters have an exclude attribute set, then those
-are also added to the <code>exclude</code> column. The exception to the
-setting of the <code>exclude</code> column is if the
+are also added to the <code>exclude</code> column, each distinct reason
+once. When the function returns <code>NA</code> because of missing or
+unusable data, give the reason this way so that the <code>NA</code> is
+explained (for example,
+<code>structure(NA_real_, exclude = "Dose is missing")</code>). The
+exception to the setting of the <code>exclude</code> column is if the
 <code>exclude</code> attribute is <code>"DO NOT EXCLUDE"</code>, then
 the <code>exclude</code> column is set to
 <code>NA_character_</code>.</p>

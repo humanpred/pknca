@@ -20,7 +20,11 @@ pk.calc.cl(dose, auc)
 
 ## Value
 
-the numeric value of the total (CL) or observed oral clearance (CL/F)
+the numeric value of the total (CL) or observed oral clearance (CL/F). A
+result of length one that is `NA` because of missing or unusable data
+has the reason in its "exclude" attribute, which
+[`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
+reports.
 
 ## Details
 

@@ -30,7 +30,10 @@ pk.calc.cstart(conc, time, start)
 
 ## Value
 
-The concentration when `time == end`. If none match, then `NA`
+The concentration when `time == end` (`pk.calc.ctrough()`) or
+`time == start` (`pk.calc.cstart()`). If none match, or that
+concentration is missing, then `NA` with the reason in its "exclude"
+attribute
 
 ## Details
 

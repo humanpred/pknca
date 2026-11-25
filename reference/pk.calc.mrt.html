@@ -71,11 +71,19 @@ multiple-dose data.</p>
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">pk.calc.mrt</span><span class="op">(</span><span class="va">auc</span>, <span class="va">aumc</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">pk.calc.mrt.iv</span><span class="op">(</span><span class="va">auc</span>, <span class="va">aumc</span>, <span class="va">duration.dose</span>, <span class="va">dose</span>, <span class="va">time.dose</span><span class="op">)</span></span>
+<span><span class="fu">pk.calc.mrt.iv</span><span class="op">(</span><span class="va">auc</span>, <span class="va">aumc</span>, <span class="va">duration.dose</span>, dose <span class="op">=</span> <span class="cn">NULL</span>, time.dose <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">pk.calc.mrt.md</span><span class="op">(</span><span class="va">auctau</span>, <span class="va">aumctau</span>, <span class="va">aucinf</span>, <span class="va">tau</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">pk.calc.mrt.md.iv</span><span class="op">(</span><span class="va">auctau</span>, <span class="va">aumctau</span>, <span class="va">aucinf</span>, <span class="va">tau</span>, <span class="va">duration.dose</span>, <span class="va">dose</span>, <span class="va">time.dose</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">pk.calc.mrt.md.iv</span><span class="op">(</span></span>
+<span>  <span class="va">auctau</span>,</span>
+<span>  <span class="va">aumctau</span>,</span>
+<span>  <span class="va">aucinf</span>,</span>
+<span>  <span class="va">tau</span>,</span>
+<span>  <span class="va">duration.dose</span>,</span>
+<span>  dose <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  time.dose <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -128,7 +136,10 @@ data)</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>the numeric value of the mean residence time</p>
+    <p>the numeric value of the mean residence time.  A result of length one that is <code>NA</code> because of missing or unusable data
+has the reason in its "exclude" attribute, which <code><a href="pk.nca.html">pk.nca()</a></code> reports.</p>
+<p>The mean residence time.  A result of length one that is <code>NA</code> because of missing or unusable data
+has the reason in its "exclude" attribute, which <code><a href="pk.nca.html">pk.nca()</a></code> reports.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

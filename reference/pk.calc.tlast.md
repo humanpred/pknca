@@ -27,7 +27,9 @@ pk.calc.tfirst(conc, time, check = TRUE)
 
 ## Value
 
-The time of the last observed concentration measurement
+The time of the last (`pk.calc.tlast()`) or first (`pk.calc.tfirst()`)
+observed concentration measurement, or `NA` with the reason in its
+"exclude" attribute when no concentration is above zero
 
 ## Functions
 

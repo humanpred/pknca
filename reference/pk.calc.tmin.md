@@ -46,7 +46,8 @@ pk.calc.tmin(conc, time, options = list(), first.tmin = NULL, check = TRUE)
 
 ## Value
 
-The time of the minimum concentration
+The time of the minimum concentration, or `NA` with the reason in its
+"exclude" attribute when all concentrations are missing
 
 ## See also
 

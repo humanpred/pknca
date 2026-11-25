@@ -20,7 +20,11 @@ pk.calc.ptr(cmax, ctrough)
 
 ## Value
 
-The ratio of cmax to ctrough (if ctrough == 0, NA)
+The ratio of cmax to ctrough (if ctrough == 0, NA). A result of length
+one that is `NA` because of missing or unusable data has the reason in
+its "exclude" attribute, which
+[`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
+reports.
 
 ## Details
 

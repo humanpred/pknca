@@ -31,7 +31,8 @@ pk.calc.ceoi(conc, time, duration.dose = NA, check = TRUE)
 ## Value
 
 The concentration at the end of the infusion, `NA` if `duration.dose` is
-`NA`, or `NA` if all `time != duration.dose`
+`NA`, or `NA` if all `time != duration.dose` or that concentration is
+missing; an `NA` has the reason in its "exclude" attribute
 
 ## See also
 

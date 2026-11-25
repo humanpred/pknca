@@ -499,7 +499,9 @@ returned. If a required value is missing, the result is
 <span>  auc <span class="op">=</span> <span class="fl">10</span>, aumc <span class="op">=</span> <span class="fl">62.4</span>,</span>
 <span>  duration.dose <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, dose <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="cn">NA</span><span class="op">)</span>, time.dose <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] NA</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] NA</span></span>
+<span><span class="co">#&gt; attr(,"exclude")</span></span>
+<span><span class="co">#&gt; [1] "A dose amount is missing, or the doses sum to zero"</span></span></code></pre></div>
 <p>For multiple dosing, <code><a href="../reference/pk.calc.mrt.html">pk.calc.mrt.md.iv()</a></code> calculates
 steady-state MRT. The calculation uses the steady-state AUMC/AUC
 expression and subtracts the same dose-weighted MIT:</p>

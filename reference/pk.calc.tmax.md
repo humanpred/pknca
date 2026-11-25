@@ -47,7 +47,8 @@ pk.calc.tmax(conc, time, options = list(), first.tmax = NULL, check = TRUE)
 
 ## Value
 
-The time of the maximum concentration
+The time of the maximum concentration, or `NA` with the reason in its
+"exclude" attribute when no concentration is above zero
 
 ## See also
 

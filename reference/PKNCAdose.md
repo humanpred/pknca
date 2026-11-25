@@ -62,9 +62,13 @@ PKNCAdose(
   from the `data`, and if given as a number, it is the value for all
   doses. Only one may be given, and if neither is given, then the dose
   is assumed to be a bolus (`duration=0`). If `rate` is given, then the
-  dose amount must be given (the left hand side of the `formula`). A
-  numeric duration is in the time unit of the analysis; a difftime
-  duration is converted to that unit in
+  dose amount must be given (the left hand side of the `formula`;
+  `pknca_error_rate_without_dose` otherwise), and the duration of each
+  dose is its amount divided by its rate. A missing dose amount or rate,
+  or a rate of zero, gives no valid duration
+  (`pknca_error_dose_invalid_duration`). A numeric duration is in the
+  time unit of the analysis; a difftime duration is converted to that
+  unit in
   [`PKNCAdata()`](https://humanpred.github.io/pknca/reference/PKNCAdata.md).
 
 - time.nominal:
@@ -109,6 +113,14 @@ only a single row may be given per group. When the right side is
 missing, PKNCA assumes that the same dose is given in every interval.
 When given as a two-sided formula, both the dose amount and time are
 used directly from the data.
+
+A negative numeric dose amount is an error (`pknca_error_dose_negative`,
+naming the rows), here and again in
+[`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md) for
+a dose made negative later (for example by
+[`mutate()`](https://dplyr.tidyverse.org/reference/mutate.html)). A zero
+or missing amount is allowed, and a row excluded with `exclude` is not
+checked. A dose column that is not numeric is not checked here.
 
 ## See also
 

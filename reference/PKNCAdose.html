@@ -123,9 +123,12 @@ duration of dosing.  If given as a character string, it is the name of a
 column from the <code>data</code>, and if given as a number, it is the value for all
 doses.  Only one may be given, and if neither is given, then the dose is
 assumed to be a bolus (<code>duration=0</code>).  If <code>rate</code> is given, then the dose
-amount must be given (the left hand side of the <code>formula</code>).  A numeric
-duration is in the time unit of the analysis; a difftime duration is
-converted to that unit in <code><a href="PKNCAdata.html">PKNCAdata()</a></code>.</p></dd>
+amount must be given (the left hand side of the <code>formula</code>;
+<code>pknca_error_rate_without_dose</code> otherwise), and the duration of each dose
+is its amount divided by its rate.  A missing dose amount or rate, or a
+rate of zero, gives no valid duration (<code>pknca_error_dose_invalid_duration</code>).
+A numeric duration is in the time unit of the analysis; a difftime
+duration is converted to that unit in <code><a href="PKNCAdata.html">PKNCAdata()</a></code>.</p></dd>
 
 
 <dt id="arg-time-nominal">time.nominal<a class="anchor" aria-label="anchor" href="#arg-time-nominal"></a></dt>
@@ -171,6 +174,11 @@ per group.  When the right side is missing, PKNCA assumes that the
 same dose is given in every interval.  When given as a two-sided
 formula, both the dose amount and time are used directly from the
 data.</p>
+<p>A negative numeric dose amount is an error (<code>pknca_error_dose_negative</code>,
+naming the rows), here and again in <code><a href="pk.nca.html">pk.nca()</a></code> for a dose made negative
+later (for example by <code><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate()</a></code>).  A zero or missing amount is allowed,
+and a row excluded with <code>exclude</code> is not checked.  A dose column that is
+not numeric is not checked here.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

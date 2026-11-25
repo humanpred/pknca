@@ -24,7 +24,7 @@ pk.calc.cmin(conc, check = TRUE)
 ## Value
 
 a number for the maximum concentration or NA if all concentrations are
-missing
+missing, with the reason in its "exclude" attribute
 
 ## Functions
 

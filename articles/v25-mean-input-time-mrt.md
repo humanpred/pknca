@@ -439,6 +439,8 @@ pk.calc.mrt.iv(
   duration.dose = c(1, 2), dose = c(10, NA), time.dose = c(0, 1)
 )
 #> [1] NA
+#> attr(,"exclude")
+#> [1] "A dose amount is missing, or the doses sum to zero"
 ```
 
 For multiple dosing,

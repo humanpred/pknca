@@ -16,4 +16,5 @@ pk.calc.totdose(dose)
 
 ## Value
 
-The total dose for an interval
+The total dose for an interval, or `NA` with the reason in its "exclude"
+attribute when there is no dose or a dose is missing

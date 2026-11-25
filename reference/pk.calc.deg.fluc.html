@@ -89,9 +89,12 @@
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>The degree of fluctuation around the average concentration.</p>
-<p>The swing above the minimum concentration.  If <code>cmin</code> is zero, then
-the result is infinity.</p>
+    <p>The degree of fluctuation around the average concentration.
+A result of length one that is <code>NA</code> because of missing or unusable data
+has the reason in its "exclude" attribute, which <code><a href="pk.nca.html">pk.nca()</a></code> reports.</p>
+<p>The swing above the minimum concentration, one value for each pair
+of <code>cmax</code> and <code>cmin</code>.  If <code>cmin</code> is zero, then the result is infinity; if
+<code>cmin</code> or <code>cmax</code> is missing, it is <code>NA</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>

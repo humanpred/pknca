@@ -8,11 +8,19 @@ multiple-dose data.
 ``` r
 pk.calc.mrt(auc, aumc)
 
-pk.calc.mrt.iv(auc, aumc, duration.dose, dose, time.dose)
+pk.calc.mrt.iv(auc, aumc, duration.dose, dose = NULL, time.dose = NULL)
 
 pk.calc.mrt.md(auctau, aumctau, aucinf, tau)
 
-pk.calc.mrt.md.iv(auctau, aumctau, aucinf, tau, duration.dose, dose, time.dose)
+pk.calc.mrt.md.iv(
+  auctau,
+  aumctau,
+  aucinf,
+  tau,
+  duration.dose,
+  dose = NULL,
+  time.dose = NULL
+)
 ```
 
 ## Arguments
@@ -61,7 +69,17 @@ pk.calc.mrt.md.iv(auctau, aumctau, aucinf, tau, duration.dose, dose, time.dose)
 
 ## Value
 
-the numeric value of the mean residence time
+the numeric value of the mean residence time. A result of length one
+that is `NA` because of missing or unusable data has the reason in its
+"exclude" attribute, which
+[`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
+reports.
+
+The mean residence time. A result of length one that is `NA` because of
+missing or unusable data has the reason in its "exclude" attribute,
+which
+[`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
+reports.
 
 ## Details
 

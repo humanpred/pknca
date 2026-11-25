@@ -21,9 +21,13 @@ pk.calc.aucpext(auclast, aucinf)
 
 ## Value
 
-The numeric value of the AUC percent extrapolated or `NA_real_` if any
-of the following are true `is.na(aucinf)`, `is.na(auclast)`,
-`aucinf <= 0`, or `auclast <= 0`.
+The numeric value of the AUC percent extrapolated, or `NA_real_` if
+`aucinf` or `auclast` is `NA` or `aucinf` is zero (a negative value is
+calculated, with a warning). A result of length one that is `NA` because
+of missing or unusable data has the reason in its "exclude" attribute,
+which
+[`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
+reports.
 
 ## Details
 

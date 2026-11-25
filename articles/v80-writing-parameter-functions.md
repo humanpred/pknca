@@ -62,9 +62,12 @@ The return value may have an attribute of `exclude` (set by
 is set to a character string, then that string will be included in the
 `exclude` column for results. If any of the input parameters have an
 exclude attribute set, then those are also added to the `exclude`
-column. The exception to the setting of the `exclude` column is if the
-`exclude` attribute is `"DO NOT EXCLUDE"`, then the `exclude` column is
-set to `NA_character_`.
+column, each distinct reason once. When the function returns `NA`
+because of missing or unusable data, give the reason this way so that
+the `NA` is explained (for example,
+`structure(NA_real_, exclude = "Dose is missing")`). The exception to
+the setting of the `exclude` column is if the `exclude` attribute is
+`"DO NOT EXCLUDE"`, then the `exclude` column is set to `NA_character_`.
 
 ### Best Practices
 
