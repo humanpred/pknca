@@ -10,7 +10,8 @@ pk.calc.totdose(dose)
 \item{dose}{the dose administered}
 }
 \value{
-The total dose for an interval
+The total dose for an interval, or \code{NA} with the reason in its
+"exclude" attribute when there is no dose or a dose is missing
 }
 \description{
 Extract the dose used for calculations

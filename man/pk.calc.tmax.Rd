@@ -21,7 +21,8 @@ last is considered Tmax/ERTmax.}
 \item{check}{Run \code{\link[=assert_conc_time]{assert_conc_time()}}?}
 }
 \value{
-The time of the maximum concentration
+The time of the maximum concentration, or \code{NA} with the reason in
+its "exclude" attribute when no concentration is above zero
 }
 \description{
 Input restrictions are:

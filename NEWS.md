@@ -8,6 +8,14 @@ the dosing including dose amount and route.
 
 ## Breaking changes
 
+* A negative numeric dose amount is an error (`pknca_error_dose_negative`,
+  naming the first rows and their count), in `PKNCAdose()` and again in
+  `pk.nca()` for a dose made negative later, for example by `mutate()`
+  (@billdenney).  Code that passed a negative dose before now stops.  A zero
+  or missing dose amount is allowed as before, a dose row excluded with
+  `exclude` is not checked, and a dose column that is not numeric is not
+  checked here.
+
 * The excretion rates `ertlst`, `ermax`, `ertmax`, and `erlst` are now `NA`
   when a collection with a volume has no concentration, as `ae`, `fe`, and
   `erint` already were (@billdenney, #729).  They were calculated
@@ -17,6 +25,27 @@ the dosing including dose amount and route.
   associated with a collection volume was missing" beside it.  A collection
   missing both its concentration and its volume, or a known concentration
   with a missing volume, leaves the rates as they were.
+
+* A calculation function that returns `NA` because of missing or unusable data
+  now returns it with an `exclude` attribute that gives the reason, as the AUC
+  functions already did, so that `pk.nca()` reports why (@billdenney, #727).
+  The value is unchanged.  The functions are `pk.calc.cmax()`, `pk.calc.cmin()`,
+  `pk.calc.tmax()`, `pk.calc.tmin()`, `pk.calc.tlast()`, `pk.calc.tfirst()`,
+  `pk.calc.clast.obs()`, `pk.calc.aucpext()`, `pk.calc.cl()`, `pk.calc.f()`,
+  `pk.calc.mrt()`, `pk.calc.mrt.iv()`, `pk.calc.mrt.md()`,
+  `pk.calc.mrt.md.iv()`, `pk.calc.cav()`, `pk.calc.ctrough()`,
+  `pk.calc.cstart()`, `pk.calc.ptr()`, `pk.calc.tlag()`, `pk.calc.deg.fluc()`,
+  `pk.calc.ceoi()`, `pk.calc.totdose()`, and `pk.calc.dn()`; the vectorised
+  ones give the attribute only for a result of length one.  For a result `x`
+  such as `pk.calc.cmax(c(NA, NA))`:
+  * these now fail:  `identical(x, NA)`, `isTRUE(all.equal(x, NA))`,
+    `expect_equal(x, NA)`, `expect_identical(x, NA)`, and
+    `expect_equal(x, NA_real_)`;
+  * the attribute is carried by `x * 2` and by `data.frame(a = x)$a`;
+  * `is.na()`, `ifelse()`, `c()`, `sapply()`, `sum()`, `max()`, and `paste()`
+    are unaffected;
+  * `as.numeric(x)` drops the attribute (giving `NA_real_`, where `cmax`,
+    `cmin`, `tmax`, `tmin`, `tlast`, and `tfirst` gave a logical `NA`).
 
 * Parameter names and descriptions follow one style, so some column headers of
   `summary()` and some descriptions change (@billdenney):
@@ -1221,6 +1250,82 @@ the generated intervals:
   inputs such as `conc`, `time`, and `dose`.
 
 ## Bug fixes
+
+* `PKNCAdose()` with a `rate` column now works with more than one dose row
+  (@billdenney, #728).  It stopped with "'length = 2' in coercion
+  to 'logical(1)'", because the dose amounts were passed where the name of the
+  dose column was expected; one row worked by accident.  Each dose's duration
+  is its amount divided by its rate.  A `rate` with no dose amount (a formula
+  without a left side) is now the error `pknca_error_rate_without_dose`; it
+  was `pknca_error_dose_invalid_duration` with one row and an error without a
+  class with more.  A direct `setDuration(object, rate = 5, dose = NA)`
+  returned a duration of 0 and is now that error too.
+
+* `pk.calc.tlag()` skips missing concentrations, as `pk.calc.cmax()` and the
+  other simple parameters do, and gains a `check` argument like theirs
+  (reported by @kawasakin, #723; @billdenney, #727).  Two results change:  a
+  missing value before or between the measured ones gave `NA` (for example
+  `pk.calc.tlag(c(NA, 40, 80, 10), c(0, 2, 4, 8))`) and now gives the lag time
+  of the measured values (2); and a missing value with no increase after it,
+  or every value missing, stopped the calculation (in `pk.nca()`, "Please
+  report a bug ... missing value where TRUE/FALSE needed") and now gives `NA`.
+
+* `pk.calc.swing()` gives `NA` for a missing `cmin` or `cmax` instead of
+  stopping with "missing value where TRUE/FALSE needed" (reported by
+  @kawasakin, #723; @billdenney, #727).  In `pk.nca()`, an interval whose
+  concentrations are all missing stopped with "Please report a bug" when
+  `swing` was requested, which stopped the calculation for every subject, and
+  now gives `NA` for that interval.  `pk.calc.swing()` gives one value for
+  each pair of `cmax` and `cmin`; a vector of `cmax` with one `cmin` gives the
+  values it gave before, except that with a `cmin` of zero or below the result
+  is one `Inf` for each `cmax` (before, a single `Inf`).
+
+* A simple parameter that is `NA` because of missing or unusable data now says
+  why in the `exclude` column of `pk.nca()` results, where the column was
+  empty (@billdenney, #727).  No value changes; only the `exclude` text of
+  results that were already `NA`.  The reasons, which the calculation functions
+  return as an `exclude` attribute (see "Breaking changes"):
+  - "All concentrations are missing":  `cmax`, `cmin`, `tmax`, `tmin`, `tlast`,
+    `tfirst`, `clast.obs`, `tlag`.
+  - "No concentration is above zero":  `tmax`, `tlast`, `tfirst`.
+  - "Concentrations never increase":  `tlag`.
+  - "No non-missing concentration at the start of the interval":  `cstart`;
+    "No non-missing concentration at the end of the interval" and "The
+    interval has no finite end":  `ctrough`; "No non-missing concentration at
+    the end of the infusion" and "Dose duration is missing (or there is no
+    dose in the interval)":  `ceoi`.
+  - "AUC is zero or negative":  `cl.*`, `mrt.*` (all forms), and the reference
+    AUC of `f.*`; "AUCinf is zero":  `aucpext.*`; "Cav is zero":  `deg.fluc`;
+    "Ctrough is zero":  `ptr`.
+  - "Dose is missing":  `cl.*`, `f.*`, `totdose`, and the dose-normalized
+    parameters (`*.dn`); "Dose is zero":  `*.dn` when the parameter is also
+    zero (the value stays `NaN`); "Dose is zero or negative":  `f.*`; "No dose
+    in the interval":  `cl.*`, `totdose`, `mrt.iv.*`, and `mrt.ivmd.*`.
+  - "A dose time or duration is missing", or "A dose amount is missing, or the
+    doses sum to zero" (when several doses are weighted):  `mrt.iv.*` and
+    `mrt.ivmd.*`; "The dosing interval (tau) is not known":  `mrt.md.*` and
+    `mrt.ivmd.*`.
+  - "The interval start or end is missing", "The interval has zero duration":
+    `cav.*`.
+
+  Everything calculated from one of these carries its reason, as for any
+  other reason (for example `swing`, `vss.*`, `vz.*`, `kel.*`, `thalf.eff.*`).
+  What changes for code reading the results:  `summary()` gives the same
+  numbers (it ignores an `NA` either way); `as.data.frame(filter_excluded =
+  TRUE)` now leaves out these `NA` rows, as it leaves out any row with a
+  reason; and `exclude()` adds its reason after the one already there.
+
+* The `exclude` text of a result that already had a reason now starts with the
+  root cause and lists each reason once (@billdenney, #727).  For example,
+  the half-life results of an interval with every concentration missing read
+  "All concentrations are missing; Too few points for half-life calculation
+  (min.hl.points=3 with only 0 points)" instead of starting at "Too few
+  points"; `aucabove.trough.all` with no concentration at the end of the
+  interval reads "No non-missing concentration at the end of the interval;
+  Missing concentration to be above"; and a reason that reached a result from
+  two inputs ("X; X") is given once ("X").  Code that matches a reason by its
+  exact text must be updated.  The values, and which results have a reason,
+  are unchanged.
 
 * `mrt.iv.*`, `mrt.ivint.*`, `mrt.ivmd.*`, and everything calculated from them
   (`vss.iv.*`, `vss.ivint.*`, `vss.ivmd.*`, `kel.iv.*`, `thalf.eff.iv.*`) are

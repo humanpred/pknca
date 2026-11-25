@@ -12,7 +12,9 @@ pk.calc.dn(parameter, dose)
 \item{dose}{Dose in units compatible with the area under the curve}
 }
 \value{
-a number for dose normalized AUC
+a number for dose normalized AUC.  A result of length one has the
+reason in its "exclude" attribute when it is \code{NA} because the dose is
+missing, or \code{NaN} because the parameter and the dose are both zero.
 }
 \description{
 Determine dose normalized NCA parameter
