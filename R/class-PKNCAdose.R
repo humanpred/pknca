@@ -16,9 +16,12 @@
 #'   column from the `data`, and if given as a number, it is the value for all
 #'   doses.  Only one may be given, and if neither is given, then the dose is
 #'   assumed to be a bolus (`duration=0`).  If `rate` is given, then the dose
-#'   amount must be given (the left hand side of the `formula`).  A numeric
-#'   duration is in the time unit of the analysis; a difftime duration is
-#'   converted to that unit in [PKNCAdata()].
+#'   amount must be given (the left hand side of the `formula`;
+#'   `pknca_error_rate_without_dose` otherwise), and the duration of each dose
+#'   is its amount divided by its rate.  A missing dose amount or rate, or a
+#'   rate of zero, gives no valid duration (`pknca_error_dose_invalid_duration`).
+#'   A numeric duration is in the time unit of the analysis; a difftime
+#'   duration is converted to that unit in [PKNCAdata()].
 #' @param time.nominal (optional) The name of the nominal time column (if the
 #'   main time variable is actual time.  The `time.nominal` is not used during
 #'   calculations; it is available to assist with data summary and checking.
@@ -167,8 +170,8 @@ PKNCAdose.data.frame <- function(data, formula, route, rate, duration,
   } else {
     ret <- setRoute(ret, route)
   }
-  ret <- setDuration.PKNCAdose(ret, duration=duration,
-                               rate=rate, dose=getDepVar.PKNCAdose(ret))
+  # The dose is the column name, which setDuration.PKNCAdose() uses by default
+  ret <- setDuration.PKNCAdose(ret, duration=duration, rate=rate)
   if (!missing(time.nominal)) {
     ret <-
       setAttributeColumn(object=ret,
@@ -231,7 +234,9 @@ setRoute.PKNCAdose <- function(object, route, ...) {
 #' @param duration The value to set for the duration or the name of the column
 #'   in the data to use for the duration.
 #' @param rate (for PKNCAdose objects only) The rate of infusion
-#' @param dose (for PKNCAdose objects only) The dose amount
+#' @param dose (for PKNCAdose objects only) The name of the dose column (the
+#'   default, from the formula), or the dose amounts (a value, or one per
+#'   row); used with `rate`
 #' @param ... Arguments passed to another setDuration function
 #' @returns The object with duration set
 #' @export
@@ -252,7 +257,14 @@ setDuration.PKNCAdose <- function(object, duration, rate, dose, ...) {
     # requiring near-equal checks for floating point error.
   } else if (!missing(duration)) {
     object <- setAttributeColumn(object=object, attr_name="duration", col_or_value=duration)
-  } else if (!missing(rate) && !missing(dose) && !is.na(dose)) {
+  } else if (!missing(rate)) {
+    # `dose` is a column name (the default) or the dose amounts
+    if (length(dose) == 0 || all(is.na(dose))) {
+      rlang::abort(
+        "`rate` needs the dose amount (the left side of the formula) to calculate the duration; without a dose amount, give `duration` instead",
+        class = "pknca_error_rate_without_dose"
+      )
+    }
     tmprate <- getColumnValueOrNot(object$data, rate, "rate")
     tmpdose <- getColumnValueOrNot(object$data, dose, "dose")
     duration <- tmpdose$data[[tmpdose$name]]/tmprate$data[[tmprate$name]]
