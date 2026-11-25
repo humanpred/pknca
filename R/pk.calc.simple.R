@@ -2536,25 +2536,57 @@ add.interval.col("swing",
 
 #' Determine the concentration at the end of infusion
 #'
+#' The end of infusion is the end of the last infusion in the interval:
+#' `max(time.dose + duration.dose)` among the doses with `duration.dose > 0`.
+#' Doses with a missing or zero duration (for example, a bolus dose in the same
+#' interval) are ignored.  When infusions are separated by a gap, the end of
+#' the last infusion is still used.
+#'
 #' @inheritParams assert_conc_time
 #' @inheritParams clean.conc.blq
 #' @param duration.dose The duration for the dosing administration (typically
-#'   from IV infusion)
-#' @returns The concentration at the end of the infusion, `NA` if
-#'   `duration.dose` is `NA`, or `NA` if all `time != duration.dose` or that
-#'   concentration is missing; an `NA` has the reason in its "exclude" attribute
+#'   from IV infusion); one value per dose in the interval
+#' @param time.dose The time of each dose relative to the start of the interval
+#'   (the same length as `duration.dose`, or a single value that is used for
+#'   all doses)
+#' @returns The concentration at the end of the last infusion.  `NA` if there
+#'   is no infusion (all `duration.dose` are `NA` or not greater than zero).
+#'   `NA` with an `exclude` attribute if the end of the last infusion was not
+#'   sampled (within a small numerical tolerance).
 #' @family NCA parameters for concentrations during the intervals
 #' @export
-pk.calc.ceoi <- function(conc, time, duration.dose=NA, check=TRUE) {
+pk.calc.ceoi <- function(conc, time, duration.dose=NA, time.dose=0, check=TRUE) {
   if (check) {
     assert_conc_time(conc = conc, time = time)
   }
-  if (is.na(duration.dose)) {
-    structure(NA_real_, exclude = "Dose duration is missing (or there is no dose in the interval)")
-  } else if (all(time != duration.dose) || is.na(conc[time == duration.dose][1])) {
+  checkmate::assert_numeric(duration.dose, min.len = 1, lower = 0, any.missing = TRUE, finite = TRUE)
+  checkmate::assert_numeric(time.dose, min.len = 1)
+  
+  if (length(time.dose) == 1) {
+    time.dose <- rep(time.dose, length(duration.dose))
+  }
+  
+  checkmate::assert_numeric(time.dose, len = length(duration.dose))
+  
+  # Identify infusion rows; bolus rows are excluded.
+  is_infusion <- !is.na(duration.dose) & !is.na(time.dose) & duration.dose > 0
+  
+  if (!any(is_infusion)) {
+    return(structure(NA_real_, exclude = "No infusion in the interval"))
+  }
+  
+  # End time of the last infusion segment.
+  time_eoi <- max(time.dose[is_infusion] + duration.dose[is_infusion])
+  
+  # Tolerance for floating-point differences. sums like 0.1 + 0.2 still match a sample at 0.3
+  tol <- sqrt(.Machine$double.eps) * max(1, abs(time_eoi))
+  
+  idx <- which(!is.na(time) & !is.na(conc) & abs(time - time_eoi) <= tol)
+  
+  if (length(idx) == 0) {
     structure(NA_real_, exclude = "No non-missing concentration at the end of the infusion")
   } else {
-    conc[time == duration.dose][1]
+    conc[idx[1]]
   }
 }
 

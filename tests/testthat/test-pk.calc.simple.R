@@ -793,10 +793,104 @@ test_that("pk.calc.ceoi", {
                info="Ceoi returns the concentration at the end of the dosing duration")
   expect_equal(pk.calc.ceoi(conc=0:5, time=0:5, duration.dose=1.5),
                structure(NA_real_, exclude = "No non-missing concentration at the end of the infusion"),
-               info="Ceoi returns NA if there is no measurement at the end of the dosing duration")
+               info="Ceoi returns NA with an exclude reason if there is no measurement at the end of the dosing duration")
   expect_equal(pk.calc.ceoi(conc=0:5, time=0:5, duration.dose=NA),
-               structure(NA_real_, exclude = "Dose duration is missing (or there is no dose in the interval)"),
+               structure(NA_real_, exclude = "No infusion in the interval"),
                info="Ceoi returns NA if there is no dosing duration")
+})
+
+test_that("pk.calc.ceoi with more than one dose row", {
+  # Two contiguous infusion segments: 0-1 h and 1-3 h
+  expect_equal(
+    pk.calc.ceoi(conc = 10 * (0:5), time = 0:5, duration.dose = c(1, 2), time.dose = c(0, 1)),
+    30,
+    info = "Contiguous segments return the concentration at the end of the last segment"
+  )
+  expect_equal(
+    pk.calc.ceoi(conc = 10 * (0:5), time = 0:5, duration.dose = c(2, 1), time.dose = c(1, 0)),
+    30,
+    info = "Order of the dose rows does not matter"
+  )
+  expect_equal(
+    pk.calc.ceoi(conc = 10 * (0:5), time = 0:5, duration.dose = c(1, 1), time.dose = c(0, 2)),
+    30,
+    info = "Infusions separated by a gap use the end of the last infusion"
+  )
+  expect_equal(
+    pk.calc.ceoi(conc = 10 * (0:5), time = 0:5, duration.dose = c(0, 2), time.dose = c(0, 1)),
+    30,
+    info = "A bolus (zero duration) dose row is ignored"
+  )
+  expect_equal(
+    pk.calc.ceoi(conc = 10 * (0:5), time = 0:5, duration.dose = c(NA, 2), time.dose = c(0, 1)),
+    30,
+    info = "A missing duration dose row is ignored"
+  )
+  expect_equal(
+    pk.calc.ceoi(conc = 10 * (0:5), time = 0:5, duration.dose = c(0, 0), time.dose = c(0, 1)),
+    structure(NA_real_, exclude = "No infusion in the interval"),
+    info = "No infusion in the interval gives NA"
+  )
+  expect_equal(
+    pk.calc.ceoi(conc = 10 * (0:5), time = 0:5, duration.dose = c(1, 1.5), time.dose = c(0, 1)),
+    structure(NA_real_, exclude = "No non-missing concentration at the end of the infusion"),
+    info = "Unsampled end of the last segment gives NA with an exclude reason, not an error"
+  )
+  expect_error(
+    pk.calc.ceoi(conc = 0:5, time = 0:5, duration.dose = -1),
+    regexp = "duration.dose",
+    info = "A negative infusion duration is invalid input"
+  )
+  expect_equal(
+    pk.calc.ceoi(conc = c(0, 10, NA, 30), time = 0:3, duration.dose = 2),
+    structure(NA_real_, exclude = "No non-missing concentration at the end of the infusion"),
+    info = "A missing concentration at the end of infusion gives NA with an exclude reason"
+  )
+})
+
+test_that("pk.calc.ceoi uses time.dose to locate the end of infusion", {
+  expect_equal(
+    pk.calc.ceoi(conc = 10 * (0:5), time = 0:5, duration.dose = 2, time.dose = 1),
+    30,
+    info = "An infusion that starts after the interval start ends at time.dose + duration.dose"
+  )
+  expect_equal(
+    pk.calc.ceoi(conc = c(0, 1, 2, 3), time = c(0, 0.1, 0.2, 0.3), duration.dose = 0.2, time.dose = 0.1),
+    3,
+    info = "Floating point sums still match the sampled time"
+  )
+})
+
+test_that("pk.nca() calculates ceoi with more than one infusion row in an interval", {
+  o_conc <- data.frame(ID = 1, time = c(0, 1, 2, 3, 4, 6), conc = c(0, 5, 8, 10, 6, 3))
+  o_dose <- data.frame(ID = 1, time = c(0, 1), dose = c(100, 200), duration = c(1, 2))
+  intervals <- data.frame(start = 0, end = Inf, ceoi = TRUE)
+  ret <-
+    suppressMessages(
+      pk.nca(
+        PKNCAdata(
+          PKNCAconc(o_conc, conc ~ time | ID),
+          PKNCAdose(o_dose, dose ~ time | ID, duration = "duration"),
+          intervals = intervals
+        )
+      )
+    )
+  res <- as.data.frame(ret)
+  expect_equal(res$PPORRES[res$PPTESTCD == "ceoi"], 10)
+  
+  # The end of the last infusion (3 h) is not sampled
+  ret_unsampled <-
+    suppressMessages(
+      pk.nca(
+        PKNCAdata(
+          PKNCAconc(o_conc[o_conc$time != 3, ], conc ~ time | ID),
+          PKNCAdose(o_dose, dose ~ time | ID, duration = "duration"),
+          intervals = intervals
+        )
+      )
+    )
+  res_unsampled <- as.data.frame(ret_unsampled)
+  expect_true(is.na(res_unsampled$PPORRES[res_unsampled$PPTESTCD == "ceoi"]))
 })
 
 test_that("pk.calc.aucabove", {

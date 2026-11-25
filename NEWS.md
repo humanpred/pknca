@@ -1271,6 +1271,15 @@ the generated intervals:
 
 ## Bug fixes
 
+* `pk.calc.ceoi()` no longer errors when an interval has more than one dose
+  row (#695).  It now returns the concentration at the end of the last infusion
+  (`max(time.dose + duration.dose)` among doses with `duration.dose > 0`),
+  using the new `time.dose` argument so an infusion that starts after the
+  interval start is located correctly.  The result is `NA` with an `exclude`
+  reason when the interval has no infusion or when there is no non-missing
+  concentration at the end of the infusion.  A negative `duration.dose` is now
+  an error (@billdenney).
+
 * `PKNCAdose()` with a `rate` column now works with more than one dose row
   (@billdenney, #728).  It stopped with "'length = 2' in coercion
   to 'logical(1)'", because the dose amounts were passed where the name of the

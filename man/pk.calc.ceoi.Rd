@@ -4,7 +4,7 @@
 \alias{pk.calc.ceoi}
 \title{Determine the concentration at the end of infusion}
 \usage{
-pk.calc.ceoi(conc, time, duration.dose = NA, check = TRUE)
+pk.calc.ceoi(conc, time, duration.dose = NA, time.dose = 0, check = TRUE)
 }
 \arguments{
 \item{conc}{Measured concentrations}
@@ -12,17 +12,26 @@ pk.calc.ceoi(conc, time, duration.dose = NA, check = TRUE)
 \item{time}{Time of the measurement of the concentrations}
 
 \item{duration.dose}{The duration for the dosing administration (typically
-from IV infusion)}
+from IV infusion); one value per dose in the interval}
+
+\item{time.dose}{The time of each dose relative to the start of the interval
+(the same length as \code{duration.dose}, or a single value that is used for
+all doses)}
 
 \item{check}{Run \code{\link[=assert_conc_time]{assert_conc_time()}}?}
 }
 \value{
-The concentration at the end of the infusion, \code{NA} if
-\code{duration.dose} is \code{NA}, or \code{NA} if all \code{time != duration.dose} or that
-concentration is missing; an \code{NA} has the reason in its "exclude" attribute
+The concentration at the end of the last infusion.  \code{NA} if there
+is no infusion (all \code{duration.dose} are \code{NA} or not greater than zero).
+\code{NA} with an \code{exclude} attribute if the end of the last infusion was not
+sampled (within a small numerical tolerance).
 }
 \description{
-Determine the concentration at the end of infusion
+The end of infusion is the end of the last infusion in the interval:
+\code{max(time.dose + duration.dose)} among the doses with \code{duration.dose > 0}.
+Doses with a missing or zero duration (for example, a bolus dose in the same
+interval) are ignored.  When infusions are separated by a gap, the end of
+the last infusion is still used.
 }
 \seealso{
 Other NCA parameters for concentrations during the intervals:

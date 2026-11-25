@@ -264,7 +264,7 @@ test_that("dose amount, time, and duration are required separately (#538)", {
   )
   expect_equal(
     unlist(set_requires_inputs("ceoi")[["ceoi"]][c("requires_dose_amt", "requires_dose_time", "requires_dose_dur")]),
-    c(requires_dose_amt = FALSE, requires_dose_time = FALSE, requires_dose_dur = TRUE)
+    c(requires_dose_amt = FALSE, requires_dose_time = TRUE, requires_dose_dur = TRUE)
   )
   expect_true(set_requires_inputs("cl.inf.obs")[["cl.inf.obs"]]$requires_dose_amt)
   # pk.calc.half.life() uses the dose timing when present but does not need
