@@ -94,17 +94,54 @@ one column named time with the times.
   `"start_predose,start_conc0"` gives the same result as `"start_conc0"`
   alone. To carry a predose measurement to the start time, use
   `start_predose` without `start_conc0`. When no observation exists at
-  the start time, a new row with a concentration of 0 is added.
+  the start time, a new row with a concentration of 0 is added. A
+  missing concentration at the start time is set to 0 as well, so a
+  urine or feces collection at the start whose concentration is missing
+  and whose volume is known counts as an amount of zero, where the other
+  start methods leave the amount excreted missing. In
+  [`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
+  with the `conc.na` option `"drop"` (the default), a row at the start
+  time with a missing concentration is not a measurement: it is dropped,
+  with its other per-observation values, before this method runs, so the
+  result is the one for the data without that row. In a profile of urine
+  or feces collections (one with any volume that is not missing; one row
+  is enough), the row stays: the amount in that collection is unknown,
+  not absent. This is decided for each profile, so a profile whose
+  volumes are all missing follows the first rule. With a numeric
+  `conc.na`, that number is the missing concentration and the row stays.
+  A direct call of this method sees the row as it is given.
 
 - `PKNCA_impute_method_start_cmin()`: Add a new concentration of the
   minimum during the interval at the start time (usually used with
-  multiple-dose data)
+  multiple-dose data). In
+  [`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
+  with the `conc.na` option `"drop"` (the default), a row at the start
+  time with a missing concentration is not a measurement: it is dropped,
+  with its other per-observation values, before this method runs, so the
+  result is the one for the data without that row. In a profile of urine
+  or feces collections (one with any volume that is not missing; one row
+  is enough), the row stays: the amount in that collection is unknown,
+  not absent. This is decided for each profile, so a profile whose
+  volumes are all missing follows the first rule. With a numeric
+  `conc.na`, that number is the missing concentration and the row stays.
+  A direct call of this method sees the row as it is given.
 
 - `PKNCA_impute_method_start_predose()`: Shift a predose concentration
   to become the time zero concentration (only if a time zero
   concentration does not exist). The most recent predose sample with a
   measured concentration is shifted; samples with a missing
-  concentration are skipped.
+  concentration are skipped. In
+  [`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
+  with the `conc.na` option `"drop"` (the default), a row at the start
+  time with a missing concentration is not a measurement: it is dropped,
+  with its other per-observation values, before this method runs, so the
+  result is the one for the data without that row. In a profile of urine
+  or feces collections (one with any volume that is not missing; one row
+  is enough), the row stays: the amount in that collection is unknown,
+  not absent. This is decided for each profile, so a profile whose
+  volumes are all missing follows the first rule. With a numeric
+  `conc.na`, that number is the missing concentration and the row stays.
+  A direct call of this method sees the row as it is given.
 
 - `PKNCA_impute_method_start_predose_conc0()`: Use a predose
   concentration as the start concentration when one is available and 0
@@ -113,7 +150,18 @@ one column named time with the times.
   concentration at the time of an intravenous bolus dose is the C0 for
   that dose, and `start_conc0` would replace it with 0. The chain
   `"start_predose,start_conc0"` cannot express this, because
-  `start_conc0` overwrites whatever `start_predose` shifted.
+  `start_conc0` overwrites whatever `start_predose` shifted. In
+  [`pk.nca()`](https://humanpred.github.io/pknca/reference/pk.nca.md)
+  with the `conc.na` option `"drop"` (the default), a row at the start
+  time with a missing concentration is not a measurement: it is dropped,
+  with its other per-observation values, before this method runs, so the
+  result is the one for the data without that row. In a profile of urine
+  or feces collections (one with any volume that is not missing; one row
+  is enough), the row stays: the amount in that collection is unknown,
+  not absent. This is decided for each profile, so a profile whose
+  volumes are all missing follows the first rule. With a numeric
+  `conc.na`, that number is the missing concentration and the row stays.
+  A direct call of this method sees the row as it is given.
 
 - `PKNCA_impute_method_end_conc_drop()`: Drop a concentration measured
   exactly at the end of the interval, if one is present (usually used

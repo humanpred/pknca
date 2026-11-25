@@ -82,7 +82,7 @@
                         <h4 data-toc-skip class="author">Bill
 Denney</h4>
             
-            <h4 data-toc-skip class="date">2026-11-24</h4>
+            <h4 data-toc-skip class="date">2026-11-25</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/humanpred/pknca/blob/main/vignettes/v08-data-imputation.Rmd" class="external-link"><code>vignettes/v08-data-imputation.Rmd</code></a></small>
       <div class="d-none name"><code>v08-data-imputation.Rmd</code></div>
@@ -135,6 +135,21 @@ is missing.</li>
 interval at the interval start time when no start-time observation
 exists (usually used with multiple-dose data).</li>
 </ul>
+<p>A row at the start time with a missing concentration is not an
+observation for <code>start_conc0</code>, <code>start_predose</code>,
+<code>start_cmin</code>, and <code>start_predose_conc0</code> when the
+<code>conc.na</code> option is <code>"drop"</code> (the default): it is
+dropped before the first of them runs, so the result is the one for the
+data without that row. With a numeric <code>conc.na</code>, that number
+is the missing concentration, so the row is an observation and the
+methods see it. A profile with any volume that is not missing (one row
+is enough) is a set of urine or feces collections: the row stays either
+way, so the amount excreted stays missing; <code>start_conc0</code>
+still sets that concentration to 0. This is decided for each profile, so
+the plasma groups of data that also holds urine are treated as they are
+alone. The row is dropped right before the first of these start methods
+in a chain, so a user’s own method before it receives the row, and one
+after it receives the data without it.</p>
 <p>The development version of PKNCA also adds
 <code>PKNCA_impute_method_end_conc_drop</code> (used as
 <code>"end_conc_drop"</code>), which drops a concentration observed

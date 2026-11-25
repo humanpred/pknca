@@ -48,6 +48,21 @@ In brief, the built-in methods work as follows:
   interval start time when no start-time observation exists (usually
   used with multiple-dose data).
 
+A row at the start time with a missing concentration is not an
+observation for `start_conc0`, `start_predose`, `start_cmin`, and
+`start_predose_conc0` when the `conc.na` option is `"drop"` (the
+default): it is dropped before the first of them runs, so the result is
+the one for the data without that row. With a numeric `conc.na`, that
+number is the missing concentration, so the row is an observation and
+the methods see it. A profile with any volume that is not missing (one
+row is enough) is a set of urine or feces collections: the row stays
+either way, so the amount excreted stays missing; `start_conc0` still
+sets that concentration to 0. This is decided for each profile, so the
+plasma groups of data that also holds urine are treated as they are
+alone. The row is dropped right before the first of these start methods
+in a chain, so a user’s own method before it receives the row, and one
+after it receives the data without it.
+
 The development version of PKNCA also adds
 `PKNCA_impute_method_end_conc_drop` (used as `"end_conc_drop"`), which
 drops a concentration observed exactly at the interval end – such as a
