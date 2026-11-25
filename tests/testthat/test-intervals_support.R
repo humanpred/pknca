@@ -651,3 +651,68 @@ describe("interval_add_impute and interval_remove_impute with a named impute col
     )
   })
 })
+
+# `start` and `end` are interval columns, so they read like arguments of the
+# editing helpers; they were silently dropped into `...` and the edit applied to
+# every interval.  Selecting by time is done with `target_groups`.
+describe("interval editing helpers", {
+  intervals_two <- data.frame(start = c(0, 12), end = c(12, 24), cmax = TRUE)
+  d_conc_two <- data.frame(subject = 1, time = c(0, 1, 12, 13, 24), conc = c(0, 5, 1, 5, 1))
+  d_dose_two <- data.frame(subject = 1, time = c(0, 12), dose = 1)
+  o_data_two <-
+    PKNCAdata(
+      PKNCAconc(d_conc_two, conc ~ time | subject),
+      PKNCAdose(d_dose_two, dose ~ time | subject),
+      intervals = intervals_two
+    )
+  it("error for `start` and `end` and say how to select by time", {
+    for (current_data in list(intervals_two, o_data_two)) {
+      expect_error(
+        interval_add_param(current_data, param = "auclast", start = 0, end = 12),
+        class = "pknca_error_unknown_argument",
+        regexp = "Unknown argument\\(s\\) to interval_add_param\\(\\): start, end\\..*target_groups = data.frame\\(start = 0, end = 24\\)"
+      )
+      expect_error(
+        interval_remove_param(current_data, param = "cmax", start = 0),
+        class = "pknca_error_unknown_argument",
+        regexp = "interval_remove_param\\(\\): start\\..*target_groups"
+      )
+      expect_error(
+        interval_add_impute(current_data, target_impute = "start_conc0", end = 12),
+        class = "pknca_error_unknown_argument",
+        regexp = "interval_add_impute\\(\\): end\\..*target_groups"
+      )
+      expect_error(
+        interval_remove_impute(current_data, target_impute = "start_conc0", start = 0),
+        class = "pknca_error_unknown_argument",
+        regexp = "interval_remove_impute\\(\\): start\\..*target_groups"
+      )
+    }
+  })
+  it("error for any other argument, named or not, without the time hint", {
+    expect_error(
+      interval_add_param(intervals_two, param = "auclast", target_param = "cmax"),
+      class = "pknca_error_unknown_argument",
+      regexp = "^Unknown argument\\(s\\) to interval_add_param\\(\\): target_param\\.$"
+    )
+    expect_error(
+      interval_add_impute(intervals_two, "start_conc0", Inf, NULL, NULL, "extra"),
+      class = "pknca_error_unknown_argument",
+      regexp = "^Unknown argument\\(s\\) to interval_add_impute\\(\\): \\(unnamed\\)\\.$"
+    )
+  })
+  it("select intervals by time through `target_groups`", {
+    expect_equal(
+      interval_add_param(
+        intervals_two, param = "auclast", target_groups = data.frame(start = 0, end = 12)
+      ),
+      data.frame(start = c(0, 12), end = c(12, 24), cmax = TRUE, auclast = c(TRUE, FALSE))
+    )
+    expect_equal(
+      interval_add_impute(
+        intervals_two, target_impute = "start_conc0", target_groups = data.frame(start = 12)
+      ),
+      data.frame(start = c(0, 12), end = c(12, 24), cmax = TRUE, impute = c(NA, "start_conc0"))
+    )
+  })
+})
