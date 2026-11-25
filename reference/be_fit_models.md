@@ -6,7 +6,8 @@ order:
 [`be_dataset()`](https://humanpred.github.io/pknca/reference/be_dataset.md)
 to prepare the data,
 [`be_design()`](https://humanpred.github.io/pknca/reference/be_design.md)
-to classify the design and choose the model,
+to classify the design (from the subjects, periods, and treatments of
+the requested endpoints) and choose the model,
 [`be_fit_model_single()`](https://humanpred.github.io/pknca/reference/be_fit_model_single.md)
 to fit,
 [`be_extract_param()`](https://humanpred.github.io/pknca/reference/be_extract_param.md)
@@ -98,7 +99,9 @@ be_fit_models(
 
   An optional
   [`be_design()`](https://humanpred.github.io/pknca/reference/be_design.md)
-  object; computed from the data when `NULL`.
+  object. When `NULL`, the design is classified from the subjects,
+  periods, and treatments of the requested endpoints, including
+  administrations where an endpoint's value is missing.
 
 - covariates:
 

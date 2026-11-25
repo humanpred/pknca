@@ -224,9 +224,9 @@ knitr::kable(as.data.frame(be), digits = 2)
 
 | endpoint | test | n | design | gm_reference | gm_reference_lower | gm_reference_upper | gm_test | gm_test_lower | gm_test_upper | gmr_percent | ci_lower | ci_upper | cvwr_percent | cvwt_percent | swr | rule | limit_lower | limit_upper | criterion | regulator | model_type | pass |
 |:---|:---|---:|:---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|:---|---:|---:|---:|:---|:---|:---|
-| cmax | T | 24 | full_replicate | 1.59 | 1.55 | 1.62 | 1.58 | 1.55 | 1.62 | 99.68 | 97.21 | 102.20 | NA | NA | NA | ABE | 80 | 125 | NA | ABE | lmer | TRUE |
-| auclast | T | 24 | full_replicate | 16.90 | 15.86 | 18.00 | 17.55 | 16.47 | 18.69 | 103.83 | 100.83 | 106.93 | NA | NA | NA | ABE | 80 | 125 | NA | ABE | lmer | TRUE |
-| aucinf.obs | T | 24 | full_replicate | 18.66 | 17.12 | 20.34 | 19.61 | 17.99 | 21.38 | 105.09 | 101.26 | 109.07 | NA | NA | NA | ABE | 80 | 125 | NA | ABE | lmer | TRUE |
+| cmax | T | 24 | 2x2x2 | 1.59 | 1.55 | 1.62 | 1.58 | 1.55 | 1.62 | 99.68 | 97.21 | 102.20 | NA | NA | NA | ABE | 80 | 125 | NA | ABE | lmer | TRUE |
+| auclast | T | 24 | 2x2x2 | 16.90 | 15.86 | 18.00 | 17.55 | 16.47 | 18.69 | 103.83 | 100.83 | 106.93 | NA | NA | NA | ABE | 80 | 125 | NA | ABE | lmer | TRUE |
+| aucinf.obs | T | 24 | 2x2x2 | 18.66 | 17.12 | 20.34 | 19.61 | 17.99 | 21.38 | 105.09 | 101.26 | 109.07 | NA | NA | NA | ABE | 80 | 125 | NA | ABE | lmer | TRUE |
 
 ## Interpreting the results
 

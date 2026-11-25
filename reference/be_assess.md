@@ -119,7 +119,9 @@ be_assess(
 
   An optional
   [`be_design()`](https://humanpred.github.io/pknca/reference/be_design.md)
-  object; computed from the data when `NULL`.
+  object. When `NULL`, the design is classified from the subjects,
+  periods, and treatments of the requested endpoints, including
+  administrations where an endpoint's value is missing.
 
 - covariates:
 

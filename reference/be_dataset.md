@@ -90,8 +90,12 @@ be_dataset(
 An object of class `be_dataset`: a list with `data` (the standardized
 long frame, including a `.units` column and one `.cov_<name>` column per
 covariate), `columns` (the resolved column names, including `units` and
-`covariates`), `reference_value`, `test_levels`, and `endpoints` (those
-present). For the results of a sparse bootstrap (see
+`covariates`), `reference_value`, `test_levels`, `endpoints` (those
+present), and `design_rows` (the distinct subject, sequence, period, and
+treatment combinations of the requested endpoints, including those whose
+value is missing, from which
+[`be_design()`](https://humanpred.github.io/pknca/reference/be_design.md)
+classifies the study). For the results of a sparse bootstrap (see
 [`sparse_bootstrap()`](https://humanpred.github.io/pknca/reference/sparse_bootstrap.md)),
 `data` has one row per bootstrap replicate, group, and endpoint instead
 of one per subject and period.

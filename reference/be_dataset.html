@@ -165,8 +165,11 @@ use covariates.</p></dd>
     <p>An object of class <code>be_dataset</code>: a list with <code>data</code> (the
 standardized long frame, including a <code>.units</code> column and one <code>.cov_&lt;name&gt;</code>
 column per covariate), <code>columns</code> (the resolved column names, including
-<code>units</code> and <code>covariates</code>), <code>reference_value</code>, <code>test_levels</code>, and
-<code>endpoints</code> (those present).  For the results of a sparse bootstrap (see
+<code>units</code> and <code>covariates</code>), <code>reference_value</code>, <code>test_levels</code>, <code>endpoints</code>
+(those present), and <code>design_rows</code> (the distinct subject, sequence, period,
+and treatment combinations of the requested endpoints, including those
+whose value is missing, from which <code><a href="be_design.html">be_design()</a></code> classifies the study).
+For the results of a sparse bootstrap (see
 <code><a href="sparse_bootstrap.html">sparse_bootstrap()</a></code>), <code>data</code> has one row per bootstrap replicate, group,
 and endpoint instead of one per subject and period.</p>
     </div>

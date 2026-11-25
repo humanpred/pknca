@@ -161,8 +161,9 @@ object or detected from common column names.  <code>sequence</code> may be absen
 
 
 <dt id="arg-design">design<a class="anchor" aria-label="anchor" href="#arg-design"></a></dt>
-<dd><p>An optional <code><a href="be_design.html">be_design()</a></code> object; computed from the data when
-<code>NULL</code>.</p></dd>
+<dd><p>An optional <code><a href="be_design.html">be_design()</a></code> object.  When <code>NULL</code>, the design is
+classified from the subjects, periods, and treatments of the requested
+endpoints, including administrations where an endpoint's value is missing.</p></dd>
 
 
 <dt id="arg-covariates">covariates<a class="anchor" aria-label="anchor" href="#arg-covariates"></a></dt>
