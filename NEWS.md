@@ -1721,6 +1721,15 @@ the generated intervals:
   function name has a dot in it, so loading the package failed with `could not
   find function "getS3method"`.  `getS3method` is now imported.
 
+* `interval_add_secondary()` works on automatically generated intervals, which
+  have one row per subject.  A `reference` such as
+  `data.frame(start = 0, end = 12)` matched one row per subject, and the helper
+  stopped with `pknca_error_secondary_ref_ambiguous_spec` because it chose
+  among those rows by their times alone; each interval now takes the reference
+  row of its own group (its own subject), ignoring the group columns named in
+  `reference` or `ref_vary`.  The helper also no longer warns about the
+  unknown `interval_id` column of tibble intervals.  (@billdenney)
+
 * `PKNCAdata(impute = NA)` and `PKNCAdata(impute = NULL)` now mean the same as
   the default:  the `"impute"` column of the intervals when there is one, else
   no imputation.  Before, `impute = NA` stored no imputation setting and
@@ -1757,6 +1766,23 @@ the generated intervals:
   `pknca_warning_impute_obs_values_dropped` says when a value of a dropped
   observation is lost that way; PKNCA's own methods never do both in one step
   (@roninsightrx, @billdenney).
+
+* `interval_add_param()`, `interval_remove_param()`, `interval_add_impute()`,
+  `interval_remove_impute()`, and `interval_add_secondary()` now stop with
+  `pknca_error_unknown_argument` for an argument they do not take.  Before, such
+  an argument was silently dropped, so
+  `interval_add_param(intervals, "auclast", start = 0, end = 12)` added
+  `auclast` to every interval.  Select intervals by their times with
+  `target_groups = data.frame(start = 0, end = 12)`, which the error message
+  suggests.  (@billdenney)
+
+* Every warning raised while `PKNCAdata()` generates a group's intervals now
+  starts with the group (`"subject=1: "`), as the dose regimen warnings already
+  did.  `pknca_warning_no_tau_for_intervals` (no dosing interval could be found
+  from the dose times), `pknca_warning_no_dose_times_for_group` (a group with
+  concentrations but no doses), and `pknca_warning_multiple_dose_routes` did
+  not say which group they were about, and each is now given once per
+  group.  (@billdenney)
 
 ## Other changes
 

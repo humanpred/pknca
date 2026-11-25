@@ -234,6 +234,34 @@ interval_resolve_params <- function(param, param_pattern) {
   unique(ret)
 }
 
+# The interval editing helpers take `...` only so that their methods can share
+# the generic's signature; an argument landing there would otherwise be
+# silently dropped.  `start` and `end` are the likely ones, as the intervals
+# have columns of those names, so the error says how to select by time.
+assert_interval_edit_dots <- function(fun, ...) {
+  if (...length() == 0) {
+    return(invisible(NULL))
+  }
+  dot_names <- names(list(...))
+  if (is.null(dot_names)) {
+    dot_names <- rep("", ...length())
+  }
+  dot_names[dot_names %in% ""] <- "(unnamed)"
+  hint <-
+    if (any(dot_names %in% c("start", "end"))) {
+      "  Select intervals by their times with `target_groups`, for example `target_groups = data.frame(start = 0, end = 24)`."
+    } else {
+      ""
+    }
+  rlang::abort(
+    sprintf(
+      "Unknown argument(s) to %s(): %s.%s",
+      fun, paste(dot_names, collapse = ", "), hint
+    ),
+    class = "pknca_error_unknown_argument"
+  )
+}
+
 # Add or remove an imputation method on the targeted interval rows
 interval_edit_impute <- function(intervals, target_impute, after, target_params,
                                  target_groups, add, impute_col = "impute") {
@@ -345,10 +373,13 @@ interval_hoist_impute <- function(data) {
 #' @param target_params Restrict the change to these NCA parameters.  `NULL`
 #'   (the default) applies it to every parameter being calculated.
 #' @param target_groups A data.frame of group values restricting the change to
-#'   matching intervals.  Every column must match (and) for at least one row of
-#'   `target_groups` (or).  `NULL` (the default) applies the change to all
+#'   matching intervals.  Its columns are group columns of the intervals and/or
+#'   `start` and `end`, so `data.frame(start = 0, end = 24)` selects the
+#'   intervals from 0 to 24.  Every column must match (and) for at least one row
+#'   of `target_groups` (or).  `NULL` (the default) applies the change to all
 #'   intervals.
-#' @param ... Ignored.
+#' @param ... Not used; giving any argument here is an error
+#'   (`pknca_error_unknown_argument`).
 #' @returns The input with the imputation updated.  An interval is split into
 #'   more than one row when its parameters no longer share the same imputation,
 #'   and rows that come to share every value are merged.
@@ -377,6 +408,7 @@ interval_remove_impute <- function(data, target_impute, target_params = NULL,
 #' @export
 interval_add_impute.data.frame <- function(data, target_impute, after = Inf,
                                            target_params = NULL, target_groups = NULL, ...) {
+  assert_interval_edit_dots("interval_add_impute", ...)
   interval_edit_impute(
     data, target_impute = target_impute, after = after, target_params = target_params,
     target_groups = target_groups, add = TRUE
@@ -386,6 +418,7 @@ interval_add_impute.data.frame <- function(data, target_impute, after = Inf,
 #' @export
 interval_remove_impute.data.frame <- function(data, target_impute, target_params = NULL,
                                               target_groups = NULL, ...) {
+  assert_interval_edit_dots("interval_remove_impute", ...)
   interval_edit_impute(
     data, target_impute = target_impute, after = Inf, target_params = target_params,
     target_groups = target_groups, add = FALSE
@@ -395,6 +428,7 @@ interval_remove_impute.data.frame <- function(data, target_impute, target_params
 #' @export
 interval_add_impute.PKNCAdata <- function(data, target_impute, after = Inf,
                                           target_params = NULL, target_groups = NULL, ...) {
+  assert_interval_edit_dots("interval_add_impute", ...)
   data <- interval_hoist_impute(data)
   data$intervals <-
     interval_edit_impute(
@@ -408,6 +442,7 @@ interval_add_impute.PKNCAdata <- function(data, target_impute, after = Inf,
 #' @export
 interval_remove_impute.PKNCAdata <- function(data, target_impute, target_params = NULL,
                                              target_groups = NULL, ...) {
+  assert_interval_edit_dots("interval_remove_impute", ...)
   if (!interval_impute_column(data) %in% names(data$intervals)) {
     if (is.null(data$impute) || all(is.na(data$impute))) {
       rlang::warn(
@@ -462,18 +497,21 @@ interval_remove_param <- function(data, param = NULL, param_pattern = NULL,
 #' @export
 interval_add_param.data.frame <- function(data, param = NULL, param_pattern = NULL,
                                           target_groups = NULL, ...) {
+  assert_interval_edit_dots("interval_add_param", ...)
   interval_edit_param(data, param, param_pattern, target_groups, add = TRUE)
 }
 
 #' @export
 interval_remove_param.data.frame <- function(data, param = NULL, param_pattern = NULL,
                                              target_groups = NULL, ...) {
+  assert_interval_edit_dots("interval_remove_param", ...)
   interval_edit_param(data, param, param_pattern, target_groups, add = FALSE)
 }
 
 #' @export
 interval_add_param.PKNCAdata <- function(data, param = NULL, param_pattern = NULL,
                                          target_groups = NULL, ...) {
+  assert_interval_edit_dots("interval_add_param", ...)
   data$intervals <-
     interval_add_param.data.frame(data$intervals, param, param_pattern, target_groups)
   data
@@ -482,6 +520,7 @@ interval_add_param.PKNCAdata <- function(data, param = NULL, param_pattern = NUL
 #' @export
 interval_remove_param.PKNCAdata <- function(data, param = NULL, param_pattern = NULL,
                                             target_groups = NULL, ...) {
+  assert_interval_edit_dots("interval_remove_param", ...)
   data$intervals <-
     interval_remove_param.data.frame(data$intervals, param, param_pattern, target_groups)
   data
