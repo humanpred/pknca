@@ -51,13 +51,16 @@ interval_remove_impute(
 - target_groups:
 
   A data.frame of group values restricting the change to matching
-  intervals. Every column must match (and) for at least one row of
-  `target_groups` (or). `NULL` (the default) applies the change to all
-  intervals.
+  intervals. Its columns are group columns of the intervals and/or
+  `start` and `end`, so `data.frame(start = 0, end = 24)` selects the
+  intervals from 0 to 24. Every column must match (and) for at least one
+  row of `target_groups` (or). `NULL` (the default) applies the change
+  to all intervals.
 
 - ...:
 
-  Ignored.
+  Not used; giving any argument here is an error
+  (`pknca_error_unknown_argument`).
 
 ## Value
 

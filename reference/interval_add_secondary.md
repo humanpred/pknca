@@ -83,7 +83,8 @@ interval_add_secondary(
 
 - ...:
 
-  Ignored.
+  Not used; giving any argument here is an error
+  (`pknca_error_unknown_argument`).
 
 ## Value
 

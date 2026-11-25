@@ -102,13 +102,16 @@ parameter names.  One or both of <code>param</code> and <code>param_pattern</cod
 
 <dt id="arg-target-groups">target_groups<a class="anchor" aria-label="anchor" href="#arg-target-groups"></a></dt>
 <dd><p>A data.frame of group values restricting the change to
-matching intervals.  Every column must match (and) for at least one row of
-<code>target_groups</code> (or).  <code>NULL</code> (the default) applies the change to all
+matching intervals.  Its columns are group columns of the intervals and/or
+<code>start</code> and <code>end</code>, so <code>data.frame(start = 0, end = 24)</code> selects the
+intervals from 0 to 24.  Every column must match (and) for at least one row
+of <code>target_groups</code> (or).  <code>NULL</code> (the default) applies the change to all
 intervals.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Ignored.</p></dd>
+<dd><p>Not used; giving any argument here is an error
+(<code>pknca_error_unknown_argument</code>).</p></dd>
 
 </dl></div>
     <div class="section level2">
