@@ -1271,6 +1271,10 @@ the generated intervals:
 
 ## Bug fixes
 
+* `pk.calc.ceoi()` gives a clear error, instead of R's "the condition has
+  length > 1", when an interval has more than one dose row.  Use a separate
+  interval for each infusion (@billdenney, #695).
+  
 * `PKNCAdose()` with a `rate` column now works with more than one dose row
   (@billdenney, #728).  It stopped with "'length = 2' in coercion
   to 'logical(1)'", because the dose amounts were passed where the name of the

@@ -787,16 +787,47 @@ test_that("pk.calc.swing", {
   )
 })
 
-test_that("pk.calc.ceoi", {
-  expect_equal(pk.calc.ceoi(conc=0:5, time=0:5, duration.dose=1),
-               1,
-               info="Ceoi returns the concentration at the end of the dosing duration")
-  expect_equal(pk.calc.ceoi(conc=0:5, time=0:5, duration.dose=1.5),
-               structure(NA_real_, exclude = "No non-missing concentration at the end of the infusion"),
-               info="Ceoi returns NA if there is no measurement at the end of the dosing duration")
-  expect_equal(pk.calc.ceoi(conc=0:5, time=0:5, duration.dose=NA),
-               structure(NA_real_, exclude = "Dose duration is missing (or there is no dose in the interval)"),
-               info="Ceoi returns NA if there is no dosing duration")
+test_that("pk.calc.ceoi gives a clear error for more than one dose row (#695)", {
+  expect_error(
+    pk.calc.ceoi(conc = 10 * (0:5), time = 0:5, duration.dose = c(1, 2)),
+    regexp = "single dose duration per interval",
+    class = "pknca_error_ceoi_multiple_doses"
+  )
+})
+
+test_that("pk.calc.ceoi is unchanged for a single infusion", {
+  expect_equal(
+    pk.calc.ceoi(conc = 0:5, time = 0:5, duration.dose = 1), 1,
+    info="Ceoi returns the concentration at the end of the dosing duration"
+  )
+  expect_equal(pk.calc.ceoi(conc = c(1, 2, 3), time = c(0, 1, 2), duration.dose = 2), 3)
+  expect_equal(
+    pk.calc.ceoi(conc = 0:5, time = 0:5, duration.dose = 1.5),
+    structure(NA_real_, exclude = "No non-missing concentration at the end of the infusion")
+  )
+  expect_equal(
+    pk.calc.ceoi(conc = c(0, 10, NA, 30), time = 0:3, duration.dose = 2),
+    structure(NA_real_, exclude = "No non-missing concentration at the end of the infusion")
+  )
+  expect_equal(
+    pk.calc.ceoi(conc = 0:5, time = 0:5, duration.dose = NA),
+    structure(NA_real_, exclude = "Dose duration is missing (or there is no dose in the interval)")
+  )
+})
+
+test_that("pk.nca() explains the ceoi error for more than one dose row (#695)", {
+  o_conc <- data.frame(ID = 1, time = c(0, 1, 2, 3, 4, 6), conc = c(0, 5, 8, 10, 6, 3))
+  o_dose <- data.frame(ID = 1, time = c(0, 1), dose = c(100, 200), duration = c(1, 2))
+  err <- tryCatch(
+    suppressMessages(pk.nca(PKNCAdata(
+      PKNCAconc(o_conc, conc ~ time | ID),
+      PKNCAdose(o_dose, dose ~ time | ID, duration = "duration"),
+      intervals = data.frame(start = 0, end = Inf, ceoi = TRUE)
+    ))),
+    error = function(e) e
+  )
+  expect_match(conditionMessage(err), "single dose duration per interval")
+  expect_false(grepl("report a bug", conditionMessage(err), fixed = TRUE))
 })
 
 test_that("pk.calc.aucabove", {

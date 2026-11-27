@@ -2535,11 +2535,15 @@ add.interval.col("swing",
 
 
 #' Determine the concentration at the end of infusion
-#'
+#' 
+#' @details An interval with more than one dose row gives an error (class
+#'   `pknca_error_ceoi_multiple_doses`); use a separate interval for each
+#'   infusion.
+#'   
 #' @inheritParams assert_conc_time
 #' @inheritParams clean.conc.blq
 #' @param duration.dose The duration for the dosing administration (typically
-#'   from IV infusion)
+#'   from IV infusion).  Only one dose row is supported within an interval.
 #' @returns The concentration at the end of the infusion, `NA` if
 #'   `duration.dose` is `NA`, or `NA` if all `time != duration.dose` or that
 #'   concentration is missing; an `NA` has the reason in its "exclude" attribute
@@ -2548,6 +2552,22 @@ add.interval.col("swing",
 pk.calc.ceoi <- function(conc, time, duration.dose=NA, check=TRUE) {
   if (check) {
     assert_conc_time(conc = conc, time = time)
+  }
+  
+  # --- Validation: duration.dose must be a single value ---
+  if (length(duration.dose) > 1L) {
+    rlang::abort(
+      message = paste0(
+        "pk.calc.ceoi() requires a single dose duration per interval, but ",
+        length(duration.dose), " were supplied."
+      ),
+      class = "pknca_error_ceoi_multiple_doses",
+      call = NULL,
+      body = c(
+        "x" = "Multiple end-of-infusion (CeOI) measures within one interval are not supported.",
+        "i" = "Define separate intervals so that each contains at most one infusion dose row."
+      )
+    )
   }
   if (is.na(duration.dose)) {
     structure(NA_real_, exclude = "Dose duration is missing (or there is no dose in the interval)")

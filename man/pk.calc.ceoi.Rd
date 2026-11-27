@@ -12,7 +12,7 @@ pk.calc.ceoi(conc, time, duration.dose = NA, check = TRUE)
 \item{time}{Time of the measurement of the concentrations}
 
 \item{duration.dose}{The duration for the dosing administration (typically
-from IV infusion)}
+from IV infusion).  Only one dose row is supported within an interval.}
 
 \item{check}{Run \code{\link[=assert_conc_time]{assert_conc_time()}}?}
 }
@@ -23,6 +23,11 @@ concentration is missing; an \code{NA} has the reason in its "exclude" attribute
 }
 \description{
 Determine the concentration at the end of infusion
+}
+\details{
+An interval with more than one dose row gives an error (class
+\code{pknca_error_ceoi_multiple_doses}); use a separate interval for each
+infusion.
 }
 \seealso{
 Other NCA parameters for concentrations during the intervals:
