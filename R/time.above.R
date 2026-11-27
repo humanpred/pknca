@@ -48,14 +48,23 @@ pk.calc.time_above <- function(conc, time,
     ret <- structure(NA_real_, exclude="Too few measured concentrations to assess time.above")
   } else if (method %in% 'lin up/log down') {
     linear_up <- conc2 > conc1 | conc2 == conc1
-    linear_down <- conc2 == 0
-    log_down <- !linear_down & conc2 > 0
+    log_down <- conc2 > 0 & conc1 > 0 & conc2 < conc1
+    linear_down <- !log_down
+    idx_log_down <- mask_first & log_down
+    time_log_down <-
+      if (any(idx_log_down)) {
+        sum(
+          (log(conc_above) - log(conc1[idx_log_down])) /
+            (log(conc2[idx_log_down]) - log(conc1[idx_log_down])) *
+            (time2[idx_log_down] - time1[idx_log_down])
+        )
+      } else {
+        0
+      }
     ret <-
       sum((time2 - time1)[mask_both]) +
       # log down
-      sum(
-        ((log(conc_above) - log(conc1))/(log(conc2) - log(conc1))*(time2 - time1))[mask_first & log_down]
-      ) +
+      time_log_down +
       # linear down
       sum(
         ((conc_above - conc1)/(conc2 - conc1)*(time2 - time1))[mask_first & linear_down]
