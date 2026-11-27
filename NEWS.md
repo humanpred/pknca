@@ -1271,6 +1271,11 @@ the generated intervals:
 
 ## Bug fixes
 
+* `pk.calc.time_above()` with `method = "lin up/log down"` now falls back to
+  linear interpolation on falling segments that end at a negative value
+  (@chenyangsu, #697).  Previously such segments matched neither the log-down
+  nor the zero-endpoint linear-down branch and were silently dropped.
+
 * `PKNCAdose()` with a `rate` column now works with more than one dose row
   (@billdenney, #728).  It stopped with "'length = 2' in coercion
   to 'logical(1)'", because the dose amounts were passed where the name of the
